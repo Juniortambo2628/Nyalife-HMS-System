@@ -1,0 +1,54 @@
+[2025-06-07 04:01:01] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/PharmacyController.php
+[2025-06-07 04:01:05] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/PharmacyController.php
+[2025-06-07 04:01:23] [ERROR] [Database error in PatientModel::getMedicalHistory] Unknown column 'mh.created_by' in 'on clause'
+[2025-06-07 03:22:53] [ERROR] [Database error in UserModel::updateLastLogin] MySQL server has gone away
+[2025-06-07 05:05:38] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 05:09:19] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 05:10:49] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 05:11:11] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 05:11:26] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 05:12:13] [ERROR] [Database error in PatientModel::getMedicalHistory] Unknown column 'mh.created_by' in 'on clause'
+[2025-06-07 05:19:35] [ERROR] [Database error in PatientModel::getMedicalHistory] Unknown column 'mh.created_by' in 'on clause'
+[2025-06-07 05:23:15] [ERROR] [Database error in PatientModel::getMedicalHistory] Unknown column 'mh.created_by' in 'on clause'
+[2025-06-07 05:24:40] [ERROR] [Database error in PatientModel::getMedicalHistory] Unknown column 'mh.created_by' in 'on clause'
+[2025-06-07 05:24:45] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 05:24:50] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 05:27:24] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-07 05:32:58] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-07 06:04:12] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 06:11:33] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 07:12:57] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-07 07:14:26] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-07 07:14:29] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-07 07:14:30] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 07:14:32] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-07 07:15:07] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-07 07:16:02] [ERROR] [Database error in PatientModel::getMedicalHistory] Unknown column 'mh.created_by' in 'on clause'
+[2025-06-07 07:18:51] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-07 07:20:15] [ERROR] [Database error in PrescriptionModel::getAllPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-07 07:20:15] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-07 07:21:07] [ERROR] [Database error in LabTestModel::getPendingTests] Table 'nyalife_hms.lab_requests' doesn't exist
+[2025-06-07 07:21:07] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_requests' doesn't exist
+[2025-06-07 07:38:42] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-07 21:51:58] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-07 21:53:57] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/web\ConsultationController.php
+[2025-06-07 21:56:33] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 21:58:57] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 21:59:20] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 22:00:50] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 22:11:44] [ERROR] [System error in WebRouter::dispatch] Action method not found: editProfile
+[2025-06-07 22:37:14] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/web\ConsultationController.php
+[2025-06-07 22:49:36] [ERROR] [Database error in PatientModel::getMedicalHistory] Unknown column 'mh.created_by' in 'on clause'
+[2025-06-07 22:52:58] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/web\ConsultationController.php
+[2025-06-07 22:53:57] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 22:54:02] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 22:54:08] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/web\ConsultationController.php
+[2025-06-07 22:55:14] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 22:55:19] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/web\ConsultationController.php
+[2025-06-07 22:55:28] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/PharmacyController.php
+[2025-06-07 22:57:44] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 23:13:14] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 23:14:32] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 23:15:29] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'
+[2025-06-07 23:15:31] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/web\ConsultationController.php
+[2025-06-07 23:49:00] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 's.license_number' in 'field list'

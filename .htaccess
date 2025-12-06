@@ -1,0 +1,29 @@
+# Enable rewrite engine
+RewriteEngine On
+
+# Set base directory
+RewriteBase /Nyalife-HMS-System/
+
+# Skip rewriting for actual files and directories
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Handle front controller pattern - route all non-file/directory requests to index.php
+RewriteRule ^(.*)$ index.php/$1 [QSA,L]
+
+# If we receive a request to index.php/something, handle it properly
+RewriteCond %{THE_REQUEST} /index\.php/
+# Skip further processing
+
+# PHP settings
+<IfModule mod_php7.c>
+    php_flag display_errors On
+    php_value max_execution_time 300
+    php_value memory_limit 256M
+    php_value post_max_size 32M
+    php_value upload_max_filesize 32M
+</IfModule>
+
+# Default index file
+DirectoryIndex index.php

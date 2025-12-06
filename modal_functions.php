@@ -1,133 +1,338 @@
 <?php
 /**
- * Nyalife HMS - Modal Functions
+ * Nyalife HMS - Modal and Loader Functions
  * 
- * This file contains PHP functions for handling modals across the application.
+ * This file contains functions for modal dialogs and page loaders.
  */
 
 /**
- * Cleanup Modal Backdrops
+ * Show a modal dialog
  * 
- * This function removes any lingering modal backdrops and resets body classes
- * to ensure clean navigation between pages, especially after modal-based login.
- * It's also compatible with the NyalifeLoader implementation.
- * 
- * @return string JavaScript to execute for cleanup
+ * @param string $id Modal ID
+ * @param string $title Modal title
+ * @param string $content Modal content
+ * @param string $size Modal size (sm, lg, xl)
+ * @param bool $showFooter Whether to show footer
+ * @return string Modal HTML
  */
-function cleanupModalBackdrops() {
-    ob_start();
-    ?>
-    <script>
-    // Function to cleanup modal backdrops
-    function cleanupModals() {
-        // Remove any lingering modal backdrops
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+if (!function_exists('showModal')) {
+    function showModal($id, $title, $content, $size = 'lg', $showFooter = true) {
+        $sizeClass = $size ? "modal-$size" : '';
         
-        // Remove modal-open class and inline styles from body
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
+        $html = "
+        <div class='modal fade' id='$id' tabindex='-1' aria-labelledby='{$id}Label' aria-hidden='true'>
+            <div class='modal-dialog $sizeClass'>
+                <div class='modal-content'>
+                    <div class='modal-header'>
+                        <h5 class='modal-title' id='{$id}Label'>$title</h5>
+                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                    </div>
+                    <div class='modal-body'>
+                        $content
+                    </div>";
         
-        // Reset any modal instances
-        if (typeof bootstrap !== 'undefined') {
-            document.querySelectorAll('.modal').forEach(modalEl => {
-                const modalInstance = bootstrap.Modal.getInstance(modalEl);
-                if (modalInstance) {
-                    modalInstance.dispose();
+        if ($showFooter) {
+            $html .= "
+                    <div class='modal-footer'>
+                        <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Close</button>
+                    </div>";
+        }
+        
+        $html .= "
+                </div>
+            </div>
+        </div>";
+        
+        return $html;
+    }
+}
+
+/**
+ * Show a confirmation modal
+ * 
+ * @param string $id Modal ID
+ * @param string $title Modal title
+ * @param string $message Confirmation message
+ * @param string $confirmText Confirm button text
+ * @param string $cancelText Cancel button text
+ * @param string $confirmClass Confirm button class
+ * @return string Modal HTML
+ */
+if (!function_exists('showConfirmModal')) {
+    function showConfirmModal($id, $title, $message, $confirmText = 'Confirm', $cancelText = 'Cancel', $confirmClass = 'btn-danger') {
+        $html = "
+        <div class='modal fade' id='$id' tabindex='-1' aria-labelledby='{$id}Label' aria-hidden='true'>
+            <div class='modal-dialog'>
+                <div class='modal-content'>
+                    <div class='modal-header'>
+                        <h5 class='modal-title' id='{$id}Label'>$title</h5>
+                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                    </div>
+                    <div class='modal-body'>
+                        <p>$message</p>
+                    </div>
+                    <div class='modal-footer'>
+                        <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>$cancelText</button>
+                        <button type='button' class='btn $confirmClass' id='{$id}Confirm'>$confirmText</button>
+                    </div>
+                </div>
+            </div>
+        </div>";
+        
+        return $html;
+    }
+}
+
+/**
+ * Show an alert modal
+ * 
+ * @param string $id Modal ID
+ * @param string $title Modal title
+ * @param string $message Alert message
+ * @param string $type Alert type (success, warning, danger, info)
+ * @return string Modal HTML
+ */
+if (!function_exists('showAlertModal')) {
+    function showAlertModal($id, $title, $message, $type = 'info') {
+        $alertClass = "alert-$type";
+        
+        $html = "
+        <div class='modal fade' id='$id' tabindex='-1' aria-labelledby='{$id}Label' aria-hidden='true'>
+            <div class='modal-dialog'>
+                <div class='modal-content'>
+                    <div class='modal-header'>
+                        <h5 class='modal-title' id='{$id}Label'>$title</h5>
+                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                    </div>
+                    <div class='modal-body'>
+                        <div class='alert $alertClass' role='alert'>
+                            $message
+                        </div>
+                    </div>
+                    <div class='modal-footer'>
+                        <button type='button' class='btn btn-primary' data-bs-dismiss='modal'>OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>";
+        
+        return $html;
+    }
+}
+
+/**
+ * Show a loading modal
+ * 
+ * @param string $id Modal ID
+ * @param string $message Loading message
+ * @return string Modal HTML
+ */
+if (!function_exists('showLoadingModal')) {
+    function showLoadingModal($id, $message = 'Loading...') {
+        $html = "
+        <div class='modal fade' id='$id' tabindex='-1' aria-hidden='true' data-bs-backdrop='static' data-bs-keyboard='false'>
+            <div class='modal-dialog modal-sm'>
+                <div class='modal-content'>
+                    <div class='modal-body text-center'>
+                        <div class='spinner-border text-primary' role='status'>
+                            <span class='visually-hidden'>Loading...</span>
+                        </div>
+                        <p class='mt-2 mb-0'>$message</p>
+                    </div>
+                </div>
+            </div>
+        </div>";
+        
+        return $html;
+    }
+}
+
+/**
+ * Show page loader
+ * 
+ * @return string Loader HTML
+ */
+if (!function_exists('showPageLoader')) {
+    function showPageLoader() {
+        return "
+        <div id='pageLoader' class='position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center' style='background: rgba(0,0,0,0.5); z-index: 9999;'>
+            <div class='text-center'>
+                <div class='spinner-border text-light' role='status' style='width: 3rem; height: 3rem;'>
+                    <span class='visually-hidden'>Loading...</span>
+                </div>
+                <p class='text-light mt-2'>Loading...</p>
+            </div>
+        </div>";
+    }
+}
+
+/**
+ * Hide page loader
+ * 
+ * @return string JavaScript to hide loader
+ */
+if (!function_exists('hidePageLoader')) {
+    function hidePageLoader() {
+        return "
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const loader = document.getElementById('pageLoader');
+                if (loader) {
+                    loader.style.display = 'none';
                 }
             });
-        }
-        
-        // Also force hide loader if NyalifeLoader is available
-        if (typeof NyalifeLoader !== 'undefined') {
-            NyalifeLoader.forceHide();
-        }
-        
-        console.log('Modal cleanup complete');
+        </script>";
     }
-    
-    // Execute cleanup
-    document.addEventListener('DOMContentLoaded', cleanupModals);
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        cleanupModals();
-    }
-    </script>
-    <?php
-    return ob_get_clean();
 }
 
 /**
- * Force Hide Loader
+ * Show a toast notification
  * 
- * This function force-hides the loader container that might be blocking
- * dashboard content after login. It uses the NyalifeLoader JavaScript object
- * to properly clean up and hide any loaders on the page.
- * 
- * @return string JavaScript to execute for hiding the loader
+ * @param string $message Toast message
+ * @param string $type Toast type (success, warning, danger, info)
+ * @param int $delay Delay in milliseconds
+ * @return string Toast HTML
  */
-function forceHideLoader() {
-    ob_start();
-    ?>
-    <script>
-    // Function to force-hide the loader container and ensure it doesn't block content
-    function forceHideLoaderContainer() {
-        // Use the NyalifeLoader if it exists
-        if (typeof NyalifeLoader !== 'undefined') {
-            console.log('Using NyalifeLoader to clean up loaders');
-            NyalifeLoader.forceHide();
-            NyalifeLoader.cleanup();
-            return;
-        }
+if (!function_exists('showToast')) {
+    function showToast($message, $type = 'info', $delay = 5000) {
+        $toastId = 'toast_' . uniqid();
+        $alertClass = "alert-$type";
         
-        // Fallback cleanup for older pages
-        // Get all possible loader elements
-        const loaders = [
-            document.getElementById('nyalifaLoader'),
-            document.getElementById('globalLoader'),
-            document.querySelector('.nyalife-loader-container'),
-            document.querySelector('.loader-container')
-        ];
+        $html = "
+        <div class='toast-container position-fixed top-0 end-0 p-3' style='z-index: 1055;'>
+            <div id='$toastId' class='toast' role='alert' aria-live='assertive' aria-atomic='true'>
+                <div class='toast-header'>
+                    <strong class='me-auto'>Notification</strong>
+                    <button type='button' class='btn-close' data-bs-dismiss='toast' aria-label='Close'></button>
+                </div>
+                <div class='toast-body'>
+                    <div class='alert $alertClass mb-0' role='alert'>
+                        $message
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const toast = new bootstrap.Toast(document.getElementById('$toastId'), {
+                    delay: $delay
+                });
+                toast.show();
+            });
+        </script>";
         
-        // Apply force-hide to all found loader elements
-        loaders.forEach(loader => {
-            if (loader) {
-                console.log('Force-hiding loader:', loader.id || 'loader-container');
-                
-                // Force hide by setting z-index to below content
-                loader.style.zIndex = "-1";
-                loader.style.display = "none";
-                loader.style.visibility = "hidden";
-                loader.style.opacity = "0";
-                
-                // Add a class to mark it as force-hidden
-                loader.classList.add('force-hide');
-                
-                // Also remove any class that might be showing it
-                loader.classList.remove('active');
-                loader.classList.add('d-none');
-            }
-        });
-        
-        // Clean up body classes that might be related to loader
-        document.body.classList.remove('overflow-hidden');
-        document.body.classList.remove('loader-active');
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
-        
-        console.log('Loader cleanup complete');
+        return $html;
     }
-    
-    // Execute immediately
-    forceHideLoaderContainer();
-    
-    // Also execute when DOM is ready to ensure it runs
-    document.addEventListener('DOMContentLoaded', forceHideLoaderContainer);
-    
-    // As a fallback, set a timeout to ensure it runs even if the DOMContentLoaded doesn't trigger
-    setTimeout(forceHideLoaderContainer, 500);
-    </script>
-    <?php
-    return ob_get_clean();
 }
-?> 
+
+/**
+ * Show a success toast
+ * 
+ * @param string $message Success message
+ * @return string Toast HTML
+ */
+if (!function_exists('showSuccessToast')) {
+    function showSuccessToast($message) {
+        return showToast($message, 'success');
+    }
+}
+
+/**
+ * Show an error toast
+ * 
+ * @param string $message Error message
+ * @return string Toast HTML
+ */
+if (!function_exists('showErrorToast')) {
+    function showErrorToast($message) {
+        return showToast($message, 'danger');
+    }
+}
+
+/**
+ * Show a warning toast
+ * 
+ * @param string $message Warning message
+ * @return string Toast HTML
+ */
+if (!function_exists('showWarningToast')) {
+    function showWarningToast($message) {
+        return showToast($message, 'warning');
+    }
+}
+
+/**
+ * Show an info toast
+ * 
+ * @param string $message Info message
+ * @return string Toast HTML
+ */
+if (!function_exists('showInfoToast')) {
+    function showInfoToast($message) {
+        return showToast($message, 'info');
+    }
+}
+
+/**
+ * Initialize modal functionality
+ * 
+ * @return string JavaScript for modal initialization
+ */
+if (!function_exists('initModals')) {
+    function initModals() {
+        return "
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize all modals
+                var modals = document.querySelectorAll('.modal');
+                modals.forEach(function(modal) {
+                    new bootstrap.Modal(modal);
+                });
+                
+                // Auto-hide toasts after delay
+                var toasts = document.querySelectorAll('.toast');
+                toasts.forEach(function(toast) {
+                    var bsToast = new bootstrap.Toast(toast);
+                    bsToast.show();
+                });
+            });
+        </script>";
+    }
+}
+
+/**
+ * Show a form modal
+ * 
+ * @param string $id Modal ID
+ * @param string $title Modal title
+ * @param string $formContent Form content
+ * @param string $submitText Submit button text
+ * @param string $cancelText Cancel button text
+ * @return string Modal HTML
+ */
+if (!function_exists('showFormModal')) {
+    function showFormModal($id, $title, $formContent, $submitText = 'Submit', $cancelText = 'Cancel') {
+        $html = "
+        <div class='modal fade' id='$id' tabindex='-1' aria-labelledby='{$id}Label' aria-hidden='true'>
+            <div class='modal-dialog modal-lg'>
+                <div class='modal-content'>
+                    <div class='modal-header'>
+                        <h5 class='modal-title' id='{$id}Label'>$title</h5>
+                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                    </div>
+                    <form id='{$id}Form'>
+                        <div class='modal-body'>
+                            $formContent
+                        </div>
+                        <div class='modal-footer'>
+                            <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>$cancelText</button>
+                            <button type='submit' class='btn btn-primary'>$submitText</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>";
+        
+        return $html;
+    }
+} 

@@ -1,4 +1,11 @@
-<div class="container-fluid px-4 py-3">
+<?php
+/**
+ * Nyalife HMS - Patient Dashboard
+ */
+
+$pageTitle = 'Patient Dashboard - Nyalife HMS';
+?>
+<div class="container-fluid page-wrapper">
     <h1 class="h3 mb-4">Patient Dashboard</h1>
     
     <!-- Welcome Banner -->
@@ -66,21 +73,33 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm h-100">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Upcoming Appointments</h6>
-                    <a href="<?= $baseUrl ?>/appointments" class="btn btn-sm btn-primary">View All</a>
+                    <h6 class="m-0 font-weight-bold">Upcoming Appointments</h6>
+                    <div class="card-header-actions">
+                        <div class="btn-group-desktop">
+                            <a href="<?= $baseUrl ?>/appointments" class="btn btn-sm">
+                                View All
+                            </a>
+                        </div>
+                        <div class="dropdown">
+                            <button class="card-header-menu-toggle dropdown-toggle" type="button" id="appointmentsMenuToggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="appointmentsMenuToggle">
+                                <li><a class="dropdown-item" href="<?= $baseUrl ?>/appointments"><i class="fas fa-list me-2"></i> View All</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <?php if (empty($upcomingAppointments)): ?>
-                        <div class="text-center py-3">
-                            <img src="<?= $baseUrl ?>/assets/img/illustrations/no-appointments.png" alt="No appointments" style="max-width: 200px;" class="mb-3">
-                            <p class="mb-0">You don't have any upcoming appointments.</p>
-                            <a href="<?= $baseUrl ?>/appointments/create" class="btn btn-primary mt-3">
-                                <i class="fas fa-calendar-plus me-2"></i> Schedule New Appointment
-                            </a>
+                        <div class="text-center p-4">
+                            <img src="<?= $baseUrl ?>/assets/img/illustrations/no-appointments.svg" alt="No appointments" class="mb-3 img-max-150">
+                            <p class="text-muted">You have no upcoming appointments.</p>
+                            <a href="<?= $baseUrl ?>/appointments/create" class="btn btn-sm btn-primary">Book an Appointment</a>
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
+                            <table class="table table-bordered table-hover" id="upcomingAppointmentsTable">
                                 <thead>
                                     <tr>
                                         <th>Doctor</th>
@@ -99,17 +118,17 @@
                                             <td>
                                                 <?php
                                                 $statusClass = '';
-                                                switch ($appointment['status']) {
-                                                    case 'scheduled':
-                                                        $statusClass = 'bg-primary';
-                                                        break;
-                                                    case 'pending':
-                                                        $statusClass = 'bg-warning text-dark';
-                                                        break;
-                                                    default:
-                                                        $statusClass = 'bg-secondary';
-                                                }
-                                                ?>
+                                        switch ($appointment['status']) {
+                                            case 'scheduled':
+                                                $statusClass = 'bg-primary';
+                                                break;
+                                            case 'pending':
+                                                $statusClass = 'bg-warning text-dark';
+                                                break;
+                                            default:
+                                                $statusClass = 'bg-secondary';
+                                        }
+                                        ?>
                                                 <span class="badge <?= $statusClass ?>">
                                                     <?= ucfirst($appointment['status']) ?>
                                                 </span>
@@ -146,13 +165,13 @@
                 </div>
                 <div class="card-body">
                     <?php if (empty($labResults)): ?>
-                        <div class="text-center py-3">
-                            <img src="<?= $baseUrl ?>/assets/img/illustrations/no-results.png" alt="No lab results" style="max-width: 200px;" class="mb-3">
-                            <p class="mb-0">No lab results found.</p>
+                        <div class="text-center p-4">
+                            <img src="<?= $baseUrl ?>/assets/img/illustrations/no-appointments.svg" alt="No lab results" class="mb-3 img-max-150">
+                            <p class="text-muted">You have no recent lab results.</p>
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
+                            <table class="table table-bordered table-hover" id="labResultsTable">
                                 <thead>
                                     <tr>
                                         <th>Test Name</th>
@@ -170,18 +189,18 @@
                                             <td><?= $result['result_status'] == 'completed' ? htmlspecialchars($result['result_value']) : 'Pending' ?></td>
                                             <td>
                                                 <?php
-                                                $statusClass = '';
-                                                switch ($result['result_status']) {
-                                                    case 'completed':
-                                                        $statusClass = 'bg-success';
-                                                        break;
-                                                    case 'pending':
-                                                        $statusClass = 'bg-warning text-dark';
-                                                        break;
-                                                    default:
-                                                        $statusClass = 'bg-secondary';
-                                                }
-                                                ?>
+                                        $statusClass = '';
+                                        switch ($result['result_status']) {
+                                            case 'completed':
+                                                $statusClass = 'bg-success';
+                                                break;
+                                            case 'pending':
+                                                $statusClass = 'bg-warning text-dark';
+                                                break;
+                                            default:
+                                                $statusClass = 'bg-secondary';
+                                        }
+                                        ?>
                                                 <span class="badge <?= $statusClass ?>">
                                                     <?= ucfirst($result['result_status']) ?>
                                                 </span>
@@ -191,7 +210,7 @@
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 <?php if ($result['result_status'] == 'completed'): ?>
-                                                <a href="<?= $baseUrl ?>/lab-results/download/<?= $result['result_id'] ?>" class="btn btn-sm btn-primary">
+                                                <a href="<?= $baseUrl ?>/lab-results/download/<?= $result['result_id'] ?>" class="btn btn-sm btn-primary" data-no-ajax>
                                                     <i class="fas fa-download"></i>
                                                 </a>
                                                 <?php endif; ?>
@@ -217,13 +236,13 @@
                 </div>
                 <div class="card-body">
                     <?php if (empty($prescriptions)): ?>
-                        <div class="text-center py-3">
-                            <img src="<?= $baseUrl ?>/assets/img/illustrations/no-prescriptions.png" alt="No prescriptions" style="max-width: 200px;" class="mb-3">
-                            <p class="mb-0">No prescriptions found.</p>
+                        <div class="text-center p-4">
+                            <img src="<?= $baseUrl ?>/assets/img/illustrations/no-appointments.svg" alt="No prescriptions" class="mb-3 img-max-150">
+                            <p class="text-muted">You have no recent prescriptions.</p>
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
+                            <table class="table table-bordered table-hover" id="prescriptionsTable">
                                 <thead>
                                     <tr>
                                         <th>Date</th>
@@ -239,18 +258,18 @@
                                             <td><?= htmlspecialchars($prescription['doctor_name']) ?></td>
                                             <td>
                                                 <?php
-                                                $statusClass = '';
-                                                switch ($prescription['status']) {
-                                                    case 'filled':
-                                                        $statusClass = 'bg-success';
-                                                        break;
-                                                    case 'pending':
-                                                        $statusClass = 'bg-warning text-dark';
-                                                        break;
-                                                    default:
-                                                        $statusClass = 'bg-secondary';
-                                                }
-                                                ?>
+                                        $statusClass = '';
+                                        switch ($prescription['status']) {
+                                            case 'filled':
+                                                $statusClass = 'bg-success';
+                                                break;
+                                            case 'pending':
+                                                $statusClass = 'bg-warning text-dark';
+                                                break;
+                                            default:
+                                                $statusClass = 'bg-secondary';
+                                        }
+                                        ?>
                                                 <span class="badge <?= $statusClass ?>">
                                                     <?= ucfirst($prescription['status']) ?>
                                                 </span>
@@ -259,9 +278,11 @@
                                                 <a href="<?= $baseUrl ?>/prescriptions/view/<?= $prescription['prescription_id'] ?>" class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="<?= $baseUrl ?>/prescriptions/download/<?= $prescription['prescription_id'] ?>" class="btn btn-sm btn-primary">
+                                                <?php if ($prescription['status'] == 'filled'): ?>
+                                                <a href="<?= $baseUrl ?>/prescriptions/download/<?= $prescription['prescription_id'] ?>" class="btn btn-sm btn-primary" data-no-ajax>
                                                     <i class="fas fa-download"></i>
                                                 </a>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -281,30 +302,30 @@
                     <a href="<?= $baseUrl ?>/medical-history" class="btn btn-sm btn-primary">View All</a>
                 </div>
                 <div class="card-body">
-                    <?php if (empty($pastAppointments)): ?>
-                        <div class="text-center py-3">
-                            <img src="<?= $baseUrl ?>/assets/img/illustrations/no-history.png" alt="No medical history" style="max-width: 200px;" class="mb-3">
-                            <p class="mb-0">No medical history records found.</p>
+                    <?php if (empty($medicalHistory)): ?>
+                        <div class="text-center p-4">
+                            <img src="<?= $baseUrl ?>/assets/img/illustrations/no-appointments.svg" alt="No medical history" class="mb-3 img-max-150">
+                            <p class="text-muted">No medical history found.</p>
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
+                            <table class="table table-bordered table-hover" id="medicalHistoryTable">
                                 <thead>
                                     <tr>
                                         <th>Date</th>
                                         <th>Doctor</th>
-                                        <th>Diagnosis</th>
+                                        <th>Type</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($pastAppointments as $appointment): ?>
+                                    <?php foreach ($medicalHistory as $record): ?>
                                         <tr>
-                                            <td><?= date('M d, Y', strtotime($appointment['appointment_date'])) ?></td>
-                                            <td><?= htmlspecialchars($appointment['doctor_name']) ?></td>
-                                            <td><?= !empty($appointment['diagnosis']) ? htmlspecialchars($appointment['diagnosis']) : 'N/A' ?></td>
+                                            <td><?= date('M d, Y', strtotime($record['record_date'])) ?></td>
+                                            <td><?= htmlspecialchars($record['doctor_name']) ?></td>
+                                            <td><?= htmlspecialchars($record['record_type']) ?></td>
                                             <td>
-                                                <a href="<?= $baseUrl ?>/appointments/view/<?= $appointment['appointment_id'] ?>" class="btn btn-sm btn-info">
+                                                <a href="<?= $baseUrl ?>/medical-history/view/<?= $record['record_id'] ?>" class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                             </td>
@@ -319,3 +340,13 @@
         </div>
     </div>
 </div>
+
+<!-- Bundled Assets -->
+<link rel="stylesheet" href="<?= AssetHelper::getCss('shared') ?>">
+<script src="<?= AssetHelper::getJs('runtime') ?>"></script>
+<script src="<?= AssetHelper::getJs('vendors') ?>"></script>
+<script src="<?= AssetHelper::getJs('shared') ?>"></script>
+<script src="<?= AssetHelper::getJs('app') ?>"></script>
+<script src="<?= AssetHelper::getJs('dashboard-patient') ?>"></script>
+</body>
+</html>

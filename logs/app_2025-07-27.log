@@ -1,0 +1,5 @@
+[2025-07-27 17:59:55] [ERROR] [Database error in FollowUpModel::getFollowUpsFiltered] Unknown column 'd.user_id' in 'on clause'
+[2025-07-27 19:14:20] [ERROR] [Database error in FollowUpModel::getFollowUpsFiltered] Unknown column 'd.user_id' in 'on clause'
+[2025-07-27 20:54:19] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/DoctorsController.php
+[2025-07-27 20:54:19] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/DoctorsController.php
+[2025-07-27 20:54:19] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/DoctorsController.php

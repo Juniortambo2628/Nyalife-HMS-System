@@ -1,0 +1,14 @@
+Note: Using configuration file C:\wamp64\www\Nyalife-HMS-System\phpstan.neon.
+ -- ------------------------------------------------------------------------------------------------------- 
+     Error                                                                                                  
+ -- ------------------------------------------------------------------------------------------------------- 
+     Ignored error pattern #Class .* located in .* does not comply with psr-4# was not matched in reported  
+     errors.                                                                                                
+     Ignored error pattern #PHPDoc tag @param.*has invalid value# was not matched in reported errors.       
+     Ignored error pattern missingType.iterableValue was not matched in reported errors.                    
+ -- ------------------------------------------------------------------------------------------------------- 
+
+
+ [ERROR] Found 3 errors                                                                                      
+
+

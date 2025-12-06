@@ -1,4 +1,12 @@
-<div class="container">
+<?php
+/**
+ * Nyalife HMS - Login Page
+ */
+
+$pageTitle = 'Login - Nyalife HMS';
+?>
+
+<div class="container-fluid py-5 px-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow">
@@ -48,3 +56,12 @@
         </div>
     </div>
 </div>
+
+    <!-- Bundled Assets -->
+    <link rel="stylesheet" href="<?= AssetHelper::getCss('shared') ?>">
+    <script src="<?= AssetHelper::getJs('runtime') ?>"></script>
+    <script src="<?= AssetHelper::getJs('vendors') ?>"></script>
+    <script src="<?= AssetHelper::getJs('shared') ?>"></script>
+    <script src="<?= AssetHelper::getJs('auth-login') ?>"></script>
+</body>
+</html>

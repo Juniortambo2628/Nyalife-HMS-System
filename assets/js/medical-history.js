@@ -107,7 +107,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const recordType = $(this).data('type');
 
         // Show loader
-        Nyalife.Loader.show();
+        if (window.NyalifeLoader) {
+            NyalifeLoader.show('Loading record details...');
+        } else {
+            Nyalife.Loader.show('Loading record details...');
+        }
 
         // Load modal content based on record type
         switch (recordType) {
@@ -121,7 +125,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadPrescriptionDetails(recordId);
                 break;
             default:
-                Nyalife.Loader.hide();
+                if (window.NyalifeLoader) {
+                    NyalifeLoader.hide();
+                } else {
+                    Nyalife.Loader.hide();
+                }
                 console.error('Unknown record type:', recordType);
         }
     });

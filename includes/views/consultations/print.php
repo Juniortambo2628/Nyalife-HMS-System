@@ -119,9 +119,9 @@
                 
                 <div class="info-label">Status:</div>
                 <div class="info-value">
-                    <span class="badge bg-<?= 
-                        $consultation['status'] === 'completed' ? 'success' : 
-                        ($consultation['status'] === 'in_progress' ? 'info' : 
+                    <span class="badge bg-<?=
+                        $consultation['status'] === 'completed' ? 'success' :
+                        ($consultation['status'] === 'in_progress' ? 'info' :
                         ($consultation['status'] === 'cancelled' ? 'danger' : 'primary')) ?>">
                         <?= ucwords(str_replace('_', ' ', $consultation['status'])) ?>
                     </span>
@@ -174,7 +174,7 @@
             <div class="mb-3">
                 <div class="info-label">Diagnosis:</div>
                 <div class="border rounded p-3">
-                    <?= !empty($consultation['diagnosis']) ? nl2br(htmlspecialchars($consultation['diagnosis'])) : 
+                    <?= !empty($consultation['diagnosis']) ? nl2br(htmlspecialchars($consultation['diagnosis'])) :
                         '<span class="text-muted">No diagnosis recorded</span>' ?>
                 </div>
             </div>
@@ -182,7 +182,7 @@
             <div class="mb-3">
                 <div class="info-label">Treatment Plan:</div>
                 <div class="border rounded p-3">
-                    <?= !empty($consultation['treatment_plan']) ? nl2br(htmlspecialchars($consultation['treatment_plan'])) : 
+                    <?= !empty($consultation['treatment_plan']) ? nl2br(htmlspecialchars($consultation['treatment_plan'])) :
                         '<span class="text-muted">No treatment plan recorded</span>' ?>
                 </div>
             </div>
@@ -190,7 +190,7 @@
             <div class="mb-3">
                 <div class="info-label">Notes:</div>
                 <div class="border rounded p-3">
-                    <?= !empty($consultation['notes']) ? nl2br(htmlspecialchars($consultation['notes'])) : 
+                    <?= !empty($consultation['notes']) ? nl2br(htmlspecialchars($consultation['notes'])) :
                         '<span class="text-muted">No additional notes</span>' ?>
                 </div>
             </div>

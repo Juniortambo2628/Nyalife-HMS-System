@@ -1,3 +1,10 @@
+<?php
+// Check if this is an AJAX request
+$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+// If it's not an AJAX request, render the full HTML page
+if (!$isAjax):
+    ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,6 +64,10 @@
     </style>
 </head>
 <body>
+<?php endif; ?>
+
+<!-- Duplicate wrapper removed -->
+
     <div class="container py-3">
         <div class="row justify-content-center">
             <div class="col-lg-10">
@@ -66,12 +77,18 @@
                         <h2 class="mb-3"><?= isset($errorMessage) ? htmlspecialchars($errorMessage) : 'Page Not Found' ?></h2>
                         <p class="lead mb-4">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
                         <div class="d-flex justify-content-center gap-2">
-                            <a href="<?= isset($baseUrl) ? $baseUrl : '/' ?>" class="btn btn-primary">
-                                <i class="fas fa-home me-2"></i> Go to Homepage
-                            </a>
-                            <a href="javascript:history.back()" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-2"></i> Go Back
-                            </a>
+                            <?php if (isset($showBackLink) && $showBackLink): ?>
+                                <a href="<?= isset($backLink) ? $backLink : 'javascript:history.back()' ?>" class="btn btn-primary">
+                                    <i class="fas fa-arrow-left me-2"></i> <?= isset($backLinkText) ? $backLinkText : 'Go Back' ?>
+                                </a>
+                            <?php else: ?>
+                                <a href="<?= isset($baseUrl) ? $baseUrl : '/' ?>" class="btn btn-primary">
+                                    <i class="fas fa-home me-2"></i> Go to Homepage
+                                </a>
+                                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i> Go Back
+                                </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -139,8 +156,29 @@
             </div>
         </div>
     </div>
-    
+<!-- end duplicate wrapper removed -->
+
+<?php if (!$isAjax): // Close the HTML document if not an AJAX request?>
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- AJAX Navigation Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize AJAX navigation for links
+        const links = document.querySelectorAll('#main-content a[href^="<?= isset($baseUrl) ? $baseUrl : '/' ?>"]');
+        links.forEach(link => {
+            if (!link.hasAttribute('data-no-ajax')) {
+                link.addEventListener('click', function(e) {
+                    if (typeof Components !== 'undefined') {
+                        e.preventDefault();
+                        Components.loadPage(link.href);
+                    }
+                });
+            }
+        });
+    });
+    </script>
 </body>
 </html>
+<?php endif; ?>

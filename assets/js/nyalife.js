@@ -84,97 +84,6 @@ Nyalife.utils = (function() {
     };
 })();
 
-/**
- * Loader functionality
- */
-Nyalife.loader = (function() {
-    // Show the loader with optional custom message
-    const show = function(message = 'Loading...') {
-        // Use the new NyalifeLoader if available
-        if (typeof NyalifeLoader !== 'undefined') {
-            NyalifeLoader.show(message);
-            return this;
-        }
-
-        // Fallback to old implementation
-        const loader = document.getElementById('globalLoader');
-        if (!loader) return;
-
-        const messageElement = loader.querySelector('.loader-message');
-        if (messageElement && message) {
-            messageElement.textContent = message;
-        }
-
-        loader.classList.remove('d-none');
-        document.body.classList.add('overflow-hidden');
-        return this;
-    };
-
-    // Hide the loader
-    const hide = function() {
-        // Use the new NyalifeLoader if available
-        if (typeof NyalifeLoader !== 'undefined') {
-            NyalifeLoader.hide();
-            return this;
-        }
-
-        // Fallback to old implementation
-        const loader = document.getElementById('globalLoader');
-        if (!loader) return;
-
-        loader.classList.add('d-none');
-        document.body.classList.remove('overflow-hidden');
-        return this;
-    };
-
-    // Initialize loader AJAX handlers
-    const init = function() {
-        // Use the new NyalifeLoader if available
-        if (typeof NyalifeLoader !== 'undefined') {
-            NyalifeLoader.init();
-            return this;
-        }
-
-        // Fallback AJAX handling with jQuery
-        if (window.jQuery) {
-            $(document).ajaxStart(function() {
-                show();
-            });
-
-            // Hide the loader when all AJAX requests complete
-            $(document).ajaxStop(function() {
-                hide();
-            });
-
-            // Handle AJAX errors
-            $(document).ajaxError(function(event, jqXHR, settings, error) {
-                console.error('AJAX Error:', error);
-                hide();
-
-                // Show error alert if available
-                if (typeof Nyalife.alerts !== 'undefined') {
-                    Nyalife.alerts.show('error', 'An error occurred. Please try again.');
-                }
-            });
-
-            // Add form submit handler to show loader
-            $('form').on('submit', function() {
-                // Only show loader if form doesn't have 'no-loader' class
-                if (!$(this).hasClass('no-loader')) {
-                    show('Processing...');
-                }
-            });
-        }
-
-        return this;
-    };
-
-    return {
-        show,
-        hide,
-        init
-    };
-})();
 
 /**
  * Alert functionality
@@ -263,23 +172,6 @@ Nyalife.alerts = (function() {
 
     return {
         show
-    };
-})();
-
-/**
- * Hero module functionality
- */
-Nyalife.hero = (function() {
-    // Initialize hero components
-    const init = function() {
-        if (document.querySelector('.hero')) {
-            Nyalife.ui.initHeroSlider();
-            Nyalife.ui.initServiceBoxes();
-        }
-    };
-
-    return {
-        init
     };
 })();
 
@@ -548,264 +440,27 @@ Nyalife.auth = (function() {
 })();
 
 /**
- * UI functionality module
+ * Core UI functionality
  */
 Nyalife.ui = (function() {
-    /**
-     * Initialize the hero slider
-     */
-    const initHeroSlider = function() {
-        const slides = document.querySelectorAll('.hero-slide');
-        const dots = document.querySelectorAll('.hero-dot');
-        const prevBtn = document.getElementById('prev-slide');
-        const nextBtn = document.getElementById('next-slide');
-        let currentSlide = 0;
-
-        if (!slides.length || !dots.length) return;
-
-        // Function to change slide
-        const goToSlide = function(index) {
-            if (index < 0) index = slides.length - 1;
-            if (index >= slides.length) index = 0;
-
-            // Update active slide
-            slides.forEach(slide => slide.classList.remove('active'));
-            slides[index].classList.add('active');
-
-            // Update dots
-            dots.forEach(dot => dot.classList.remove('active'));
-            dots[index].classList.add('active');
-
-            // Update current slide index
-            currentSlide = index;
-
-            // Update active tooltip if updateActiveColumn function exists
-            if (typeof window.updateActiveColumn === 'function') {
-                window.updateActiveColumn(index);
-            }
-        };
-
-        // Set up navigation
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => goToSlide(currentSlide - 1));
-        }
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => goToSlide(currentSlide + 1));
-        }
-
-        // Set up dots
-        dots.forEach((dot, index) => {
-            dot.addEventListener('click', () => goToSlide(index));
-        });
-
-        // Auto-advance slides every 7 seconds
-        setInterval(() => {
-            goToSlide(currentSlide + 1);
-        }, 7000);
-    };
-
-    /**
-     * Initialize service boxes and tooltips
-     */
-    const initServiceBoxes = function() {
-        const serviceBoxes = document.querySelectorAll('.why-join-item');
-        const tooltipContents = document.querySelectorAll('.tooltip-content');
-
-        if (!serviceBoxes.length) return;
-
-        // Show tooltip content for active service box
-        window.updateActiveColumn = function(index) {
-            // Show tooltip for the active slide (1-based index)
-            const tooltipIndex = index % 4; // Ensure it loops back to first tooltip after 4th
-
-            // Hide all tooltips first
-            tooltipContents.forEach(tooltip => {
-                tooltip.style.display = 'none';
-            });
-
-            // Show the active tooltip
-            const activeTooltip = document.getElementById(`tooltip-${tooltipIndex + 1}`);
-            if (activeTooltip) {
-                activeTooltip.style.display = 'block';
-            }
-
-            // Debug logging removed to avoid console spam
-            // console.log(`Setting active tooltip to index ${tooltipIndex + 1}`);
-        };
-
-        // Set up modal service content when clicking on service boxes
-        serviceBoxes.forEach((box, index) => {
-            box.addEventListener('click', function() {
-                // Get tooltip content
-                const tooltipEl = box.querySelector('.join-tooltip');
-                const tooltipContent = tooltipEl ? tooltipEl.innerHTML : '';
-                const modalContent = document.getElementById('modalServiceContent');
-
-                if (modalContent && tooltipContent) {
-                    modalContent.innerHTML = tooltipContent;
-                }
-
-                // Set the correct background image for modal
-                const modalBg = document.querySelector('.service-modal-bg');
-                if (modalBg) {
-                    // Get any baseUrl that might be specified in the script tag
-                    let baseUrl = '';
-                    const baseUrlMeta = document.querySelector('meta[name="base-url"]');
-                    if (baseUrlMeta) {
-                        baseUrl = baseUrlMeta.getAttribute('content');
-                    }
-
-                    // Default background image path
-                    let bgImagePath = 'assets/img/gallery/';
-
-                    // Select appropriate background image based on service type
-                    switch (index) {
-                        case 0: // Obstetrics Care
-                            bgImagePath += 'Obstetrics-care.jpg';
-                            break;
-                        case 1: // Gynecology Services
-                            bgImagePath += 'Gynecology-services.jpg';
-                            break;
-                        case 2: // Lab Services
-                            bgImagePath += 'Laboratory-services.JPG';
-                            break;
-                        case 3: // Pharmacy
-                            bgImagePath += 'Pharmacy.jpg';
-                            break;
-                        default:
-                            bgImagePath += 'Obstetrics-care.jpg';
-                    }
-
-                    // Set the background image with correct base URL
-                    modalBg.style.backgroundImage = `url('${baseUrl}/${bgImagePath}')`;
-                }
-            });
-        });
-
-        // Set initial state - show first tooltip
-        window.updateActiveColumn(0);
-    };
-
-    /**
-     * Fix z-index issues with modals
-     */
-    const fixModals = function() {
-        const modalElements = document.querySelectorAll('.modal');
-        modalElements.forEach(modal => {
-            modal.style.zIndex = '1050';
-        });
-
-        const modalDialogs = document.querySelectorAll('.modal-dialog');
-        modalDialogs.forEach(dialog => {
-            dialog.style.zIndex = '1060';
-        });
-
-        const modalContents = document.querySelectorAll('.modal-content');
-        modalContents.forEach(content => {
-            content.style.background = 'rgba(255, 255, 255, 0.98)';
-            content.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)';
-        });
-
-        const modalBackdrops = document.querySelectorAll('.modal-backdrop');
-        if (modalBackdrops.length > 1) {
-            // Keep only the last backdrop if multiple exist
-            for (let i = 0; i < modalBackdrops.length - 1; i++) {
-                modalBackdrops[i].remove();
-            }
-
-            // Style the remaining backdrop
-            if (modalBackdrops[modalBackdrops.length - 1]) {
-                modalBackdrops[modalBackdrops.length - 1].style.zIndex = '1040';
-                modalBackdrops[modalBackdrops.length - 1].style.opacity = '0.7';
-            }
-        } else if (modalBackdrops.length === 1) {
-            modalBackdrops[0].style.zIndex = '1040';
-            modalBackdrops[0].style.opacity = '0.7';
-        }
-    };
-
-    /**
-     * Handle modal chaining (switching from one modal to another)
-     */
-    const handleModalChaining = function() {
-        // Add event listeners to all buttons that open modals
-        document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
-            button.addEventListener('click', function() {
-                // Small delay to ensure proper modal transition
-                setTimeout(function() {
-                    // Fix any z-index issues
-                    fixModals();
-
-                    // If there are multiple backdrops, keep only the last one
-                    const backdrops = document.querySelectorAll('.modal-backdrop');
-                    if (backdrops.length > 1) {
-                        for (let i = 0; i < backdrops.length - 1; i++) {
-                            backdrops[i].remove();
-                        }
-                    }
-                }, 50);
-            });
-        });
-    };
-
-    /**
-     * Initialize all UI components
-     */
     const init = function() {
-        // Set up modal fixes
-        document.addEventListener('show.bs.modal', fixModals);
-        document.addEventListener('shown.bs.modal', fixModals);
-
-        // Set up modal chaining
-        handleModalChaining();
-
-        // Clean up modal backdrop issues on modal hidden
-        document.addEventListener('hidden.bs.modal', function(event) {
-            // Small delay to check if another modal is being shown
-            setTimeout(function() {
-                const openModals = document.querySelectorAll('.modal.show');
-
-                // Only clean up if no modals are open
-                if (openModals.length === 0) {
-                    // Remove any lingering backdrops
-                    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
-                        backdrop.remove();
-                    });
-
-                    // Reset body styles
-                    document.body.classList.remove('modal-open');
-                    document.body.style.overflow = '';
-                    document.body.style.paddingRight = '';
-                }
-            }, 50);
+        // Initialize components when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Initializing all UI components from Nyalife.ui");
         });
     };
 
     return {
-        init,
-        initHeroSlider,
-        initServiceBoxes,
-        fixModals,
-        handleModalChaining
+        init
     };
 })();
 
-/**
- * Initialize everything when the DOM is ready
- */
+// Automatically initialize modules on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize loader
-    Nyalife.loader.init();
-
-    // Initialize UI
+    if (document.querySelector('#loginForm') || document.querySelector('#registerForm')) {
+        Nyalife.auth.init();
+    }
+    
+    // Always initialize the UI module
     Nyalife.ui.init();
-
-    // Initialize authentication handlers
-    Nyalife.auth.init();
-
-    // Initialize hero if present
-    Nyalife.hero.init();
-
-    // Make Nyalife globally available
-    window.Nyalife = Nyalife;
 });

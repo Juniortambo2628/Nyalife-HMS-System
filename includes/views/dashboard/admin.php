@@ -1,4 +1,12 @@
-<div class="container-fluid px-4 py-5">
+<?php
+/**
+ * Nyalife HMS - Admin Dashboard
+ */
+
+$showSidebar = true;
+$pageTitle = 'Admin Dashboard - Nyalife HMS';
+?>
+<div class="container-fluid page-wrapper">
     <h1 class="h3 mb-4">Administrator Dashboard</h1>
     
     <!-- Statistics Cards -->
@@ -71,6 +79,35 @@
             </div>
         </div>
     </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Appointment Overview</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area chart-container">
+                        <canvas id="appointmentTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Patient Demographics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2 chart-container">
+                        <canvas id="patientDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- Content Row -->
     <div class="row">
@@ -79,14 +116,26 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Recent Users</h6>
-                    <a href="<?= $baseUrl ?>/users" class="btn btn-sm btn-primary">View All</a>
+                    <div class="card-header-actions">
+                        <div class="btn-group-desktop">
+                            <a href="<?= $baseUrl ?>/users" class="btn btn-sm">View All</a>
+                        </div>
+                        <div class="dropdown">
+                            <button class="card-header-menu-toggle dropdown-toggle" type="button" id="usersMenuToggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="usersMenuToggle">
+                                <li><a class="dropdown-item" href="<?= $baseUrl ?>/users"><i class="fas fa-list me-2"></i> View All</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <?php if (empty($recentUsers)): ?>
                         <p class="text-center">No recent users found.</p>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
+                            <table class="table table-bordered table-hover" id="recentUsersTable">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
@@ -124,7 +173,7 @@
                         <p class="text-center">No recent patients found.</p>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
+                            <table class="table table-bordered table-hover" id="recentPatientsTable">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
@@ -145,10 +194,10 @@
                                             <td>
                                                 <?php
                                                 $dob = new DateTime($patient['date_of_birth']);
-                                                $now = new DateTime();
-                                                $age = $now->diff($dob)->y;
-                                                echo $age;
-                                                ?>
+                                        $now = new DateTime();
+                                        $age = $now->diff($dob)->y;
+                                        echo $age;
+                                        ?>
                                             </td>
                                             <td><?= htmlspecialchars($patient['phone']) ?></td>
                                         </tr>
@@ -157,6 +206,37 @@
                             </table>
                         </div>
                     <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Messages Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-gradient-primary-secondary">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-envelope me-2"></i>Recent Messages
+                    </h6>
+                    <div>
+                        <a href="<?= $baseUrl ?>/messages/compose" class="btn btn-sm btn-light me-2">
+                            <i class="fas fa-plus me-1"></i> Compose
+                        </a>
+                        <a href="<?= $baseUrl ?>/messages" class="btn btn-sm btn-outline-light">
+                            View All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="dashboard-messages-container">
+                        <div class="text-center p-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading messages...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Loading messages...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -175,7 +255,7 @@
                         <p class="text-center">No recent appointments found.</p>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
+                            <table class="table table-bordered table-hover" id="recentAppointmentsTable">
                                 <thead>
                                     <tr>
                                         <th>Patient</th>
@@ -198,24 +278,24 @@
                                             <td><?= date('h:i A', strtotime($appointment['appointment_time'])) ?></td>
                                             <td>
                                                 <?php
-                                                $statusClass = '';
-                                                switch ($appointment['status']) {
-                                                    case 'scheduled':
-                                                        $statusClass = 'bg-primary';
-                                                        break;
-                                                    case 'completed':
-                                                        $statusClass = 'bg-success';
-                                                        break;
-                                                    case 'cancelled':
-                                                        $statusClass = 'bg-danger';
-                                                        break;
-                                                    case 'pending':
-                                                        $statusClass = 'bg-warning text-dark';
-                                                        break;
-                                                    default:
-                                                        $statusClass = 'bg-secondary';
-                                                }
-                                                ?>
+                                        $statusClass = '';
+                                        switch ($appointment['status']) {
+                                            case 'scheduled':
+                                                $statusClass = 'bg-primary';
+                                                break;
+                                            case 'completed':
+                                                $statusClass = 'bg-success';
+                                                break;
+                                            case 'cancelled':
+                                                $statusClass = 'bg-danger';
+                                                break;
+                                            case 'pending':
+                                                $statusClass = 'bg-warning text-dark';
+                                                break;
+                                            default:
+                                                $statusClass = 'bg-secondary';
+                                        }
+                                        ?>
                                                 <span class="badge <?= $statusClass ?>">
                                                     <?= ucfirst($appointment['status']) ?>
                                                 </span>
@@ -266,3 +346,38 @@
         </div>
     </div>
 </div>
+
+    <!-- Bundled Assets -->
+    <link rel="stylesheet" href="<?= AssetHelper::getCss('shared') ?>">
+    <script src="<?= AssetHelper::getJs('runtime') ?>"></script>
+    <script src="<?= AssetHelper::getJs('vendors') ?>"></script>
+    <script src="<?= AssetHelper::getJs('shared') ?>"></script>
+    <script src="<?= AssetHelper::getJs('app') ?>"></script>
+    <script src="<?= AssetHelper::getJs('dashboard-admin') ?>"></script>
+    <script>
+    // Ensure dropdowns are initialized after all scripts load
+    (function() {
+        function initDropdowns() {
+            if (typeof window.bootstrap !== 'undefined' && window.bootstrap.Dropdown) {
+                const dropdowns = document.querySelectorAll('.dropdown-toggle');
+                dropdowns.forEach(function(toggle) {
+                    if (!window.bootstrap.Dropdown.getInstance(toggle)) {
+                        new window.bootstrap.Dropdown(toggle);
+                    }
+                });
+            } else {
+                setTimeout(initDropdowns, 100);
+            }
+        }
+        // Try immediately
+        if (document.readyState === 'complete') {
+            initDropdowns();
+        } else {
+            window.addEventListener('load', initDropdowns);
+        }
+        // Also try after a delay
+        setTimeout(initDropdowns, 500);
+    })();
+    </script>
+</body>
+</html>

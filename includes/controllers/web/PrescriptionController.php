@@ -1,7 +1,8 @@
 <?php
+
 /**
  * Nyalife HMS - Prescription Web Controller
- * 
+ *
  * Handles all prescription related web requests
  */
 
@@ -10,62 +11,82 @@ require_once __DIR__ . '/../../models/PrescriptionModel.php';
 require_once __DIR__ . '/../../models/PatientModel.php';
 require_once __DIR__ . '/../../models/MedicationModel.php';
 
-class PrescriptionController extends WebController {
-    private $prescriptionModel;
-    private $patientModel;
-    private $medicationModel;
-    
-    public function __construct() {
+class PrescriptionController extends WebController
+{
+    private readonly \PrescriptionModel $prescriptionModel;
+
+    private readonly \PatientModel $patientModel;
+
+    private readonly \MedicationModel $medicationModel;
+
+    /** @var bool */
+    protected $requiresLogin = true;
+
+    /** @var array */
+    protected $allowedRoles = ['doctor', 'pharmacist', 'admin'];
+
+    public function __construct()
+    {
         parent::__construct();
         $this->prescriptionModel = new PrescriptionModel();
         $this->patientModel = new PatientModel();
         $this->medicationModel = new MedicationModel();
-        
-        // Check if user is logged in
-        $this->requireLogin();
-        
-        // Only doctors, pharmacists, and admins can access these functions
-        if (!in_array($this->userRole, ['doctor', 'pharmacist', 'admin'])) {
-            $this->redirectWithError('You do not have permission to access this section', '/dashboard');
-            exit;
-        }
+        $this->pageTitle = 'Prescriptions';
     }
-    
+
     /**
      * List all prescriptions
      */
-    public function index() {
+    public function index(): void
+    {
         try {
             $status = $_GET['status'] ?? 'active';
             $patientId = isset($_GET['patient_id']) ? (int)$_GET['patient_id'] : 0;
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
             $perPage = 15;
-            
+
             // Get prescriptions based on user role
             $prescriptions = [];
             $total = 0;
-            
-            if ($this->userRole === 'admin') {
+            $userRole = SessionManager::get('role');
+            $userId = SessionManager::get('user_id');
+
+            if ($userRole === 'admin') {
                 // Admins can see all prescriptions
-                $prescriptions = $this->prescriptionModel->getAllPrescriptions($status, $patientId, $page, $perPage);
+                $filters = ['status' => $status];
+                if ($patientId !== 0) {
+                    $filters['patient_id'] = $patientId;
+                }
+                $prescriptions = $this->prescriptionModel->getAllPrescriptions($filters);
                 $total = $this->prescriptionModel->countPrescriptions($status, $patientId);
-            } elseif ($this->userRole === 'doctor') {
+            } elseif ($userRole === 'doctor') {
                 // Doctors can see prescriptions they've created
-                $prescriptions = $this->prescriptionModel->getPrescriptionsByDoctor($this->userId, $status, $patientId, $page, $perPage);
-                $total = $this->prescriptionModel->countPrescriptionsByDoctor($this->userId, $status, $patientId);
-            } elseif ($this->userRole === 'pharmacist') {
+                $prescriptions = $this->prescriptionModel->getPrescriptionsByDoctor($userId, $status, $patientId, $page, $perPage);
+                $total = $this->prescriptionModel->countPrescriptionsByDoctor($userId, $status, $patientId);
+            } elseif ($userRole === 'pharmacist') {
                 // Pharmacists can see all active prescriptions
                 $prescriptions = $this->prescriptionModel->getPrescriptionsByStatus('active', $patientId, $page, $perPage);
                 $total = $this->prescriptionModel->countPrescriptions('active', $patientId);
+            } elseif ($userRole === 'patient') {
+                // Patients can see their own prescriptions
+                $patientRecord = $this->patientModel->getPatientIdByUserId($userId);
+                if ($patientRecord) {
+                    $prescriptions = $this->prescriptionModel->getPatientPrescriptions($patientRecord);
+                    // Get total count for pagination (simplified for now)
+                    $total = count($prescriptions);
+                } else {
+                    $prescriptions = [];
+                    $total = 0;
+                }
             }
-            
+
             // Get patient details if filtered by patient
             $patient = null;
-            if ($patientId) {
+            if ($patientId !== 0) {
                 $patient = $this->patientModel->getWithUserData($patientId);
             }
-            
-            $this->render('prescriptions/index', [
+
+            $this->renderView('prescriptions/index', [
                 'prescriptions' => $prescriptions,
                 'patient' => $patient,
                 'status' => $status,
@@ -73,40 +94,41 @@ class PrescriptionController extends WebController {
                     'total' => $total,
                     'page' => $page,
                     'perPage' => $perPage,
-                    'url' => "/prescriptions?status=$status" . ($patientId ? "&patient_id=$patientId" : '') . "&page="
+                    'url' => "/prescriptions?status=$status" . ($patientId !== 0 ? "&patient_id=$patientId" : '') . "&page="
                 ]
             ]);
-            
         } catch (Exception $e) {
-            $this->handleError('Error loading prescriptions', $e);
+            $this->handleException($e);
         }
     }
-    
+
     /**
      * Show create prescription form
      */
-    public function create() {
+    public function create(): void
+    {
         try {
             $patientId = isset($_GET['patient_id']) ? (int)$_GET['patient_id'] : 0;
             $appointmentId = isset($_GET['appointment_id']) ? (int)$_GET['appointment_id'] : 0;
-            
+
             // Get patient details if provided
             $patient = null;
-            if ($patientId) {
+            if ($patientId !== 0) {
                 $patient = $this->patientModel->getWithUserData($patientId);
                 if (!$patient) {
-                    $this->redirectWithError('Patient not found', '/prescriptions');
+                    $this->setFlashMessage('error', 'Patient not found');
+                    $this->redirect('/prescriptions');
                     return;
                 }
             }
-            
+
             // Get medications for the dropdown
             $medications = $this->medicationModel->getAllMedications();
-            
+
             // Get common medications for quick add
             $commonMedications = $this->medicationModel->getCommonMedications();
-            
-            $this->render('prescriptions/form', [
+
+            $this->renderView('prescriptions/form', [
                 'patient' => $patient,
                 'appointmentId' => $appointmentId,
                 'medications' => $medications,
@@ -114,28 +136,33 @@ class PrescriptionController extends WebController {
                 'frequencies' => $this->getFrequencies(),
                 'durations' => $this->getDurations()
             ]);
-            
         } catch (Exception $e) {
-            $this->handleError('Error loading prescription form', $e);
+            $this->handleException($e);
         }
     }
-    
+
     /**
      * Store a new prescription
      */
-    public function store() {
+    public function store(): void
+    {
         try {
+            $userRole = SessionManager::get('role');
+            $userId = SessionManager::get('user_id');
+
             // Only doctors can create prescriptions
-            if ($this->userRole !== 'doctor' && $this->userRole !== 'admin') {
-                $this->jsonResponse(['success' => false, 'message' => 'You do not have permission to create prescriptions'], 403);
+            if ($userRole !== 'doctor' && $userRole !== 'admin') {
+                header('Content-Type: application/json');
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'You do not have permission to create prescriptions']);
                 return;
             }
-            
+
             // Validate input
             $required = ['patient_id', 'items'];
             $missing = [];
             $data = [];
-            
+
             foreach ($required as $field) {
                 if (empty($_POST[$field])) {
                     $missing[] = $field;
@@ -143,48 +170,61 @@ class PrescriptionController extends WebController {
                     $data[$field] = $_POST[$field];
                 }
             }
-            
-            if (!empty($missing)) {
-                $this->jsonResponse([
-                    'success' => false, 
+
+            if ($missing !== []) {
+                header('Content-Type: application/json');
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
                     'message' => 'Missing required fields: ' . implode(', ', $missing)
-                ], 400);
+                ]);
                 return;
             }
-            
+
             // Get patient details
             $patient = $this->patientModel->getWithUserData($data['patient_id']);
             if (!$patient) {
-                $this->jsonResponse(['success' => false, 'message' => 'Patient not found'], 404);
+                header('Content-Type: application/json');
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Patient not found']);
                 return;
             }
-            
+
             // Prepare prescription data
             $prescriptionData = [
                 'patient_id' => $data['patient_id'],
-                'doctor_id' => $this->userId,
-                'appointment_id' => !empty($_POST['appointment_id']) ? (int)$_POST['appointment_id'] : null,
+                'prescribed_by' => $userId,
+                'appointment_id' => empty($_POST['appointment_id']) ? null : (int)$_POST['appointment_id'],
                 'prescription_date' => date('Y-m-d H:i:s'),
                 'notes' => $_POST['notes'] ?? '',
                 'status' => 'active',
-                'created_by' => $this->userId,
                 'created_at' => date('Y-m-d H:i:s')
             ];
-            
+
             // Prepare prescription items
-            $items = json_decode($data['items'], true);
+            $items = json_decode((string) $data['items'], true);
             if (empty($items) || !is_array($items)) {
-                $this->jsonResponse(['success' => false, 'message' => 'No medication items provided'], 400);
+                header('Content-Type: application/json');
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'No medication items provided']);
                 return;
             }
-            
+
             $prescriptionData['items'] = [];
-            
+
             foreach ($items as $item) {
-                if (empty($item['medication_id']) || empty($item['dosage']) || empty($item['frequency']) || empty($item['duration'])) {
+                if (empty($item['medication_id'])) {
                     continue;
                 }
-                
+                if (empty($item['dosage'])) {
+                    continue;
+                }
+                if (empty($item['frequency'])) {
+                    continue;
+                }
+                if (empty($item['duration'])) {
+                    continue;
+                }
                 $prescriptionData['items'][] = [
                     'medication_id' => (int)$item['medication_id'],
                     'dosage' => $item['dosage'],
@@ -194,357 +234,337 @@ class PrescriptionController extends WebController {
                     'quantity' => $item['quantity'] ?? null
                 ];
             }
-            
+
             if (empty($prescriptionData['items'])) {
-                $this->jsonResponse(['success' => false, 'message' => 'No valid medication items provided'], 400);
+                header('Content-Type: application/json');
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'No valid medication items provided']);
                 return;
             }
-            
-            // Create the prescription
+
+            // Create prescription
             $prescriptionId = $this->prescriptionModel->createPrescription($prescriptionData);
-            
-            if ($prescriptionId) {
-                // Log the action
-                $this->logAction('prescription_created', [
-                    'prescription_id' => $prescriptionId,
-                    'patient_id' => $data['patient_id'],
-                    'item_count' => count($prescriptionData['items'])
-                ]);
-                
-                $this->jsonResponse([
-                    'success' => true,
-                    'message' => 'Prescription created successfully',
-                    'redirect' => '/prescriptions/view/' . $prescriptionId
-                ]);
-            } else {
-                throw new Exception('Failed to create prescription');
+
+            if (!$prescriptionId) {
+                header('Content-Type: application/json');
+                http_response_code(500);
+                echo json_encode(['success' => false, 'message' => 'Failed to create prescription']);
+                return;
             }
-            
+
+            // Return success
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'message' => 'Prescription created successfully',
+                'prescription_id' => $prescriptionId,
+                'redirect_url' => '/prescriptions/view/' . $prescriptionId
+            ]);
         } catch (Exception $e) {
-            $this->jsonResponse([
+            ErrorHandler::logSystemError($e, __METHOD__);
+            header('Content-Type: application/json');
+            http_response_code(500);
+            echo json_encode([
                 'success' => false,
-                'message' => 'Error creating prescription: ' . $e->getMessage()
-            ], 500);
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ]);
         }
     }
-    
+
     /**
      * View a prescription
+     *
+     * @param int $prescriptionId Prescription ID
      */
-    public function view($prescriptionId) {
+    public function view($prescriptionId): void
+    {
         try {
-            $prescription = $this->prescriptionModel->getPrescriptionById($prescriptionId);
-            
+            // Get prescription details with items
+            $prescription = $this->prescriptionModel->getPrescriptionWithItems($prescriptionId);
+
             if (!$prescription) {
-                $this->redirectWithError('Prescription not found', '/prescriptions');
+                $this->setFlashMessage('error', 'Prescription not found');
+                $this->redirect('/prescriptions');
                 return;
             }
-            
-            // Check permissions
+
+            // Check if user has permission to view this prescription
             if (!$this->canViewPrescription($prescription)) {
-                $this->redirectWithError('You do not have permission to view this prescription', '/prescriptions');
+                $this->showError('You do not have permission to view this prescription', 403);
                 return;
             }
-            
+
+            // Extract items from prescription data
+            $items = $prescription['items'] ?? [];
+
             // Get patient details
             $patient = $this->patientModel->getWithUserData($prescription['patient_id']);
-            
-            // Get doctor details
-            $doctor = $this->userModel->getUserById($prescription['doctor_id']);
-            
-            // Get prescription items
-            $items = $this->prescriptionModel->getPrescriptionItems($prescriptionId);
-            
-            $this->render('prescriptions/view', [
+
+            $this->renderView('prescriptions/view', [
                 'prescription' => $prescription,
-                'patient' => $patient,
-                'doctor' => $doctor,
                 'items' => $items,
-                'canEdit' => $this->canEditPrescription($prescription),
-                'canDispense' => $this->canDispensePrescription($prescription),
-                'canPrint' => true
+                'patient' => $patient
             ]);
-            
         } catch (Exception $e) {
-            $this->handleError('Error viewing prescription', $e);
+            $this->handleException($e);
         }
     }
-    
+
     /**
-     * Print prescription
+     * Print a prescription
+     *
+     * @param int $prescriptionId Prescription ID
      */
-    public function print($prescriptionId) {
+    public function print($prescriptionId): void
+    {
         try {
-            $prescription = $this->prescriptionModel->getPrescriptionById($prescriptionId);
-            
+            // Get prescription details with items
+            $prescription = $this->prescriptionModel->getPrescriptionWithItems($prescriptionId);
+
             if (!$prescription) {
-                $this->redirectWithError('Prescription not found', '/prescriptions');
+                $this->setFlashMessage('error', 'Prescription not found');
+                $this->redirect('/prescriptions');
                 return;
             }
-            
-            // Check permissions
+
+            // Check if user has permission to view this prescription
             if (!$this->canViewPrescription($prescription)) {
-                $this->redirectWithError('You do not have permission to view this prescription', '/prescriptions');
+                $this->showError('You do not have permission to view this prescription', 403);
                 return;
             }
-            
+
+            // Extract items from prescription data
+            $items = $prescription['items'] ?? [];
+
             // Get patient details
             $patient = $this->patientModel->getWithUserData($prescription['patient_id']);
-            
-            // Get doctor details
-            $doctor = $this->userModel->getUserById($prescription['doctor_id']);
-            
-            // Get prescription items
-            $items = $this->prescriptionModel->getPrescriptionItems($prescriptionId);
-            
-            $this->render('prescriptions/print', [
+
+            // Render print view with no layout
+            $this->renderView('prescriptions/print', [
                 'prescription' => $prescription,
-                'patient' => $patient,
-                'doctor' => $doctor,
                 'items' => $items,
-                'print' => true
+                'patient' => $patient
             ], 'print');
-            
         } catch (Exception $e) {
-            $this->handleError('Error printing prescription', $e);
+            $this->handleException($e);
         }
     }
-    
+
+    /**
+     * Show pending prescriptions
+     */
+    public function pending(): void
+    {
+        try {
+            $userRole = SessionManager::get('role');
+            $userId = SessionManager::get('user_id');
+
+            $prescriptions = [];
+
+            if ($userRole === 'pharmacist' || $userRole === 'admin') {
+                // Pharmacists and admins can see all pending prescriptions
+                $prescriptions = $this->prescriptionModel->getPrescriptionsByStatus('pending');
+            } elseif ($userRole === 'doctor') {
+                // Doctors can see their own pending prescriptions
+                $prescriptions = $this->prescriptionModel->getPrescriptionsByDoctor($userId, 'pending');
+            }
+
+            $this->renderView('prescriptions/pending', [
+                'prescriptions' => $prescriptions,
+                'userRole' => $userRole
+            ]);
+        } catch (Exception $e) {
+            $this->handleException($e);
+        }
+    }
+
     /**
      * Dispense a prescription
+     *
+     * @param int $id Prescription ID
      */
-    public function dispense($prescriptionId) {
+    public function dispense($id): void
+    {
         try {
+            $userRole = SessionManager::get('role');
+            $userId = SessionManager::get('user_id');
+
             // Only pharmacists can dispense prescriptions
-            if ($this->userRole !== 'pharmacist' && $this->userRole !== 'admin') {
-                $this->jsonResponse(['success' => false, 'message' => 'You do not have permission to dispense prescriptions'], 403);
+            if ($userRole !== 'pharmacist' && $userRole !== 'admin') {
+                $this->setFlashMessage('error', 'Only pharmacists can dispense prescriptions');
+                $this->redirect('/prescriptions');
                 return;
             }
-            
-            $prescription = $this->prescriptionModel->getPrescriptionById($prescriptionId);
-            
+
+            // Get prescription details
+            $prescription = $this->prescriptionModel->getPrescriptionWithItems($id);
+
             if (!$prescription) {
-                $this->jsonResponse(['success' => false, 'message' => 'Prescription not found'], 404);
+                $this->setFlashMessage('error', 'Prescription not found');
+                $this->redirect('/prescriptions');
                 return;
             }
-            
-            // Check if already dispensed
-            if ($prescription['status'] === 'dispensed') {
-                $this->jsonResponse([
-                    'success' => false, 
-                    'message' => 'This prescription has already been dispensed'
-                ], 400);
+
+            // Check if prescription is in a dispensable state
+            if ($prescription['status'] !== 'pending' && $prescription['status'] !== 'processing') {
+                $this->setFlashMessage('error', 'Prescription is not ready for dispensing');
+                $this->redirect('/prescriptions');
                 return;
             }
-            
-            // Check if expired
-            if (strtotime($prescription['valid_until']) < time()) {
-                $this->jsonResponse([
-                    'success' => false, 
-                    'message' => 'This prescription has expired and cannot be dispensed'
-                ], 400);
-                return;
-            }
-            
-            // Update prescription status
-            $success = $this->prescriptionModel->updatePrescription($prescriptionId, [
-                'status' => 'dispensed',
-                'dispensed_by' => $this->userId,
-                'dispensed_at' => date('Y-m-d H:i:s'),
-                'updated_by' => $this->userId,
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
-            
-            if ($success) {
-                // Update medication stock levels
-                $items = $this->prescriptionModel->getPrescriptionItems($prescriptionId);
-                foreach ($items as $item) {
-                    if ($item['quantity'] > 0) {
-                        $this->medicationModel->decrementStock($item['medication_id'], $item['quantity']);
-                    }
-                }
-                
-                // Log the action
-                $this->logAction('prescription_dispensed', [
-                    'prescription_id' => $prescriptionId,
-                    'patient_id' => $prescription['patient_id'],
-                    'dispensed_by' => $this->userId
-                ]);
-                
-                $this->jsonResponse([
-                    'success' => true,
-                    'message' => 'Prescription dispensed successfully',
-                    'redirect' => '/prescriptions/view/' . $prescriptionId
-                ]);
+
+            // Process the dispensing
+            $result = $this->prescriptionModel->dispensePrescription($id, $userId);
+
+            if ($result) {
+                $this->setFlashMessage('success', 'Prescription dispensed successfully');
+                $this->redirect('/prescriptions/view/' . $id);
             } else {
-                throw new Exception('Failed to dispense prescription');
+                $this->setFlashMessage('error', 'Failed to dispense prescription');
+                $this->redirect('/prescriptions');
             }
-            
         } catch (Exception $e) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Error dispensing prescription: ' . $e->getMessage()
-            ], 500);
+            $this->handleException($e);
         }
     }
-    
+
     /**
      * Cancel a prescription
+     *
+     * @param int $id Prescription ID
      */
-    public function cancel($prescriptionId) {
+    public function cancel($id): void
+    {
         try {
-            // Only doctors and admins can cancel prescriptions
-            if ($this->userRole !== 'doctor' && $this->userRole !== 'admin') {
-                $this->jsonResponse(['success' => false, 'message' => 'You do not have permission to cancel prescriptions'], 403);
-                return;
-            }
-            
-            $prescription = $this->prescriptionModel->getPrescriptionById($prescriptionId);
-            
+            $userRole = SessionManager::get('role');
+            $userId = SessionManager::get('user_id');
+
+            // Get prescription details
+            $prescription = $this->prescriptionModel->getPrescriptionWithItems($id);
+
             if (!$prescription) {
-                $this->jsonResponse(['success' => false, 'message' => 'Prescription not found'], 404);
+                $this->setFlashMessage('error', 'Prescription not found');
+                $this->redirect('/prescriptions');
                 return;
             }
-            
-            // Check if already cancelled or dispensed
-            if ($prescription['status'] === 'cancelled') {
-                $this->jsonResponse([
-                    'success' => false, 
-                    'message' => 'This prescription is already cancelled'
-                ], 400);
+
+            // Check permissions
+            if (!$this->canCancelPrescription($prescription, $userRole, $userId)) {
+                $this->setFlashMessage('error', 'You do not have permission to cancel this prescription');
+                $this->redirect('/prescriptions');
                 return;
             }
-            
-            if ($prescription['status'] === 'dispensed') {
-                $this->jsonResponse([
-                    'success' => false, 
-                    'message' => 'Cannot cancel a dispensed prescription'
-                ], 400);
-                return;
-            }
-            
-            // Update prescription status
-            $success = $this->prescriptionModel->updatePrescription($prescriptionId, [
-                'status' => 'cancelled',
-                'cancelled_by' => $this->userId,
-                'cancelled_at' => date('Y-m-d H:i:s'),
-                'cancellation_reason' => $_POST['reason'] ?? 'No reason provided',
-                'updated_by' => $this->userId,
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
-            
-            if ($success) {
-                // Log the action
-                $this->logAction('prescription_cancelled', [
-                    'prescription_id' => $prescriptionId,
-                    'patient_id' => $prescription['patient_id'],
-                    'cancelled_by' => $this->userId,
-                    'reason' => $_POST['reason'] ?? 'No reason provided'
-                ]);
-                
-                $this->jsonResponse([
-                    'success' => true,
-                    'message' => 'Prescription cancelled successfully',
-                    'redirect' => '/prescriptions/view/' . $prescriptionId
-                ]);
+
+            // Cancel the prescription
+            $result = $this->prescriptionModel->cancelPrescription($id, 'Cancelled by user', $userId);
+
+            if ($result) {
+                $this->setFlashMessage('success', 'Prescription cancelled successfully');
+                $this->redirect('/prescriptions');
             } else {
-                throw new Exception('Failed to cancel prescription');
+                $this->setFlashMessage('error', 'Failed to cancel prescription');
+                $this->redirect('/prescriptions');
             }
-            
         } catch (Exception $e) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => 'Error cancelling prescription: ' . $e->getMessage()
-            ], 500);
+            $this->handleException($e);
         }
     }
-    
+
     /**
-     * Check if current user can view a prescription
+     * Helper method to check if user can view a prescription
+     *
+     * @param array $prescription Prescription data
+     * @return bool True if user can view
      */
-    private function canViewPrescription($prescription) {
+    private function canViewPrescription(array $prescription)
+    {
+        $userRole = SessionManager::get('role');
+        $userId = SessionManager::get('user_id');
+
         // Admins can view all prescriptions
-        if ($this->userRole === 'admin') {
+        if ($userRole === 'admin') {
             return true;
         }
-        
+
         // Doctors can view prescriptions they created
-        if ($this->userRole === 'doctor' && $prescription['doctor_id'] == $this->userId) {
+        if ($userRole === 'doctor' && $prescription['created_by'] == $userId) {
             return true;
         }
-        
+
         // Pharmacists can view active prescriptions
-        if ($this->userRole === 'pharmacist' && $prescription['status'] === 'active') {
+        if ($userRole === 'pharmacist' && $prescription['status'] === 'active') {
             return true;
         }
-        
-        return false;
+        // Patients can view their own prescriptions
+        return $userRole === 'patient' && $prescription['patient_id'] == $userId;
     }
-    
+
     /**
-     * Check if current user can edit a prescription
+     * Check if user can cancel a prescription
+     *
+     * @param array $prescription Prescription data
+     * @param string $userRole User role
+     * @param int $userId User ID
+     * @return bool
      */
-    private function canEditPrescription($prescription) {
-        // Only active prescriptions can be edited
-        if ($prescription['status'] !== 'active') {
-            return false;
+    private function canCancelPrescription(array $prescription, $userRole, $userId)
+    {
+        // Admins can cancel any prescription
+        if ($userRole === 'admin') {
+            return true;
         }
-        
-        // Only the prescribing doctor or admin can edit
-        return ($this->userRole === 'admin' || 
-               ($this->userRole === 'doctor' && $prescription['doctor_id'] == $this->userId));
-    }
-    
-    /**
-     * Check if current user can dispense a prescription
-     */
-    private function canDispensePrescription($prescription) {
-        // Only active prescriptions can be dispensed
-        if ($prescription['status'] !== 'active') {
-            return false;
+
+        // Doctors can cancel their own prescriptions if they're still pending
+        if ($userRole === 'doctor' && $prescription['doctor_id'] == $userId && $prescription['status'] === 'pending') {
+            return true;
         }
-        
-        // Only pharmacists and admins can dispense
-        return ($this->userRole === 'pharmacist' || $this->userRole === 'admin');
+        // Pharmacists can cancel prescriptions they're processing
+        return $userRole === 'pharmacist' && $prescription['pharmacist_id'] == $userId && $prescription['status'] === 'processing';
     }
-    
+
     /**
-     * Get frequency options for prescriptions
+     * Get common frequencies for medications
+     *
+     * @return array List of frequencies
      */
-    private function getFrequencies() {
+    private function getFrequencies(): array
+    {
         return [
-            'OD' => 'Once daily',
-            'BD' => 'Twice daily',
-            'TDS' => 'Three times daily',
-            'QID' => 'Four times daily',
-            'Q4H' => 'Every 4 hours',
-            'Q6H' => 'Every 6 hours',
-            'Q8H' => 'Every 8 hours',
-            'Q12H' => 'Every 12 hours',
-            'QOD' => 'Every other day',
-            'QW' => 'Once weekly',
-            'PRN' => 'As needed',
-            'STAT' => 'Immediately, then as directed'
+            'once_daily' => 'Once daily',
+            'twice_daily' => 'Twice daily (BID)',
+            'three_times_daily' => 'Three times daily (TID)',
+            'four_times_daily' => 'Four times daily (QID)',
+            'every_morning' => 'Every morning (QAM)',
+            'every_night' => 'Every night (QHS)',
+            'every_6_hours' => 'Every 6 hours (q6h)',
+            'every_8_hours' => 'Every 8 hours (q8h)',
+            'every_12_hours' => 'Every 12 hours (q12h)',
+            'as_needed' => 'As needed (PRN)',
+            'with_meals' => 'With meals',
+            'before_meals' => 'Before meals',
+            'after_meals' => 'After meals',
+            'other' => 'Other (specify in instructions)'
         ];
     }
-    
+
     /**
-     * Get duration options for prescriptions
+     * Get common durations for medications
+     *
+     * @return array List of durations
      */
-    private function getDurations() {
+    private function getDurations(): array
+    {
         return [
-            '1 day' => '1 day',
-            '3 days' => '3 days',
-            '5 days' => '5 days',
-            '1 week' => '1 week',
-            '2 weeks' => '2 weeks',
-            '1 month' => '1 month',
-            '3 months' => '3 months',
-            '6 months' => '6 months',
-            '12 months' => '12 months',
-            'Ongoing' => 'Ongoing',
-            'Until finished' => 'Until finished',
-            'PRN' => 'As needed'
+            '3_days' => '3 days',
+            '5_days' => '5 days',
+            '7_days' => '7 days',
+            '10_days' => '10 days',
+            '14_days' => '14 days',
+            '21_days' => '21 days',
+            '30_days' => '30 days',
+            '60_days' => '60 days',
+            '90_days' => '90 days',
+            'indefinite' => 'Indefinite/Chronic',
+            'other' => 'Other (specify in instructions)'
         ];
     }
 }

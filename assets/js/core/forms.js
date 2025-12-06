@@ -292,7 +292,10 @@ const NyalifeForms = (function() {
             // Fallback if NyalifeAPI is not available
             return new Promise((resolve, reject) => {
                 // Show loader if available
-                if (settings.showLoader !== false && window.NyalifeLoader) {
+                // Don't show loader on dashboard pages
+                const isDashboard = document.body.classList.contains('dashboard-page') || 
+                                   document.body.classList.contains('has-sidebar');
+                if (settings.showLoader !== false && window.NyalifeLoader && !isDashboard) {
                     NyalifeLoader.show(settings.loaderMessage || 'Submitting...');
                 }
                 

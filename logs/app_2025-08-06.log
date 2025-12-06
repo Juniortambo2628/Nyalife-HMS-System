@@ -1,0 +1,3 @@
+[2025-08-06 20:21:30] [ERROR] [System error in WebRouter::dispatch] Unknown database 'nyalife_hms_prod'
+[2025-08-06 20:24:35] [ERROR] [System error in WebRouter::dispatch] Unknown database 'nyalife_hms_prod'
+[2025-08-06 22:56:11] [ERROR] [Database error in PatientModel::createPatient] Failed to create user record

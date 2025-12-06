@@ -8,22 +8,85 @@ use Dotenv\Dotenv;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+// Auto-detect environment
+function detectEnvironment() {
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    $serverName = $_SERVER['SERVER_NAME'] ?? '';
+    
+    // Check if we're in production
+    if ($host === 'www.nyalifewomensclinic.net' || $host === 'nyalifewomensclinic.net') {
+        return 'production';
+    }
+    
+    // Check if we're in local development
+    if ($host === 'localhost' || strpos($host, '127.0.0.1') !== false || strpos($host, '.local') !== false) {
+        return 'development';
+    }
+    
+    // If no server variables are available (CLI), default to development
+    if (empty($host) && empty($serverName)) {
+        return 'development';
+    }
+    
+    // Default to production for safety
+    return 'production';
+}
+
+$environment = detectEnvironment();
+
+// Set environment variable for constants.php
+$_ENV['APP_ENV'] = $environment;
+
 // Load .env variables only once
 if (!isset($_ENV['APP_NAME'])) {
-    $dotenv = Dotenv::createImmutable(__DIR__);
-    $dotenv->load();
-    $dotenv->required(['DB_HOST', 'DB_USER', 'DB_NAME']);
+    try {
+        $dotenv = Dotenv::createImmutable(__DIR__);
+        $dotenv->load();
+        $dotenv->required(['DB_HOST', 'DB_USER', 'DB_NAME']);
+    } catch (Exception $e) {
+        // If .env file doesn't exist, try to load from env.production
+        if (file_exists(__DIR__ . '/env.production')) {
+            $envContent = file_get_contents(__DIR__ . '/env.production');
+            $lines = explode("\n", $envContent);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (!empty($line) && strpos($line, '#') !== 0) {
+                    $parts = explode('=', $line, 2);
+                    if (count($parts) === 2) {
+                        $key = trim($parts[0]);
+                        $value = trim($parts[1], '"\'');
+                        $_ENV[$key] = $value;
+                        putenv("$key=$value");
+                    }
+                }
+            }
+        } else {
+            // Set default production values if no env files exist
+            $_ENV['APP_NAME'] = 'Nyalife HMS';
+            $_ENV['APP_ENV'] = 'production';
+            $_ENV['APP_DEBUG'] = 'false';
+            $_ENV['DB_HOST'] = 'localhost';
+            $_ENV['DB_NAME'] = 'nyalifew_hms_prod';
+            $_ENV['DB_USER'] = 'nyalifew_admin_prod';
+            $_ENV['DB_PASS'] = 'NYALIFEADMIN123';
+            $_ENV['APP_URL'] = 'https://www.nyalifewomensclinic.net';
+        }
+    }
 }
 
 // Load constants
 require_once __DIR__ . '/constants.php';
 
-// Debug mode - set to true to enable debugging features
-define('DEBUG_MODE', true); // Set to false in production
+// Set debug mode based on environment
+if (!defined('DEBUG_MODE')) {
+    define('DEBUG_MODE', $environment === 'development');
+}
 
-// Error reporting
-error_reporting(E_ALL);
-ini_set('display_errors', DEBUG_MODE ? 1 : 0);
+// Debug mode is now properly set based on environment
+
+// Error reporting based on environment
+error_reporting($environment === 'development' ? E_ALL : 0);
+ini_set('display_errors', $environment === 'development' ? 1 : 0);
 ini_set('log_errors', 1);
 ini_set('error_log', ERROR_LOG_PATH);
 

@@ -1,0 +1,46 @@
+/* Doctor Dashboard Styles */
+.dashboard-doctor .message-item {
+    transition: background-color 0.2s ease;
+}
+
+.dashboard-doctor .message-item:hover {
+    background-color: var(--bs-gray-50, #f8f9fa);
+}
+
+.dashboard-doctor .message-item.unread {
+    background-color: rgba(32, 201, 151, 0.05);
+}
+
+.dashboard-doctor .message-item.unread:hover {
+    background-color: rgba(32, 201, 151, 0.1);
+}
+
+.dashboard-doctor .message-item:last-child {
+    border-bottom: none !important;
+}
+
+.dashboard-doctor .message-avatar .rounded-circle {
+    background: linear-gradient(135deg, var(--primary-color, #20c997) 0%, var(--secondary-color, #e91e63) 100%) !important;
+    font-weight: 600;
+}
+
+.dashboard-doctor .message-indicator {
+    background-color: var(--info, #0dcaf0) !important;
+}
+
+/* Dashboard card header gradient */
+.dashboard-doctor .card-header[style*="gradient"] {
+    border-bottom: none;
+}
+
+.dashboard-doctor .card-header[style*="gradient"] .btn-light {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.9);
+    color: var(--primary-color, #20c997);
+}
+
+.dashboard-doctor .card-header[style*="gradient"] .btn-light:hover {
+    background-color: white;
+    border-color: white;
+}
+

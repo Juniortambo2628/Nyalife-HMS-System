@@ -1,0 +1,7 @@
+[2025-07-05 14:31:39] [ERROR] [System error in WebRouter::dispatch] Unknown database 'nyalife_hms'
+[2025-07-05 14:32:31] [ERROR] [System error in WebRouter::dispatch] Unknown database 'nyalife_hms'
+[2025-07-05 14:32:49] [ERROR] [System error in WebRouter::dispatch] Unknown database 'nyalife_hms'
+[2025-07-05 14:33:04] [ERROR] [System error in WebRouter::dispatch] Unknown database 'nyalife_hms'
+[2025-07-05 14:52:27] [ERROR] [System error in WebRouter::dispatch] Unknown database 'nyalife_hms'
+[2025-07-05 22:52:40] [ERROR] [Database error in UserModel::update] Unknown column 'current_password' in 'field list'
+[2025-07-05 22:52:40] [ERROR] [System error in UserController::updateProfile] Failed to update profile

@@ -1,0 +1,62 @@
+/* Dashboard specific styles */
+
+.chart-container {
+    height: 320px;
+    position: relative;
+}
+
+.img-max-150 {
+    max-width: 150px;
+}
+
+.img-max-250 {
+    max-width: 250px;
+}
+
+.bg-gradient-primary-secondary {
+    background: linear-gradient(135deg, var(--primary-color, #20c997) 0%, var(--secondary-color, #e91e63) 100%);
+    color: white;
+}
+
+.error-placeholder-icon {
+    display: block;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* Ensure charts are responsive */
+.chart-area canvas,
+.chart-pie canvas {
+    max-width: 100%;
+}
+
+.profile-img-lg {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+}
+
+.profile-placeholder-lg {
+    width: 150px;
+    height: 150px;
+    font-size: 3rem;
+}
+
+.img-max-200 {
+    max-width: 200px;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    .print-text-right {
+        text-align: right;
+    }
+    .print-text-center {
+        text-align: center;
+    }
+    .print-mt-20 {
+        margin-top: 20px;
+    }
+}

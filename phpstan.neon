@@ -1,0 +1,20 @@
+parameters:
+    level: 5
+    paths:
+        - includes/
+    excludePaths:
+        - includes/vendor/
+        - includes/tests/
+        - includes/views/**
+    tmpDir: .phpstan-cache
+    memoryLimitFile: 256M
+    ignoreErrors:
+        - '#Class .* located in .* does not comply with psr-4#'
+        - '#PHPDoc tag @param.*has invalid value#'
+        -
+            identifier: missingType.iterableValue
+        # Suppress "property never read" warnings for models initialized but used dynamically
+        - '#Property .*::\$\w+ is never read, only written#'
+        # Suppress unused method warnings (methods may be called dynamically)
+        - '#Method .*::\w+\(\) is unused#'
+

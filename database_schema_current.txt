@@ -1,0 +1,715 @@
+=== Nyalife HMS Database Schema Analysis ===
+
+Total Tables: 44
+
+Tables:
+activity_logs
+appointments
+audit_logs
+consultations
+departments
+doctors
+email_queue
+follow_ups
+invoice_items
+invoices
+lab_attachments
+lab_parameters
+lab_requests
+lab_results
+lab_samples
+lab_test_items
+lab_test_parameters
+lab_test_requests
+lab_test_types
+medical_history
+medication_batches
+medication_categories
+medications
+messages
+notifications
+obstetric_history
+password_reset_tokens
+patients
+payment_transactions
+payments
+pregnancy_details
+prescription_items
+prescriptions
+referrals
+remember_tokens
+roles
+services
+settings
+specializations
+staff
+system_notifications
+user_tokens
+users
+vital_signs
+
+
+=== Detailed Schema ===
+
+TABLE: activity_logs
+--------------------------------------------------------------------------------
+  activity_id                    int                  KEY:PRI NOT NULL
+  user_id                        int                  KEY:MUL NOT NULL
+  action                         varchar(100)         KEY:MUL NOT NULL
+  description                    text                  NULL
+  created_at                     timestamp            KEY:MUL NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: appointments
+--------------------------------------------------------------------------------
+  appointment_id                 int                  KEY:PRI NOT NULL
+  patient_id                     int                  KEY:MUL NOT NULL
+  doctor_id                      int                  KEY:MUL NOT NULL
+  appointment_date               date                  NOT NULL
+  appointment_time               time                  NOT NULL
+  end_time                       time                  NOT NULL
+  status                         enum('scheduled','completed','cancelled','no_show')  NOT NULL DEFAULT:scheduled
+  appointment_type               enum('new_visit','follow_up','emergency','routine_checkup','consultation')  NOT NULL
+  reason                         text                  NULL
+  notes                          text                  NULL
+  created_by                     int                  KEY:MUL NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: audit_logs
+--------------------------------------------------------------------------------
+  log_id                         int                  KEY:PRI NOT NULL
+  user_id                        int                  KEY:MUL NULL
+  action                         varchar(50)           NOT NULL
+  entity_type                    varchar(50)           NOT NULL
+  entity_id                      int                   NULL
+  description                    text                  NOT NULL
+  old_values                     text                  NULL
+  new_values                     text                  NULL
+  ip_address                     varchar(45)           NULL
+  user_agent                     text                  NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: consultations
+--------------------------------------------------------------------------------
+  consultation_id                int                  KEY:PRI NOT NULL
+  appointment_id                 int                  KEY:MUL NULL
+  is_walk_in                     tinyint(1)            NOT NULL DEFAULT:0
+  patient_id                     int                  KEY:MUL NOT NULL
+  doctor_id                      int                  KEY:MUL NOT NULL
+  consultation_date              datetime              NOT NULL
+  chief_complaint                text                  NULL
+  history_present_illness        text                  NULL
+  past_medical_history           text                  NULL
+  family_history                 text                  NULL
+  social_history                 text                  NULL
+  obstetric_history              text                  NULL
+  gynecological_history          text                  NULL
+  menstrual_history              text                  NULL
+  contraceptive_history          text                  NULL
+  sexual_history                 text                  NULL
+  review_of_systems              text                  NULL
+  physical_examination           text                  NULL
+  vital_signs                    text                  NULL
+  diagnosis                      text                  NOT NULL
+  treatment_plan                 text                  NULL
+  follow_up_instructions         text                  NULL
+  notes                          text                  NULL
+  consultation_status            enum('open','closed','pending','referred')  NOT NULL DEFAULT:open
+  created_by                     int                  KEY:MUL NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  diagnosis_confidence           varchar(32)           NULL
+  differential_diagnosis         text                  NULL
+  diagnostic_plan                text                  NULL
+  general_examination            text                  NULL
+  systems_examination            text                  NULL
+  clinical_summary               text                  NULL
+  parity                         int                   NULL
+  current_pregnancy              text                  NULL
+  past_obstetric                 text                  NULL
+  surgical_history               text                  NULL
+
+TABLE: departments
+--------------------------------------------------------------------------------
+  department_id                  int                  KEY:PRI NOT NULL
+  department_name                varchar(100)         KEY:UNI NOT NULL
+  description                    text                  NULL
+  is_active                      tinyint(1)            NOT NULL DEFAULT:1
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  code                           varchar(10)           NULL
+  type                           enum('clinical','administrative','support')  NULL DEFAULT:clinical
+  head_name                      varchar(100)          NULL
+  head_position                  varchar(100)          NULL
+  head_image                     varchar(255)          NULL
+
+TABLE: doctors
+--------------------------------------------------------------------------------
+  doctor_id                      int                  KEY:PRI NOT NULL
+  staff_id                       int                  KEY:MUL NOT NULL
+  department_id                  int                  KEY:MUL NOT NULL
+  specialization_id              int                  KEY:MUL NOT NULL
+  license_number                 varchar(50)           NOT NULL
+  consultation_fee               decimal(10,2)         NULL DEFAULT:0.00
+  availability_schedule          text                  NULL
+  biography                      text                  NULL
+  is_active                      tinyint(1)            NOT NULL DEFAULT:1
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: email_queue
+--------------------------------------------------------------------------------
+  id                             int                  KEY:PRI NOT NULL
+  email                          varchar(255)          NOT NULL
+  type                           enum('appointment_confirmation','appointment_reminder','password_reset','welcome') KEY:MUL NOT NULL
+  reference_id                   int                   NULL
+  subject                        varchar(500)          NULL
+  body                           text                  NULL
+  template                       varchar(100)          NULL
+  status                         enum('pending','processing','sent','failed') KEY:MUL NULL DEFAULT:pending
+  priority                       tinyint              KEY:MUL NULL DEFAULT:5
+  attempts                       int                   NULL DEFAULT:0
+  max_attempts                   int                   NULL DEFAULT:3
+  error_message                  text                  NULL
+  scheduled_at                   datetime             KEY:MUL NULL
+  processed_at                   datetime              NULL
+  created_at                     datetime             KEY:MUL NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     datetime              NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: follow_ups
+--------------------------------------------------------------------------------
+  follow_up_id                   int                  KEY:PRI NOT NULL
+  patient_id                     int                  KEY:MUL NOT NULL
+  consultation_id                int                  KEY:MUL NOT NULL
+  follow_up_date                 date                  NOT NULL
+  follow_up_type                 varchar(50)           NULL
+  reason                         text                  NOT NULL
+  status                         enum('scheduled','completed','cancelled','no_show')  NOT NULL DEFAULT:scheduled
+  notes                          text                  NULL
+  created_by                     int                  KEY:MUL NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: invoice_items
+--------------------------------------------------------------------------------
+  item_id                        int                  KEY:PRI NOT NULL
+  invoice_id                     int                  KEY:MUL NOT NULL
+  item_type                      enum('service','medication','lab_test','procedure','other')  NOT NULL
+  item_id_ref                    int                   NULL
+  description                    varchar(255)          NOT NULL
+  quantity                       int                   NOT NULL DEFAULT:1
+  unit_price                     decimal(10,2)         NOT NULL
+  total_price                    decimal(10,2)         NOT NULL
+  discount                       decimal(10,2)         NULL DEFAULT:0.00
+  tax                            decimal(10,2)         NULL DEFAULT:0.00
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: invoices
+--------------------------------------------------------------------------------
+  invoice_id                     int                  KEY:PRI NOT NULL
+  patient_id                     int                  KEY:MUL NOT NULL
+  consultation_id                int                  KEY:MUL NULL
+  invoice_number                 varchar(20)          KEY:UNI NOT NULL
+  invoice_date                   date                  NOT NULL
+  due_date                       date                  NOT NULL
+  total_amount                   decimal(10,2)         NOT NULL
+  discount                       decimal(10,2)         NULL DEFAULT:0.00
+  tax                            decimal(10,2)         NULL DEFAULT:0.00
+  status                         enum('pending','paid','partially_paid','cancelled','overdue')  NOT NULL DEFAULT:pending
+  payment_method                 varchar(50)           NULL
+  insurance_claim_id             varchar(50)           NULL
+  insurance_coverage             decimal(10,2)         NULL DEFAULT:0.00
+  patient_responsibility         decimal(10,2)         NULL DEFAULT:0.00
+  notes                          text                  NULL
+  created_by                     int                  KEY:MUL NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  doctor_id                      int                  KEY:MUL NULL
+
+TABLE: lab_attachments
+--------------------------------------------------------------------------------
+  id                             int                  KEY:PRI NOT NULL
+  sample_id                      int                  KEY:MUL NOT NULL
+  file_name                      varchar(255)          NOT NULL
+  file_path                      varchar(500)          NOT NULL
+  file_type                      varchar(50)           NOT NULL
+  file_size                      int                   NOT NULL
+  uploaded_by                    int                  KEY:MUL NOT NULL
+  uploaded_at                    datetime              NOT NULL
+  description                    text                  NULL
+  comment                        text                  NULL
+  is_active                      tinyint(1)           KEY:MUL NOT NULL DEFAULT:1
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: lab_parameters
+--------------------------------------------------------------------------------
+  parameter_id                   int                  KEY:PRI NOT NULL
+  test_type_id                   int                  KEY:MUL NOT NULL
+  parameter_name                 varchar(100)          NOT NULL
+  description                    text                  NULL
+  normal_range                   varchar(100)          NULL
+  units                          varchar(20)           NULL
+  display_order                  int                   NULL DEFAULT:0
+  is_active                      tinyint(1)            NULL DEFAULT:1
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: lab_requests
+--------------------------------------------------------------------------------
+  request_id                     int                  KEY:PRI NOT NULL
+  patient_id                     int                  KEY:MUL NOT NULL
+  consultation_id                int                  KEY:MUL NULL
+  requested_by                   int                  KEY:MUL NOT NULL
+  assigned_to                    int                  KEY:MUL NULL
+  sample_collected_by            int                  KEY:MUL NULL
+  request_date                   datetime              NOT NULL
+  completed_at                   datetime              NULL
+  status                         enum('pending','processing','completed','cancelled')  NOT NULL DEFAULT:pending
+  priority                       enum('routine','urgent','stat')  NOT NULL DEFAULT:routine
+  notes                          text                  NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: lab_results
+--------------------------------------------------------------------------------
+  id                             int                  KEY:PRI NOT NULL
+  sample_id                      int                  KEY:MUL NOT NULL
+  parameter_id                   int                  KEY:MUL NOT NULL
+  result_value                   varchar(255)          NOT NULL
+  is_abnormal                    tinyint(1)            NOT NULL DEFAULT:0
+  recorded_by                    int                  KEY:MUL NOT NULL
+  recorded_at                    datetime              NOT NULL
+  notes                          text                  NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: lab_samples
+--------------------------------------------------------------------------------
+  id                             int                  KEY:PRI NOT NULL
+  sample_id                      varchar(20)          KEY:UNI NOT NULL
+  patient_id                     int                  KEY:MUL NOT NULL
+  test_type_id                   int                  KEY:MUL NOT NULL
+  sample_type                    varchar(50)           NOT NULL
+  collected_date                 date                  NOT NULL
+  collected_by                   int                  KEY:MUL NOT NULL
+  collected_at                   datetime              NOT NULL
+  status                         enum('registered','in_progress','pending_results','completed','cancelled') KEY:MUL NOT NULL DEFAULT:registered
+  completed_by                   int                  KEY:MUL NULL
+  completed_at                   datetime              NULL
+  notes                          text                  NULL
+  urgent                         tinyint(1)            NOT NULL DEFAULT:0
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: lab_test_items
+--------------------------------------------------------------------------------
+  test_item_id                   int                  KEY:PRI NOT NULL
+  request_id                     int                  KEY:MUL NOT NULL
+  test_type_id                   int                  KEY:MUL NOT NULL
+  parameter_id                   int                  KEY:MUL NULL
+  status                         enum('pending','processing','completed','cancelled')  NOT NULL DEFAULT:pending
+  result                         text                  NULL
+  result_value                   varchar(100)          NULL
+  result_interpretation          varchar(50)           NULL
+  normal_range                   varchar(100)          NULL
+  units                          varchar(20)           NULL
+  notes                          text                  NULL
+  report_file                    varchar(255)          NULL
+  performed_by                   int                  KEY:MUL NULL
+  verified_by                    int                  KEY:MUL NULL
+  performed_at                   datetime              NULL
+  sample_collected_at            datetime              NULL
+  sample_received_at             datetime              NULL
+  sample_reported_at             datetime              NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: lab_test_parameters
+--------------------------------------------------------------------------------
+  parameter_id                   int                  KEY:PRI NOT NULL
+  test_id                        int                  KEY:MUL NOT NULL
+  parameter_name                 varchar(100)          NOT NULL
+  unit                           varchar(50)           NULL
+  reference_range                varchar(100)          NULL
+  sequence                       int                   NOT NULL DEFAULT:1
+  is_active                      tinyint(1)            NOT NULL DEFAULT:1
+  created_by                     int                  KEY:MUL NOT NULL
+  created_at                     datetime              NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     datetime              NULL
+
+TABLE: lab_test_requests
+--------------------------------------------------------------------------------
+  request_id                     int                  KEY:PRI NOT NULL
+  patient_id                     int                  KEY:MUL NOT NULL
+  consultation_id                int                  KEY:MUL NULL
+  requested_by                   int                  KEY:MUL NOT NULL
+  assigned_to                    int                  KEY:MUL NULL
+  sample_collected_by            int                  KEY:MUL NULL
+  request_date                   datetime              NOT NULL
+  completed_at                   datetime              NULL
+  status                         enum('pending','processing','completed','cancelled')  NOT NULL DEFAULT:pending
+  priority                       enum('routine','urgent','stat')  NOT NULL DEFAULT:routine
+  notes                          text                  NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: lab_test_types
+--------------------------------------------------------------------------------
+  test_type_id                   int                  KEY:PRI NOT NULL
+  test_name                      varchar(100)          NOT NULL
+  description                    text                  NULL
+  category                       varchar(50)           NULL
+  price                          decimal(10,2)         NOT NULL
+  normal_range                   text                  NULL
+  units                          varchar(20)           NULL
+  is_active                      tinyint(1)            NULL DEFAULT:1
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: medical_history
+--------------------------------------------------------------------------------
+  history_id                     int                  KEY:PRI NOT NULL
+  patient_id                     int                  KEY:MUL NOT NULL
+  history_type                   enum('surgery','illness','injury','allergy','immunization','medication','family','pregnancy','childbirth')  NOT NULL
+  description                    text                  NOT NULL
+  date_occurred                  date                  NULL
+  end_date                       date                  NULL
+  is_ongoing                     tinyint(1)            NULL DEFAULT:0
+  treatment                      text                  NULL
+  notes                          text                  NULL
+  recorded_by                    int                  KEY:MUL NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: medication_batches
+--------------------------------------------------------------------------------
+  batch_id                       int                  KEY:PRI NOT NULL
+  medication_id                  int                   NOT NULL
+  batch_number                   varchar(50)           NOT NULL
+  quantity                       decimal(10,2)         NOT NULL
+  unit_cost                      decimal(10,2)         NULL DEFAULT:0.00
+  selling_price                  decimal(10,2)         NULL DEFAULT:0.00
+  manufacturing_date             date                  NULL
+  expiry_date                    date                  NULL
+  supplier_id                    int                   NULL
+  notes                          text                  NULL
+  created_by                     int                   NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: medication_categories
+--------------------------------------------------------------------------------
+  category_id                    int                  KEY:PRI NOT NULL
+  category_name                  varchar(100)         KEY:UNI NOT NULL
+  description                    text                  NULL
+  is_active                      tinyint(1)            NOT NULL DEFAULT:1
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: medications
+--------------------------------------------------------------------------------
+  medication_id                  int                  KEY:PRI NOT NULL
+  medication_name                varchar(100)         KEY:UNI NOT NULL
+  generic_name                   varchar(100)          NULL
+  medication_type                varchar(50)           NULL
+  form                           varchar(50)           NULL
+  strength                       varchar(50)           NULL
+  unit                           varchar(20)           NULL
+  manufacturer                   varchar(100)          NULL
+  price                          decimal(10,2)         NULL
+  stock_quantity                 int                   NULL DEFAULT:0
+  description                    text                  NULL
+  side_effects                   text                  NULL
+  contraindications              text                  NULL
+  is_active                      tinyint(1)            NULL DEFAULT:1
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: messages
+--------------------------------------------------------------------------------
+  message_id                     int                  KEY:PRI NOT NULL
+  sender_id                      int                  KEY:MUL NOT NULL
+  recipient_id                   int                  KEY:MUL NOT NULL
+  subject                        varchar(255)          NOT NULL
+  message                        text                  NOT NULL
+  priority                       enum('low','normal','high') KEY:MUL NULL DEFAULT:normal
+  is_read                        tinyint(1)            NULL DEFAULT:0
+  is_archived                    tinyint(1)           KEY:MUL NULL DEFAULT:0
+  is_deleted                     tinyint(1)           KEY:MUL NULL DEFAULT:0
+  created_at                     timestamp            KEY:MUL NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  archived_at                    timestamp             NULL
+  deleted_at                     timestamp             NULL
+
+TABLE: notifications
+--------------------------------------------------------------------------------
+  notification_id                int                  KEY:PRI NOT NULL
+  user_id                        int                  KEY:MUL NOT NULL
+  title                          varchar(255)          NOT NULL
+  message                        text                  NOT NULL
+  notification_type              varchar(50)           NOT NULL
+  reference_id                   int                   NULL
+  reference_type                 varchar(50)           NULL
+  is_read                        tinyint(1)            NOT NULL DEFAULT:0
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: obstetric_history
+--------------------------------------------------------------------------------
+  obstetric_id                   int                  KEY:PRI NOT NULL
+  patient_id                     int                  KEY:MUL NOT NULL
+  gravida                        int                   NULL
+  para                           int                   NULL
+  abortions                      int                   NULL
+  living_children                int                   NULL
+  last_menstrual_period          date                  NULL
+  estimated_delivery_date        date                  NULL
+  notes                          text                  NULL
+  recorded_by                    int                  KEY:MUL NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: password_reset_tokens
+--------------------------------------------------------------------------------
+  id                             int                  KEY:PRI NOT NULL
+  user_id                        int                  KEY:MUL NOT NULL
+  token                          varchar(255)         KEY:UNI NOT NULL
+  expires_at                     datetime             KEY:MUL NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  used_at                        timestamp             NULL
+
+TABLE: patients
+--------------------------------------------------------------------------------
+  patient_id                     int                  KEY:PRI NOT NULL
+  user_id                        int                  KEY:UNI NOT NULL
+  patient_number                 varchar(20)          KEY:UNI NOT NULL
+  blood_group                    enum('A+','A-','B+','B-','AB+','AB-','O+','O-')  NULL
+  height                         decimal(5,2)          NULL
+  weight                         decimal(5,2)          NULL
+  allergies                      text                  NULL
+  chronic_diseases               text                  NULL
+  emergency_contact              varchar(20)           NULL
+  emergency_name                 varchar(100)          NULL
+  relationship                   varchar(50)           NULL
+  occupation                     varchar(100)          NULL
+  marital_status                 enum('single','married','divorced','widowed')  NULL
+  insurance_provider             varchar(100)          NULL
+  insurance_id                   varchar(50)           NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: payment_transactions
+--------------------------------------------------------------------------------
+  transaction_id                 int                  KEY:PRI NOT NULL
+  invoice_id                     int                  KEY:MUL NULL
+  amount                         decimal(10,2)         NULL
+  payment_method                 varchar(50)           NULL
+  status                         varchar(20)           NULL
+  transaction_date               datetime              NULL
+
+TABLE: payments
+--------------------------------------------------------------------------------
+  payment_id                     int                  KEY:PRI NOT NULL
+  invoice_id                     int                  KEY:MUL NOT NULL
+  amount                         decimal(10,2)         NOT NULL
+  payment_method                 enum('cash','credit_card','debit_card','bank_transfer','check','insurance','mobile_payment','other')  NOT NULL
+  payment_date                   datetime              NOT NULL
+  transaction_reference          varchar(100)          NULL
+  payment_status                 enum('pending','completed','failed','refunded')  NOT NULL DEFAULT:completed
+  notes                          text                  NULL
+  received_by                    int                  KEY:MUL NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  status                         enum('pending','completed','failed')  NULL DEFAULT:completed
+
+TABLE: pregnancy_details
+--------------------------------------------------------------------------------
+  pregnancy_id                   int                  KEY:PRI NOT NULL
+  patient_id                     int                  KEY:MUL NOT NULL
+  obstetric_id                   int                  KEY:MUL NOT NULL
+  date_of_delivery               date                  NULL
+  gestational_age                int                   NULL
+  delivery_type                  enum('vaginal','cesarean','instrumental')  NULL
+  delivery_location              varchar(100)          NULL
+  complications                  text                  NULL
+  outcome                        enum('live_birth','stillbirth','miscarriage','abortion')  NULL
+  birth_weight                   decimal(5,2)          NULL
+  apgar_score                    varchar(10)           NULL
+  notes                          text                  NULL
+  recorded_by                    int                  KEY:MUL NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: prescription_items
+--------------------------------------------------------------------------------
+  item_id                        int                  KEY:PRI NOT NULL
+  prescription_id                int                  KEY:MUL NOT NULL
+  medication_id                  int                  KEY:MUL NOT NULL
+  dosage                         varchar(50)           NOT NULL
+  frequency                      varchar(50)           NOT NULL
+  duration                       varchar(50)           NOT NULL
+  quantity                       int                   NOT NULL
+  instructions                   text                  NULL
+  status                         enum('pending','dispensed','cancelled')  NOT NULL DEFAULT:pending
+  dispensed_by                   int                  KEY:MUL NULL
+  dispensed_at                   datetime              NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: prescriptions
+--------------------------------------------------------------------------------
+  prescription_id                int                  KEY:PRI NOT NULL
+  patient_id                     int                  KEY:MUL NOT NULL
+  consultation_id                int                  KEY:MUL NULL
+  prescribed_by                  int                  KEY:MUL NOT NULL
+  prescription_date              datetime              NOT NULL
+  status                         enum('pending','dispensed','partially_dispensed','cancelled')  NOT NULL DEFAULT:pending
+  dispensed_by                   int                   NULL
+  dispensed_at                   datetime              NULL
+  notes                          text                  NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: referrals
+--------------------------------------------------------------------------------
+  referral_id                    int                  KEY:PRI NOT NULL
+  patient_id                     int                  KEY:MUL NOT NULL
+  consultation_id                int                  KEY:MUL NOT NULL
+  referral_date                  date                  NOT NULL
+  referred_to_name               varchar(100)          NOT NULL
+  referred_to_specialty          varchar(100)          NOT NULL
+  referred_to_facility           varchar(100)          NULL
+  referred_to_contact            varchar(100)          NULL
+  reason                         text                  NOT NULL
+  priority                       enum('routine','urgent','emergency')  NOT NULL DEFAULT:routine
+  status                         enum('pending','accepted','completed','cancelled','rejected')  NOT NULL DEFAULT:pending
+  notes                          text                  NULL
+  created_by                     int                  KEY:MUL NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: remember_tokens
+--------------------------------------------------------------------------------
+  id                             int                  KEY:PRI NOT NULL
+  user_id                        int                  KEY:MUL NOT NULL
+  token                          varchar(255)         KEY:UNI NOT NULL
+  expires_at                     datetime              NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: roles
+--------------------------------------------------------------------------------
+  role_id                        int                  KEY:PRI NOT NULL
+  role_name                      varchar(50)          KEY:UNI NOT NULL
+  description                    text                  NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: services
+--------------------------------------------------------------------------------
+  service_id                     int                  KEY:PRI NOT NULL
+  service_name                   varchar(100)          NOT NULL
+  service_category               varchar(50)           NOT NULL
+  description                    text                  NULL
+  cost                           decimal(10,2)         NOT NULL
+  duration                       int                   NULL
+  is_active                      tinyint(1)            NOT NULL DEFAULT:1
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: settings
+--------------------------------------------------------------------------------
+  setting_id                     int                  KEY:PRI NOT NULL
+  setting_key                    varchar(50)          KEY:UNI NOT NULL
+  setting_value                  text                  NOT NULL
+  description                    text                  NULL
+  is_public                      tinyint(1)            NOT NULL DEFAULT:0
+  updated_by                     int                  KEY:MUL NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: specializations
+--------------------------------------------------------------------------------
+  specialization_id              int                  KEY:PRI NOT NULL
+  specialization_name            varchar(100)         KEY:UNI NOT NULL
+  description                    text                  NULL
+  is_active                      tinyint(1)            NOT NULL DEFAULT:1
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: staff
+--------------------------------------------------------------------------------
+  staff_id                       int                  KEY:PRI NOT NULL
+  user_id                        int                  KEY:UNI NOT NULL
+  employee_id                    varchar(20)          KEY:UNI NOT NULL
+  department                     varchar(100)          NULL
+  position                       varchar(100)          NULL
+  specialization                 varchar(100)          NULL
+  qualification                  text                  NULL
+  join_date                      date                  NOT NULL
+  emergency_contact              varchar(20)           NULL
+  emergency_name                 varchar(100)          NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  department_id                  int                   NULL
+
+TABLE: system_notifications
+--------------------------------------------------------------------------------
+  notification_id                int                  KEY:PRI NOT NULL
+  user_id                        int                  KEY:MUL NULL
+  type                           varchar(50)           NULL
+  message                        text                  NULL
+  is_read                        tinyint(1)            NULL
+  created_at                     datetime              NULL
+
+TABLE: user_tokens
+--------------------------------------------------------------------------------
+  token_id                       int                  KEY:PRI NOT NULL
+  user_id                        int                  KEY:MUL NOT NULL
+  token_hash                     varchar(255)          NOT NULL
+  expires_at                     datetime              NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: users
+--------------------------------------------------------------------------------
+  user_id                        int                  KEY:PRI NOT NULL
+  role_id                        int                  KEY:MUL NOT NULL
+  username                       varchar(50)          KEY:UNI NOT NULL
+  password                       varchar(255)          NOT NULL
+  email                          varchar(100)         KEY:UNI NOT NULL
+  phone                          varchar(20)           NULL
+  first_name                     varchar(50)           NOT NULL
+  last_name                      varchar(50)           NOT NULL
+  date_of_birth                  date                  NULL
+  gender                         enum('male','female','other')  NULL
+  address                        text                  NULL
+  city                           varchar(50)           NULL
+  state                          varchar(50)           NULL
+  country                        varchar(50)           NULL
+  postal_code                    varchar(20)           NULL
+  is_active                      tinyint(1)            NOT NULL DEFAULT:1
+  last_login                     datetime              NULL
+  profile_image                  varchar(255)          NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+
+TABLE: vital_signs
+--------------------------------------------------------------------------------
+  vital_id                       int                  KEY:PRI NOT NULL
+  patient_id                     int                  KEY:MUL NOT NULL
+  consultation_id                int                  KEY:MUL NULL
+  blood_pressure                 varchar(20)           NULL
+  heart_rate                     int                   NULL
+  respiratory_rate               int                   NULL
+  temperature                    decimal(4,1)          NULL
+  weight                         decimal(5,2)          NULL
+  height                         decimal(5,2)          NULL
+  bmi                            decimal(5,2)          NULL
+  pain_level                     int                   NULL
+  oxygen_saturation              int                   NULL
+  notes                          text                  NULL
+  measured_at                    datetime              NOT NULL
+  recorded_by                    int                  KEY:MUL NOT NULL
+  created_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+  updated_at                     timestamp             NOT NULL DEFAULT:CURRENT_TIMESTAMP
+

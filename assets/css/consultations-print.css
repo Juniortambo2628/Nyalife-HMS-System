@@ -1,0 +1,103 @@
+/* Consultation Print Styles */
+@page {
+    size: A4;
+    margin: 1cm;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: #fff;
+}
+
+.consultation-print .header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #eee;
+}
+
+.consultation-print .hospital-logo {
+    max-width: 150px;
+    margin-bottom: 10px;
+}
+
+.consultation-print .hospital-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.consultation-print .hospital-tagline {
+    color: #7f8c8d;
+    margin: 5px 0 0;
+    font-size: 14px;
+}
+
+.consultation-print .section-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 20px 0 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+.consultation-print .patient-info,
+.consultation-print .doctor-info {
+    margin-bottom: 20px;
+}
+
+.consultation-print .info-label {
+    font-weight: bold;
+    color: #7f8c8d;
+    margin-bottom: 5px;
+}
+
+.consultation-print .info-value {
+    margin-bottom: 10px;
+}
+
+.consultation-print .consultation-details {
+    margin: 20px 0;
+}
+
+.consultation-print .signature-area {
+    margin-top: 50px;
+    text-align: right;
+}
+
+.consultation-print .signature-line {
+    border-top: 1px solid #000;
+    width: 200px;
+    display: inline-block;
+    margin-top: 50px;
+}
+
+.consultation-print .footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 12px;
+    color: #7f8c8d;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+@media print {
+    .consultation-print .no-print {
+        display: none;
+    }
+    .consultation-print .container {
+        width: 100%;
+    }
+    .consultation-print body {
+        padding: 0;
+        font-size: 12px;
+    }
+    .consultation-print .section-title {
+        font-size: 16px;
+    }
+}
+

@@ -1,16 +1,21 @@
     /* General Section Styling */
     
+    /*--------------------------------------------------------------
+    # Header
+    --------------------------------------------------------------*/
+    .navbar-primary {
+        background-color: var(--primary-color);
+    }
+    
     .section-title {
         font-family: var(--heading-font);
-        /* Consistent with theme */
         font-weight: 700;
         color: var(--heading-color);
-        /* Use heading-color for section titles */
         margin-bottom: 3rem;
         position: relative;
-        padding-bottom: 10px;
+        padding-bottom: 15px;
+        text-align: center;
         transition: all 0.3s ease;
-        /* Smooth transition for any changes */
     }
     
     .section-title::after {
@@ -19,7 +24,7 @@
         left: 50%;
         bottom: 0;
         transform: translateX(-50%);
-        width: 60px;
+        width: 80px;
         height: 4px;
         background-color: var(--secondary-color);
         border-radius: 2px;
@@ -87,9 +92,8 @@
     .service-tabs-wrapper {
         padding: 1.8rem;
         border-radius: 1.4rem;
-        background-color: rgba(255, 255, 255, 0.346);
-        backdrop-filter: blur(2px);
-        -webkit-backdrop-filter: blur(2px);
+        background-color: rgba(255, 255, 255, 0.85);
+        /* Removed backdrop-filter and GPU acceleration to prevent scroll distortions */
         box-shadow: 0 0 .4px rgba(255, 255, 255, 0.1);
         border: .6px solid rgba(91, 90, 90, 0.536);
     }
@@ -162,8 +166,7 @@
     
     .bg-about-section {
         background: linear-gradient(135deg, var(--primary-color-dark), var(--secondary-color), var(--secondary-color-dark));
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        /* Removed backdrop-filter to prevent scroll distortions */
     }
     
     .bg-about-section .section-title {
@@ -208,8 +211,8 @@
         overflow: hidden;
         padding: .8rem 1rem !important;
         border: 1px solid rgba(255, 255, 255, 0.536);
-        background-color: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(4px);
+        background-color: rgba(255, 255, 255, 0.25);
+        /* Removed backdrop-filter to prevent scroll distortions */
     }
     
     .accordion-button {

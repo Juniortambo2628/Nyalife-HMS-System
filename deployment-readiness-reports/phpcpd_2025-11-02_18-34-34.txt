@@ -1,0 +1,87 @@
+phpcpd 6.0.3 by Sebastian Bergmann.
+
+Found 25 clones with 765 duplicated lines in 17 files:
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\AppointmentModel.php:100-159 (59 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\AppointmentModel.php:170-229
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\LabRequestModel.php:229-266 (37 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\LabRequestModel.php:307-344
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\FollowUpModel.php:407-444 (37 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\FollowUpModel.php:486-523
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\FollowUpModel.php:521-555 (34 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\PaymentModel.php:511-545
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\InvoiceModel.php:118-152 (34 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\InvoiceModel.php:165-199
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\FollowUpModel.php:521-554 (33 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\LabRequestModel.php:342-375
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\PaymentModel.php:409-440 (31 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\PaymentModel.php:482-513
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\UserModel.php:566-596 (30 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\UserModel.php:603-633
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\BaseModel.php:154-184 (30 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\BaseModel.php:388-418
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\BaseModel.php:614-644
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\LabTestModel.php:1614-1643 (29 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\UserModel.php:851-880
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\LabRequestModel.php:87-116 (29 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\LabRequestModel.php:184-213
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\FollowUpModel.php:525-554 (29 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\LabParameterModel.php:236-265
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\ReportsController.php:134-162 (28 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\SettingsController.php:103-131
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\ConsultationController.php:266-294 (28 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\ConsultationController.php:524-552
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\FollowUpModel.php:85-112 (27 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\FollowUpModel.php:134-161
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\FollowUpModel.php:225-252
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\AppointmentModel.php:819-846 (27 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\AppointmentModel.php:848-875
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\ConsultationModel.php:467-493 (26 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\LabTestModel.php:1605-1631
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\UserModel.php:88-113 (25 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\UserModel.php:505-530
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\models\LabParameterModel.php:148-172 (24 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\models\LabParameterModel.php:210-234
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\DashboardController.php:262-285 (23 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\LabResultsController.php:284-307
+    C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\PatientController.php:423-446
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\ConsultationController.php:669-687 (18 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\ConsultationController.php:746-764
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\PharmacyController.php:127-144 (17 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\PharmacyController.php:238-255
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\PatientController.php:198-209 (11 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\PatientController.php:305-316
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\ConsultationController.php:322-332 (10 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\ConsultationController.php:579-589
+
+  - C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\ConsultationController.php:279-288 (9 lines)
+    C:\wamp64\www\Nyalife-HMS-System\includes\controllers\web\ConsultationController.php:883-892
+
+2.36% duplicated lines out of 32477 total lines of code.
+Average size of duplication is 30 lines, largest clone has 59 of lines
+
+Time: 00:00.792, Memory: 24.00 MB
+

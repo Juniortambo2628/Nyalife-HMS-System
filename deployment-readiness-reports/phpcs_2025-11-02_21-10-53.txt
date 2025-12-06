@@ -1,0 +1,18 @@
+
+PHP CODE SNIFFER REPORT SUMMARY
+--------------------------------------------------------------------------------
+FILE                                                            ERRORS  WARNINGS
+--------------------------------------------------------------------------------
+...\www\Nyalife-HMS-System\includes\models\DepartmentModel.php  0       1
+...mp64\www\Nyalife-HMS-System\includes\models\DoctorModel.php  0       1
+...w\Nyalife-HMS-System\includes\models\LabAttachmentModel.php  0       1
+...p64\www\Nyalife-HMS-System\includes\models\MessageModel.php  0       1
+...ww\Nyalife-HMS-System\includes\models\NotificationModel.php  0       1
+...4\www\Nyalife-HMS-System\includes\models\VitalSignModel.php  0       1
+--------------------------------------------------------------------------------
+A TOTAL OF 0 ERRORS AND 6 WARNINGS WERE FOUND IN 6 FILES
+--------------------------------------------------------------------------------
+
+Time: 31.73 secs; Memory: 20MB
+
+

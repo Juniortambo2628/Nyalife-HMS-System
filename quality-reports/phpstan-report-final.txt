@@ -1,0 +1,2061 @@
+Note: Using configuration file C:\wamp64\www\Nyalife-HMS-System\phpstan.neon.
+ΓÜá∩╕Å  You're using a deprecated config option checkMissingIterableValueType ΓÜá∩╕Å∩╕Å
+
+It's strongly recommended to remove it from your configuration file
+and add the missing array typehints.
+
+If you want to continue ignoring missing typehints from arrays,
+add missingType.iterableValue error identifier to your ignoreErrors:
+
+parameters:
+	ignoreErrors:
+		-
+			identifier: missingType.iterableValue
+
+ ------ ----------------------------------------- 
+  Line   components\footer.php                    
+ ------ ----------------------------------------- 
+  :27    Variable $baseUrl might not be defined.  
+  :28    Variable $baseUrl might not be defined.  
+  :37    Variable $baseUrl might not be defined.  
+  :38    Variable $baseUrl might not be defined.  
+  :39    Variable $baseUrl might not be defined.  
+  :40    Variable $baseUrl might not be defined.  
+  :41    Variable $baseUrl might not be defined.  
+  :60    Variable $baseUrl might not be defined.  
+  :65    Variable $baseUrl might not be defined.  
+  :66    Variable $baseUrl might not be defined.  
+  :67    Variable $baseUrl might not be defined.  
+  :68    Variable $baseUrl might not be defined.  
+  :107   Variable $baseUrl might not be defined.  
+  :148   Variable $baseUrl might not be defined.  
+  :262   Variable $baseUrl might not be defined.  
+  :302   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ --------------------------------------------- 
+  Line   components\header.php                        
+ ------ --------------------------------------------- 
+  :120   Variable $currentUser might not be defined.  
+  :152   Variable $baseUrl might not be defined.      
+  :153   Variable $baseUrl might not be defined.      
+  :163   Variable $isLoggedIn might not be defined.   
+  :166   Variable $baseUrl might not be defined.      
+  :179   Variable $baseUrl might not be defined.      
+  :182   Variable $baseUrl might not be defined.      
+  :185   Variable $baseUrl might not be defined.      
+  :188   Variable $baseUrl might not be defined.      
+  :204   Variable $baseUrl might not be defined.      
+  :207   Variable $baseUrl might not be defined.      
+  :215   Variable $baseUrl might not be defined.      
+  :218   Variable $baseUrl might not be defined.      
+  :221   Variable $baseUrl might not be defined.      
+  :227   Variable $baseUrl might not be defined.      
+  :241   Variable $baseUrl might not be defined.      
+  :244   Variable $baseUrl might not be defined.      
+  :258   Variable $baseUrl might not be defined.      
+  :264   Variable $baseUrl might not be defined.      
+  :267   Variable $baseUrl might not be defined.      
+  :270   Variable $baseUrl might not be defined.      
+  :283   Variable $baseUrl might not be defined.      
+  :293   Variable $baseUrl might not be defined.      
+  :303   Variable $currentUser might not be defined.  
+  :303   Variable $currentUser might not be defined.  
+  :306   Variable $baseUrl might not be defined.      
+  :307   Variable $baseUrl might not be defined.      
+  :308   Variable $baseUrl might not be defined.      
+  :310   Variable $baseUrl might not be defined.      
+  :315   Variable $baseUrl might not be defined.      
+ ------ --------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------- 
+  Line   components\pagination.php                                                              
+ ------ --------------------------------------------------------------------------------------- 
+  :95    Parameter #3 $value of function addQueryParamToUrl expects string, int<1, max> given.  
+  :125   Parameter #3 $value of function addQueryParamToUrl expects string, float|int<1, max>   
+         given.                                                                                 
+  :133   Parameter #3 $value of function addQueryParamToUrl expects string, int<2, max> given.  
+  :145   Parameter #3 $value of function addQueryParamToUrl expects string, int<2, max> given.  
+ ------ --------------------------------------------------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   components\script-loader.php             
+ ------ ----------------------------------------- 
+  :24    Variable $baseUrl might not be defined.  
+  :28    Variable $baseUrl might not be defined.  
+  :29    Variable $baseUrl might not be defined.  
+  :30    Variable $baseUrl might not be defined.  
+  :31    Variable $baseUrl might not be defined.  
+  :32    Variable $baseUrl might not be defined.  
+  :33    Variable $baseUrl might not be defined.  
+  :36    Variable $baseUrl might not be defined.  
+  :42    Variable $baseUrl might not be defined.  
+  :43    Variable $baseUrl might not be defined.  
+  :48    Variable $baseUrl might not be defined.  
+  :55    Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ --------------------------------------------- 
+  Line   components\sidebar.php                       
+ ------ --------------------------------------------- 
+  :14    Variable $currentUser might not be defined.  
+  :15    Variable $userRole might not be defined.     
+ ------ --------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   components\unified-script-loader.php     
+ ------ ----------------------------------------- 
+  :24    Variable $baseUrl might not be defined.  
+  :28    Variable $baseUrl might not be defined.  
+  :29    Variable $baseUrl might not be defined.  
+  :30    Variable $baseUrl might not be defined.  
+  :31    Variable $baseUrl might not be defined.  
+  :32    Variable $baseUrl might not be defined.  
+  :35    Variable $baseUrl might not be defined.  
+  :38    Variable $baseUrl might not be defined.  
+  :59    Variable $baseUrl might not be defined.  
+  :66    Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------- 
+  Line   controllers\api\AppointmentController.php                                                  
+ ------ ------------------------------------------------------------------------------------------- 
+  :114   Method AppointmentController::get() with return type void returns mixed but should not     
+         return anything.                                                                           
+  :119   Method AppointmentController::get() with return type void returns mixed but should not     
+         return anything.                                                                           
+  :140   Method AppointmentController::create() with return type void returns mixed but should not  
+         return anything.                                                                           
+  :149   Method AppointmentController::create() with return type void returns mixed but should not  
+         return anything.                                                                           
+  :196   Method AppointmentController::update() with return type void returns mixed but should not  
+         return anything.                                                                           
+  :201   Method AppointmentController::update() with return type void returns mixed but should not  
+         return anything.                                                                           
+  :207   Method AppointmentController::update() with return type void returns mixed but should not  
+         return anything.                                                                           
+  :221   Method AppointmentController::update() with return type void returns mixed but should not  
+         return anything.                                                                           
+  :238   Method AppointmentController::update() with return type void returns mixed but should not  
+         return anything.                                                                           
+  :259   Method AppointmentController::cancel() with return type void returns mixed but should not  
+         return anything.                                                                           
+  :264   Method AppointmentController::cancel() with return type void returns mixed but should not  
+         return anything.                                                                           
+  :269   Method AppointmentController::cancel() with return type void returns mixed but should not  
+         return anything.                                                                           
+  :291   Method AppointmentController::cancel() with return type void returns mixed but should not  
+         return anything.                                                                           
+  :312   Method AppointmentController::getAvailableSlots() with return type void returns mixed but  
+         should not return anything.                                                                
+ ------ ------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------ 
+  Line   controllers\api\CommunicationController.php     
+ ------ ------------------------------------------------ 
+  :33    Expression on left side of ?? is not nullable.  
+  :34    Expression on left side of ?? is not nullable.  
+  :36    Expression on left side of ?? is not nullable.  
+  :63    Expression on left side of ?? is not nullable.  
+  :64    Expression on left side of ?? is not nullable.  
+  :92    Expression on left side of ?? is not nullable.  
+  :93    Expression on left side of ?? is not nullable.  
+  :161   Expression on left side of ?? is not nullable.  
+  :162   Expression on left side of ?? is not nullable.  
+ ------ ------------------------------------------------ 
+
+ ------ ---------------------------------------------------------------------------------- 
+  Line   controllers\api\FollowUpController.php                                            
+ ------ ---------------------------------------------------------------------------------- 
+  :14    Property FollowUpController::$consultationModel is never read, only written.      
+         ≡ƒÆí See: https://phpstan.org/developing-extensions/always-read-written-properties  
+ ------ ---------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------- 
+  Line   controllers\api\InsuranceController.php                                              
+ ------ ------------------------------------------------------------------------------------- 
+  :220   Ternary operator condition is always true.                                           
+         ≡ƒÆí Because the type is coming from a PHPDoc, you can turn off this check by setting  
+            treatPhpDocTypesAsCertain: false in your phpstan.neon.                            
+  :238   Ternary operator condition is always true.                                           
+         ≡ƒÆí Because the type is coming from a PHPDoc, you can turn off this check by setting  
+            treatPhpDocTypesAsCertain: false in your phpstan.neon.                            
+ ------ ------------------------------------------------------------------------------------- 
+
+ ------ ---------------------------------------------------------------------- 
+  Line   controllers\api\LabTestController.php                                 
+ ------ ---------------------------------------------------------------------- 
+  :579   Parameter #1 $month of function checkdate expects int, string given.  
+  :579   Parameter #2 $day of function checkdate expects int, string given.    
+  :579   Parameter #3 $year of function checkdate expects int, string given.   
+ ------ ---------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------- 
+  Line   controllers\api\MedicationsController.php                                            
+ ------ ------------------------------------------------------------------------------------- 
+  :309   Ternary operator condition is always true.                                           
+         ≡ƒÆí Because the type is coming from a PHPDoc, you can turn off this check by setting  
+            treatPhpDocTypesAsCertain: false in your phpstan.neon.                            
+ ------ ------------------------------------------------------------------------------------- 
+
+ ------ ---------------------------------------------------------------------------------- 
+  Line   controllers\api\PaymentController.php                                             
+ ------ ---------------------------------------------------------------------------------- 
+  :14    Property PaymentController::$invoiceModel is never read, only written.            
+         ≡ƒÆí See: https://phpstan.org/developing-extensions/always-read-written-properties  
+ ------ ---------------------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------------------- 
+  Line   controllers\web\AuthController.php                                                          
+ ------ -------------------------------------------------------------------------------------------- 
+  :274   Offset 'role' on array{first_name: mixed, last_name: mixed, email: mixed, phone: mixed,     
+         date_of_birth: mixed, gender: mixed, username: mixed, password: mixed, ...} on left side    
+         of ?? always exists and is not nullable.                                                    
+  :276   Offset 'role_id' on array{first_name: mixed, last_name: mixed, email: mixed, phone: mixed,  
+         date_of_birth: mixed, gender: mixed, username: mixed, password: mixed, ...} in isset()      
+         does not exist.                                                                             
+ ------ -------------------------------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------------------- 
+  Line   controllers\web\ConsultationController.php                                                  
+ ------ -------------------------------------------------------------------------------------------- 
+  :299   Offset 'vital_signs' on array{appointment_id: mixed, is_walk_in: 0|1, patient_id: mixed,    
+         doctor_id: int<min, -1>|int<1, max>|null, consultation_date: non-falsy-string,              
+         chief_complaint: mixed, history_present_illness: mixed, past_medical_history: mixed, ...}   
+         on left side of ?? always exists and is not nullable.                                       
+  :300   Variable $v in empty() always exists and is not falsy.                                      
+  :312   Offset 'consultation_date' on array{appointment_id: mixed, is_walk_in: 0|1, patient_id:     
+         mixed, doctor_id: int<min, -1>|int<1, max>|null, consultation_date: non-falsy-string,       
+         chief_complaint: mixed, history_present_illness: mixed, past_medical_history: mixed, ...}   
+         on left side of ?? always exists and is not nullable.                                       
+  :556   Offset 'vital_signs' on array{patient_id: mixed, doctor_id: mixed, consultation_date:       
+         mixed, chief_complaint: mixed, history_present_illness: mixed, past_medical_history:        
+         mixed, family_history: mixed, social_history: mixed, ...} on left side of ?? always exists  
+         and is not nullable.                                                                        
+  :557   Variable $v in empty() always exists and is not falsy.                                      
+  :985   Else branch is unreachable because ternary operator condition is always true.               
+ ------ -------------------------------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------------- 
+  Line   controllers\web\GuestAppointmentController.php                               
+ ------ ----------------------------------------------------------------------------- 
+  :331   Parameter #1 $string of function str_pad expects string, (float|int) given.  
+  :370   Method GuestAppointmentController::sendConfirmationEmail() is unused.        
+ ------ ----------------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------------- 
+  Line   controllers\web\LabRequestController.php                                              
+ ------ -------------------------------------------------------------------------------------- 
+  :246   Binary operation "-" between int<1, max> and string results in an error.              
+  :451   Result of && is always false.                                                         
+         ≡ƒÆí Because the type is coming from a PHPDoc, you can turn off this check by setting   
+            treatPhpDocTypesAsCertain: false in your phpstan.neon.                             
+  :451   Strict comparison using === between int<1, max> and 0 will always evaluate to false.  
+         ≡ƒÆí Because the type is coming from a PHPDoc, you can turn off this check by setting   
+            treatPhpDocTypesAsCertain: false in your phpstan.neon.                             
+  :516   Variable $createdRequests in empty() always exists and is not falsy.                  
+ ------ -------------------------------------------------------------------------------------- 
+
+ ------ ---------------------------------------------------------------------------------- 
+  Line   controllers\web\LabResultsController.php                                          
+ ------ ---------------------------------------------------------------------------------- 
+  :15    Property LabResultsController::$labTestModel is never read, only written.         
+         ≡ƒÆí See: https://phpstan.org/developing-extensions/always-read-written-properties  
+  :16    Property LabResultsController::$userModel is never read, only written.            
+         ≡ƒÆí See: https://phpstan.org/developing-extensions/always-read-written-properties  
+ ------ ---------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------- 
+  Line   controllers\web\LabTestController.php                                                  
+ ------ --------------------------------------------------------------------------------------- 
+  :856   Strict comparison using === between 0|0.0|''|array{}|false|null and '0.0' will always  
+         evaluate to false.                                                                     
+  :989   Parameter #1 $prefix of function uniqid expects string, int<0, max> given.             
+ ------ --------------------------------------------------------------------------------------- 
+
+ ------ ---------------------------------------------------------------- 
+  Line   controllers\web\NotificationsController.php                     
+ ------ ---------------------------------------------------------------- 
+  :98    Result of method WebController::jsonResponse() (void) is used.  
+  :104   Result of method WebController::jsonResponse() (void) is used.  
+  :106   Result of method WebController::jsonResponse() (void) is used.  
+  :111   Result of method WebController::jsonResponse() (void) is used.  
+  :123   Result of method WebController::jsonResponse() (void) is used.  
+  :129   Result of method WebController::jsonResponse() (void) is used.  
+  :131   Result of method WebController::jsonResponse() (void) is used.  
+  :136   Result of method WebController::jsonResponse() (void) is used.  
+ ------ ---------------------------------------------------------------- 
+
+ ------ ---------------------------------------------------------------------------------- 
+  Line   controllers\web\PaymentController.php                                             
+ ------ ---------------------------------------------------------------------------------- 
+  :16    Property PaymentController::$invoiceModel is never read, only written.            
+         ≡ƒÆí See: https://phpstan.org/developing-extensions/always-read-written-properties  
+ ------ ---------------------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------------------- 
+  Line   controllers\web\UserController.php                                                          
+ ------ -------------------------------------------------------------------------------------------- 
+  :104   Offset 'role_id' on array{first_name: mixed, last_name: mixed, email: mixed, phone: mixed,  
+         username: mixed, password: mixed, confirm_password: mixed, role_id: mixed, ...} in isset()  
+         always exists and is not nullable.                                                          
+ ------ -------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------- 
+  Line   controllers\web\WebController.php                                                    
+ ------ ------------------------------------------------------------------------------------- 
+  :166   Else branch is unreachable because ternary operator condition is always true.        
+         ≡ƒÆí Because the type is coming from a PHPDoc, you can turn off this check by setting  
+            treatPhpDocTypesAsCertain: false in your phpstan.neon.                            
+  :252   Expression in empty() is not falsy.                                                  
+ ------ ------------------------------------------------------------------------------------- 
+
+ ------ ---------------------------------------------------------------------------------- 
+  Line   core\Auth.php                                                                     
+ ------ ---------------------------------------------------------------------------------- 
+  :15    Property Auth::$db is never read, only written.                                   
+         ≡ƒÆí See: https://phpstan.org/developing-extensions/always-read-written-properties  
+ ------ ---------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------- 
+  Line   core\Utilities.php                                                                   
+ ------ ------------------------------------------------------------------------------------- 
+  :16    Comparison operation ">=" between 1|2|3|4|5|6|7 and 1 is always true.                
+         ≡ƒÆí Because the type is coming from a PHPDoc, you can turn off this check by setting  
+            treatPhpDocTypesAsCertain: false in your phpstan.neon.                            
+ ------ ------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------- 
+  Line   data\admin_data.php                                          
+ ------ ------------------------------------------------------------- 
+  :198   Variable $params in empty() always exists and is not falsy.  
+  :240   Variable $params in empty() always exists and is not falsy.  
+ ------ ------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------- 
+  Line   data\dashboard_data.php                                                         
+ ------ -------------------------------------------------------------------------------- 
+  :120   Parameter #1 $year of method DateTime::setISODate() expects int, string given.  
+  :120   Parameter #2 $week of method DateTime::setISODate() expects int, string given.  
+ ------ -------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   data\invoice_data.php                                                
+ ------ --------------------------------------------------------------------- 
+  :97    Variable $params in empty() always exists and is not falsy.          
+  :140   Variable $params in empty() always exists and is not falsy.          
+  :292   Parameter #1 $string of function str_pad expects string, int given.  
+ ------ --------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------- 
+  Line   data\lab_data.php                                            
+ ------ ------------------------------------------------------------- 
+  :220   Variable $params in empty() always exists and is not falsy.  
+ ------ ------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   data\patient_data.php                                                
+ ------ --------------------------------------------------------------------- 
+  :236   Variable $patientColumns in empty() always exists and is not falsy.  
+ ------ --------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------------------- 
+  Line   helpers\AuditLogger.php                                                            
+ ------ ----------------------------------------------------------------------------------- 
+  :13    Property AuditLogger::$enabled is never read, only written.                        
+         ≡ƒÆí See: https://phpstan.org/developing-extensions/always-read-written-properties   
+  :32    Result of && is always false.                                                      
+  :32    Strict comparison using === between false and true will always evaluate to false.  
+  :34    If condition is always false.                                                      
+ ------ ----------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------- 
+  Line   models\AppointmentModel.php                                                          
+ ------ ------------------------------------------------------------------------------------- 
+  :120   Call to function is_float() with non-falsy-string will always evaluate to false.     
+         ≡ƒÆí Because the type is coming from a PHPDoc, you can turn off this check by setting  
+            treatPhpDocTypesAsCertain: false in your phpstan.neon.                            
+  :189   Call to function is_float() with non-falsy-string will always evaluate to false.     
+         ≡ƒÆí Because the type is coming from a PHPDoc, you can turn off this check by setting  
+            treatPhpDocTypesAsCertain: false in your phpstan.neon.                            
+  :601   Variable $historyId in empty() always exists and is not falsy.                       
+  :612   Offset 'diagnosis' on array on left side of ?? always exists and is not nullable.    
+  :726   Variable $params in empty() always exists and is not falsy.                          
+ ------ ------------------------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------------------------- 
+  Line   models\DoctorScheduleModel.php                                                           
+ ------ ----------------------------------------------------------------------------------------- 
+  :125   Parameter #2 $dayOfWeek of method DoctorScheduleModel::getDoctorSchedule() expects int,  
+         string given.                                                                            
+ ------ ----------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------- 
+  Line   models\FollowUpModel.php                                     
+ ------ ------------------------------------------------------------- 
+  :428   Variable $params in empty() always exists and is not falsy.  
+ ------ ------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   models\InvoiceModel.php                                              
+ ------ --------------------------------------------------------------------- 
+  :340   Parameter #1 $string of function str_pad expects string, int given.  
+ ------ --------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------- 
+  Line   models\LabParameterModel.php                                 
+ ------ ------------------------------------------------------------- 
+  :179   Variable $params in empty() always exists and is not falsy.  
+ ------ ------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------- 
+  Line   models\LabRequestModel.php                                   
+ ------ ------------------------------------------------------------- 
+  :272   Variable $params in empty() always exists and is not falsy.  
+ ------ ------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   models\LabTestModel.php                                              
+ ------ --------------------------------------------------------------------- 
+  :771   Parameter #1 $string of function str_pad expects string, int given.  
+ ------ --------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------- 
+  Line   models\MedicalHistoryModel.php                               
+ ------ ------------------------------------------------------------- 
+  :55    Variable $params in empty() always exists and is not falsy.  
+ ------ ------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------- 
+  Line   models\MedicationModel.php                                   
+ ------ ------------------------------------------------------------- 
+  :67    Variable $params in empty() always exists and is not falsy.  
+ ------ ------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   models\PatientModel.php                                              
+ ------ --------------------------------------------------------------------- 
+  :468   Parameter #1 $string of function str_pad expects string, int given.  
+ ------ --------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------- 
+  Line   models\PaymentModel.php                                      
+ ------ ------------------------------------------------------------- 
+  :432   Variable $params in empty() always exists and is not falsy.  
+ ------ ------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   models\PrescriptionModel.php                                         
+ ------ --------------------------------------------------------------------- 
+  :481   Parameter #1 $string of function str_pad expects string, int given.  
+  :645   Variable $params in empty() always exists and is not falsy.          
+ ------ --------------------------------------------------------------------- 
+
+ ------ ---------------------------------------------------------------------------------- 
+  Line   services\NotificationService.php                                                  
+ ------ ---------------------------------------------------------------------------------- 
+  :21    Property NotificationService::$messageModel is never read, only written.          
+         ≡ƒÆí See: https://phpstan.org/developing-extensions/always-read-written-properties  
+  :344   Dead catch - Exception is never thrown in the try block.                          
+ ------ ---------------------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------------------- 
+  Line   views\appointments\calendar.php                                                             
+ ------ -------------------------------------------------------------------------------------------- 
+  :1     File begins with UTF-8 BOM character. This may cause problems when running the code in the  
+         web browser.                                                                                
+  :13    Variable $baseUrl might not be defined.                                                     
+  :17    Variable $baseUrl might not be defined.                                                     
+  :133   Variable $baseUrl might not be defined.                                                     
+  :208   Variable $baseUrl might not be defined.                                                     
+  :239   Variable $baseUrl might not be defined.                                                     
+ ------ -------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------ 
+  Line   views\appointments\create.php             
+ ------ ------------------------------------------ 
+  :28    Variable $baseUrl might not be defined.   
+  :29    Variable $baseUrl might not be defined.   
+  :39    Variable $baseUrl might not be defined.   
+  :57    Variable $baseUrl might not be defined.   
+  :63    Variable $patients might not be defined.  
+  :75    Variable $doctors might not be defined.   
+  :151   Variable $baseUrl might not be defined.   
+  :200   Variable $baseUrl might not be defined.   
+ ------ ------------------------------------------ 
+
+ ------ -------------------------------------------------- 
+  Line   views\appointments\edit.php                       
+ ------ -------------------------------------------------- 
+  :14    Variable $appointment might not be defined.       
+  :14    Variable $baseUrl might not be defined.           
+  :31    Variable $appointment might not be defined.       
+  :31    Variable $baseUrl might not be defined.           
+  :37    Variable $patients might not be defined.          
+  :38    Variable $appointment might not be defined.       
+  :49    Variable $doctors might not be defined.           
+  :50    Variable $appointment might not be defined.       
+  :62    Variable $appointment might not be defined.       
+  :68    Variable $appointment might not be defined.       
+  :77    Variable $appointmentTypes might not be defined.  
+  :78    Variable $appointment might not be defined.       
+  :88    Variable $statusOptions might not be defined.     
+  :89    Variable $appointment might not be defined.       
+  :99    Variable $appointment might not be defined.       
+  :104   Variable $appointment might not be defined.       
+  :108   Variable $appointment might not be defined.       
+  :108   Variable $baseUrl might not be defined.           
+  :170   Variable $appointment might not be defined.       
+  :170   Variable $baseUrl might not be defined.           
+  :201   Variable $appointment might not be defined.       
+ ------ -------------------------------------------------- 
+
+ ------ ------------------------------------------ 
+  Line   views\appointments\index.php              
+ ------ ------------------------------------------ 
+  :13    Variable $baseUrl might not be defined.   
+  :39    Variable $baseUrl might not be defined.   
+  :42    Variable $baseUrl might not be defined.   
+  :54    Variable $baseUrl might not be defined.   
+  :55    Variable $userRole might not be defined.  
+  :60    Variable $doctors might not be defined.   
+  :74    Variable $patients might not be defined.  
+  :124   Variable $baseUrl might not be defined.   
+  :158   Variable $baseUrl might not be defined.   
+  :173   Variable $baseUrl might not be defined.   
+  :177   Variable $baseUrl might not be defined.   
+  :249   Variable $baseUrl might not be defined.   
+ ------ ------------------------------------------ 
+
+ ------ --------------------------------------------- 
+  Line   views\appointments\view.php                  
+ ------ --------------------------------------------- 
+  :14    Variable $baseUrl might not be defined.      
+  :42    Variable $appointment might not be defined.  
+  :42    Variable $appointment might not be defined.  
+  :43    Variable $userRole might not be defined.     
+  :43    Variable $userRole might not be defined.     
+  :44    Variable $appointment might not be defined.  
+  :44    Variable $baseUrl might not be defined.      
+  :49    Variable $appointment might not be defined.  
+  :49    Variable $appointment might not be defined.  
+  :49    Variable $appointment might not be defined.  
+  :49    Variable $baseUrl might not be defined.      
+  :49    Variable $baseUrl might not be defined.      
+  :63    Variable $appointment might not be defined.  
+  :81    Variable $appointment might not be defined.  
+  :86    Variable $appointment might not be defined.  
+  :91    Variable $appointment might not be defined.  
+  :92    Variable $appointment might not be defined.  
+  :101   Variable $appointment might not be defined.  
+  :101   Variable $baseUrl might not be defined.      
+  :102   Variable $appointment might not be defined.  
+  :108   Variable $appointment might not be defined.  
+  :114   Variable $appointment might not be defined.  
+  :129   Variable $appointment might not be defined.  
+  :139   Variable $appointment might not be defined.  
+  :143   Variable $appointment might not be defined.  
+  :157   Variable $appointment might not be defined.  
+  :157   Variable $userRole might not be defined.     
+  :158   Variable $appointment might not be defined.  
+  :158   Variable $baseUrl might not be defined.      
+  :207   Variable $userRole might not be defined.     
+  :207   Variable $userRole might not be defined.     
+  :216   Variable $appointment might not be defined.  
+  :216   Variable $baseUrl might not be defined.      
+  :221   Variable $appointment might not be defined.  
+  :221   Variable $baseUrl might not be defined.      
+  :300   Variable $baseUrl might not be defined.      
+  :363   Variable $baseUrl might not be defined.      
+  :371   Variable $baseUrl might not be defined.      
+  :397   Variable $appointment might not be defined.  
+  :397   Variable $baseUrl might not be defined.      
+  :484   Variable $baseUrl might not be defined.      
+ ------ --------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\auth\forgot-password.php           
+ ------ ----------------------------------------- 
+  :23    Variable $baseUrl might not be defined.  
+  :30    Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ --------------------------------------------- 
+  Line   views\auth\login.php                         
+ ------ --------------------------------------------- 
+  :21    Variable $messageType might not be defined.  
+  :27    Variable $baseUrl might not be defined.      
+  :51    Variable $baseUrl might not be defined.      
+  :52    Variable $baseUrl might not be defined.      
+  :123   Variable $baseUrl might not be defined.      
+  :151   Variable $baseUrl might not be defined.      
+ ------ --------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\auth\register-patient.php          
+ ------ ----------------------------------------- 
+  :19    Variable $baseUrl might not be defined.  
+  :104   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\auth\register.php                  
+ ------ ----------------------------------------- 
+  :42    Variable $baseUrl might not be defined.  
+  :212   Variable $baseUrl might not be defined.  
+  :340   Variable $baseUrl might not be defined.  
+  :342   Variable $baseUrl might not be defined.  
+  :426   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\auth\reset-password.php            
+ ------ ----------------------------------------- 
+  :23    Variable $baseUrl might not be defined.  
+  :23    Variable $token might not be defined.    
+  :36    Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ---------------------------------------------------------------- 
+  Line   views\consultations\_form.php                                   
+ ------ ---------------------------------------------------------------- 
+  :42    Variable $baseUrl might not be defined.                         
+  :42    Variable $baseUrl might not be defined.                         
+  :59    Variable $patient might not be defined.                         
+  :59    Variable $patient might not be defined.                         
+  :64    Variable $patients might not be defined.                        
+  :78    Variable $doctors might not be defined.                         
+  :126   Variable $patient might not be defined.                         
+  :126   Variable $patient might not be defined.                         
+  :527   Variable $baseUrl might not be defined.                         
+  :527   Variable $baseUrl might not be defined.                         
+  :527   Variable $isEdit in isset() always exists and is not nullable.  
+  :531   Variable $isEdit in isset() always exists and is not nullable.  
+ ------ ---------------------------------------------------------------- 
+
+ ------ ------------------------------------------ 
+  Line   views\consultations\create.php            
+ ------ ------------------------------------------ 
+  :32    Variable $baseUrl might not be defined.   
+  :49    Variable $baseUrl might not be defined.   
+  :55    Variable $patients might not be defined.  
+  :67    Variable $doctors might not be defined.   
+  :185   Variable $baseUrl might not be defined.   
+ ------ ------------------------------------------ 
+
+ ------ ------------------------------------------ 
+  Line   views\consultations\edit.php              
+ ------ ------------------------------------------ 
+  :42    Variable $baseUrl might not be defined.   
+  :59    Variable $baseUrl might not be defined.   
+  :65    Variable $patients might not be defined.  
+  :77    Variable $doctors might not be defined.   
+  :354   Variable $baseUrl might not be defined.   
+  :440   Variable $baseUrl might not be defined.   
+ ------ ------------------------------------------ 
+
+ ------ ----------------------------------------- 
+  Line   views\consultations\edit_full.php        
+ ------ ----------------------------------------- 
+  :24    Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------------- 
+  Line   views\consultations\index.php                  
+ ------ ----------------------------------------------- 
+  :14    Variable $baseUrl might not be defined.        
+  :24    Variable $baseUrl might not be defined.        
+  :57    Variable $baseUrl might not be defined.        
+  :58    Variable $userRole might not be defined.       
+  :63    Variable $doctors might not be defined.        
+  :77    Variable $patients might not be defined.       
+  :90    Variable $statusOptions might not be defined.  
+  :114   Variable $baseUrl might not be defined.        
+  :146   Variable $baseUrl might not be defined.        
+  :162   Variable $baseUrl might not be defined.        
+  :166   Variable $baseUrl might not be defined.        
+ ------ ----------------------------------------------- 
+
+ ------ ---------------------------------------------- 
+  Line   views\consultations\print.php                 
+ ------ ---------------------------------------------- 
+  :6     Variable $pageTitle might not be defined.     
+  :115   Variable $consultation might not be defined.  
+  :118   Variable $consultation might not be defined.  
+  :123   Variable $consultation might not be defined.  
+  :124   Variable $consultation might not be defined.  
+  :125   Variable $consultation might not be defined.  
+  :126   Variable $consultation might not be defined.  
+  :146   Variable $consultation might not be defined.  
+  :146   Variable $consultation might not be defined.  
+  :160   Variable $consultation might not be defined.  
+  :160   Variable $consultation might not be defined.  
+  :228   Variable $baseUrl might not be defined.       
+ ------ ---------------------------------------------- 
+
+ ------- ---------------------------------------------- 
+  Line    views\consultations\view.php                  
+ ------- ---------------------------------------------- 
+  :31     Variable $baseUrl might not be defined.       
+  :31     Variable $consultation might not be defined.  
+  :35     Variable $userRole might not be defined.      
+  :36     Variable $baseUrl might not be defined.       
+  :36     Variable $consultation might not be defined.  
+  :40     Variable $baseUrl might not be defined.       
+  :40     Variable $consultation might not be defined.  
+  :45     Variable $baseUrl might not be defined.       
+  :67     Variable $consultation might not be defined.  
+  :67     Variable $consultation might not be defined.  
+  :78     Variable $consultation might not be defined.  
+  :78     Variable $consultation might not be defined.  
+  :86     Variable $consultation might not be defined.  
+  :90     Variable $statusClass might not be defined.   
+  :90     Variable $statusLabel might not be defined.   
+  :111    Variable $userRole might not be defined.      
+  :125    Variable $userRole might not be defined.      
+  :128    Variable $baseUrl might not be defined.       
+  :128    Variable $consultation might not be defined.  
+  :149    Variable $userRole might not be defined.      
+  :235    Variable $userRole might not be defined.      
+  :238    Variable $baseUrl might not be defined.       
+  :238    Variable $consultation might not be defined.  
+  :288    Variable $userRole might not be defined.      
+  :302    Variable $userRole might not be defined.      
+  :305    Variable $baseUrl might not be defined.       
+  :305    Variable $consultation might not be defined.  
+  :326    Variable $userRole might not be defined.      
+  :371    Variable $userRole might not be defined.      
+  :374    Variable $baseUrl might not be defined.       
+  :374    Variable $consultation might not be defined.  
+  :409    Variable $userRole might not be defined.      
+  :453    Variable $userRole might not be defined.      
+  :456    Variable $baseUrl might not be defined.       
+  :456    Variable $consultation might not be defined.  
+  :493    Variable $userRole might not be defined.      
+  :521    Variable $userRole might not be defined.      
+  :524    Variable $baseUrl might not be defined.       
+  :524    Variable $consultation might not be defined.  
+  :551    Variable $userRole might not be defined.      
+  :579    Variable $userRole might not be defined.      
+  :582    Variable $baseUrl might not be defined.       
+  :582    Variable $consultation might not be defined.  
+  :609    Variable $userRole might not be defined.      
+  :623    Variable $userRole might not be defined.      
+  :626    Variable $baseUrl might not be defined.       
+  :626    Variable $consultation might not be defined.  
+  :647    Variable $userRole might not be defined.      
+  :684    Variable $userRole might not be defined.      
+  :687    Variable $baseUrl might not be defined.       
+  :687    Variable $consultation might not be defined.  
+  :720    Variable $userRole might not be defined.      
+  :764    Variable $userRole might not be defined.      
+  :767    Variable $baseUrl might not be defined.       
+  :767    Variable $consultation might not be defined.  
+  :810    Variable $userRole might not be defined.      
+  :824    Variable $userRole might not be defined.      
+  :827    Variable $baseUrl might not be defined.       
+  :827    Variable $consultation might not be defined.  
+  :848    Variable $userRole might not be defined.      
+  :862    Variable $userRole might not be defined.      
+  :865    Variable $baseUrl might not be defined.       
+  :865    Variable $consultation might not be defined.  
+  :886    Variable $userRole might not be defined.      
+  :900    Variable $userRole might not be defined.      
+  :903    Variable $baseUrl might not be defined.       
+  :903    Variable $consultation might not be defined.  
+  :946    Variable $userRole might not be defined.      
+  :960    Variable $userRole might not be defined.      
+  :963    Variable $baseUrl might not be defined.       
+  :963    Variable $consultation might not be defined.  
+  :984    Variable $userRole might not be defined.      
+  :998    Variable $userRole might not be defined.      
+  :1001   Variable $baseUrl might not be defined.       
+  :1001   Variable $consultation might not be defined.  
+  :1022   Variable $userRole might not be defined.      
+  :1036   Variable $userRole might not be defined.      
+  :1039   Variable $baseUrl might not be defined.       
+  :1039   Variable $consultation might not be defined.  
+  :1062   Variable $baseUrl might not be defined.       
+  :1062   Variable $patient might not be defined.       
+  :1071   Variable $consultation might not be defined.  
+  :1071   Variable $consultation might not be defined.  
+  :1105   Variable $consultation might not be defined.  
+  :1105   Variable $consultation might not be defined.  
+  :1126   Variable $baseUrl might not be defined.       
+ ------- ---------------------------------------------- 
+
+ ------ ----------------------------------------------------- 
+  Line   views\dashboard\admin.php                            
+ ------ ----------------------------------------------------- 
+  :21    Variable $userCount might not be defined.            
+  :38    Variable $patientCount might not be defined.         
+  :55    Variable $appointmentCount might not be defined.     
+  :72    Variable $pendingAppointments might not be defined.  
+  :90    Variable $baseUrl might not be defined.              
+  :128   Variable $baseUrl might not be defined.              
+  :148   Variable $baseUrl might not be defined.              
+  :182   Variable $baseUrl might not be defined.              
+  :185   Variable $baseUrl might not be defined.              
+  :210   Variable $baseUrl might not be defined.              
+  :231   Variable $baseUrl might not be defined.              
+  :283   Variable $baseUrl might not be defined.              
+  :288   Variable $baseUrl might not be defined.              
+  :293   Variable $baseUrl might not be defined.              
+  :298   Variable $baseUrl might not be defined.              
+  :356   Variable $baseUrl might not be defined.              
+ ------ ----------------------------------------------------- 
+
+ ------ --------------------------------------------- 
+  Line   views\dashboard\default.php                  
+ ------ --------------------------------------------- 
+  :16    Variable $baseUrl might not be defined.      
+  :19    Variable $currentUser might not be defined.  
+  :19    Variable $currentUser might not be defined.  
+  :37    Variable $baseUrl might not be defined.      
+  :40    Variable $baseUrl might not be defined.      
+  :55    Variable $baseUrl might not be defined.      
+ ------ --------------------------------------------- 
+
+ ------ ----------------------------------------------------- 
+  Line   views\dashboard\doctor.php                           
+ ------ ----------------------------------------------------- 
+  :74    Variable $todayAppointments might not be defined.    
+  :91    Variable $patientCount might not be defined.         
+  :108   Variable $appointmentCount might not be defined.     
+  :125   Variable $pendingAppointments might not be defined.  
+  :143   Variable $baseUrl might not be defined.              
+  :146   Variable $baseUrl might not be defined.              
+  :154   Variable $baseUrl might not be defined.              
+  :174   Variable $baseUrl might not be defined.              
+  :213   Variable $baseUrl might not be defined.              
+  :218   Variable $baseUrl might not be defined.              
+  :241   Variable $baseUrl might not be defined.              
+  :244   Variable $baseUrl might not be defined.              
+  :247   Variable $baseUrl might not be defined.              
+  :250   Variable $baseUrl might not be defined.              
+  :253   Variable $baseUrl might not be defined.              
+  :267   Variable $baseUrl might not be defined.              
+  :269   Variable $currentUser might not be defined.          
+  :269   Variable $currentUser might not be defined.          
+  :291   Variable $baseUrl might not be defined.              
+  :309   Variable $baseUrl might not be defined.              
+  :312   Variable $baseUrl might not be defined.              
+  :337   Variable $baseUrl might not be defined.              
+  :365   Variable $baseUrl might not be defined.              
+  :395   Variable $baseUrl might not be defined.              
+  :450   Variable $baseUrl might not be defined.              
+ ------ ----------------------------------------------------- 
+
+ ------ --------------------------------------------------- 
+  Line   views\dashboard\lab_technician.php                 
+ ------ --------------------------------------------------- 
+  :20    Variable $pendingLabTests might not be defined.    
+  :37    Variable $completedLabTests might not be defined.  
+  :88    Variable $baseUrl might not be defined.            
+  :95    Variable $baseUrl might not be defined.            
+  :118   Variable $baseUrl might not be defined.            
+  :144   Variable $baseUrl might not be defined.            
+  :166   Variable $baseUrl might not be defined.            
+  :169   Variable $baseUrl might not be defined.            
+  :172   Variable $baseUrl might not be defined.            
+  :175   Variable $baseUrl might not be defined.            
+  :189   Variable $baseUrl might not be defined.            
+  :191   Variable $currentUser might not be defined.        
+  :191   Variable $currentUser might not be defined.        
+  :209   Variable $baseUrl might not be defined.            
+  :224   Variable $baseUrl might not be defined.            
+  :252   Variable $baseUrl might not be defined.            
+  :259   Variable $baseUrl might not be defined.            
+  :262   Variable $baseUrl might not be defined.            
+  :318   Variable $baseUrl might not be defined.            
+  :338   Variable $baseUrl might not be defined.            
+  :379   Variable $baseUrl might not be defined.            
+  :383   Variable $baseUrl might not be defined.            
+ ------ --------------------------------------------------- 
+
+ ------ ------------------------------------------------------ 
+  Line   views\dashboard\nurse.php                             
+ ------ ------------------------------------------------------ 
+  :21    Variable $todayAppointments might not be defined.     
+  :38    Variable $patientCount might not be defined.          
+  :55    Variable $upcomingAppointments might not be defined.  
+  :89    Variable $baseUrl might not be defined.               
+  :96    Variable $baseUrl might not be defined.               
+  :117   Variable $baseUrl might not be defined.               
+  :150   Variable $baseUrl might not be defined.               
+  :155   Variable $baseUrl might not be defined.               
+  :178   Variable $baseUrl might not be defined.               
+  :181   Variable $baseUrl might not be defined.               
+  :184   Variable $baseUrl might not be defined.               
+  :187   Variable $baseUrl might not be defined.               
+  :201   Variable $baseUrl might not be defined.               
+  :203   Variable $currentUser might not be defined.           
+  :203   Variable $currentUser might not be defined.           
+  :221   Variable $baseUrl might not be defined.               
+  :239   Variable $baseUrl might not be defined.               
+  :242   Variable $baseUrl might not be defined.               
+  :267   Variable $baseUrl might not be defined.               
+  :296   Variable $baseUrl might not be defined.               
+  :321   Variable $baseUrl might not be defined.               
+  :324   Variable $baseUrl might not be defined.               
+  :536   Variable $baseUrl might not be defined.               
+ ------ ------------------------------------------------------ 
+
+ ------ --------------------------------------------- 
+  Line   views\dashboard\patient.php                  
+ ------ --------------------------------------------- 
+  :18    Variable $currentUser might not be defined.  
+  :18    Variable $currentUser might not be defined.  
+  :45    Variable $baseUrl might not be defined.      
+  :50    Variable $baseUrl might not be defined.      
+  :55    Variable $baseUrl might not be defined.      
+  :60    Variable $baseUrl might not be defined.      
+  :77    Variable $baseUrl might not be defined.      
+  :82    Variable $baseUrl might not be defined.      
+  :84    Variable $baseUrl might not be defined.      
+  :123   Variable $baseUrl might not be defined.      
+  :127   Variable $baseUrl might not be defined.      
+  :130   Variable $baseUrl might not be defined.      
+  :150   Variable $baseUrl might not be defined.      
+  :155   Variable $baseUrl might not be defined.      
+  :195   Variable $baseUrl might not be defined.      
+  :199   Variable $baseUrl might not be defined.      
+  :221   Variable $baseUrl might not be defined.      
+  :226   Variable $baseUrl might not be defined.      
+  :264   Variable $baseUrl might not be defined.      
+  :268   Variable $baseUrl might not be defined.      
+  :288   Variable $baseUrl might not be defined.      
+  :293   Variable $baseUrl might not be defined.      
+  :314   Variable $baseUrl might not be defined.      
+  :386   Variable $baseUrl might not be defined.      
+ ------ --------------------------------------------- 
+
+ ------ -------------------------------------------------------- 
+  Line   views\dashboard\pharmacist.php                          
+ ------ -------------------------------------------------------- 
+  :20    Variable $pendingPrescriptions might not be defined.    
+  :37    Variable $completedPrescriptions might not be defined.  
+  :88    Variable $baseUrl might not be defined.                 
+  :95    Variable $baseUrl might not be defined.                 
+  :117   Variable $baseUrl might not be defined.                 
+  :150   Variable $baseUrl might not be defined.                 
+  :153   Variable $baseUrl might not be defined.                 
+  :175   Variable $baseUrl might not be defined.                 
+  :178   Variable $baseUrl might not be defined.                 
+  :181   Variable $baseUrl might not be defined.                 
+  :184   Variable $baseUrl might not be defined.                 
+  :198   Variable $baseUrl might not be defined.                 
+  :200   Variable $currentUser might not be defined.             
+  :200   Variable $currentUser might not be defined.             
+  :218   Variable $baseUrl might not be defined.                 
+  :233   Variable $baseUrl might not be defined.                 
+  :260   Variable $baseUrl might not be defined.                 
+  :268   Variable $baseUrl might not be defined.                 
+  :271   Variable $baseUrl might not be defined.                 
+  :321   Variable $baseUrl might not be defined.                 
+ ------ -------------------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\departments\create.php             
+ ------ ----------------------------------------- 
+  :17    Variable $baseUrl might not be defined.  
+  :39    Variable $baseUrl might not be defined.  
+  :146   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ -------------------------------------------- 
+  Line   views\departments\edit.php                  
+ ------ -------------------------------------------- 
+  :17    Variable $baseUrl might not be defined.     
+  :39    Variable $baseUrl might not be defined.     
+  :39    Variable $department might not be defined.  
+  :71    Variable $department might not be defined.  
+  :72    Variable $department might not be defined.  
+  :73    Variable $department might not be defined.  
+  :85    Variable $staff might not be defined.       
+  :86    Variable $department might not be defined.  
+  :146   Variable $baseUrl might not be defined.     
+  :158   Variable $baseUrl might not be defined.     
+  :158   Variable $department might not be defined.  
+  :187   Variable $baseUrl might not be defined.     
+  :187   Variable $baseUrl might not be defined.     
+  :206   Variable $baseUrl might not be defined.     
+  :229   Variable $baseUrl might not be defined.     
+  :229   Variable $department might not be defined.  
+ ------ -------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\departments\index.php              
+ ------ ----------------------------------------- 
+  :17    Variable $baseUrl might not be defined.  
+  :39    Variable $baseUrl might not be defined.  
+  :76    Variable $baseUrl might not be defined.  
+  :113   Variable $baseUrl might not be defined.  
+  :173   Variable $baseUrl might not be defined.  
+  :173   Variable $baseUrl might not be defined.  
+  :195   Variable $baseUrl might not be defined.  
+  :199   Variable $baseUrl might not be defined.  
+  :259   Variable $baseUrl might not be defined.  
+  :263   Variable $baseUrl might not be defined.  
+  :268   Variable $baseUrl might not be defined.  
+  :274   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ -------------------------------------------- 
+  Line   views\departments\show.php                  
+ ------ -------------------------------------------- 
+  :18    Variable $baseUrl might not be defined.     
+  :18    Variable $department might not be defined.  
+  :21    Variable $baseUrl might not be defined.     
+  :70    Variable $department might not be defined.  
+  :85    Variable $department might not be defined.  
+  :134   Variable $department might not be defined.  
+  :157   Variable $baseUrl might not be defined.     
+  :157   Variable $baseUrl might not be defined.     
+  :161   Variable $baseUrl might not be defined.     
+  :199   Variable $baseUrl might not be defined.     
+  :199   Variable $department might not be defined.  
+  :209   Variable $baseUrl might not be defined.     
+  :209   Variable $department might not be defined.  
+  :231   Variable $baseUrl might not be defined.     
+  :231   Variable $baseUrl might not be defined.     
+  :250   Variable $baseUrl might not be defined.     
+  :273   Variable $baseUrl might not be defined.     
+  :273   Variable $department might not be defined.  
+ ------ -------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\error.php                          
+ ------ ----------------------------------------- 
+  :115   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\error\unauthorized.php             
+ ------ ----------------------------------------- 
+  :16    Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------------- 
+  Line   views\follow-ups\create.php                    
+ ------ ----------------------------------------------- 
+  :17    Variable $baseUrl might not be defined.        
+  :28    Variable $baseUrl might not be defined.        
+  :35    Variable $patients might not be defined.       
+  :49    Variable $consultations might not be defined.  
+  :130   Variable $baseUrl might not be defined.        
+ ------ ----------------------------------------------- 
+
+ ------ ----------------------------------------------- 
+  Line   views\follow-ups\edit.php                      
+ ------ ----------------------------------------------- 
+  :18    Variable $baseUrl might not be defined.        
+  :18    Variable $followUp might not be defined.       
+  :21    Variable $baseUrl might not be defined.        
+  :33    Variable $baseUrl might not be defined.        
+  :33    Variable $followUp might not be defined.       
+  :40    Variable $patients might not be defined.       
+  :41    Variable $followUp might not be defined.       
+  :54    Variable $consultations might not be defined.  
+  :55    Variable $followUp might not be defined.       
+  :69    Variable $followUp might not be defined.       
+  :88    Variable $followUp might not be defined.       
+  :89    Variable $followUp might not be defined.       
+  :90    Variable $followUp might not be defined.       
+  :91    Variable $followUp might not be defined.       
+  :92    Variable $followUp might not be defined.       
+  :93    Variable $followUp might not be defined.       
+  :103   Variable $followUp might not be defined.       
+  :104   Variable $followUp might not be defined.       
+  :105   Variable $followUp might not be defined.       
+  :106   Variable $followUp might not be defined.       
+  :114   Variable $followUp might not be defined.       
+  :125   Variable $followUp might not be defined.       
+  :126   Variable $followUp might not be defined.       
+  :127   Variable $followUp might not be defined.       
+  :128   Variable $followUp might not be defined.       
+  :129   Variable $followUp might not be defined.       
+  :137   Variable $baseUrl might not be defined.        
+  :137   Variable $followUp might not be defined.       
+ ------ ----------------------------------------------- 
+
+ ------ -------------------------------------------- 
+  Line   views\follow-ups\index.php                  
+ ------ -------------------------------------------- 
+  :17    Variable $baseUrl might not be defined.     
+  :28    Variable $baseUrl might not be defined.     
+  :85    Variable $baseUrl might not be defined.     
+  :143   Variable $baseUrl might not be defined.     
+  :147   Variable $baseUrl might not be defined.     
+  :165   Variable $pagination might not be defined.  
+  :168   Variable $pagination might not be defined.  
+  :170   Variable $baseUrl might not be defined.     
+  :170   Variable $pagination might not be defined.  
+  :176   Variable $pagination might not be defined.  
+  :177   Variable $pagination might not be defined.  
+  :178   Variable $baseUrl might not be defined.     
+  :184   Variable $pagination might not be defined.  
+  :184   Variable $pagination might not be defined.  
+  :186   Variable $baseUrl might not be defined.     
+  :186   Variable $pagination might not be defined.  
+  :197   Variable $baseUrl might not be defined.     
+  :200   Variable $baseUrl might not be defined.     
+  :228   Variable $baseUrl might not be defined.     
+ ------ -------------------------------------------- 
+
+ ------ ------------------------------------------ 
+  Line   views\follow-ups\show.php                 
+ ------ ------------------------------------------ 
+  :18    Variable $baseUrl might not be defined.   
+  :18    Variable $followUp might not be defined.  
+  :21    Variable $baseUrl might not be defined.   
+  :40    Variable $followUp might not be defined.  
+  :44    Variable $followUp might not be defined.  
+  :48    Variable $followUp might not be defined.  
+  :61    Variable $followUp might not be defined.  
+  :67    Variable $followUp might not be defined.  
+  :67    Variable $followUp might not be defined.  
+  :68    Variable $followUp might not be defined.  
+  :75    Variable $followUp might not be defined.  
+  :75    Variable $followUp might not be defined.  
+  :76    Variable $followUp might not be defined.  
+  :82    Variable $followUp might not be defined.  
+  :91    Variable $followUp might not be defined.  
+  :142   Variable $baseUrl might not be defined.   
+  :142   Variable $followUp might not be defined.  
+  :146   Variable $followUp might not be defined.  
+  :147   Variable $followUp might not be defined.  
+  :152   Variable $followUp might not be defined.  
+  :153   Variable $followUp might not be defined.  
+  :158   Variable $followUp might not be defined.  
+  :159   Variable $followUp might not be defined.  
+  :164   Variable $baseUrl might not be defined.   
+  :177   Variable $followUp might not be defined.  
+  :178   Variable $followUp might not be defined.  
+  :179   Variable $followUp might not be defined.  
+  :180   Variable $baseUrl might not be defined.   
+  :180   Variable $followUp might not be defined.  
+  :196   Variable $baseUrl might not be defined.   
+ ------ ------------------------------------------ 
+
+ ------ ----------------------------------------------------- 
+  Line   views\follow-ups\statistics.php                      
+ ------ ----------------------------------------------------- 
+  :17    Variable $baseUrl might not be defined.              
+  :32    Variable $totalFollowUps might not be defined.       
+  :50    Variable $completedFollowUps might not be defined.   
+  :68    Variable $pendingFollowUps might not be defined.     
+  :86    Variable $completionRate might not be defined.       
+  :157   Variable $topDoctors might not be defined.           
+  :188   Variable $followUpTypes might not be defined.        
+  :214   Variable $cancelledFollowUps might not be defined.   
+  :214   Variable $completedFollowUps might not be defined.   
+  :214   Variable $inProgressFollowUps might not be defined.  
+  :214   Variable $pendingFollowUps might not be defined.     
+  :236   Variable $highPriority might not be defined.         
+  :236   Variable $lowPriority might not be defined.          
+  :236   Variable $mediumPriority might not be defined.       
+  :236   Variable $urgentPriority might not be defined.       
+  :256   Variable $monthlyLabels might not be defined.        
+  :259   Variable $monthlyData might not be defined.          
+  :265   Variable $monthlyCompleted might not be defined.     
+ ------ ----------------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\follow-ups\upcoming.php            
+ ------ ----------------------------------------- 
+  :18    Variable $baseUrl might not be defined.  
+  :21    Variable $baseUrl might not be defined.  
+  :89    Variable $baseUrl might not be defined.  
+  :93    Variable $baseUrl might not be defined.  
+  :111   Variable $baseUrl might not be defined.  
+  :114   Variable $baseUrl might not be defined.  
+  :142   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ------------------------------------------- 
+  Line   views\guest-appointments\booking-form.php  
+ ------ ------------------------------------------- 
+  :17    Variable $baseUrl might not be defined.    
+  :39    Variable $baseUrl might not be defined.    
+  :136   Variable $services might not be defined.   
+  :150   Variable $doctors might not be defined.    
+  :191   Variable $baseUrl might not be defined.    
+  :193   Variable $baseUrl might not be defined.    
+  :194   Variable $baseUrl might not be defined.    
+ ------ ------------------------------------------- 
+
+ ------ ------------------------------------------- 
+  Line   views\guest-appointments\confirmation.php  
+ ------ ------------------------------------------- 
+  :38    Variable $baseUrl might not be defined.    
+  :43    Variable $baseUrl might not be defined.    
+ ------ ------------------------------------------- 
+
+ ------ -------------------------------------------- 
+  Line   views\home\index.php                        
+ ------ -------------------------------------------- 
+  :32    Variable $baseUrl might not be defined.     
+  :45    Variable $baseUrl might not be defined.     
+  :58    Variable $baseUrl might not be defined.     
+  :71    Variable $baseUrl might not be defined.     
+  :84    Variable $isLoggedIn might not be defined.  
+  :85    Variable $baseUrl might not be defined.     
+  :88    Variable $baseUrl might not be defined.     
+  :92    Variable $baseUrl might not be defined.     
+  :155   Variable $baseUrl might not be defined.     
+  :158   Variable $baseUrl might not be defined.     
+  :195   Variable $baseUrl might not be defined.     
+  :220   Variable $baseUrl might not be defined.     
+  :243   Variable $baseUrl might not be defined.     
+  :268   Variable $baseUrl might not be defined.     
+  :334   Variable $baseUrl might not be defined.     
+  :378   Variable $baseUrl might not be defined.     
+ ------ -------------------------------------------- 
+
+ ------ ------------------------------------------------- 
+  Line   views\invoices\create.php                        
+ ------ ------------------------------------------------- 
+  :17    Variable $baseUrl might not be defined.          
+  :39    Variable $baseUrl might not be defined.          
+  :47    Variable $patients might not be defined.         
+  :49    Variable $selectedPatient might not be defined.  
+  :63    Variable $doctors might not be defined.          
+  :65    Variable $selectedDoctor might not be defined.   
+  :102   Variable $services might not be defined.         
+  :196   Variable $baseUrl might not be defined.          
+ ------ ------------------------------------------------- 
+
+ ------ ------------------------------------------ 
+  Line   views\invoices\edit.php                   
+ ------ ------------------------------------------ 
+  :18    Variable $baseUrl might not be defined.   
+  :18    Variable $invoice might not be defined.   
+  :22    Variable $baseUrl might not be defined.   
+  :37    Variable $baseUrl might not be defined.   
+  :37    Variable $invoice might not be defined.   
+  :45    Variable $patients might not be defined.  
+  :47    Variable $invoice might not be defined.   
+  :61    Variable $doctors might not be defined.   
+  :63    Variable $invoice might not be defined.   
+  :77    Variable $invoice might not be defined.   
+  :85    Variable $invoice might not be defined.   
+  :95    Variable $invoice might not be defined.   
+  :96    Variable $invoice might not be defined.   
+  :97    Variable $invoice might not be defined.   
+  :98    Variable $invoice might not be defined.   
+  :99    Variable $invoice might not be defined.   
+  :117   Variable $services might not be defined.  
+  :168   Variable $services might not be defined.  
+  :222   Variable $invoice might not be defined.   
+  :223   Variable $invoice might not be defined.   
+  :237   Variable $invoice might not be defined.   
+  :238   Variable $invoice might not be defined.   
+  :244   Variable $invoice might not be defined.   
+  :245   Variable $invoice might not be defined.   
+  :264   Variable $baseUrl might not be defined.   
+  :264   Variable $invoice might not be defined.   
+ ------ ------------------------------------------ 
+
+ ------ ----------------------------------------- 
+  Line   views\invoices\index.php                 
+ ------ ----------------------------------------- 
+  :17    Variable $baseUrl might not be defined.  
+  :39    Variable $baseUrl might not be defined.  
+  :82    Variable $baseUrl might not be defined.  
+  :119   Variable $baseUrl might not be defined.  
+  :147   Variable $baseUrl might not be defined.  
+  :147   Variable $baseUrl might not be defined.  
+  :210   Variable $baseUrl might not be defined.  
+  :214   Variable $baseUrl might not be defined.  
+  :218   Variable $baseUrl might not be defined.  
+  :223   Variable $baseUrl might not be defined.  
+  :273   Variable $baseUrl might not be defined.  
+  :277   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\invoices\print.php                 
+ ------ ----------------------------------------- 
+  :189   Variable $invoice might not be defined.  
+  :191   Variable $invoice might not be defined.  
+  :192   Variable $invoice might not be defined.  
+  :194   Variable $invoice might not be defined.  
+  :195   Variable $invoice might not be defined.  
+  :204   Variable $invoice might not be defined.  
+  :205   Variable $invoice might not be defined.  
+  :246   Variable $invoice might not be defined.  
+  :250   Variable $invoice might not be defined.  
+  :254   Variable $invoice might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\invoices\show.php                  
+ ------ ----------------------------------------- 
+  :18    Variable $baseUrl might not be defined.  
+  :18    Variable $invoice might not be defined.  
+  :22    Variable $baseUrl might not be defined.  
+  :22    Variable $invoice might not be defined.  
+  :26    Variable $baseUrl might not be defined.  
+  :49    Variable $invoice might not be defined.  
+  :53    Variable $invoice might not be defined.  
+  :57    Variable $invoice might not be defined.  
+  :64    Variable $invoice might not be defined.  
+  :83    Variable $invoice might not be defined.  
+  :93    Variable $invoice might not be defined.  
+  :101   Variable $invoice might not be defined.  
+  :105   Variable $invoice might not be defined.  
+  :109   Variable $invoice might not be defined.  
+  :179   Variable $invoice might not be defined.  
+  :179   Variable $invoice might not be defined.  
+  :181   Variable $baseUrl might not be defined.  
+  :181   Variable $invoice might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\lab-results\index.php              
+ ------ ----------------------------------------- 
+  :53    Variable $baseUrl might not be defined.  
+  :57    Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\lab-results\view.php               
+ ------ ----------------------------------------- 
+  :16    Variable $baseUrl might not be defined.  
+  :149   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\lab\print_results.php              
+ ------ ----------------------------------------- 
+  :26    Variable $request might not be defined.  
+  :162   Variable $patient might not be defined.  
+  :166   Variable $patient might not be defined.  
+  :166   Variable $patient might not be defined.  
+  :170   Variable $patient might not be defined.  
+  :174   Variable $patient might not be defined.  
+  :174   Variable $patient might not be defined.  
+  :184   Variable $request might not be defined.  
+  :188   Variable $request might not be defined.  
+  :192   Variable $request might not be defined.  
+  :196   Variable $request might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\lab\request_form.php               
+ ------ ----------------------------------------- 
+  :15    Variable $baseUrl might not be defined.  
+  :29    Variable $baseUrl might not be defined.  
+  :157   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ -------------------------------------------- 
+  Line   views\lab\requests\index.php                
+ ------ -------------------------------------------- 
+  :16    Variable $baseUrl might not be defined.     
+  :27    Variable $baseUrl might not be defined.     
+  :31    Variable $status might not be defined.      
+  :32    Variable $status might not be defined.      
+  :33    Variable $status might not be defined.      
+  :34    Variable $status might not be defined.      
+  :35    Variable $status might not be defined.      
+  :40    Variable $search might not be defined.      
+  :97    Variable $baseUrl might not be defined.     
+  :101   Variable $baseUrl might not be defined.     
+  :113   Variable $pagination might not be defined.  
+  :113   Variable $pagination might not be defined.  
+  :118   Variable $pagination might not be defined.  
+  :118   Variable $pagination might not be defined.  
+  :119   Variable $pagination might not be defined.  
+  :120   Variable $pagination might not be defined.  
+ ------ -------------------------------------------- 
+
+ ------ ------------------------------------------- 
+  Line   views\lab\tests\register-sample.php        
+ ------ ------------------------------------------- 
+  :29    Variable $patients might not be defined.   
+  :42    Variable $testTypes might not be defined.  
+ ------ ------------------------------------------- 
+
+ ------ --------------------------------------------- 
+  Line   views\lab\view_request.php                   
+ ------ --------------------------------------------- 
+  :28    Variable $baseUrl might not be defined.      
+  :31    Variable $request might not be defined.      
+  :32    Variable $baseUrl might not be defined.      
+  :32    Variable $request might not be defined.      
+  :52    Variable $request might not be defined.      
+  :59    Variable $request might not be defined.      
+  :68    Variable $request might not be defined.      
+  :74    Variable $request might not be defined.      
+  :84    Variable $request might not be defined.      
+  :91    Variable $currentUser might not be defined.  
+  :91    Variable $request might not be defined.      
+  :93    Variable $baseUrl might not be defined.      
+  :93    Variable $request might not be defined.      
+  :100   Variable $currentUser might not be defined.  
+  :100   Variable $request might not be defined.      
+  :102   Variable $baseUrl might not be defined.      
+  :102   Variable $request might not be defined.      
+  :111   Variable $currentUser might not be defined.  
+  :111   Variable $request might not be defined.      
+  :111   Variable $request might not be defined.      
+  :113   Variable $baseUrl might not be defined.      
+  :113   Variable $request might not be defined.      
+  :134   Variable $patient might not be defined.      
+  :138   Variable $patient might not be defined.      
+  :138   Variable $patient might not be defined.      
+  :142   Variable $patient might not be defined.      
+  :146   Variable $patient might not be defined.      
+  :146   Variable $patient might not be defined.      
+  :150   Variable $patient might not be defined.      
+  :154   Variable $patient might not be defined.      
+  :157   Variable $baseUrl might not be defined.      
+  :157   Variable $patient might not be defined.      
+  :223   Variable $currentUser might not be defined.  
+  :224   Variable $baseUrl might not be defined.      
+ ------ --------------------------------------------- 
+
+ ------ ------------------------------------------------------------------- 
+  Line   views\layouts\default.php                                          
+ ------ ------------------------------------------------------------------- 
+  :14    Variable $baseUrl might not be defined.                            
+  :15    Variable $pageTitle in isset() always exists and is not nullable.  
+  :19    Variable $baseUrl might not be defined.                            
+  :34    Variable $baseUrl might not be defined.                            
+  :35    Variable $baseUrl might not be defined.                            
+  :36    Variable $baseUrl might not be defined.                            
+  :37    Variable $baseUrl might not be defined.                            
+  :38    Variable $baseUrl might not be defined.                            
+  :39    Variable $baseUrl might not be defined.                            
+  :40    Variable $baseUrl might not be defined.                            
+  :41    Variable $baseUrl might not be defined.                            
+  :46    Variable $baseUrl might not be defined.                            
+  :53    Negated boolean expression is always false.                        
+  :79    Negated boolean expression is always false.                        
+  :87    Negated boolean expression is always false.                        
+  :104   Variable $content might not be defined.                            
+  :129   Variable $baseUrl might not be defined.                            
+  :130   Variable $isLoggedIn might not be defined.                         
+ ------ ------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------- 
+  Line   views\layouts\landing.php                                          
+ ------ ------------------------------------------------------------------- 
+  :13    Variable $baseUrl might not be defined.                            
+  :14    Variable $pageTitle in isset() always exists and is not nullable.  
+  :18    Variable $baseUrl might not be defined.                            
+  :32    Variable $baseUrl might not be defined.                            
+  :33    Variable $baseUrl might not be defined.                            
+  :34    Variable $baseUrl might not be defined.                            
+  :35    Variable $baseUrl might not be defined.                            
+  :36    Variable $baseUrl might not be defined.                            
+  :37    Variable $baseUrl might not be defined.                            
+  :43    Variable $baseUrl might not be defined.                            
+  :62    Variable $messageType might not be defined.                        
+  :70    Variable $content might not be defined.                            
+ ------ ------------------------------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\messages\compose.php               
+ ------ ----------------------------------------- 
+  :65    Variable $baseUrl might not be defined.  
+  :76    Variable $baseUrl might not be defined.  
+  :137   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\messages\index.php                 
+ ------ ----------------------------------------- 
+  :46    Variable $baseUrl might not be defined.  
+  :62    Variable $baseUrl might not be defined.  
+  :71    Variable $baseUrl might not be defined.  
+  :80    Variable $baseUrl might not be defined.  
+  :93    Variable $baseUrl might not be defined.  
+  :126   Variable $baseUrl might not be defined.  
+  :184   Variable $baseUrl might not be defined.  
+  :207   Variable $baseUrl might not be defined.  
+  :231   Variable $baseUrl might not be defined.  
+  :241   Variable $baseUrl might not be defined.  
+  :352   Variable $baseUrl might not be defined.  
+  :382   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\messages\search.php                
+ ------ ----------------------------------------- 
+  :29    Variable $baseUrl might not be defined.  
+  :44    Variable $baseUrl might not be defined.  
+  :68    Variable $baseUrl might not be defined.  
+  :74    Variable $baseUrl might not be defined.  
+  :77    Variable $baseUrl might not be defined.  
+  :80    Variable $baseUrl might not be defined.  
+  :104   Variable $baseUrl might not be defined.  
+  :182   Variable $baseUrl might not be defined.  
+  :205   Variable $baseUrl might not be defined.  
+  :361   Variable $baseUrl might not be defined.  
+  :397   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\messages\show.php                  
+ ------ ----------------------------------------- 
+  :25    Variable $baseUrl might not be defined.  
+  :55    Variable $baseUrl might not be defined.  
+  :175   Variable $baseUrl might not be defined.  
+  :179   Variable $baseUrl might not be defined.  
+  :308   Variable $baseUrl might not be defined.  
+  :338   Variable $baseUrl might not be defined.  
+  :351   Variable $baseUrl might not be defined.  
+  :370   Variable $baseUrl might not be defined.  
+  :402   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ --------------------------------------------- 
+  Line   views\notifications\index.php                
+ ------ --------------------------------------------- 
+  :13    Variable $baseUrl might not be defined.      
+  :40    Variable $totalCount might not be defined.   
+  :45    Variable $totalCount might not be defined.   
+  :66    Variable $baseUrl might not be defined.      
+  :135   Variable $baseUrl might not be defined.      
+  :149   Variable $totalPages might not be defined.   
+  :153   Variable $hasPrevPage might not be defined.  
+  :155   Variable $baseUrl might not be defined.      
+  :155   Variable $currentPage might not be defined.  
+  :163   Variable $currentPage might not be defined.  
+  :164   Variable $currentPage might not be defined.  
+  :169   Variable $baseUrl might not be defined.      
+  :179   Variable $currentPage might not be defined.  
+  :180   Variable $baseUrl might not be defined.      
+  :193   Variable $baseUrl might not be defined.      
+  :198   Variable $hasNextPage might not be defined.  
+  :200   Variable $baseUrl might not be defined.      
+  :200   Variable $currentPage might not be defined.  
+ ------ --------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\patients\create.php                
+ ------ ----------------------------------------- 
+  :14    Variable $baseUrl might not be defined.  
+  :31    Variable $baseUrl might not be defined.  
+  :188   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\patients\edit.php                  
+ ------ ----------------------------------------- 
+  :14    Variable $baseUrl might not be defined.  
+  :14    Variable $patient might not be defined.  
+  :22    Variable $baseUrl might not be defined.  
+  :22    Variable $patient might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------ 
+  Line   views\patients\index.php                                                      
+ ------ ------------------------------------------------------------------------------ 
+  :27    Variable $baseUrl might not be defined.                                       
+  :52    Variable $baseUrl might not be defined.                                       
+  :63    Variable $baseUrl might not be defined.                                       
+  :96    Variable $baseUrl might not be defined.                                       
+  :131   Variable $baseUrl might not be defined.                                       
+  :136   Parameter #1 $string of function htmlspecialchars expects string, int given.  
+  :147   Variable $baseUrl might not be defined.                                       
+  :150   Variable $baseUrl might not be defined.                                       
+ ------ ------------------------------------------------------------------------------ 
+
+ ------ ----------------------------------------- 
+  Line   views\patients\view.php                  
+ ------ ----------------------------------------- 
+  :26    Variable $baseUrl might not be defined.  
+  :53    Variable $baseUrl might not be defined.  
+  :53    Variable $patient might not be defined.  
+  :130   Variable $baseUrl might not be defined.  
+  :130   Variable $patient might not be defined.  
+  :135   Variable $baseUrl might not be defined.  
+  :135   Variable $patient might not be defined.  
+  :140   Variable $baseUrl might not be defined.  
+  :140   Variable $patient might not be defined.  
+  :145   Variable $baseUrl might not be defined.  
+  :145   Variable $patient might not be defined.  
+  :216   Variable $baseUrl might not be defined.  
+  :360   Variable $baseUrl might not be defined.  
+  :435   Variable $baseUrl might not be defined.  
+  :521   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ------------------------------------------------ 
+  Line   views\payments\create.php                       
+ ------ ------------------------------------------------ 
+  :17    Variable $baseUrl might not be defined.         
+  :28    Variable $baseUrl might not be defined.         
+  :36    Variable $invoices might not be defined.        
+  :40    Variable $invoice might not be defined.         
+  :65    Variable $paymentMethods might not be defined.  
+  :136   Variable $baseUrl might not be defined.         
+ ------ ------------------------------------------------ 
+
+ ------ ------------------------------------------------ 
+  Line   views\payments\edit.php                         
+ ------ ------------------------------------------------ 
+  :18    Variable $baseUrl might not be defined.         
+  :18    Variable $payment might not be defined.         
+  :22    Variable $baseUrl might not be defined.         
+  :34    Variable $baseUrl might not be defined.         
+  :34    Variable $payment might not be defined.         
+  :41    Variable $payment might not be defined.         
+  :49    Variable $payment might not be defined.         
+  :60    Variable $paymentMethods might not be defined.  
+  :61    Variable $payment might not be defined.         
+  :73    Variable $payment might not be defined.         
+  :103   Variable $payment might not be defined.         
+  :104   Variable $payment might not be defined.         
+  :105   Variable $payment might not be defined.         
+  :106   Variable $payment might not be defined.         
+  :157   Variable $baseUrl might not be defined.         
+  :157   Variable $payment might not be defined.         
+ ------ ------------------------------------------------ 
+
+ ------ ----------------------------------------- 
+  Line   views\payments\index.php                 
+ ------ ----------------------------------------- 
+  :17    Variable $baseUrl might not be defined.  
+  :28    Variable $baseUrl might not be defined.  
+  :71    Variable $baseUrl might not be defined.  
+  :108   Variable $baseUrl might not be defined.  
+  :136   Variable $baseUrl might not be defined.  
+  :136   Variable $baseUrl might not be defined.  
+  :146   Variable $baseUrl might not be defined.  
+  :215   Variable $baseUrl might not be defined.  
+  :219   Variable $baseUrl might not be defined.  
+  :223   Variable $baseUrl might not be defined.  
+  :272   Variable $baseUrl might not be defined.  
+  :276   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\payments\print.php                 
+ ------ ----------------------------------------- 
+  :173   Variable $payment might not be defined.  
+  :175   Variable $payment might not be defined.  
+  :176   Variable $payment might not be defined.  
+  :178   Variable $payment might not be defined.  
+  :179   Variable $payment might not be defined.  
+  :202   Variable $payment might not be defined.  
+  :206   Variable $payment might not be defined.  
+  :222   Variable $payment might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\payments\show.php                  
+ ------ ----------------------------------------- 
+  :18    Variable $baseUrl might not be defined.  
+  :18    Variable $payment might not be defined.  
+  :22    Variable $baseUrl might not be defined.  
+  :22    Variable $payment might not be defined.  
+  :26    Variable $baseUrl might not be defined.  
+  :46    Variable $payment might not be defined.  
+  :50    Variable $payment might not be defined.  
+  :54    Variable $payment might not be defined.  
+  :61    Variable $payment might not be defined.  
+  :77    Variable $payment might not be defined.  
+  :87    Variable $payment might not be defined.  
+  :99    Variable $payment might not be defined.  
+  :120   Variable $baseUrl might not be defined.  
+  :186   Variable $payment might not be defined.  
+  :192   Variable $payment might not be defined.  
+  :198   Variable $baseUrl might not be defined.  
+  :198   Variable $payment might not be defined.  
+  :217   Variable $baseUrl might not be defined.  
+  :217   Variable $payment might not be defined.  
+  :222   Variable $payment might not be defined.  
+  :222   Variable $payment might not be defined.  
+  :223   Variable $payment might not be defined.  
+  :252   Variable $baseUrl might not be defined.  
+  :252   Variable $payment might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ -------------------------------------------- 
+  Line   views\payments\statistics.php               
+ ------ -------------------------------------------- 
+  :18    Variable $baseUrl might not be defined.     
+  :30    Variable $baseUrl might not be defined.     
+  :35    Variable $period might not be defined.      
+  :36    Variable $period might not be defined.      
+  :37    Variable $period might not be defined.      
+  :38    Variable $period might not be defined.      
+  :39    Variable $period might not be defined.      
+  :61    Variable $baseUrl might not be defined.     
+  :80    Variable $statistics might not be defined.  
+  :100   Variable $statistics might not be defined.  
+  :120   Variable $statistics might not be defined.  
+  :140   Variable $statistics might not be defined.  
+  :165   Variable $statistics might not be defined.  
+  :187   Variable $statistics might not be defined.  
+  :233   Variable $statistics might not be defined.  
+  :265   Variable $statistics might not be defined.  
+  :294   Variable $statistics might not be defined.  
+  :296   Variable $statistics might not be defined.  
+  :297   Variable $statistics might not be defined.  
+  :317   Variable $statistics might not be defined.  
+  :319   Variable $statistics might not be defined.  
+  :320   Variable $statistics might not be defined.  
+  :340   Variable $statistics might not be defined.  
+  :343   Variable $statistics might not be defined.  
+ ------ -------------------------------------------- 
+
+ ------ -------------------------------------------- 
+  Line   views\pharmacy\medicines\create.php         
+ ------ -------------------------------------------- 
+  :17    Variable $baseUrl might not be defined.     
+  :31    Variable $baseUrl might not be defined.     
+  :57    Variable $categories might not be defined.  
+  :69    Variable $forms might not be defined.       
+  :99    Variable $units might not be defined.       
+  :162   Variable $baseUrl might not be defined.     
+ ------ -------------------------------------------- 
+
+ ------ -------------------------------------------- 
+  Line   views\pharmacy\medicines\edit.php           
+ ------ -------------------------------------------- 
+  :18    Variable $baseUrl might not be defined.     
+  :18    Variable $medication might not be defined.  
+  :22    Variable $baseUrl might not be defined.     
+  :37    Variable $baseUrl might not be defined.     
+  :37    Variable $medication might not be defined.  
+  :44    Variable $medication might not be defined.  
+  :63    Variable $categories might not be defined.  
+  :64    Variable $medication might not be defined.  
+  :77    Variable $forms might not be defined.       
+  :78    Variable $medication might not be defined.  
+  :100   Variable $medication might not be defined.  
+  :109   Variable $units might not be defined.       
+  :110   Variable $medication might not be defined.  
+  :163   Variable $medication might not be defined.  
+  :176   Variable $baseUrl might not be defined.     
+  :176   Variable $medication might not be defined.  
+ ------ -------------------------------------------- 
+
+ ------ -------------------------------------------- 
+  Line   views\pharmacy\medicines\index.php          
+ ------ -------------------------------------------- 
+  :17    Variable $baseUrl might not be defined.     
+  :36    Variable $statistics might not be defined.  
+  :56    Variable $statistics might not be defined.  
+  :76    Variable $statistics might not be defined.  
+  :96    Variable $statistics might not be defined.  
+  :114   Variable $baseUrl might not be defined.     
+  :119   Variable $filters might not be defined.     
+  :128   Variable $categories might not be defined.  
+  :129   Variable $filters might not be defined.     
+  :140   Variable $filters might not be defined.     
+  :141   Variable $filters might not be defined.     
+  :142   Variable $filters might not be defined.     
+  :153   Variable $baseUrl might not be defined.     
+  :241   Variable $baseUrl might not be defined.     
+  :245   Variable $baseUrl might not be defined.     
+  :263   Variable $pagination might not be defined.  
+  :266   Variable $pagination might not be defined.  
+  :268   Variable $filters might not be defined.     
+  :268   Variable $filters might not be defined.     
+  :268   Variable $filters might not be defined.     
+  :268   Variable $pagination might not be defined.  
+  :274   Variable $pagination might not be defined.  
+  :275   Variable $pagination might not be defined.  
+  :276   Variable $filters might not be defined.     
+  :276   Variable $filters might not be defined.     
+  :276   Variable $filters might not be defined.     
+  :282   Variable $pagination might not be defined.  
+  :282   Variable $pagination might not be defined.  
+  :284   Variable $filters might not be defined.     
+  :284   Variable $filters might not be defined.     
+  :284   Variable $filters might not be defined.     
+  :284   Variable $pagination might not be defined.  
+  :298   Variable $baseUrl might not be defined.     
+ ------ -------------------------------------------- 
+
+ ------ -------------------------------------------- 
+  Line   views\pharmacy\medicines\show.php           
+ ------ -------------------------------------------- 
+  :18    Variable $baseUrl might not be defined.     
+  :18    Variable $medication might not be defined.  
+  :22    Variable $baseUrl might not be defined.     
+  :45    Variable $medication might not be defined.  
+  :63    Variable $medication might not be defined.  
+  :67    Variable $medication might not be defined.  
+  :67    Variable $medication might not be defined.  
+  :79    Variable $medication might not be defined.  
+  :96    Variable $medication might not be defined.  
+  :105   Variable $medication might not be defined.  
+  :201   Variable $baseUrl might not be defined.     
+  :201   Variable $medication might not be defined.  
+  :206   Variable $medication might not be defined.  
+  :207   Variable $medication might not be defined.  
+  :207   Variable $medication might not be defined.  
+  :208   Variable $medication might not be defined.  
+  :209   Variable $medication might not be defined.  
+  :212   Variable $baseUrl might not be defined.     
+  :212   Variable $medication might not be defined.  
+ ------ -------------------------------------------- 
+
+ ------ --------------------------------------------- 
+  Line   views\prescriptions\form.php                 
+ ------ --------------------------------------------- 
+  :198   Variable $frequencies might not be defined.  
+  :213   Variable $durations might not be defined.    
+ ------ --------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------- 
+  Line   views\prescriptions\print.php                                                    
+ ------ --------------------------------------------------------------------------------- 
+  :136   Expression on left side of ?? is not nullable.                                   
+  :136   Variable $patient might not be defined.                                          
+  :136   Variable $patient might not be defined.                                          
+  :167   Parameter #1 $string of function str_pad expects string, int<1000, 9999> given.  
+ ------ --------------------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------------------- 
+  Line   views\prescriptions\view.php                                                                
+ ------ -------------------------------------------------------------------------------------------- 
+  :109   Expression on left side of ?? is not nullable.                                              
+  :109   Variable $patient might not be defined.                                                     
+  :109   Variable $patient might not be defined.                                                     
+  :271   File ends with a trailing whitespace. This may cause problems when running the code in the  
+         web browser. Remove the closing ?> mark or remove the whitespace.                           
+ ------ -------------------------------------------------------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\reports\index.php                  
+ ------ ----------------------------------------- 
+  :18    Variable $baseUrl might not be defined.  
+  :129   Variable $baseUrl might not be defined.  
+  :156   Variable $baseUrl might not be defined.  
+  :183   Variable $baseUrl might not be defined.  
+  :210   Variable $baseUrl might not be defined.  
+  :237   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\settings\index.php                 
+ ------ ----------------------------------------- 
+  :18    Variable $baseUrl might not be defined.  
+  :85    Variable $baseUrl might not be defined.  
+  :88    Variable $baseUrl might not be defined.  
+  :108   Variable $baseUrl might not be defined.  
+  :131   Variable $baseUrl might not be defined.  
+  :225   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\settings\users.php                 
+ ------ ----------------------------------------- 
+  :18    Variable $baseUrl might not be defined.  
+  :73    Variable $baseUrl might not be defined.  
+  :213   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\users\change_password.php          
+ ------ ----------------------------------------- 
+  :11    Variable $baseUrl might not be defined.  
+  :23    Variable $baseUrl might not be defined.  
+  :50    Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\users\create.php                   
+ ------ ----------------------------------------- 
+  :11    Variable $baseUrl might not be defined.  
+  :37    Variable $baseUrl might not be defined.  
+  :82    Variable $roles might not be defined.    
+  :211   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ --------------------------------------------- 
+  Line   views\users\edit.php                         
+ ------ --------------------------------------------- 
+  :12    Variable $baseUrl might not be defined.      
+  :15    Variable $baseUrl might not be defined.      
+  :15    Variable $user might not be defined.         
+  :42    Variable $baseUrl might not be defined.      
+  :42    Variable $user might not be defined.         
+  :48    Variable $user might not be defined.         
+  :57    Variable $user might not be defined.         
+  :69    Variable $user might not be defined.         
+  :78    Variable $user might not be defined.         
+  :90    Variable $currentUser might not be defined.  
+  :90    Variable $user might not be defined.         
+  :90    Variable $user might not be defined.         
+  :97    Variable $currentUser might not be defined.  
+  :97    Variable $user might not be defined.         
+  :99    Variable $roles might not be defined.        
+  :102   Variable $user might not be defined.         
+  :182   Variable $user might not be defined.         
+  :188   Variable $user might not be defined.         
+  :329   Variable $baseUrl might not be defined.      
+  :329   Variable $user might not be defined.         
+ ------ --------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\users\edit_profile.php             
+ ------ ----------------------------------------- 
+  :11    Variable $baseUrl might not be defined.  
+  :40    Variable $baseUrl might not be defined.  
+  :45    Variable $user might not be defined.     
+  :53    Variable $user might not be defined.     
+  :64    Variable $user might not be defined.     
+  :72    Variable $user might not be defined.     
+  :132   Variable $baseUrl might not be defined.  
+  :136   Variable $user might not be defined.     
+  :136   Variable $user might not be defined.     
+  :143   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ --------------------------------------------- 
+  Line   views\users\index.php                        
+ ------ --------------------------------------------- 
+  :11    Variable $baseUrl might not be defined.      
+  :108   Variable $baseUrl might not be defined.      
+  :111   Variable $baseUrl might not be defined.      
+  :114   Variable $currentUser might not be defined.  
+  :115   Variable $baseUrl might not be defined.      
+ ------ --------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   views\users\profile.php                  
+ ------ ----------------------------------------- 
+  :11    Variable $baseUrl might not be defined.  
+  :40    Variable $baseUrl might not be defined.  
+  :45    Variable $user might not be defined.     
+  :53    Variable $user might not be defined.     
+  :64    Variable $user might not be defined.     
+  :72    Variable $user might not be defined.     
+  :82    Variable $user might not be defined.     
+  :86    Variable $user might not be defined.     
+  :105   Variable $baseUrl might not be defined.  
+  :153   Variable $user might not be defined.     
+  :159   Variable $user might not be defined.     
+  :160   Variable $user might not be defined.     
+ ------ ----------------------------------------- 
+
+ ------ --------------------------------------------- 
+  Line   views\users\view.php                         
+ ------ --------------------------------------------- 
+  :12    Variable $baseUrl might not be defined.      
+  :15    Variable $currentUser might not be defined.  
+  :15    Variable $user might not be defined.         
+  :16    Variable $baseUrl might not be defined.      
+  :16    Variable $user might not be defined.         
+  :29    Variable $user might not be defined.         
+  :30    Variable $user might not be defined.         
+  :37    Variable $user might not be defined.         
+  :37    Variable $user might not be defined.         
+  :41    Variable $user might not be defined.         
+  :48    Variable $user might not be defined.         
+  :52    Variable $user might not be defined.         
+  :63    Variable $user might not be defined.         
+  :88    Variable $user might not be defined.         
+  :94    Variable $user might not be defined.         
+  :98    Variable $user might not be defined.         
+  :111   Variable $user might not be defined.         
+  :124   Variable $user might not be defined.         
+  :154   Variable $user might not be defined.         
+  :182   Variable $baseUrl might not be defined.      
+  :182   Variable $user might not be defined.         
+  :186   Variable $currentUser might not be defined.  
+  :186   Variable $user might not be defined.         
+  :187   Variable $user might not be defined.         
+  :189   Variable $user might not be defined.         
+  :190   Variable $user might not be defined.         
+  :193   Variable $user might not be defined.         
+  :194   Variable $baseUrl might not be defined.      
+  :194   Variable $user might not be defined.         
+  :209   Variable $user might not be defined.         
+  :214   Variable $baseUrl might not be defined.      
+  :214   Variable $user might not be defined.         
+  :270   Variable $baseUrl might not be defined.      
+  :284   Variable $user might not be defined.         
+  :342   Variable $baseUrl might not be defined.      
+  :364   Variable $user might not be defined.         
+  :369   Variable $user might not be defined.         
+  :371   Variable $user might not be defined.         
+  :382   Variable $baseUrl might not be defined.      
+  :382   Variable $user might not be defined.         
+  :383   Variable $user might not be defined.         
+  :384   Variable $user might not be defined.         
+  :407   Variable $baseUrl might not be defined.      
+  :407   Variable $user might not be defined.         
+  :497   Variable $baseUrl might not be defined.      
+ ------ --------------------------------------------- 
+
+ ------ ------------------------------------------ 
+  Line   views\vitals\create.php                   
+ ------ ------------------------------------------ 
+  :16    Variable $baseUrl might not be defined.   
+  :28    Variable $patients might not be defined.  
+  :127   Variable $baseUrl might not be defined.   
+  :127   Variable $baseUrl might not be defined.   
+ ------ ------------------------------------------ 
+
+ ------ ----------------------------------------- 
+  Line   views\vitals\history.php                 
+ ------ ----------------------------------------- 
+  :28    Variable $baseUrl might not be defined.  
+  :28    Variable $patient might not be defined.  
+  :113   Variable $baseUrl might not be defined.  
+  :125   Variable $baseUrl might not be defined.  
+  :125   Variable $patient might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------------------- 
+  Line   views\vitals\view.php                                                                       
+ ------ -------------------------------------------------------------------------------------------- 
+  :15    Variable $baseUrl might not be defined.                                                     
+  :15    Variable $patient might not be defined.                                                     
+  :18    Variable $baseUrl might not be defined.                                                     
+  :18    Variable $patient might not be defined.                                                     
+  :70    Variable $vitalSign might not be defined.                                                   
+  :70    Variable $vitalSign might not be defined.                                                   
+  :71    Variable $vitalSign might not be defined.                                                   
+  :71    Variable $vitalSign might not be defined.                                                   
+  :72    Variable $vitalSign might not be defined.                                                   
+  :72    Variable $vitalSign might not be defined.                                                   
+  :73    Variable $vitalSign might not be defined.                                                   
+  :73    Variable $vitalSign might not be defined.                                                   
+  :74    Variable $vitalSign might not be defined.                                                   
+  :74    Variable $vitalSign might not be defined.                                                   
+  :75    Variable $vitalSign might not be defined.                                                   
+  :75    Variable $vitalSign might not be defined.                                                   
+  :97    Variable $vitalSign might not be defined.                                                   
+  :97    Variable $vitalSign might not be defined.                                                   
+  :98    Variable $vitalSign might not be defined.                                                   
+  :98    Variable $vitalSign might not be defined.                                                   
+  :100   Variable $vitalSign might not be defined.                                                   
+  :101   Variable $vitalSign might not be defined.                                                   
+  :105   Variable $vitalSign might not be defined.                                                   
+  :108   Variable $vitalSign might not be defined.                                                   
+  :108   Variable $vitalSign might not be defined.                                                   
+  :111   Variable $vitalSign might not be defined.                                                   
+  :111   Variable $vitalSign might not be defined.                                                   
+  :131   Variable $vitalSign might not be defined.                                                   
+  :137   Variable $vitalSign might not be defined.                                                   
+  :145   Variable $baseUrl might not be defined.                                                     
+  :145   Variable $patient might not be defined.                                                     
+  :176   Variable $baseUrl might not be defined.                                                     
+  :176   Variable $vitalSign might not be defined.                                                   
+  :183   File ends with a trailing whitespace. This may cause problems when running the code in the  
+         web browser. Remove the closing ?> mark or remove the whitespace.                           
+ ------ -------------------------------------------------------------------------------------------- 
+
+ -- ---------------------------------------------------------------------------------------------- 
+     Error                                                                                         
+ -- ---------------------------------------------------------------------------------------------- 
+     Ignored error pattern #Class .* located in .* does not comply with psr-4# was not matched in  
+     reported errors.                                                                              
+     Ignored error pattern #PHPDoc tag @param.*has invalid value# was not matched in reported      
+     errors.                                                                                       
+ -- ---------------------------------------------------------------------------------------------- 
+
+ [ERROR] Found 1317 errors                                                                          
+

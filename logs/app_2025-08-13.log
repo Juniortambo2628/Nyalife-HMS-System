@@ -1,0 +1,11 @@
+[2025-08-13 10:36:51] [ERROR] [Database error in AppointmentModel::create] Column 'doctor_id' cannot be null
+[2025-08-13 10:37:57] [ERROR] [Database error in UserModel::create] Duplicate entry 'test_guest_1755070676' for key 'username'
+[2025-08-13 10:37:57] [ERROR] [Database error in PatientModel::createPatient] Failed to create user record
+[2025-08-13 10:38:45] [ERROR] [Database error in UserModel::create] Duplicate entry 'test_guest_1755070724' for key 'username'
+[2025-08-13 10:38:45] [ERROR] [Database error in PatientModel::createPatient] Failed to create user record
+[2025-08-13 10:38:59] [ERROR] [Database error in UserModel::create] Duplicate entry 'test_guest_1755070738' for key 'username'
+[2025-08-13 10:38:59] [ERROR] [Database error in PatientModel::createPatient] Failed to create user record
+[2025-08-13 10:39:41] [ERROR] [Database error in AppointmentModel::create] Column 'doctor_id' cannot be null
+[2025-08-13 10:41:24] [ERROR] [Database error in UserModel::create] Duplicate entry 'patient_test' for key 'username'
+[2025-08-13 10:41:24] [ERROR] [Database error in PatientModel::createPatient] Failed to create user record
+[2025-08-13 23:16:05] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/ValidationController.php

@@ -39,12 +39,18 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function initLoader() {
     if (typeof NyalifeLoader !== 'undefined') {
-        if (typeof NyalifeLoader.init === 'function') {
-            NyalifeLoader.init();
-        }
+        // Don't initialize again if already initialized by nyalife-loader.js
+        // Just ensure the core namespace points to the correct loader
         
         // Add to core namespace for unified access
         window.NyalifeCore.loader = NyalifeLoader;
+        
+        // Also ensure Nyalife.loader and Nyalife.Loader point to the same implementation
+        window.Nyalife = window.Nyalife || {};
+        window.Nyalife.loader = window.NyalifeLoader;
+        window.Nyalife.Loader = window.NyalifeLoader;
+        
+        console.log('Loader integration complete - using unified NyalifeLoader');
     }
 }
 

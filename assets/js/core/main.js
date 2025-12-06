@@ -6,11 +6,6 @@
 
 // Initialize core modules when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the loader
-    if (window.NyalifeLoader && typeof NyalifeLoader.init === 'function') {
-        NyalifeLoader.init();
-    }
-    
     // Register global error handler for uncaught errors
     window.addEventListener('error', function(event) {
         console.error('Uncaught error:', event.error);

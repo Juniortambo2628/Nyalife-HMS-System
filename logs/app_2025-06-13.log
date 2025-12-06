@@ -1,0 +1,49 @@
+[2025-06-13 00:49:12] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Unknown column 'p.doctor_id' in 'where clause'
+[2025-06-13 00:49:13] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'doctor_id' in 'where clause'
+[2025-06-13 00:49:18] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Unknown column 'p.doctor_id' in 'where clause'
+[2025-06-13 00:49:18] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'doctor_id' in 'where clause'
+[2025-06-13 05:35:14] [ERROR] [Database error in ConsultationModel::create] Column 'appointment_id' cannot be null
+[2025-06-13 06:04:40] [ERROR] [Database error in ConsultationModel::create] Column 'appointment_id' cannot be null
+[2025-06-13 06:23:13] [ERROR] [System error in WebRouter::dispatch] Action method not found: store
+[2025-06-13 08:52:21] [ERROR] [Database error in LabTestModel::getTestsByConsultation] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 09:39:27] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Unknown column 'p.doctor_id' in 'where clause'
+[2025-06-13 09:39:27] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'doctor_id' in 'where clause'
+[2025-06-13 13:33:56] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Unknown column 'p.doctor_id' in 'where clause'
+[2025-06-13 13:33:56] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'doctor_id' in 'where clause'
+[2025-06-13 13:34:02] [ERROR] [Database error in MedicationModel::getAllMedications] Table 'nyalife_hms.medication_batches' doesn't exist
+[2025-06-13 14:58:59] [ERROR] [Database error in MedicationModel::getAllMedications] Table 'nyalife_hms.medication_batches' doesn't exist
+[2025-06-13 14:58:59] [ERROR] [Database error in MedicationModel::getAllMedications] Table 'nyalife_hms.medication_batches' doesn't exist
+[2025-06-13 14:59:27] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Unknown column 'p.doctor_id' in 'where clause'
+[2025-06-13 14:59:27] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'doctor_id' in 'where clause'
+[2025-06-13 14:59:27] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Unknown column 'p.doctor_id' in 'where clause'
+[2025-06-13 14:59:27] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'doctor_id' in 'where clause'
+[2025-06-13 16:22:38] [ERROR] [Database error in MedicationModel::getAllMedications] Table 'nyalife_hms.medication_batches' doesn't exist
+[2025-06-13 16:24:50] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Unknown column 'p.doctor_id' in 'where clause'
+[2025-06-13 16:24:50] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'doctor_id' in 'where clause'
+[2025-06-13 16:44:30] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Unknown column 'p.dispensed_by' in 'on clause'
+[2025-06-13 16:44:58] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Unknown column 'p.dispensed_by' in 'on clause'
+[2025-06-13 16:45:05] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Unknown column 'p.dispensed_by' in 'on clause'
+[2025-06-13 16:45:13] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Unknown column 'p.dispensed_by' in 'on clause'
+[2025-06-13 16:45:21] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Unknown column 'p.dispensed_by' in 'on clause'
+[2025-06-13 16:45:23] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Unknown column 'p.dispensed_by' in 'on clause'
+[2025-06-13 16:45:47] [ERROR] [Database error in LabTestModel::getPendingTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:45:47] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:45:59] [ERROR] [Database error in LabTestModel::getPendingTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:45:59] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:46:02] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:46:02] [ERROR] [Database error in LabTestModel::countCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:46:05] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:46:05] [ERROR] [Database error in LabTestModel::countCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:46:07] [ERROR] [Database error in LabTestModel::getPendingTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:46:07] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:46:11] [ERROR] [Database error in LabTestModel::getActiveTestTypes] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:46:14] [ERROR] [Database error in LabTestModel::getPendingTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:46:14] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:46:18] [ERROR] [Database error in LabTestModel::getSamplesByStatus] Unknown column 't.type_id' in 'on clause'
+[2025-06-13 16:46:18] [ERROR] [Database error in LabTestModel::countSamplesByStatus] Unknown column 't.type_id' in 'on clause'
+[2025-06-13 16:46:23] [ERROR] [Database error in LabTestModel::getPendingTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 16:46:23] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-13 19:32:31] [ERROR] [Database error in MedicationModel::getAllMedications] Table 'nyalife_hms.medication_categories' doesn't exist
+[2025-06-13 19:39:17] [ERROR] [Database error in LabTestModel::getPendingTests] Unknown column 'r.test_id' in 'on clause'
+[2025-06-13 19:41:22] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Unknown column 'p.doctor_id' in 'on clause'
+[2025-06-13 19:41:52] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Unknown column 'p.doctor_id' in 'on clause'

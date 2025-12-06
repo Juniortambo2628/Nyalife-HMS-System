@@ -1,0 +1,40 @@
+===============================================================
+NYALIFE HMS - DEPLOYMENT READINESS TEST REPORT
+===============================================================
+Generated: 2025-11-01 19:23:18
+PHP Version: 8.3.14
+===============================================================
+✅ PHP Version Check: PASS
+   └─ Version 8.3.14 meets requirement
+✅ PHP Extensions: PASS
+   └─ All required extensions loaded
+✅ Composer Config: PASS
+   └─ composer.json is valid
+⚠️ Security Audit: WARN
+   └─ Some vulnerabilities detected - review audit output
+✅ PHPUnit Tests: PASS
+   └─ All tests passed
+⚠️ PHPStan Analysis: WARN
+   └─ 136 errors found
+⚠️ Code Style (PHPCS): WARN
+   └─ some violations found
+⚠️ Code Quality (PHPMD): WARN
+   └─ Code smells detected
+✅ Critical Files: PASS
+   └─ All critical files present
+✅ PHP Syntax: PASS
+   └─ 68 files checked, no errors
+✅ Autoloader: PASS
+   └─ Autoloader functional
+⚠️ Code Duplication (phpcpd): WARN
+   └─ 25 clones found
+
+===============================================================
+SUMMARY:
+  ✅ Passed: 7
+  ⚠️  Warnings: 5
+  ❌ Failed: 0
+===============================================================
+
+All detailed reports saved to: deployment-readiness-reports/
+Timestamp: 2025-11-01_19-23-18

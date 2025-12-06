@@ -1,18 +1,22 @@
 <?php
+
 /**
  * Nyalife HMS - Database Manager
- * 
+ *
  * A singleton class to manage database connections using .env configuration.
  */
 
-class DatabaseManager {
-    private static $instance = null;
-    private $connection = null;
+class DatabaseManager
+{
+    private static ?\DatabaseManager $instance = null;
+    
+    private readonly \mysqli $connection;
 
     /**
      * Private constructor to prevent direct creation
      */
-    private function __construct() {
+    private function __construct()
+    {
         // Load environment variables if not already loaded
         if (!isset($_ENV['DB_HOST'])) {
             $this->loadEnv();
@@ -26,7 +30,7 @@ class DatabaseManager {
             $_ENV['DB_NAME']
         );
 
-        if ($this->connection->connect_error) {
+        if ($this->connection->connect_error !== null && $this->connection->connect_error !== '' && $this->connection->connect_error !== '0') {
             throw new Exception("Connection failed: " . $this->connection->connect_error);
         }
 
@@ -36,7 +40,8 @@ class DatabaseManager {
     /**
      * Loads the .env file if not already loaded
      */
-    private function loadEnv() {
+    private function loadEnv(): void
+    {
         $dotenvPath = dirname(__DIR__, 2); // Go up two levels to reach project root
         require_once $dotenvPath . '/vendor/autoload.php';
 
@@ -46,10 +51,11 @@ class DatabaseManager {
 
     /**
      * Get the singleton instance
-     * 
+     *
      * @return DatabaseManager The singleton instance
      */
-    public static function getInstance() {
+    public static function getInstance(): DatabaseManager
+    {
         if (self::$instance === null) {
             self::$instance = new self();
         }
@@ -58,22 +64,19 @@ class DatabaseManager {
 
     /**
      * Get the database connection
-     * 
+     *
      * @return mysqli The database connection
      */
-    public function getConnection() {
+    public function getConnection(): mysqli
+    {
         return $this->connection;
     }
 
     /**
-     * Prevent cloning of the instance
-     */
-    private function __clone() {}
-
-    /**
      * Close the connection when the object is destroyed
      */
-    public function __destruct() {
+    public function __destruct()
+    {
         if ($this->connection) {
             $this->connection->close();
         }

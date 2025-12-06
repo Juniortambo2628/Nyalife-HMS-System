@@ -1,0 +1,2577 @@
+
+32 files with changes
+=====================
+
+1) includes/autoload.php:24
+
+    ---------- begin diff ----------
+@@ @@
+ }
+
+ // 4. Custom class autoloading (controllers, models, core classes)
+-spl_autoload_register(function ($className) {
+-    if (strpos($className, '\\') !== false) {
+-        $parts = explode('\\', $className);
++spl_autoload_register(function ($className): void {
++    if (str_contains((string) $className, '\\')) {
++        $parts = explode('\\', (string) $className);
+         $className = array_pop($parts);
+         $namespace = strtolower(implode('/', $parts));
+
+@@ @@
+         }
+     }
+
+-    if (strpos($className, 'Controller') !== false) {
++    if (str_contains((string) $className, 'Controller')) {
+         $file = __DIR__ . '/controllers/web/' . $className . '.php';
+         if (file_exists($file)) {
+             require_once $file;
+@@ @@
+         }
+     }
+
+-    if (strpos($className, 'Model') !== false) {
++    if (str_contains((string) $className, 'Model')) {
+         $file = __DIR__ . '/models/' . $className . '.php';
+         if (file_exists($file)) {
+             require_once $file;
+    ----------- end diff -----------
+
+Applied rules:
+ * StrContainsRector
+ * NullToStrictStringFuncCallArgRector
+ * AddClosureVoidReturnTypeWhereNoReturnRector
+
+
+2) includes/components/alert.php:17
+
+    ---------- begin diff ----------
+@@ @@
+  * @param int $dismissTime Time in milliseconds before auto dismissing
+  * @return string The alert HTML
+  */
+-function generateAlert($message, $type = NOTIFICATION_INFO, $dismissible = true, $autoDismiss = false, $dismissTime = 5000)
++function generateAlert(string $message, string $type = NOTIFICATION_INFO, $dismissible = true, $autoDismiss = false, $dismissTime = 5000): string
+ {
+     $alertClass = 'alert alert-' . $type;
+     if ($dismissible) {
+@@ @@
+  *
+  * @return string The alerts HTML
+  */
+-function displaySessionAlerts()
++function displaySessionAlerts(): string
+ {
+     $html = '';
+     $types = [
+@@ @@
+         'info' => NOTIFICATION_INFO
+     ];
+
+-    foreach ($types as $type => $constant) {
++    foreach (array_keys($types) as $type) {
+         $key = 'alert_' . $type;
+         if (isset($_SESSION[$key])) {
+             $html .= generateAlert($_SESSION[$key], $type);
+@@ @@
+  * @param string $message Alert message
+  * @param string $type Alert type (success, danger, warning, info)
+  */
+-function setSessionAlert($message, $type = NOTIFICATION_INFO)
++function setSessionAlert($message, string $type = NOTIFICATION_INFO): void
+ {
+     ensureSession();
+     $_SESSION['alert_' . $type] = $message;
+    ----------- end diff -----------
+
+Applied rules:
+ * UnusedForeachValueToArrayKeysRector
+ * StrictStringParamConcatRector
+ * StringReturnTypeFromStrictStringReturnsRector
+ * AddFunctionVoidReturnTypeWhereNoReturnRector
+
+
+3) includes/components/flash_messages.php:26
+
+    ---------- begin diff ----------
+@@ @@
+ // Display flash messages if any exist
+ if (!empty($flashMessages)): ?>
+     <?php foreach ($flashMessages as $flash): ?>
+-        <div class="alert alert-<?= htmlspecialchars($flash['type']) ?> alert-dismissible fade show" role="alert">
++        <div class="alert alert-<?= htmlspecialchars((string) $flash['type']) ?> alert-dismissible fade show" role="alert">
+             <?php
+             // Add appropriate icon based on message type
+             $icon = match($flash['type']) {
+@@ @@
+             };
+         ?>
+             <i class="<?= $icon ?> me-2"></i>
+-            <?= htmlspecialchars($flash['message']) ?>
++            <?= htmlspecialchars((string) $flash['message']) ?>
+             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+         </div>
+     <?php endforeach; ?>
+    ----------- end diff -----------
+
+Applied rules:
+ * NullToStrictStringFuncCallArgRector
+
+
+4) includes/components/footer.php:5
+
+    ---------- begin diff ----------
+@@ @@
+
+ $pageTitle = 'Footer - Nyalife HMS';
+ // Check if this file is being accessed directly or via AJAX
+-$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
++$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+ // If not AJAX and not included in another file, prevent direct access
+ if (!$isAjax && !defined('NYALIFE_INCLUDED')) {
+@@ @@
+ document.addEventListener('DOMContentLoaded', function() {
+     const guestAppointmentModal = document.getElementById('guestAppointmentModal');
+     const preferredDoctorSelect = document.getElementById('preferred_doctor');
+-    
++
+     if (guestAppointmentModal && preferredDoctorSelect) {
+         // Load doctors when modal is shown
+         guestAppointmentModal.addEventListener('show.bs.modal', function() {
+             loadDoctors();
+         });
+-        
++
+         // Set minimum date to today
+         const appointmentDateInput = document.getElementById('appointment_date');
+         if (appointmentDateInput) {
+@@ @@
+             appointmentDateInput.setAttribute('min', today);
+         }
+     }
+-    
++
+     function loadDoctors() {
+         fetch('<?= $baseUrl ?>/api/doctors', {
+             headers: {
+@@ @@
+             if (data.success && data.doctors) {
+                 // Clear existing options except the first one
+                 preferredDoctorSelect.innerHTML = '<option value="">Any Available Doctor</option>';
+-                
++
+                 // Add doctor options
+                 data.doctors.forEach(doctor => {
+                     const option = document.createElement('option');
+    ----------- end diff -----------
+
+Applied rules:
+ * NullToStrictStringFuncCallArgRector
+
+
+5) includes/components/header.php:6
+
+    ---------- begin diff ----------
+@@ @@
+ $pageTitle = 'Header - Nyalife HMS';
+
+ // Check if this file is being accessed directly or via AJAX
+-$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
++$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+ // If not AJAX and not included in another file, prevent direct access
+ if (!$isAjax && !defined('NYALIFE_INCLUDED')) {
+@@ @@
+     // Try to determine active menu from current URL
+     $currentUrl = $_SERVER['REQUEST_URI'] ?? '';
+
+-    if (strpos($currentUrl, '/dashboard') !== false) {
++    if (str_contains((string) $currentUrl, '/dashboard')) {
+         $activeMenu = 'dashboard';
+-    } elseif (strpos($currentUrl, '/patients') !== false) {
++    } elseif (str_contains((string) $currentUrl, '/patients')) {
+         $activeMenu = 'patients';
+-    } elseif (strpos($currentUrl, '/appointments') !== false) {
++    } elseif (str_contains((string) $currentUrl, '/appointments')) {
+         $activeMenu = 'appointments';
+-    } elseif (strpos($currentUrl, '/consultations') !== false) {
++    } elseif (str_contains((string) $currentUrl, '/consultations')) {
+         $activeMenu = 'consultations';
+-    } elseif (strpos($currentUrl, '/departments') !== false) {
++    } elseif (str_contains((string) $currentUrl, '/departments')) {
+         $activeMenu = 'departments';
+-    } elseif (strpos($currentUrl, '/invoices') !== false) {
++    } elseif (str_contains((string) $currentUrl, '/invoices')) {
+         $activeMenu = 'invoices';
+-    } elseif (strpos($currentUrl, '/payments') !== false) {
++    } elseif (str_contains((string) $currentUrl, '/payments')) {
+         $activeMenu = 'payments';
+-    } elseif (strpos($currentUrl, '/follow-ups') !== false) {
++    } elseif (str_contains((string) $currentUrl, '/follow-ups')) {
+         $activeMenu = 'follow_ups';
+-    } elseif (strpos($currentUrl, '/lab') !== false) {
++    } elseif (str_contains((string) $currentUrl, '/lab')) {
+         $activeMenu = 'lab';
+-    } elseif (strpos($currentUrl, '/pharmacy') !== false) {
++    } elseif (str_contains((string) $currentUrl, '/pharmacy')) {
+         $activeMenu = 'pharmacy';
+-    } elseif (strpos($currentUrl, '/prescriptions') !== false) {
++    } elseif (str_contains((string) $currentUrl, '/prescriptions')) {
+         $activeMenu = 'prescriptions';
+-    } elseif (strpos($currentUrl, '/messages') !== false) {
++    } elseif (str_contains((string) $currentUrl, '/messages')) {
+         $activeMenu = 'messages';
+-    } elseif (strpos($currentUrl, '/users') !== false || strpos($currentUrl, '/settings') !== false || strpos($currentUrl, '/reports') !== false) {
++    } elseif (str_contains((string) $currentUrl, '/users') || str_contains((string) $currentUrl, '/settings') || str_contains((string) $currentUrl, '/reports')) {
+         $activeMenu = 'admin';
+     } else {
+         $activeMenu = '';
+@@ @@
+
+     if (is_array($permissions[$module])) {
+         // For modules with sub-items, check if any sub-item is accessible
+-        return !empty(array_filter($permissions[$module]));
++        return array_filter($permissions[$module]) !== [];
+     }
+
+     return $permissions[$module];
+@@ @@
+                         <!-- Clinical Services - Grouped dropdown for clinical functions -->
+                         <?php if (hasModuleAccess($userPermissions, 'lab') || hasModuleAccess($userPermissions, 'pharmacy') || hasModuleAccess($userPermissions, 'prescriptions')): ?>
+                             <li class="nav-item dropdown">
+-                                <a class="nav-link dropdown-toggle <?= (in_array($activeMenu, ['lab', 'pharmacy', 'prescriptions']) || strpos($activeMenu, 'lab_') === 0 || strpos($activeMenu, 'pharmacy_') === 0) ? 'active' : '' ?>" href="javascript:void(0);" id="clinicalServicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
++                                <a class="nav-link dropdown-toggle <?= (in_array($activeMenu, ['lab', 'pharmacy', 'prescriptions']) || str_starts_with((string) $activeMenu, 'lab_') || str_starts_with((string) $activeMenu, 'pharmacy_')) ? 'active' : '' ?>" href="javascript:void(0);" id="clinicalServicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                     <i class="fas fa-hospital me-1"></i>Clinical Services
+                                 </a>
+                                 <ul class="dropdown-menu">
+@@ @@
+                         <!-- Administration - Available to admin only -->
+                         <?php if (hasModuleAccess($userPermissions, 'departments') || hasModuleAccess($userPermissions, 'admin')): ?>
+                             <li class="nav-item dropdown">
+-                                <a class="nav-link dropdown-toggle <?= ($activeMenu === 'departments' || $activeMenu === 'admin' || strpos($activeMenu, 'admin_') === 0) ? 'active' : '' ?>" href="javascript:void(0);" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
++                                <a class="nav-link dropdown-toggle <?= ($activeMenu === 'departments' || $activeMenu === 'admin' || str_starts_with((string) $activeMenu, 'admin_')) ? 'active' : '' ?>" href="javascript:void(0);" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                     <i class="fas fa-cogs me-1"></i>Administration
+                                 </a>
+                                 <ul class="dropdown-menu">
+    ----------- end diff -----------
+
+Applied rules:
+ * StrStartsWithRector
+ * StrContainsRector
+ * NullToStrictStringFuncCallArgRector
+ * DisallowedEmptyRuleFixerRector
+
+
+6) includes/components/modal.php:16
+
+    ---------- begin diff ----------
+@@ @@
+  * @param array $options Additional options (size, footer buttons, etc)
+  * @return string HTML for the modal
+  */
+-function generateModal($id, $title, $content, $options = [])
++function generateModal(string $id, string $title, string $content, $options = []): string
+ {
+     // Default options
+     $defaultOptions = [
+@@ @@
+     $modalHtml .= '<div class="modal-header ' . $options['header_class'] . '">';
+     $modalHtml .= '<h5 class="modal-title" id="' . $id . 'Label">' . $title . '</h5>';
+     if ($options['dismissable']) {
+-        $modalHtml .= '<button type="button" class="btn-close ' . (strpos($options['header_class'], 'text-white') !== false ? 'btn-close-white' : '') . '" data-bs-dismiss="modal" aria-label="Close"></button>';
++        $modalHtml .= '<button type="button" class="btn-close ' . (str_contains((string) $options['header_class'], 'text-white') ? 'btn-close-white' : '') . '" data-bs-dismiss="modal" aria-label="Close"></button>';
+     }
+     $modalHtml .= '</div>';
+
+@@ @@
+  * @param string $confirmButtonClass Class for confirm button
+  * @return string HTML for the confirmation modal
+  */
+-function generateConfirmationModal($id, $title, $message, $confirmButtonText = 'Confirm', $confirmButtonClass = 'btn btn-danger')
++function generateConfirmationModal($id, $title, string $message, $confirmButtonText = 'Confirm', $confirmButtonClass = 'btn btn-danger')
+ {
+     $options = [
+         'size' => 'sm',
+@@ @@
+  * @param string $content Modal body content
+  * @param array $options Additional options
+  */
+-function printModal($id, $title, $content, $options = [])
++function printModal($id, $title, $content, $options = []): void
+ {
+     echo generateModal($id, $title, $content, $options);
+ }
+@@ @@
+  * @param string $confirmButtonText Text for confirm button
+  * @param string $confirmButtonClass Class for confirm button
+  */
+-function printConfirmationModal($id, $title, $message, $confirmButtonText = 'Confirm', $confirmButtonClass = 'btn btn-danger')
++function printConfirmationModal($id, $title, $message, $confirmButtonText = 'Confirm', $confirmButtonClass = 'btn btn-danger'): void
+ {
+     echo generateConfirmationModal($id, $title, $message, $confirmButtonText, $confirmButtonClass);
+ }
+@@ @@
+  *
+  * @param string $modalId The ID of the modal to show
+  */
+-function showModal($modalId)
++function showModal(string $modalId): void
+ {
+     echo "<script>
+         document.addEventListener('DOMContentLoaded', function() {
+@@ @@
+  *
+  * @param string $modalId The ID of the modal to hide
+  */
+-function hideModal($modalId)
++function hideModal(string $modalId): void
+ {
+     echo "<script>
+         var modal = bootstrap.Modal.getInstance(document.getElementById('" . $modalId . "'));
+    ----------- end diff -----------
+
+Applied rules:
+ * StrContainsRector
+ * NullToStrictStringFuncCallArgRector
+ * StrictStringParamConcatRector
+ * StringReturnTypeFromStrictStringReturnsRector
+ * AddFunctionVoidReturnTypeWhereNoReturnRector
+
+
+7) includes/components/pagination.php:14
+
+    ---------- begin diff ----------
+@@ @@
+  * @param array $options Additional pagination options
+  * @return string HTML for the pagination control
+  */
+-function generatePagination($currentPage, $totalPages, $baseUrl, $options = [])
++function generatePagination($currentPage, $totalPages, $baseUrl, $options = []): string
+ {
+     // Default options
+     $defaultOptions = [
+@@ @@
+     }
+
+     $html .= '</ul>';
+-    $html .= '</nav>';
+
+-    return $html;
++    return $html . '</nav>';
+ }
+
+ /**
+@@ @@
+  * @param string $baseUrl Base URL for pagination links
+  * @param array $options Additional pagination options
+  */
+-function printPagination($currentPage, $totalPages, $baseUrl, $options = [])
++function printPagination($currentPage, $totalPages, $baseUrl, $options = []): void
+ {
+     echo generatePagination($currentPage, $totalPages, $baseUrl, $options);
+ }
+@@ @@
+  * @param int $currentPage Current page number
+  * @return array Pagination values (current_page, total_pages, offset, has_previous, has_next)
+  */
+-function calculatePagination($totalItems, $itemsPerPage, $currentPage = 1)
++function calculatePagination($totalItems, $itemsPerPage, $currentPage = 1): array
+ {
+     // Sanitize inputs
+     $totalItems = max(0, (int)$totalItems);
+@@ @@
+  * @param int $itemsPerPage Number of items per page
+  * @return string Pagination info text
+  */
+-function generatePaginationInfo($totalItems, $currentPage, $itemsPerPage)
++function generatePaginationInfo($totalItems, $currentPage, $itemsPerPage): string
+ {
+     $pagination = calculatePagination($totalItems, $itemsPerPage, $currentPage);
+
+@@ @@
+  * @param string $value Parameter value
+  * @return string URL with added/updated parameter
+  */
+-function addQueryParamToUrl($url, $param, $value)
++function addQueryParamToUrl($url, $param, $value): string
+ {
+     $parsedUrl = parse_url($url);
+
+     // Start with the base URL
+     $newUrl = isset($parsedUrl['scheme']) ? $parsedUrl['scheme'] . '://' : '';
+-    $newUrl .= isset($parsedUrl['host']) ? $parsedUrl['host'] : '';
++    $newUrl .= $parsedUrl['host'] ?? '';
+     $newUrl .= isset($parsedUrl['port']) ? ':' . $parsedUrl['port'] : '';
+-    $newUrl .= isset($parsedUrl['path']) ? $parsedUrl['path'] : '';
++    $newUrl .= $parsedUrl['path'] ?? '';
+
+     // Parse existing query string
+     $queryParams = [];
+    ----------- end diff -----------
+
+Applied rules:
+ * SimplifyUselessVariableRector
+ * TernaryToNullCoalescingRector
+ * ReturnTypeFromReturnDirectArrayRector
+ * StringReturnTypeFromStrictStringReturnsRector
+ * AddFunctionVoidReturnTypeWhereNoReturnRector
+
+
+8) includes/components/script-loader.php:4
+
+    ---------- begin diff ----------
+@@ @@
+  */
+
+ // Check if this file is being accessed directly or via AJAX
+-$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
++$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+ // If not AJAX and not included in another file, prevent direct access
+ if (!$isAjax && !defined('NYALIFE_INCLUDED')) {
+    ----------- end diff -----------
+
+Applied rules:
+ * NullToStrictStringFuncCallArgRector
+
+
+9) includes/components/sidebar.php:108
+
+    ---------- begin diff ----------
+@@ @@
+                 <a href="<?= htmlspecialchars($item['url']) ?>" class="sidebar-link" data-menu-id="<?= $item['id'] ?>" title="<?= htmlspecialchars($item['text']) ?>">
+                     <i class="<?= htmlspecialchars($item['icon']) ?> sidebar-icon"></i>
+                     <span class="menu-text"><?= htmlspecialchars($item['text']) ?></span>
+-                    <?php if ($item['badge']): ?>
++                    <?php if ($item['badge'] !== '' && $item['badge'] !== '0'): ?>
+                     <span class="menu-badge" id="badge-<?= $item['badge'] ?>" style="display: none;">0</span>
+                     <?php endif; ?>
+                 </a>
+    ----------- end diff -----------
+
+Applied rules:
+ * BooleanInIfConditionRuleFixerRector
+
+
+10) includes/components/table.php:15
+
+    ---------- begin diff ----------
+@@ @@
+  * @param array $options Additional table options
+  * @return string HTML for the table
+  */
+-function generateTable($id, $columns, $data = [], $options = [])
++function generateTable(string $id, $columns, $data = [], $options = []): string
+ {
+     // Default options
+     $defaultOptions = [
+@@ @@
+                 $formatter = $column['formatter'] ?? null;
+                 $tdClass = isset($column['cell_class']) ? ' class="' . $column['cell_class'] . '"' : '';
+
+-                $value = isset($row[$key]) ? $row[$key] : '';
++                $value = $row[$key] ?? '';
+
+                 // Apply formatter if provided
+                 if (is_callable($formatter)) {
+@@ @@
+  * @param array $data Table data rows
+  * @param array $options Additional table options
+  */
+-function printTable($id, $columns, $data = [], $options = [])
++function printTable($id, $columns, $data = [], $options = []): void
+ {
+     echo generateTable($id, $columns, $data, $options);
+ }
+@@ @@
+  */
+ function tableActionFormatter($actions)
+ {
+-    return function ($value, $row) use ($actions) {
++    return function ($value, $row) use ($actions): string {
+         $html = '<div class="btn-group btn-group-sm">';
+
+         foreach ($actions as $action) {
+@@ @@
+             $icon = isset($action['icon']) ? '<i class="' . $action['icon'] . '"></i>' : '';
+             $text = isset($action['text']) ? ' ' . $action['text'] : '';
+             $tooltip = isset($action['tooltip']) ? ' data-bs-toggle="tooltip" title="' . $action['tooltip'] . '"' : '';
+-            $class = isset($action['class']) ? $action['class'] : 'btn-primary';
++            $class = $action['class'] ?? 'btn-primary';
+
+             // Replace placeholders in url and attributes
+-            $url = isset($action['url']) ? $action['url'] : '#';
+-            $attributes = isset($action['attributes']) ? $action['attributes'] : '';
++            $url = $action['url'] ?? '#';
++            $attributes = $action['attributes'] ?? '';
+
+             foreach ($row as $key => $val) {
+                 $url = str_replace('{{' . $key . '}}', $val, $url);
+@@ @@
+                 $html .= '</button>';
+             }
+         }
+-
+-        $html .= '</div>';
+-        return $html;
++        return $html . '</div>';
+     };
+ }
+
+@@ @@
+  */
+ function tableStatusFormatter($statusClasses)
+ {
+-    return function ($value) use ($statusClasses) {
+-        $class = isset($statusClasses[$value]) ? $statusClasses[$value] : 'badge-secondary';
++    return function ($value) use ($statusClasses): string {
++        $class = $statusClasses[$value] ?? 'badge-secondary';
+         return '<span class="badge ' . $class . '">' . ucfirst($value) . '</span>';
+     };
+ }
+@@ @@
+  */
+ function tableDateFormatter($format = 'M d, Y')
+ {
+-    return function ($value) use ($format) {
++    return function ($value) use ($format): string {
+         if (empty($value)) {
+             return '';
+         }
+@@ @@
+  */
+ function tableBooleanFormatter($trueText = 'Yes', $falseText = 'No', $trueClass = 'text-success', $falseClass = 'text-danger')
+ {
+-    return function ($value) use ($trueText, $falseText, $trueClass, $falseClass) {
++    return function ($value) use ($trueText, $falseText, $trueClass, $falseClass): string {
+         if ($value) {
+             return '<span class="' . $trueClass . '">' . $trueText . '</span>';
+-        } else {
+-            return '<span class="' . $falseClass . '">' . $falseText . '</span>';
+         }
++        return '<span class="' . $falseClass . '">' . $falseText . '</span>';
+     };
+ }
+    ----------- end diff -----------
+
+Applied rules:
+ * SimplifyUselessVariableRector
+ * RemoveAlwaysElseRector
+ * TernaryToNullCoalescingRector
+ * StrictStringParamConcatRector
+ * StringReturnTypeFromStrictStringReturnsRector
+ * ClosureReturnTypeRector
+ * AddFunctionVoidReturnTypeWhereNoReturnRector
+
+
+11) includes/components/unified-script-loader.php:4
+
+    ---------- begin diff ----------
+@@ @@
+  */
+
+ // Check if this file is being accessed directly or via AJAX
+-$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
++$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+ // If not AJAX and not included in another file, prevent direct access
+ if (!$isAjax && !defined('NYALIFE_INCLUDED')) {
+@@ @@
+ // This ensures chunk files load from the correct path
+ <?php
+ $appPath = defined('APP_PATH') ? APP_PATH : '';
+-$webpackPublicPath = $appPath ? rtrim($appPath, '/') . '/assets/dist/' : '/assets/dist/';
++$webpackPublicPath = $appPath !== '' && $appPath !== '0' ? rtrim($appPath, '/') . '/assets/dist/' : '/assets/dist/';
+ ?>
+ __webpack_public_path__ = '<?= $webpackPublicPath ?>';
+ </script>
+@@ @@
+     foreach ($additionalScripts as $script) {
+         $src = $script;
+         // If it doesn't start with http or /, assume it's in assets/js/
+-        if (!preg_match('/^http/', $src) && !preg_match('/^\//', $src)) {
++        if (in_array(preg_match('/^http/', (string) $src), [0, false], true) && in_array(preg_match('/^\//', (string) $src), [0, false], true)) {
+             $src = $baseUrl . '/assets/js/' . $script;
+         }
+-        echo '<script src="' . htmlspecialchars($src) . '"></script>' . "\n";
++        echo '<script src="' . htmlspecialchars((string) $src) . '"></script>' . "\n";
+     }
+ }
+
+@@ @@
+         $src = $script;
+         // If it's already a full URL (e.g. from AssetHelper), use it. 
+         // Otherwise, if it doesn't start with http or /, assume it's in assets/js/
+-        if (!preg_match('/^http/', $src) && !preg_match('/^\//', $src)) {
++        if (in_array(preg_match('/^http/', (string) $src), [0, false], true) && in_array(preg_match('/^\//', (string) $src), [0, false], true)) {
+             $src = $baseUrl . '/assets/js/' . $script;
+         }
+-        echo '<script src="' . htmlspecialchars($src) . '"></script>' . "\n";
++        echo '<script src="' . htmlspecialchars((string) $src) . '"></script>' . "\n";
+     }
+ }
+ ?>
+    ----------- end diff -----------
+
+Applied rules:
+ * ExplicitBoolCompareRector
+ * NullToStrictStringFuncCallArgRector
+ * BooleanInBooleanNotRuleFixerRector
+
+
+12) includes/controllers/BaseController.php:11
+
+    ---------- begin diff ----------
+@@ @@
+
+ abstract class BaseController
+ {
+-    /** @var mysqli */
+-    protected $db;
++    protected \mysqli $db;
+
+     /**
+      * Initialize the controller
+@@ @@
+      *
+      * @param string $view View file name
+      * @param array $data Data to pass to the view
+-     * @return void
+      */
+-    protected function render($view, $data = []): void
++    protected function render(string $view, $data = []): void
+     {
+         // Extract data to make it available in view scope
+         extract($data);
+@@ @@
+      * Redirect to a URL
+      *
+      * @param string $url URL to redirect to
+-     * @return void
+      */
+     protected function redirect($url): void
+     {
+@@ @@
+      * @param mixed $default Default value
+      * @return mixed Parameter value
+      */
+-    protected function getParam($name, $default = null): mixed
++    protected function getParam($name, mixed $default = null): mixed
+     {
+-        if (isset($_GET[$name])) {
+-            return $_GET[$name];
+-        }
+-
+-        if (isset($_POST[$name])) {
+-            return $_POST[$name];
+-        }
+-
+-        return $default;
++        return $_GET[$name] ?? $_POST[$name] ?? $default;
+     }
+
+     /**
+@@ @@
+     protected function hasRole($role): bool
+     {
+         $userRole = $this->getCurrentUserRole();
+-        if (!$userRole) {
++        if ($userRole === null || $userRole === '' || $userRole === '0') {
+             return false;
+         }
+    ----------- end diff -----------
+
+Applied rules:
+ * RemoveUselessReturnTagRector
+ * IfIssetToCoalescingRector
+ * MixedTypeRector
+ * BooleanInBooleanNotRuleFixerRector
+ * StrictStringParamConcatRector
+ * TypedPropertyFromStrictConstructorRector
+
+
+13) includes/controllers/ComponentsController.php:23
+
+    ---------- begin diff ----------
+@@ @@
+     /**
+      * Load a component
+      * @param string $component The component name to load
+-     * @return void
+      */
+     public function load(string $component): void
+     {
+         // Check if it's an AJAX request
+-        if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
++        if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+             http_response_code(403);
+             echo json_encode(['error' => 'Only AJAX requests are allowed']);
+             return;
+@@ @@
+     /**
+      * Handle routing for component requests
+      * @param array $params The URL parameters
+-     * @return void
+      */
+     public function handleRequest(array $params): void
+     {
+    ----------- end diff -----------
+
+Applied rules:
+ * RemoveUselessReturnTagRector
+ * NullToStrictStringFuncCallArgRector
+
+
+14) includes/controllers/ajax/auth_handler.php:20
+
+    ---------- begin diff ----------
+@@ @@
+     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+     $domainName = $_SERVER['HTTP_HOST'];
+
+-    if ($domainName === 'localhost' || strpos($domainName, '127.0.0.1') !== false) {
++    if ($domainName === 'localhost' || str_contains((string) $domainName, '127.0.0.1')) {
+         define('APP_PATH', '/Nyalife-HMS-System');
+     } else {
+-        $scriptDir = dirname(dirname(dirname(dirname($_SERVER['SCRIPT_NAME']))));
+-        define('APP_PATH', ($scriptDir == '/' || $scriptDir == '\\') ? '' : $scriptDir);
++        $scriptDir = dirname((string) $_SERVER['SCRIPT_NAME'], 4);
++        define('APP_PATH', ($scriptDir === '/' || $scriptDir === '\\') ? '' : $scriptDir);
+     }
+ }
+
+@@ @@
+     }
+
+     // Get credentials
+-    $username = isset($_POST['username']) ? $_POST['username'] : '';
+-    $password = isset($_POST['password']) ? $_POST['password'] : '';
++    $username = $_POST['username'] ?? '';
++    $password = $_POST['password'] ?? '';
+     $remember = isset($_POST['remember']) && $_POST['remember'] == '1';
+
+     // Attempt authentication
+@@ @@
+         // Success
+         $role = $auth->getUserRole();
+         $redirectUrl = $baseUrl . '/dashboard';
+-        if ($role) {
++        if ($role !== null && $role !== '' && $role !== '0') {
+             $redirectUrl .= '/' . strtolower($role);
+         }
+         echo json_encode([
+    ----------- end diff -----------
+
+Applied rules:
+ * UseIdenticalOverEqualWithSameTypeRector
+ * MultiDirnameRector
+ * TernaryToNullCoalescingRector
+ * StrContainsRector
+ * NullToStrictStringFuncCallArgRector
+ * BooleanInIfConditionRuleFixerRector
+
+
+15) includes/controllers/api/ApiController.php:20
+
+    ---------- begin diff ----------
+@@ @@
+     protected $isAuthenticated = false;
+
+     /** @var int|null */
+-    protected $userId = null;
++    protected $userId;
+
+     /** @var string|null */
+-    protected $userRole = null;
++    protected $userRole;
+
+     /**
+      * Initialize the API controller
+@@ @@
+      *
+      * @param mixed $data Data to include in response
+      * @param int $status HTTP status code
+-     * @return void
+      */
+-    protected function sendResponse($data, $status = 200): void
++    protected function sendResponse(mixed $data, $status = 200): void
+     {
+         http_response_code($status);
+         echo json_encode([
+@@ @@
+      * @param int $status HTTP status code
+      * @param array $errors Validation errors array
+      * @param Exception|null $exception Exception object for debugging
+-     * @return void
+      */
+-    protected function sendError($message, $status = 400, $errors = [], $exception = null): void
++    protected function sendError(string $message, $status = 400, $errors = [], $exception = null): void
+     {
+         // Log API errors
+         ErrorHandler::logApiError($message, $_SERVER['REQUEST_URI'] ?? 'unknown');
+@@ @@
+      * @param int $status HTTP status code
+      * @param array $errors Validation errors array
+      * @param Exception|null $exception Exception object for debugging
+-     * @return void
+      */
+     protected function sendErrorResponse($message, $status = 400, $errors = [], $exception = null): void
+     {
+@@ @@
+     {
+         $method = strtoupper($method);
+         if ($method === 'GET' && isset($_GET[$name])) {
+-            return trim($_GET[$name]);
++            return trim((string) $_GET[$name]);
+         }
+
+         if ($method === 'POST' && isset($_POST[$name])) {
+-            return trim($_POST[$name]);
++            return trim((string) $_POST[$name]);
+         }
+
+         return $default;
+@@ @@
+
+         if ($method === 'POST') {
+             // Check for JSON input
+-            $contentType = isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '';
+-            if (strpos($contentType, 'application/json') !== false) {
++            $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
++            if (str_contains((string) $contentType, 'application/json')) {
+                 $json = file_get_contents('php://input');
+                 return json_decode($json, true) ?: [];
+             }
+@@ @@
+             }
+         }
+
+-        if (!empty($missing)) {
++        if ($missing !== []) {
+             $this->sendError('Missing required fields: ' . implode(', ', $missing));
+             return false;
+         }
+@@ @@
+
+         // Create dynamic call to bind_param
+         array_unshift($bindParams, $types);
+-        return call_user_func_array([$stmt, 'bind_param'], $bindParams);
++        return call_user_func_array($stmt->bind_param(...), $bindParams);
+     }
+
+     /**
+@@ @@
+      */
+     protected function isDebugMode(): bool
+     {
+-        return defined('DEBUG_MODE') && DEBUG_MODE === true;
++        return defined('DEBUG_MODE') && DEBUG_MODE;
+     }
+
+     /**
+@@ @@
+      *
+      * @param Exception $e The exception to handle
+      * @param int $status HTTP status code
+-     * @return void
+      */
+     protected function handleException($e, $status = 500): void
+     {
+         // Log the exception
+-        ErrorHandler::logSystemError($e, get_class($this) . '::' . debug_backtrace()[1]['function']);
++        ErrorHandler::logSystemError($e, static::class . '::' . debug_backtrace()[1]['function']);
+
+         // Send error response with exception details in debug mode
+         $this->sendError('An error occurred: ' . $e->getMessage(), $status, [], $e);
+@@ @@
+                 throw new Exception("Query preparation failed: " . $this->conn->error);
+             }
+
+-            if (!empty($params)) {
+-                if (!$this->bindParams($stmt, $params)) {
+-                    throw new Exception("Parameter binding failed");
+-                }
++            if (!empty($params) && !$this->bindParams($stmt, $params)) {
++                throw new Exception("Parameter binding failed");
+             }
+
+             $result = $stmt->execute();
+
+-            if ($result && strpos(strtoupper($sql), 'INSERT') === 0) {
++            if ($result && str_starts_with(strtoupper($sql), 'INSERT')) {
+                 $result = $stmt->insert_id;
+             }
+
+@@ @@
+                 throw new Exception("Query preparation failed: " . $this->conn->error);
+             }
+
+-            if (!empty($params)) {
+-                if (!$this->bindParams($stmt, $params)) {
+-                    throw new Exception("Parameter binding failed");
+-                }
++            if (!empty($params) && !$this->bindParams($stmt, $params)) {
++                throw new Exception("Parameter binding failed");
+             }
+
+             $stmt->execute();
+@@ @@
+                 throw new Exception("Query preparation failed: " . $this->conn->error);
+             }
+
+-            if (!empty($params)) {
+-                if (!$this->bindParams($stmt, $params)) {
+-                    throw new Exception("Parameter binding failed");
+-                }
++            if (!empty($params) && !$this->bindParams($stmt, $params)) {
++                throw new Exception("Parameter binding failed");
+             }
+
+             $stmt->execute();
+    ----------- end diff -----------
+
+Applied rules:
+ * SimplifyEmptyCheckOnEmptyArrayRector
+ * SimplifyBoolIdenticalTrueRector
+ * CombineIfRector
+ * RemoveUselessReturnTagRector
+ * RemoveNullPropertyInitializationRector
+ * TernaryToNullCoalescingRector
+ * ClassOnThisVariableObjectRector
+ * ClassOnObjectRector
+ * MixedTypeRector
+ * StrStartsWithRector
+ * StrContainsRector
+ * FirstClassCallableRector
+ * NullToStrictStringFuncCallArgRector
+ * ParamTypeByMethodCallTypeRector
+
+
+16) includes/controllers/api/ApiNotificationsController.php:11
+
+    ---------- begin diff ----------
+@@ @@
+
+ class ApiNotificationsController extends WebController
+ {
+-    /** @var NotificationService */
+-    private $notificationService;
++    private readonly \NotificationService $notificationService;
+
+     public function __construct()
+     {
+@@ @@
+      */
+     /**
+      * Mark notification as read
+-     * @param int $id
+-     * @return void
+      */
+     public function markAsRead(int $id): void
+     {
+@@ @@
+         $userId = SessionManager::get('user_id');
+
+         try {
+-            $result = $this->notificationService->markAsRead((int)$id, $userId);
++            $result = $this->notificationService->markAsRead($id, $userId);
+
+             if ($result) {
+                 $this->jsonResponse([
+@@ @@
+                     'message' => 'Failed to mark notification as read'
+                 ], 400);
+             }
+-        } catch (Exception $e) {
++        } catch (Exception) {
+             $this->jsonResponse([
+                 'success' => false,
+                 'message' => 'Failed to update notification'
+@@ @@
+                     'message' => 'Failed to mark notifications as read'
+                 ], 400);
+             }
+-        } catch (Exception $e) {
++        } catch (Exception) {
+             $this->jsonResponse([
+                 'success' => false,
+                 'message' => 'Failed to update notifications'
+@@ @@
+
+     /**
+      * Require authentication for API endpoints
+-     * @return void
+      */
+     private function requireAuth(): void
+     {
+    ----------- end diff -----------
+
+Applied rules:
+ * RecastingRemovalRector
+ * RemoveUselessParamTagRector
+ * RemoveUselessReturnTagRector
+ * RemoveUnusedVariableInCatchRector
+ * ReadOnlyPropertyRector
+ * TypedPropertyFromStrictConstructorRector
+
+
+17) includes/controllers/web/VitalSignController.php:12
+
+    ---------- begin diff ----------
+@@ @@
+
+ class VitalSignController extends WebController
+ {
+-    /** @var VitalSignModel */
+-    private $vitalSignModel;
++    private readonly \VitalSignModel $vitalSignModel;
+
+-    /** @var PatientModel */
+-    private $patientModel;
++    private readonly \PatientModel $patientModel;
+
+     /** @var bool */
+     protected $requiresLogin = true;
+@@ @@
+             $missing = [];
+
+             foreach ($required as $field) {
+-                if (!isset($_POST[$field]) || trim($_POST[$field]) === '') {
++                if (!isset($_POST[$field]) || trim((string) $_POST[$field]) === '') {
+                     $missing[] = $field;
+                 }
+             }
+
+-            if (!empty($missing)) {
++            if ($missing !== []) {
+                 // Build errors array keyed by field
+                 $errors = [];
+                 foreach ($missing as $m) {
+-                    switch ($m) {
+-                        case 'patient_id':
+-                            $errors[$m] = 'Please select a patient';
+-                            break;
+-                        default:
+-                            $errors[$m] = 'This field is required';
+-                            break;
+-                    }
++                    $errors[$m] = match ($m) {
++                        'patient_id' => 'Please select a patient',
++                        default => 'This field is required',
++                    };
+                 }
+
+                 // If AJAX request, return JSON with field errors
+-                $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
++                $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+                 if ($isAjax) {
+                     header('Content-Type: application/json');
+                     echo json_encode(['success' => false, 'message' => 'Validation failed', 'errors' => $errors]);
+@@ @@
+             $vitalSignId = $this->vitalSignModel->createVitalSign($data);
+
+             if (!$vitalSignId) {
+-                $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
++                $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+                 if ($isAjax) {
+                     header('Content-Type: application/json');
+                     echo json_encode(['success' => false, 'message' => 'Failed to create vital sign record']);
+@@ @@
+
+             // If a return URL was provided, prefer redirecting back
+             $returnUrl = isset($_POST['return']) ? (string)$_POST['return'] : '';
+-            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
++            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+             if ($isAjax) {
+                 // Build formatted vitals for UI
+                 $formatted = [];
+                 $formatted['measured_at'] = date('M d, Y h:i A', strtotime($data['measured_at']));
+-                $formatted['blood_pressure'] = $data['blood_pressure'] ? htmlspecialchars($data['blood_pressure']) . ' mmHg' : '<span class="text-muted">Not recorded</span>';
+-                $formatted['pulse'] = $data['heart_rate'] ? htmlspecialchars($data['heart_rate']) . ' bpm' : '<span class="text-muted">Not recorded</span>';
+-                $formatted['temperature'] = $data['temperature'] ? htmlspecialchars($data['temperature']) . ' ┬░C' : '<span class="text-muted">Not recorded</span>';
+-                $formatted['respiratory_rate'] = $data['respiratory_rate'] ? htmlspecialchars($data['respiratory_rate']) . ' br/min' : '<span class="text-muted">Not recorded</span>';
+-                $formatted['oxygen_saturation'] = $data['oxygen_saturation'] ? htmlspecialchars($data['oxygen_saturation']) . '%' : '<span class="text-muted">Not recorded</span>';
++                $formatted['blood_pressure'] = $data['blood_pressure'] ? htmlspecialchars((string) $data['blood_pressure']) . ' mmHg' : '<span class="text-muted">Not recorded</span>';
++                $formatted['pulse'] = $data['heart_rate'] ? htmlspecialchars((string) $data['heart_rate']) . ' bpm' : '<span class="text-muted">Not recorded</span>';
++                $formatted['temperature'] = $data['temperature'] ? htmlspecialchars((string) $data['temperature']) . ' ┬░C' : '<span class="text-muted">Not recorded</span>';
++                $formatted['respiratory_rate'] = $data['respiratory_rate'] ? htmlspecialchars((string) $data['respiratory_rate']) . ' br/min' : '<span class="text-muted">Not recorded</span>';
++                $formatted['oxygen_saturation'] = $data['oxygen_saturation'] ? htmlspecialchars((string) $data['oxygen_saturation']) . '%' : '<span class="text-muted">Not recorded</span>';
+                 // Resolve user display name
+                 $formatted['recorded_by'] = 'System';
+                 try {
+@@ @@
+                         // UserModel provides getUserById
+                         $u = $um->getUserById($uid);
+                         if ($u) {
+-                            $formatted['recorded_by'] = trim(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '')) ?: 'System';
++                            $formatted['recorded_by'] = in_array(trim(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? '')), ['', '0'], true) ? 'System' : trim(($u['first_name'] ?? '') . ' ' . ($u['last_name'] ?? ''));
+                         }
+                     }
+-                } catch (Throwable $e) {
++                } catch (Throwable) {
+                     // ignore, keep default
+                 }
+
+@@ @@
+                 return;
+             }
+
+-            if (!empty($returnUrl)) {
++            if ($returnUrl !== '' && $returnUrl !== '0') {
+                 $this->redirectWithSuccess('Vital sign record created successfully', $returnUrl);
+                 return;
+             }
+@@ @@
+      * @param string $action Action name
+      * @param array $details Action details
+      */
+-    private function logAction($action, $details)
++    private function logAction(string $action, array $details): void
+     {
+         if (function_exists('logAction')) {
+             logAction(
+@@ @@
+      */
+     protected function handleError($message, ?Exception $e = null): void
+     {
+-        if ($e) {
++        if ($e instanceof \Exception) {
+             ErrorHandler::logSystemError($e, __METHOD__);
+         }
+
+@@ @@
+      *
+      * @param string $message Error message
+      * @param string $url URL to redirect to
+-     * @return void
+      */
+     protected function redirectWithError($message, $url): void
+     {
+@@ @@
+      *
+      * @param string $message Success message
+      * @param string $url URL to redirect to
+-     * @return void
+      */
+     protected function redirectWithSuccess($message, $url): void
+     {
+    ----------- end diff -----------
+
+Applied rules:
+ * SimplifyEmptyCheckOnEmptyArrayRector
+ * UseIdenticalOverEqualWithSameTypeRector
+ * FlipTypeControlToUseExclusiveTypeRector
+ * ExplicitBoolCompareRector
+ * SwitchNegatedTernaryRector
+ * RemoveUselessReturnTagRector
+ * RemoveUnusedVariableInCatchRector
+ * ChangeSwitchToMatchRector
+ * NullToStrictStringFuncCallArgRector
+ * ReadOnlyPropertyRector
+ * DisallowedEmptyRuleFixerRector
+ * DisallowedShortTernaryRuleFixerRector
+ * AddMethodCallBasedStrictParamTypeRector
+ * AddVoidReturnTypeWhereNoReturnRector
+ * TypedPropertyFromStrictConstructorRector
+
+
+18) includes/controllers/web/WebController.php:11
+
+    ---------- begin diff ----------
+@@ @@
+
+ abstract class WebController extends BaseController
+ {
+-    /** @var Auth */
+-    protected $auth;
++    protected \Auth $auth;
+
+     /** @var string */
+     protected $pageTitle;
+@@ @@
+             $this->auth->requireLogin();
+
+             // Check role restrictions if any
+-            if (!empty($this->allowedRoles)) {
++            if ($this->allowedRoles !== []) {
+                 $this->auth->requireRole($this->allowedRoles);
+             }
+         }
+@@ @@
+      *
+      * @param string $action Action name
+      * @param array $params Action parameters
+-     * @return void
+      */
+     public function run($action, $params = []): void
+     {
+@@ @@
+      *
+      * @param string $type Message type (success, error, warning, info)
+      * @param string $message Message text
+-     * @return void
+      */
+     protected function setFlashMessage($type, $message): void
+     {
+@@ @@
+
+     /**
+      * Initialize flash messages for the view
+-     *
+-     * @return void
+      */
+     private function initFlashMessages(): void
+     {
+@@ @@
+      * @param string $view View file name (without .php extension)
+      * @param array $data Data to pass to the view
+      * @param string $layout Layout file name (without .php extension)
+-     * @return void
+      */
+-    protected function renderView($view, $data = [], $layout = 'default'): void
++    protected function renderView(string $view, $data = [], string $layout = 'default'): void
+     {
+         // Merge data with defaults
+         $data = array_merge($this->getDefaultData(), $data);
+@@ @@
+      * @param string $message Error message
+      * @param int $code HTTP status code
+      * @param Exception|null $exception The exception that caused the error
+-     * @return void
+      */
+     protected function showError($message, $code = 500, $exception = null): void
+     {
+         // Log the error if an exception was provided
+         if ($exception instanceof Exception) {
+-            ErrorHandler::logSystemError($exception, get_class($this) . '::' . debug_backtrace()[1]['function']);
++            ErrorHandler::logSystemError($exception, static::class . '::' . debug_backtrace()[1]['function']);
+         }
+
+         // Set HTTP status code
+@@ @@
+      *
+      * @param Exception $e The exception to handle
+      * @param bool $ajaxAware Whether to return JSON for AJAX requests
+-     * @return void
+      */
+     protected function handleException($e, $ajaxAware = true): void
+     {
+         // Log the exception
+-        ErrorHandler::logSystemError($e, get_class($this) . '::' . debug_backtrace()[1]['function']);
++        ErrorHandler::logSystemError($e, static::class . '::' . debug_backtrace()[1]['function']);
+
+         // Determine if this is an AJAX request
+         $isAjax = $ajaxAware && !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+-                  strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
++                  strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+         // Get appropriate status code
+         // $e is always an Exception (typed parameter), so getCode() is always available
+@@ @@
+                 'details' => $this->isDebugMode() ? $e->getTraceAsString() : null
+             ]);
+             exit;
+-        } else {
+-            // Show error page for regular requests
+-            $this->showError($e->getMessage(), $code, $e);
+         }
++        // Show error page for regular requests
++        $this->showError($e->getMessage(), $code, $e);
+     }
+
+     /**
+@@ @@
+      *
+      * @param Exception $e The exception to handle
+      * @param string $redirectUrl URL to redirect to
+-     * @return void
+      */
+-    protected function handleFormError($e, $redirectUrl): void
++    protected function handleFormError(\Exception $e, $redirectUrl): void
+     {
+         // Log the error
+-        ErrorHandler::logSystemError($e, get_class($this) . '::' . debug_backtrace()[1]['function']);
++        ErrorHandler::logSystemError($e, static::class . '::' . debug_backtrace()[1]['function']);
+
+         // Set flash message
+         $this->setFlashMessage('error', 'An error occurred: ' . $e->getMessage());
+@@ @@
+      */
+     protected function isDebugMode(): bool
+     {
+-        return defined('DEBUG_MODE') && DEBUG_MODE === true;
++        return defined('DEBUG_MODE') && DEBUG_MODE;
+     }
+
+     /**
+@@ @@
+      */
+     protected function getDefaultData(): array
+     {
+-        $data = [
++        return [
+             'pageTitle' => $this->pageTitle,
+             'currentUser' => [
+                 'id' => SessionManager::get('user_id'),
+@@ @@
+             'currentYear' => date('Y'),
+             'activeMenu' => $this->determineActiveMenu()
+         ];
+-
+-        return $data;
+     }
+
+     /**
+@@ @@
+         $currentUrl = $_SERVER['REQUEST_URI'] ?? '';
+
+         // Remove query string if present
+-        $currentUrl = preg_replace('/\?.*$/', '', $currentUrl);
++        $currentUrl = preg_replace('/\?.*$/', '', (string) $currentUrl);
+
+         // Remove base URL/APP_PATH if present
+         // APP_PATH is always defined in constants.php (either '/Nyalife-HMS-System' or '')
+@@ @@
+             $appPath = APP_PATH;
+             // In development, APP_PATH is '/Nyalife-HMS-System', in production it's ''
+             // Only replace if non-empty
+-            if ($appPath !== '') {
+-                $currentUrl = str_replace($appPath, '', $currentUrl);
+-            }
++            $currentUrl = str_replace($appPath, '', $currentUrl);
+         }
+
+         // Ensure URL starts with a slash
+@@ @@
+         if (!empty($currentUrl) && $currentUrl[0] !== '/') {
+             $currentUrl = '/' . $currentUrl;
+         }
+-
+         // Determine active menu based on URL path
+         if (preg_match('#^/dashboard#', $currentUrl)) {
+             return 'dashboard';
+-        } elseif (preg_match('#^/patients#', $currentUrl)) {
++        }
++        if (preg_match('#^/patients#', $currentUrl)) {
+             return 'patients';
+-        } elseif (preg_match('#^/appointments#', $currentUrl)) {
++        }
++        if (preg_match('#^/appointments#', $currentUrl)) {
+             return 'appointments';
+-        } elseif (preg_match('#^/consultations#', $currentUrl)) {
++        }
++        if (preg_match('#^/consultations#', $currentUrl)) {
+             return 'consultations';
+-        } elseif (preg_match('#^/lab#', $currentUrl)) {
++        }
++        if (preg_match('#^/lab#', $currentUrl)) {
+             return 'lab';
+-        } elseif (preg_match('#^/pharmacy#', $currentUrl)) {
++        }
++        if (preg_match('#^/pharmacy#', $currentUrl)) {
+             return 'pharmacy';
+-        } elseif (preg_match('#^/prescriptions#', $currentUrl)) {
++        }
++        if (preg_match('#^/prescriptions#', $currentUrl)) {
+             return 'prescriptions';
+-        } elseif (preg_match('#^/users#', $currentUrl) || preg_match('#^/settings#', $currentUrl) || preg_match('#^/reports#', $currentUrl)) {
++        }
++        if (preg_match('#^/users#', $currentUrl) || preg_match('#^/settings#', $currentUrl) || preg_match('#^/reports#', $currentUrl)) {
+             return 'admin';
+-        } elseif (preg_match('#^/profile#', $currentUrl)) {
++        }
++
++        // Determine active menu based on URL path
++        if (preg_match('#^/profile#', $currentUrl)) {
+             return 'profile';
+         }
+
+@@ @@
+      * Redirect to a URL
+      *
+      * @param string $url URL to redirect to
+-     * @return void
+      */
+     protected function redirect($url): void
+     {
+         // If URL is relative (doesn't start with http:// or https://), prepend the base URL
+-        if (!preg_match('/^https?:\/\//i', $url)) {
++        if (in_array(preg_match('/^https?:\/\//i', $url), [0, false], true)) {
+             // Remove leading slash if present for consistency
+             $url = ltrim($url, '/');
+             $baseUrl = rtrim($this->getBaseUrl(), '/');
+@@ @@
+      * @param string $routeName Named route to redirect to
+      * @param array $routeParams Route parameters for placeholder values
+      * @param array $queryParams Query parameters to append to the URL
+-     * @return void
+      */
+     protected function redirectToRoute($routeName, $routeParams = [], $queryParams = []): void
+     {
+@@ @@
+
+         // Add query parameters if any
+         if (!empty($queryParams)) {
+-            $routeUrl .= (strpos($routeUrl, '?') === false ? '?' : '&') . http_build_query($queryParams);
++            $routeUrl .= (str_contains($routeUrl, '?') ? '&' : '?') . http_build_query($queryParams);
+         }
+
+         // Ensure the URL is absolute but avoid duplicate base URLs
+-        if (!preg_match('/^https?:\/\//i', $routeUrl)) {
++        if (in_array(preg_match('/^https?:\/\//i', $routeUrl), [0, false], true)) {
+             // Check if the route URL already starts with the base URL
+-            if (strpos($routeUrl, $baseUrl) !== 0) {
+-                $url = rtrim($baseUrl, '/') . '/' . ltrim($routeUrl, '/');
+-            } else {
+-                $url = $routeUrl;
+-            }
++            $url = str_starts_with($routeUrl, $baseUrl) ? $routeUrl : rtrim($baseUrl, '/') . '/' . ltrim($routeUrl, '/');
+         } else {
+             $url = $routeUrl;
+         }
+@@ @@
+             $missingFields = [];
+
+             foreach ($requiredFields as $field) {
+-                if (!isset($data[$field]) || trim($data[$field]) === '') {
++                if (!isset($data[$field]) || trim((string) $data[$field]) === '') {
+                     $missingFields[] = $field;
+                 }
+             }
+
+-            if (!empty($missingFields)) {
++            if ($missingFields !== []) {
+                 error_log("WebController::processFormData - Missing fields: " . implode(', ', $missingFields));
+                 $this->setFlashMessage('error', 'The following fields are required: ' . implode(', ', $missingFields));
+                 return false;
+@@ @@
+      *
+      * @param string $message Error message
+      * @param Exception|null $e Exception if available
+-     * @return void
+      */
+     protected function handleError($message, ?Exception $e = null): void
+     {
+-        if ($e) {
++        if ($e instanceof \Exception) {
+             ErrorHandler::logSystemError($e, __METHOD__);
+         }
+
+@@ @@
+      *
+      * @param string $message Error message
+      * @param string $url URL to redirect to
+-     * @return void
+      */
+     protected function redirectWithError($message, $url): void
+     {
+@@ @@
+      *
+      * @param string $message Success message
+      * @param string $url URL to redirect to
+-     * @return void
+      */
+     protected function redirectWithSuccess($message, $url): void
+     {
+@@ @@
+      *
+      * @param array $data Data to send as JSON
+      * @param int $statusCode HTTP status code
+-     * @return void
+      */
+     protected function jsonResponse($data, $statusCode = 200): void
+     {
+    ----------- end diff -----------
+
+Applied rules:
+ * SimplifyEmptyCheckOnEmptyArrayRector
+ * UseIdenticalOverEqualWithSameTypeRector
+ * SimplifyUselessVariableRector
+ * FlipTypeControlToUseExclusiveTypeRector
+ * SimplifyBoolIdenticalTrueRector
+ * CompleteMissingIfElseBracketRector
+ * ExplicitBoolCompareRector
+ * SimplifyIfElseToTernaryRector
+ * SwitchNegatedTernaryRector
+ * RemoveUselessReturnTagRector
+ * RemoveAlwaysTrueIfConditionRector
+ * RemoveAlwaysElseRector
+ * ClassOnThisVariableObjectRector
+ * ClassOnObjectRector
+ * StrStartsWithRector
+ * StrContainsRector
+ * NullToStrictStringFuncCallArgRector
+ * BooleanInBooleanNotRuleFixerRector
+ * ParamTypeByMethodCallTypeRector
+ * StrictStringParamConcatRector
+ * TypedPropertyFromStrictConstructorRector
+
+
+19) includes/core/Auth.php:12
+
+    ---------- begin diff ----------
+@@ @@
+
+ class Auth
+ {
+-    /** @var Auth|null */
+-    private static $instance = null;
++    private static ?\Auth $instance = null;
+     
+-    /** @var mysqli */
+-    private $db;
+-    
+-    /** @var UserModel */
+-    private $userModel;
++    private readonly \UserModel $userModel;
+
+     /**
+      * Private constructor to prevent direct creation
+@@ @@
+      */
+     private function __construct()
+     {
+-        $this->db = DatabaseManager::getInstance()->getConnection();
+         $this->userModel = new UserModel();
+     }
+
+@@ @@
+         if (!$this->isLoggedIn()) {
+             return false;
+         }
+-        return in_array(SessionManager::get('role'), (array)$roles);
++        return in_array(SessionManager::get('role'), $roles);
+     }
+
+     /**
+@@ @@
+             if ($remember) {
+                 $token = $this->userModel->createRememberToken($user['user_id']);
+                 if ($token) {
+-                    setcookie('remember_token', $token, time() + (86400 * 30), '/', '', true, true);
++                    setcookie('remember_token', $token, ['expires' => time() + (86400 * 30), 'path' => '/', 'domain' => '', 'secure' => true, 'httponly' => true]);
+                 }
+             }
+
+@@ @@
+      * Logout user
+      *
+      * @param bool $redirect Whether to redirect after logout
+-     * @return void
+      */
+-    public function logout($redirect = true)
++    public function logout($redirect = true): void
+     {
+         try {
+             // Remove remember token if exists
+@@ @@
+             if (isset($_COOKIE['remember_token'])) {
+                 $token = $_COOKIE['remember_token'];
+                 $this->userModel->deleteRememberToken($token);
+-                setcookie('remember_token', '', time() - 3600, '/', '', true, true);
++                setcookie('remember_token', '', ['expires' => time() - 3600, 'path' => '/', 'domain' => '', 'secure' => true, 'httponly' => true]);
+             }
+
+             // Clear session
+@@ @@
+
+     /**
+      * Redirect user based on role
+-     *
+-     * @return void
+      */
+     public function redirectByRole(): void
+     {
+@@ @@
+
+         $role = $this->getUserRole();
+         $baseUrl = rtrim($this->getBaseUrl(), '/');
+-        $url = "{$baseUrl}/dashboard/" . strtolower($role);
++        $url = "{$baseUrl}/dashboard/" . strtolower((string) $role);
+
+         if (!headers_sent()) {
+             header("Location: {$url}");
+@@ @@
+      * Redirect to login page with optional redirect back
+      *
+      * @param string $redirectUrl URL to redirect to after login
+-     * @return void
+      */
+     protected function redirectToLogin(string $redirectUrl = ''): void
+     {
+         $loginUrl = rtrim($this->getBaseUrl(), '/') . '/login';
+
+-        if (!empty($redirectUrl)) {
++        if ($redirectUrl !== '' && $redirectUrl !== '0') {
+             $loginUrl .= '?redirect=' . urlencode($redirectUrl);
+         }
+    ----------- end diff -----------
+
+Applied rules:
+ * RecastingRemovalRector
+ * RemoveUselessReturnTagRector
+ * RemoveUnusedPrivatePropertyRector
+ * SetCookieRector
+ * NullToStrictStringFuncCallArgRector
+ * ReadOnlyPropertyRector
+ * DisallowedEmptyRuleFixerRector
+ * AddVoidReturnTypeWhereNoReturnRector
+ * TypedPropertyFromAssignsRector
+ * TypedPropertyFromStrictConstructorRector
+
+
+20) includes/core/DatabaseManager.php:7
+
+    ---------- begin diff ----------
+@@ @@
+
+ class DatabaseManager
+ {
+-    /** @var DatabaseManager|null */
+-    private static $instance = null;
++    private static ?\DatabaseManager $instance = null;
+     
+-    /** @var mysqli|null */
+-    private $connection = null;
++    private readonly \mysqli $connection;
+
+     /**
+      * Private constructor to prevent direct creation
+@@ @@
+             $_ENV['DB_NAME']
+         );
+
+-        if ($this->connection->connect_error) {
++        if ($this->connection->connect_error !== null && $this->connection->connect_error !== '' && $this->connection->connect_error !== '0') {
+             throw new Exception("Connection failed: " . $this->connection->connect_error);
+         }
+
+@@ @@
+
+     /**
+      * Loads the .env file if not already loaded
+-     * @return void
+      */
+     private function loadEnv(): void
+     {
+@@ @@
+     public function getConnection(): mysqli
+     {
+         return $this->connection;
+-    }
+-
+-    /**
+-     * Prevent cloning of the instance
+-     */
+-    private function __clone(): void
+-    {
+     }
+
+     /**
+    ----------- end diff -----------
+
+Applied rules:
+ * RemoveEmptyClassMethodRector
+ * RemoveUselessReturnTagRector
+ * MultiDirnameRector
+ * ReadOnlyPropertyRector
+ * BooleanInIfConditionRuleFixerRector
+ * TypedPropertyFromAssignsRector
+ * TypedPropertyFromStrictConstructorRector
+
+
+21) includes/core/ErrorHandler.php:17
+
+    ---------- begin diff ----------
+@@ @@
+      * @param string $message Message to log
+      * @param string $level Log level
+      * @param string $context Context information
+-     * @return void
+      */
+     public static function log(string $message, string $level = self::LOG_LEVEL_INFO, string $context = ''): void
+     {
+@@ @@
+         $timestamp = date('Y-m-d H:i:s');
+         $logMessage = "[$timestamp] [$level] ";
+
+-        if (!empty($context)) {
++        if ($context !== '' && $context !== '0') {
+             $logMessage .= "[$context] ";
+         }
+
+@@ @@
+      *
+      * @param Exception $e Exception to log
+      * @param string $context Context information
+-     * @return void
+      */
+     public static function logDatabaseError(Exception $e, string $context = ''): void
+     {
+@@ @@
+      *
+      * @param Exception $e Exception to log
+      * @param string $context Context information
+-     * @return void
+      */
+     public static function logSystemError(Exception $e, string $context = ''): void
+     {
+@@ @@
+      * @param string $message Error message
+      * @param string $endpoint API endpoint
+      * @param array $params Request parameters
+-     * @return void
+      */
+     public static function logApiError(string $message, string $endpoint = '', array $params = []): void
+     {
+         $context = "API error";
+-        if (!empty($endpoint)) {
++        if ($endpoint !== '' && $endpoint !== '0') {
+             $context .= " in $endpoint";
+         }
+
+         $logMessage = $message;
+-        if (!empty($params)) {
++        if ($params !== []) {
+             $logMessage .= " - Params: " . json_encode($params);
+         }
+    ----------- end diff -----------
+
+Applied rules:
+ * SimplifyEmptyCheckOnEmptyArrayRector
+ * RemoveUselessReturnTagRector
+ * DisallowedEmptyRuleFixerRector
+
+
+22) includes/core/Router.php:9
+
+    ---------- begin diff ----------
+@@ @@
+
+ class Router
+ {
+-    private $routes = [];
+-    private $namedRoutes = [];
++    private array $routes = [];
++    private array $namedRoutes = [];
+
+     /**
+      * Register a route
+@@ @@
+         $path = $this->namedRoutes[$name];
+
+         // Replace route parameters
+-        foreach ($params as $key => $value) {
++        foreach ($params as $value) {
+             // Convert named placeholders to actual values
+             // Example: 'user/(\d+)' with params['id' => 123] becomes 'user/123'
+-            $path = preg_replace('/\(\\d\+\)/', $value, $path, 1);
++            $path = preg_replace('/\(\\d\+\)/', (string) $value, (string) $path, 1);
+         }
+
+         return $path;
+@@ @@
+      *
+      * @param Exception $e The exception to handle
+      * @param bool $showDetails Whether to include exception details in the response
+-     * @return void
+      */
+     public static function handleException(Exception $e, bool $showDetails = false): void
+     {
+@@ @@
+         // Add debug details if requested
+         if ($showDetails) {
+             $response['debug'] = [
+-                'exception' => get_class($e),
++                'exception' => $e::class,
+                 'message' => $e->getMessage(),
+                 'file' => $e->getFile(),
+                 'line' => $e->getLine(),
+    ----------- end diff -----------
+
+Applied rules:
+ * RemoveUselessReturnTagRector
+ * RemoveUnusedForeachKeyRector
+ * ClassOnObjectRector
+ * NullToStrictStringFuncCallArgRector
+ * TypedPropertyFromAssignsRector
+
+
+23) includes/core/SessionManager.php:7
+
+    ---------- begin diff ----------
+@@ @@
+
+ class SessionManager
+ {
+-    /** @var bool */
+-    private static $started = false;
++    private static bool $started = false;
+
+     /**
+      * Ensure session is started
+-     * @return void
+      */
+     public static function ensureStarted(): void
+     {
+@@ @@
+      * @param mixed $default Default value if key doesn't exist
+      * @return mixed Session value or default
+      */
+-    public static function get($key, $default = null)
++    public static function get($key, mixed $default = null)
+     {
+         self::ensureStarted();
+-        return isset($_SESSION[$key]) ? $_SESSION[$key] : $default;
++        return $_SESSION[$key] ?? $default;
+     }
+
+     /**
+@@ @@
+      *
+      * @param string $key Session key
+      * @param mixed $value Value to store
+-     * @return void
+      */
+-    public static function set(string $key, $value): void
++    public static function set(string $key, mixed $value): void
+     {
+         self::ensureStarted();
+         $_SESSION[$key] = $value;
+@@ @@
+      * Remove a session variable
+      *
+      * @param string $key Session key
+-     * @return void
+      */
+     public static function remove(string $key): void
+     {
+@@ @@
+
+     /**
+      * Destroy the session
+-     * @return void
+      */
+     public static function destroy(): void
+     {
+    ----------- end diff -----------
+
+Applied rules:
+ * RemoveUselessReturnTagRector
+ * TernaryToNullCoalescingRector
+ * MixedTypeRector
+ * TypedPropertyFromAssignsRector
+
+
+24) includes/core/Utilities.php:29
+
+    ---------- begin diff ----------
+@@ @@
+     public static function isWithinOpeningHours(DateTime $start): bool
+     {
+         $windows = self::getOpeningWindowsForDate($start);
+-        if (empty($windows)) {
++        if ($windows === []) {
+             return false;
+         }
+         $time = $start->format('H:i');
+@@ @@
+         // Snap to next window if outside
+         for ($i = 0; $i < 8; $i++) { // look up to a week ahead
+             $windows = self::getOpeningWindowsForDate($proposed);
+-            if (!empty($windows)) {
+-                foreach ($windows as [$from, $to]) {
+-                    $startOfWindow = DateTime::createFromFormat('Y-m-d H:i', $proposed->format('Y-m-d') . ' ' . $from);
+-                    $endOfWindow = DateTime::createFromFormat('Y-m-d H:i', $proposed->format('Y-m-d') . ' ' . $to);
+-                    if ($proposed < $startOfWindow) {
+-                        return $startOfWindow;
+-                    }
+-                    if ($proposed >= $startOfWindow && $proposed < $endOfWindow) {
+-                        return $proposed; // already valid
+-                    }
++            foreach ($windows as [$from, $to]) {
++                $startOfWindow = DateTime::createFromFormat('Y-m-d H:i', $proposed->format('Y-m-d') . ' ' . $from);
++                $endOfWindow = DateTime::createFromFormat('Y-m-d H:i', $proposed->format('Y-m-d') . ' ' . $to);
++                if ($proposed < $startOfWindow) {
++                    return $startOfWindow;
+                 }
++                if ($proposed >= $startOfWindow && $proposed < $endOfWindow) {
++                    return $proposed; // already valid
++                }
+             }
+             // move to next day 08:00
+             $proposed->modify('tomorrow 08:00');
+@@ @@
+      * @param object $conn Optional database connection for SQL escaping
+      * @return mixed Sanitized data
+      */
+-    public static function sanitize($data, $conn = null)
++    public static function sanitize(mixed $data, $conn = null)
+     {
+         if (is_array($data)) {
+             foreach ($data as $key => $value) {
+@@ @@
+                 $data[$key] = self::sanitize($value, $conn);
+             }
+         } else {
+-            $data = trim($data);
++            $data = trim((string) $data);
+             $data = stripslashes($data);
+             $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+
+@@ @@
+      */
+     public static function formatDate(string $date, string $format = 'Y-m-d'): string
+     {
+-        if (empty($date)) {
++        if ($date === '' || $date === '0') {
+             return '';
+         }
+
+@@ @@
+         $baseUrl = self::getBaseUrl();
+         $url = $baseUrl . '/' . $route;
+
+-        if (!empty($params)) {
++        if ($params !== []) {
+             $url .= '?' . http_build_query($params);
+         }
+    ----------- end diff -----------
+
+Applied rules:
+ * SimplifyEmptyCheckOnEmptyArrayRector
+ * RemoveUnusedNonEmptyArrayBeforeForeachRector
+ * MixedTypeRector
+ * NullToStrictStringFuncCallArgRector
+ * DisallowedEmptyRuleFixerRector
+
+
+25) includes/core/WebRouter.php:9
+
+    ---------- begin diff ----------
+@@ @@
+
+ class WebRouter
+ {
+-    /** @var array */
+-    private $routes = [];
++    private array $routes = [];
+     
+-    /** @var array */
+-    private $namedRoutes = [];
++    private array $namedRoutes = [];
+     
+     /** @var callable|null */
+     private $notFoundCallback;
+
+     // Singleton instance
+-    private static $instance = null;
++    private static ?\WebRouter $instance = null;
+
+     /**
+      * Get the singleton instance of WebRouter
+@@ @@
+      * Set callback for 404 Not Found
+      *
+      * @param callable $callback Function to call when no route is matched
+-     * @return void
+      */
+     public function setNotFoundCallback(callable $callback): void
+     {
+@@ @@
+         $pattern = str_replace('/', '\/', $pattern);
+
+         // Convert :param to regex capture group and store param name
+-        $pattern = preg_replace_callback('/\:([a-zA-Z0-9_]+)/', function ($matches) use (&$paramNames) {
++        $pattern = preg_replace_callback('/\:(\w+)/', function ($matches) use (&$paramNames): string {
+             $paramNames[] = $matches[1];
+             return '([^\/]+)';
+         }, $pattern);
+@@ @@
+         $uri = rtrim($uri, '/');
+
+         // Add slash for root
+-        if (empty($uri)) {
++        if ($uri === '' || $uri === '0') {
+             $uri = '/';
+         }
+
+@@ @@
+                 continue;
+             }
+
+-            list($pattern, $paramNames) = $this->patternToRegex($route['pattern']);
++            [$pattern, $paramNames] = $this->patternToRegex($route['pattern']);
+
+             if (preg_match($pattern, $uri, $matches)) {
+                 try {
+@@ @@
+                     $actualClassName = $controllerName;
+
+                     // Support namespaced-style controller strings like 'api/ControllerName'
+-                    if (strpos($controllerName, 'api/') === 0) {
+-                        $actualClassName = substr($controllerName, 4); // Remove 'api/' prefix for class name
++                    if (str_starts_with((string) $controllerName, 'api/')) {
++                        $actualClassName = substr((string) $controllerName, 4); // Remove 'api/' prefix for class name
+                         $controllerFile = __DIR__ . '/../controllers/api/' . $actualClassName . '.php';
+                     } else {
+                         $controllerFile = __DIR__ . '/../controllers/web/' . $controllerName . '.php';
+@@ @@
+
+     /**
+      * Handle 404 Not Found
+-     * @param string $requestUri
+-     * @return void
+      */
+     private function handleNotFound(string $requestUri): void
+     {
+@@ @@
+         $requestParts = explode('/', trim($requestUri, '/'));
+
+         foreach ($this->namedRoutes as $name => $pattern) {
+-            $patternParts = explode('/', trim($pattern, '/'));
++            $patternParts = explode('/', trim((string) $pattern, '/'));
+
+             // Only consider patterns with similar structure
+             if (count($requestParts) === count($patternParts)) {
+@@ @@
+                 foreach ($requestParts as $i => $part) {
+                     if (isset($patternParts[$i])) {
+                         // If pattern part starts with ':', it's a parameter, count as similar
+-                        if (strpos($patternParts[$i], ':') === 0) {
++                        if (str_starts_with($patternParts[$i], ':')) {
+                             $similarity++;
+                         } elseif ($patternParts[$i] === $part) {
+                             $similarity++;
+@@ @@
+         }
+
+         // Sort by similarity (highest first)
+-        uasort($suggestions, function ($a, $b) {
+-            return $b['similarity'] - $a['similarity'];
+-        });
++        uasort($suggestions, fn($a, $b): int|float => $b['similarity'] - $a['similarity']);
+
+         return $suggestions;
+     }
+@@ @@
+         // Replace route parameters
+         foreach ($params as $paramName => $paramValue) {
+             $placeholder = ':' . $paramName;
+-            if (strpos($pattern, $placeholder) !== false) {
+-                $pattern = str_replace($placeholder, urlencode($paramValue), $pattern);
++            if (str_contains((string) $pattern, $placeholder)) {
++                $pattern = str_replace($placeholder, urlencode((string) $paramValue), $pattern);
+             } else {
+                 error_log("WebRouter::generateUrl - Warning: Parameter '{$paramName}' not found in route pattern '{$pattern}'");
+             }
+@@ @@
+         }
+
+         // Check if there are any remaining placeholders
+-        if (preg_match('/:([a-zA-Z0-9_]+)/', $pattern, $matches)) {
++        if (preg_match('/:(\w+)/', (string) $pattern, $matches)) {
+             error_log("WebRouter::generateUrl - Error: Missing required parameter '{$matches[1]}' for route '{$name}'");
+         }
+
+         // Add query string if provided
+-        if (!empty($queryParams)) {
++        if ($queryParams !== []) {
+             $pattern .= '?' . http_build_query($queryParams);
+         }
+    ----------- end diff -----------
+
+Applied rules:
+ * SimplifyEmptyCheckOnEmptyArrayRector
+ * SimplifyRegexPatternRector
+ * RemoveUselessParamTagRector
+ * RemoveUselessReturnTagRector
+ * ListToArrayDestructRector
+ * ClosureToArrowFunctionRector
+ * StrStartsWithRector
+ * StrContainsRector
+ * NullToStrictStringFuncCallArgRector
+ * DisallowedEmptyRuleFixerRector
+ * AddArrowFunctionReturnTypeRector
+ * ClosureReturnTypeRector
+ * TypedPropertyFromAssignsRector
+
+
+26) includes/data/admin_data.php:11
+
+    ---------- begin diff ----------
+@@ @@
+  *
+  * @return array Array of system statistics
+  */
+-function getSystemStatistics()
++function getSystemStatistics(): array
+ {
+     global $conn;
+
+@@ @@
+
+     $stmt = $conn->prepare($query);
+
+-    if (!empty($params)) {
+-        $stmt->bind_param($types, ...$params);
+-    }
++    $stmt->bind_param($types, ...$params);
+
+     $stmt->execute();
+     $result = $stmt->get_result();
+@@ @@
+  * @param int $notificationId Notification ID
+  * @return bool Success flag
+  */
+-function markNotificationRead($notificationId)
++function markNotificationRead($notificationId): bool
+ {
+     global $conn;
+
+@@ @@
+     }
+
+     $query = "INSERT INTO departments (name, description) VALUES (?, ?)";
+-    $description = isset($data['description']) ? $data['description'] : '';
++    $description = $data['description'] ?? '';
+
+     $stmt = $conn->prepare($query);
+     $stmt->bind_param("ss", $data['name'], $description);
+@@ @@
+     $startDate = '';
+     $endDate = date('Y-m-d');
+
+-    switch ($period) {
+-        case 'today':
+-            $startDate = date('Y-m-d');
+-            break;
+-        case 'week':
+-            $startDate = date('Y-m-d', strtotime('-1 week'));
+-            break;
+-        case 'month':
+-            $startDate = date('Y-m-d', strtotime('-1 month'));
+-            break;
+-        case 'year':
+-            $startDate = date('Y-m-d', strtotime('-1 year'));
+-            break;
+-        default:
+-            $startDate = date('Y-m-d');
+-    }
++    $startDate = match ($period) {
++        'today' => date('Y-m-d'),
++        'week' => date('Y-m-d', strtotime('-1 week')),
++        'month' => date('Y-m-d', strtotime('-1 month')),
++        'year' => date('Y-m-d', strtotime('-1 year')),
++        default => date('Y-m-d'),
++    };
+
+     $query = "SELECT 
+                 COUNT(*) AS total,
+@@ @@
+  *
+  * @return array Array of system notifications
+  */
+-function checkSystemNotifications()
++function checkSystemNotifications(): array
+ {
+     global $conn;
+    ----------- end diff -----------
+
+Applied rules:
+ * RemoveAlwaysTrueIfConditionRector
+ * TernaryToNullCoalescingRector
+ * ChangeSwitchToMatchRector
+ * BoolReturnTypeFromBooleanStrictReturnsRector
+ * ReturnTypeFromStrictNewArrayRector
+
+
+27) includes/data/appointment_data.php:89
+
+    ---------- begin diff ----------
+@@ @@
+     }
+
+     if ($status) {
+-        if (empty($params)) {
++        if ($params === []) {
+             $query .= " WHERE a.status = ?";
+         } else {
+             $query .= " AND a.status = ?";
+@@ @@
+
+     $stmt = $conn->prepare($query);
+
+-    if (!empty($params)) {
++    if ($params !== []) {
+         $stmt->bind_param($types, ...$params);
+     }
+
+@@ @@
+
+     $stmt = $conn->prepare($query);
+
+-    if (!empty($params)) {
++    if ($params !== []) {
+         $stmt->bind_param($types, ...$params);
+     }
+
+@@ @@
+               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+     $status = 'scheduled';
+-    $notes = isset($data['notes']) ? $data['notes'] : '';
+-    $createdBy = isset($data['created_by']) ? $data['created_by'] : 1; // Default to system admin
++    $notes = $data['notes'] ?? '';
++    $createdBy = $data['created_by'] ?? 1; // Default to system admin
+     $createdAt = date('Y-m-d H:i:s');
+
+     $stmt = $conn->prepare($query);
+@@ @@
+         }
+     }
+
+-    if (empty($updates)) {
++    if ($updates === []) {
+         return false; // No fields to update
+     }
+
+@@ @@
+  * @param string $time Appointment time
+  * @return bool True if slot is available
+  */
+-function isTimeSlotAvailable($doctorId, $date, $time)
++function isTimeSlotAvailable($doctorId, $date, $time): bool
+ {
+     global $conn;
+
+@@ @@
+  * @return array Statistics
+  */
+ if (!function_exists('getDoctorStatistics')) {
+-function getDoctorStatistics($doctorId)
++function getDoctorStatistics($doctorId): array
+ {
+     global $conn;
+
+@@ @@
+  * @return array Statistics
+  */
+ if (!function_exists('getNurseStatistics')) {
+-function getNurseStatistics($nurseId)
++function getNurseStatistics($nurseId): array
+ {
+     global $conn;
+    ----------- end diff -----------
+
+Applied rules:
+ * SimplifyEmptyCheckOnEmptyArrayRector
+ * TernaryToNullCoalescingRector
+ * DisallowedEmptyRuleFixerRector
+ * BoolReturnTypeFromBooleanStrictReturnsRector
+ * ReturnTypeFromReturnDirectArrayRector
+
+
+28) includes/data/dashboard_data.php:13
+
+    ---------- begin diff ----------
+@@ @@
+  * @param int $userId User ID
+  * @return array User statistics
+  */
+-function getUserStatisticsSummary($userId)
++function getUserStatisticsSummary($userId): array
+ {
+-    $result = [
++    return [
+         'last_login' => dbSelectValue(
+             "SELECT login_time FROM login_logs 
+              WHERE user_id = ? 
+@@ @@
+             [$userId]
+         )
+     ];
+-
+-    return $result;
+ }
+
+ /**
+@@ @@
+  *
+  * @return array System statistics
+  */
+-function getSystemStatistics()
++function getSystemStatistics(): array
+ {
+     return [
+         'total_users' => dbSelectValue("SELECT COUNT(*) FROM users WHERE is_active = 1"),
+@@ @@
+     $whereParams = [],
+     $startDate = null,
+     $endDate = null
+-) {
++): array {
+     if (!$startDate) {
+         // Default to last 30 days
+         $startDate = date('Y-m-d', strtotime('-30 days'));
+@@ @@
+         // Convert period to a date for formatting
+         if ($groupBy === 'week') {
+             // Parse "YYYY-WNN" format
+-            list($year, $week) = explode('-W', $row['period']);
++            [$year, $week] = explode('-W', (string) $row['period']);
+             $date = new DateTime();
+             $date->setISODate($year, $week);
+         } elseif ($groupBy === 'month') {
+@@ @@
+  * @param string $endDate End date (YYYY-MM-DD)
+  * @return array Calendar events
+  */
+-function getUserCalendarEvents($userId, $startDate = null, $endDate = null)
++function getUserCalendarEvents($userId, $startDate = null, $endDate = null): array
+ {
+     if (!$startDate) {
+         $startDate = date('Y-m-d');
+    ----------- end diff -----------
+
+Applied rules:
+ * SimplifyUselessVariableRector
+ * ListToArrayDestructRector
+ * NullToStrictStringFuncCallArgRector
+ * ReturnTypeFromReturnDirectArrayRector
+ * ReturnTypeFromStrictNewArrayRector
+
+
+29) includes/data/department_data.php:176
+
+    ---------- begin diff ----------
+@@ @@
+               VALUES (?, ?, ?, ?)";
+
+     $name = $data['name'];
+-    $description = isset($data['description']) ? $data['description'] : '';
++    $description = $data['description'] ?? '';
+     $isActive = isset($data['is_active']) ? 1 : 1; // Default to active
+     $createdAt = date('Y-m-d H:i:s');
+    ----------- end diff -----------
+
+Applied rules:
+ * TernaryToNullCoalescingRector
+
+
+30) includes/data/follow_up_data.php:389
+
+    ---------- begin diff ----------
+@@ @@
+         $startDate = '';
+         $endDate = date('Y-m-d');
+
+-        switch ($period) {
+-            case 'today':
+-                $startDate = date('Y-m-d');
+-                break;
+-            case 'week':
+-                $startDate = date('Y-m-d', strtotime('-1 week'));
+-                break;
+-            case 'month':
+-                $startDate = date('Y-m-d', strtotime('-1 month'));
+-                break;
+-            case 'year':
+-                $startDate = date('Y-m-d', strtotime('-1 year'));
+-                break;
+-            default:
+-                $startDate = date('Y-m-d', strtotime('-1 month'));
+-        }
++        $startDate = match ($period) {
++            'today' => date('Y-m-d'),
++            'week' => date('Y-m-d', strtotime('-1 week')),
++            'month' => date('Y-m-d', strtotime('-1 month')),
++            'year' => date('Y-m-d', strtotime('-1 year')),
++            default => date('Y-m-d', strtotime('-1 month')),
++        };
+
+         $sql = "SELECT 
+                     COUNT(*) as total_follow_ups,
+    ----------- end diff -----------
+
+Applied rules:
+ * ChangeSwitchToMatchRector
+
+
+31) includes/data/invoice_data.php:95
+
+    ---------- begin diff ----------
+@@ @@
+     $query .= " ORDER BY i.created_at DESC";
+
+     $stmt = $conn->prepare($query);
++    $types = str_repeat('s', count($params));
++    $stmt->bind_param($types, ...$params);
+
+-    if (!empty($params)) {
+-        $types = str_repeat('s', count($params));
+-        $stmt->bind_param($types, ...$params);
+-    }
+-
+     $stmt->execute();
+     $result = $stmt->get_result();
+     $invoices = $result->fetch_all(MYSQLI_ASSOC);
+@@ @@
+     $query .= " ORDER BY i.created_at DESC";
+
+     $stmt = $conn->prepare($query);
++    $types = str_repeat('s', count($params));
++    $stmt->bind_param($types, ...$params);
+
+-    if (!empty($params)) {
+-        $types = str_repeat('s', count($params));
+-        $stmt->bind_param($types, ...$params);
+-    }
+-
+     $stmt->execute();
+     $result = $stmt->get_result();
+     $invoices = $result->fetch_all(MYSQLI_ASSOC);
+@@ @@
+  * @param string $status New status
+  * @return bool Success status
+  */
+-function updateInvoiceStatus($invoiceId, $status)
++function updateInvoiceStatus($invoiceId, $status): bool
+ {
+     global $conn;
+
+@@ @@
+  * @return string Invoice number
+  */
+ if (!function_exists('generateInvoiceNumber')) {
+-    function generateInvoiceNumber()
++    function generateInvoiceNumber(): string
+     {
+         global $conn;
+
+@@ @@
+         if ($row) {
+             // Extract the sequence number and increment
+             $lastNumber = $row['invoice_number'];
+-            $sequence = (int)substr($lastNumber, -4) + 1;
++            $sequence = (int)substr((string) $lastNumber, -4) + 1;
+         } else {
+             $sequence = 1;
+         }
+@@ @@
+     $startDate = '';
+     $endDate = date('Y-m-d');
+
+-    switch ($period) {
+-        case 'today':
+-            $startDate = date('Y-m-d');
+-            break;
+-        case 'week':
+-            $startDate = date('Y-m-d', strtotime('-1 week'));
+-            break;
+-        case 'month':
+-            $startDate = date('Y-m-d', strtotime('-1 month'));
+-            break;
+-        case 'year':
+-            $startDate = date('Y-m-d', strtotime('-1 year'));
+-            break;
+-        default:
+-            $startDate = date('Y-m-d', strtotime('-1 month'));
+-    }
++    $startDate = match ($period) {
++        'today' => date('Y-m-d'),
++        'week' => date('Y-m-d', strtotime('-1 week')),
++        'month' => date('Y-m-d', strtotime('-1 month')),
++        'year' => date('Y-m-d', strtotime('-1 year')),
++        default => date('Y-m-d', strtotime('-1 month')),
++    };
+
+     $query = "SELECT 
+                 COUNT(*) as total_invoices,
+    ----------- end diff -----------
+
+Applied rules:
+ * RemoveAlwaysTrueIfConditionRector
+ * ChangeSwitchToMatchRector
+ * NullToStrictStringFuncCallArgRector
+ * BoolReturnTypeFromBooleanStrictReturnsRector
+ * StringReturnTypeFromStrictStringReturnsRector
+
+
+32) includes/data/lab_data.php:222
+
+    ---------- begin diff ----------
+@@ @@
+
+     $stmt = $conn->prepare($query);
+
+-    if (!empty($params)) {
+-        $stmt->bind_param($types, ...$params);
+-    }
++    $stmt->bind_param($types, ...$params);
+
+     $stmt->execute();
+     $result = $stmt->get_result();
+@@ @@
+  * @param int $performedBy Staff ID of the lab technician
+  * @return bool Success flag
+  */
+-function saveLabTestResults($testItemId, $parameters, $performedBy)
++function saveLabTestResults($testItemId, $parameters, $performedBy): bool
+ {
+     global $conn;
+
+@@ @@
+
+         // Insert or update results for each parameter
+         foreach ($parameters as $param) {
+-            if (!isset($param['parameter_id']) || !isset($param['result_value'])) {
++            if (!isset($param['parameter_id'])) {
+                 continue;
+             }
+-
++            if (!isset($param['result_value'])) {
++                continue;
++            }
+             // Check if result already exists
+             $query = "SELECT result_id FROM lab_test_results 
+                     WHERE test_item_id = ? AND parameter_id = ?";
+@@ @@
+             $stmt->execute();
+             $result = $stmt->get_result();
+
+-            $remarks = isset($param['remarks']) ? $param['remarks'] : '';
++            $remarks = $param['remarks'] ?? '';
+
+             if ($result->num_rows > 0) {
+                 // Update existing result
+@@ @@
+  *
+  * @return array Statistics
+  */
+-function getLabTechnicianStatistics()
++function getLabTechnicianStatistics(): array
+ {
+     global $conn;
+    ----------- end diff -----------
+
+Applied rules:
+ * RemoveAlwaysTrueIfConditionRector
+ * ChangeOrIfContinueToMultiContinueRector
+ * TernaryToNullCoalescingRector
+ * BoolReturnTypeFromBooleanConstReturnsRector
+ * ReturnTypeFromReturnDirectArrayRector
+
+
+ [ERROR] Could not process                                                     
+         "C:\wamp64\www\Nyalife-HMS-System\vendor\rector\rector\vendor\symplify
+         \easy-parallel\src\ValueObject\ParallelProcess.php" file, due to: 
+   
+         "Child process timed out after 120 seconds". On line: 108             
+
+ [ERROR] Could not process some files, due to: 
+                               
+         "Reached system errors count limit of 50, exiting...".                
+

@@ -1,0 +1,421 @@
+{
+    "models_checked": [
+        "AppointmentModel",
+        "ConsultationModel",
+        "DepartmentModel",
+        "DoctorModel",
+        "DoctorScheduleModel",
+        "FollowUpModel",
+        "InvoiceModel",
+        "LabAttachmentModel",
+        "LabParameterModel",
+        "LabRequestModel",
+        "LabTestModel",
+        "MedicalHistoryModel",
+        "MedicationModel",
+        "MessageModel",
+        "NotificationModel",
+        "PatientModel",
+        "PaymentModel",
+        "PrescriptionModel",
+        "StaffModel",
+        "UserModel",
+        "VitalSignModel"
+    ],
+    "tables_found": [
+        "appointments",
+        "consultations",
+        "departments",
+        "doctors",
+        "doctor_schedules",
+        "follow_ups",
+        "invoices",
+        "lab_attachments",
+        "lab_parameters",
+        "lab_requests",
+        "lab_test_types",
+        "medical_history",
+        "medications",
+        "messages",
+        "notifications",
+        "patients",
+        "payments",
+        "prescriptions",
+        "staff",
+        "users",
+        "vital_signs"
+    ],
+    "tables_missing": [],
+    "foreign_keys": [
+        {
+            "table": "activity_logs",
+            "column": "user_id",
+            "references": "users.user_id",
+            "constraint": "activity_logs_ibfk_1"
+        },
+        {
+            "table": "appointments",
+            "column": "patient_id",
+            "references": "patients.patient_id",
+            "constraint": "appointments_ibfk_1"
+        },
+        {
+            "table": "appointments",
+            "column": "doctor_id",
+            "references": "staff.staff_id",
+            "constraint": "appointments_ibfk_2"
+        },
+        {
+            "table": "appointments",
+            "column": "created_by",
+            "references": "users.user_id",
+            "constraint": "appointments_ibfk_3"
+        },
+        {
+            "table": "audit_logs",
+            "column": "user_id",
+            "references": "users.user_id",
+            "constraint": "audit_logs_ibfk_1"
+        },
+        {
+            "table": "consultations",
+            "column": "appointment_id",
+            "references": "appointments.appointment_id",
+            "constraint": "consultations_ibfk_1"
+        },
+        {
+            "table": "consultations",
+            "column": "patient_id",
+            "references": "patients.patient_id",
+            "constraint": "consultations_ibfk_2"
+        },
+        {
+            "table": "consultations",
+            "column": "doctor_id",
+            "references": "staff.staff_id",
+            "constraint": "consultations_ibfk_3"
+        },
+        {
+            "table": "consultations",
+            "column": "created_by",
+            "references": "users.user_id",
+            "constraint": "consultations_ibfk_4"
+        },
+        {
+            "table": "doctor_schedules",
+            "column": "doctor_id",
+            "references": "staff.staff_id",
+            "constraint": "fk_doctor_schedules_staff"
+        },
+        {
+            "table": "follow_ups",
+            "column": "patient_id",
+            "references": "patients.patient_id",
+            "constraint": "follow_ups_ibfk_1"
+        },
+        {
+            "table": "follow_ups",
+            "column": "consultation_id",
+            "references": "consultations.consultation_id",
+            "constraint": "follow_ups_ibfk_2"
+        },
+        {
+            "table": "follow_ups",
+            "column": "created_by",
+            "references": "users.user_id",
+            "constraint": "follow_ups_ibfk_3"
+        },
+        {
+            "table": "invoice_items",
+            "column": "invoice_id",
+            "references": "invoices.invoice_id",
+            "constraint": "invoice_items_ibfk_1"
+        },
+        {
+            "table": "invoices",
+            "column": "doctor_id",
+            "references": "doctors.doctor_id",
+            "constraint": "fk_invoice_doctor"
+        },
+        {
+            "table": "invoices",
+            "column": "patient_id",
+            "references": "patients.patient_id",
+            "constraint": "invoices_ibfk_1"
+        },
+        {
+            "table": "invoices",
+            "column": "consultation_id",
+            "references": "consultations.consultation_id",
+            "constraint": "invoices_ibfk_2"
+        },
+        {
+            "table": "invoices",
+            "column": "created_by",
+            "references": "users.user_id",
+            "constraint": "invoices_ibfk_3"
+        },
+        {
+            "table": "lab_parameters",
+            "column": "test_type_id",
+            "references": "lab_test_types.test_type_id",
+            "constraint": "lab_parameters_ibfk_1"
+        },
+        {
+            "table": "lab_test_items",
+            "column": "request_id",
+            "references": "lab_test_requests.request_id",
+            "constraint": "lab_test_items_ibfk_1"
+        },
+        {
+            "table": "lab_test_items",
+            "column": "test_type_id",
+            "references": "lab_test_types.test_type_id",
+            "constraint": "lab_test_items_ibfk_2"
+        },
+        {
+            "table": "lab_test_items",
+            "column": "performed_by",
+            "references": "users.user_id",
+            "constraint": "lab_test_items_ibfk_3"
+        },
+        {
+            "table": "lab_test_items",
+            "column": "verified_by",
+            "references": "users.user_id",
+            "constraint": "lab_test_items_ibfk_4"
+        },
+        {
+            "table": "lab_test_items",
+            "column": "parameter_id",
+            "references": "lab_parameters.parameter_id",
+            "constraint": "lab_test_items_ibfk_5"
+        },
+        {
+            "table": "lab_test_requests",
+            "column": "patient_id",
+            "references": "patients.patient_id",
+            "constraint": "lab_test_requests_ibfk_1"
+        },
+        {
+            "table": "lab_test_requests",
+            "column": "consultation_id",
+            "references": "consultations.consultation_id",
+            "constraint": "lab_test_requests_ibfk_2"
+        },
+        {
+            "table": "lab_test_requests",
+            "column": "requested_by",
+            "references": "users.user_id",
+            "constraint": "lab_test_requests_ibfk_3"
+        },
+        {
+            "table": "lab_test_requests",
+            "column": "assigned_to",
+            "references": "staff.staff_id",
+            "constraint": "lab_test_requests_ibfk_4"
+        },
+        {
+            "table": "lab_test_requests",
+            "column": "sample_collected_by",
+            "references": "staff.staff_id",
+            "constraint": "lab_test_requests_ibfk_5"
+        },
+        {
+            "table": "medical_history",
+            "column": "patient_id",
+            "references": "patients.patient_id",
+            "constraint": "medical_history_ibfk_1"
+        },
+        {
+            "table": "medical_history",
+            "column": "recorded_by",
+            "references": "users.user_id",
+            "constraint": "medical_history_ibfk_2"
+        },
+        {
+            "table": "messages",
+            "column": "sender_id",
+            "references": "users.user_id",
+            "constraint": "messages_ibfk_1"
+        },
+        {
+            "table": "messages",
+            "column": "recipient_id",
+            "references": "users.user_id",
+            "constraint": "messages_ibfk_2"
+        },
+        {
+            "table": "notifications",
+            "column": "user_id",
+            "references": "users.user_id",
+            "constraint": "notifications_ibfk_1"
+        },
+        {
+            "table": "obstetric_history",
+            "column": "patient_id",
+            "references": "patients.patient_id",
+            "constraint": "obstetric_history_ibfk_1"
+        },
+        {
+            "table": "obstetric_history",
+            "column": "recorded_by",
+            "references": "users.user_id",
+            "constraint": "obstetric_history_ibfk_2"
+        },
+        {
+            "table": "password_reset_tokens",
+            "column": "user_id",
+            "references": "users.user_id",
+            "constraint": "password_reset_tokens_ibfk_1"
+        },
+        {
+            "table": "patients",
+            "column": "user_id",
+            "references": "users.user_id",
+            "constraint": "patients_ibfk_1"
+        },
+        {
+            "table": "payment_transactions",
+            "column": "invoice_id",
+            "references": "invoices.invoice_id",
+            "constraint": "payment_transactions_ibfk_1"
+        },
+        {
+            "table": "payments",
+            "column": "invoice_id",
+            "references": "invoices.invoice_id",
+            "constraint": "payments_ibfk_1"
+        },
+        {
+            "table": "payments",
+            "column": "received_by",
+            "references": "users.user_id",
+            "constraint": "payments_ibfk_2"
+        },
+        {
+            "table": "pregnancy_details",
+            "column": "patient_id",
+            "references": "patients.patient_id",
+            "constraint": "pregnancy_details_ibfk_1"
+        },
+        {
+            "table": "pregnancy_details",
+            "column": "obstetric_id",
+            "references": "obstetric_history.obstetric_id",
+            "constraint": "pregnancy_details_ibfk_2"
+        },
+        {
+            "table": "pregnancy_details",
+            "column": "recorded_by",
+            "references": "users.user_id",
+            "constraint": "pregnancy_details_ibfk_3"
+        },
+        {
+            "table": "prescription_items",
+            "column": "prescription_id",
+            "references": "prescriptions.prescription_id",
+            "constraint": "prescription_items_ibfk_1"
+        },
+        {
+            "table": "prescription_items",
+            "column": "medication_id",
+            "references": "medications.medication_id",
+            "constraint": "prescription_items_ibfk_2"
+        },
+        {
+            "table": "prescription_items",
+            "column": "dispensed_by",
+            "references": "users.user_id",
+            "constraint": "prescription_items_ibfk_3"
+        },
+        {
+            "table": "prescriptions",
+            "column": "patient_id",
+            "references": "patients.patient_id",
+            "constraint": "prescriptions_ibfk_1"
+        },
+        {
+            "table": "prescriptions",
+            "column": "consultation_id",
+            "references": "consultations.consultation_id",
+            "constraint": "prescriptions_ibfk_2"
+        },
+        {
+            "table": "prescriptions",
+            "column": "prescribed_by",
+            "references": "users.user_id",
+            "constraint": "prescriptions_ibfk_3"
+        },
+        {
+            "table": "referrals",
+            "column": "patient_id",
+            "references": "patients.patient_id",
+            "constraint": "referrals_ibfk_1"
+        },
+        {
+            "table": "referrals",
+            "column": "consultation_id",
+            "references": "consultations.consultation_id",
+            "constraint": "referrals_ibfk_2"
+        },
+        {
+            "table": "referrals",
+            "column": "created_by",
+            "references": "users.user_id",
+            "constraint": "referrals_ibfk_3"
+        },
+        {
+            "table": "settings",
+            "column": "updated_by",
+            "references": "users.user_id",
+            "constraint": "settings_ibfk_1"
+        },
+        {
+            "table": "staff",
+            "column": "user_id",
+            "references": "users.user_id",
+            "constraint": "staff_ibfk_1"
+        },
+        {
+            "table": "system_notifications",
+            "column": "user_id",
+            "references": "users.user_id",
+            "constraint": "system_notifications_ibfk_1"
+        },
+        {
+            "table": "user_tokens",
+            "column": "user_id",
+            "references": "users.user_id",
+            "constraint": "user_tokens_ibfk_1"
+        },
+        {
+            "table": "users",
+            "column": "role_id",
+            "references": "roles.role_id",
+            "constraint": "users_ibfk_1"
+        },
+        {
+            "table": "vital_signs",
+            "column": "patient_id",
+            "references": "patients.patient_id",
+            "constraint": "vital_signs_ibfk_1"
+        },
+        {
+            "table": "vital_signs",
+            "column": "consultation_id",
+            "references": "consultations.consultation_id",
+            "constraint": "vital_signs_ibfk_2"
+        },
+        {
+            "table": "vital_signs",
+            "column": "recorded_by",
+            "references": "users.user_id",
+            "constraint": "vital_signs_ibfk_3"
+        }
+    ],
+    "views_found": [],
+    "views_missing": [],
+    "errors": [],
+    "column_mismatches": []
+}

@@ -1,0 +1,156 @@
+Note: Using configuration file C:\wamp64\www\Nyalife-HMS-System\phpstan.neon.
+ ------ ----------------------------------------- 
+  Line   components\footer.php                    
+ ------ ----------------------------------------- 
+  :27    Variable $baseUrl might not be defined.  
+  :28    Variable $baseUrl might not be defined.  
+  :37    Variable $baseUrl might not be defined.  
+  :38    Variable $baseUrl might not be defined.  
+  :39    Variable $baseUrl might not be defined.  
+  :40    Variable $baseUrl might not be defined.  
+  :41    Variable $baseUrl might not be defined.  
+  :60    Variable $baseUrl might not be defined.  
+  :65    Variable $baseUrl might not be defined.  
+  :66    Variable $baseUrl might not be defined.  
+  :67    Variable $baseUrl might not be defined.  
+  :68    Variable $baseUrl might not be defined.  
+  :107   Variable $baseUrl might not be defined.  
+  :148   Variable $baseUrl might not be defined.  
+  :262   Variable $baseUrl might not be defined.  
+  :302   Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ --------------------------------------------- 
+  Line   components\header.php                        
+ ------ --------------------------------------------- 
+  :120   Variable $currentUser might not be defined.  
+  :154   Variable $baseUrl might not be defined.      
+  :155   Variable $baseUrl might not be defined.      
+  :165   Variable $isLoggedIn might not be defined.   
+  :168   Variable $baseUrl might not be defined.      
+  :181   Variable $baseUrl might not be defined.      
+  :184   Variable $baseUrl might not be defined.      
+  :187   Variable $baseUrl might not be defined.      
+  :190   Variable $baseUrl might not be defined.      
+  :206   Variable $baseUrl might not be defined.      
+  :209   Variable $baseUrl might not be defined.      
+  :217   Variable $baseUrl might not be defined.      
+  :220   Variable $baseUrl might not be defined.      
+  :223   Variable $baseUrl might not be defined.      
+  :229   Variable $baseUrl might not be defined.      
+  :243   Variable $baseUrl might not be defined.      
+  :246   Variable $baseUrl might not be defined.      
+  :260   Variable $baseUrl might not be defined.      
+  :266   Variable $baseUrl might not be defined.      
+  :269   Variable $baseUrl might not be defined.      
+  :272   Variable $baseUrl might not be defined.      
+  :285   Variable $baseUrl might not be defined.      
+  :295   Variable $baseUrl might not be defined.      
+  :305   Variable $currentUser might not be defined.  
+  :305   Variable $currentUser might not be defined.  
+  :308   Variable $baseUrl might not be defined.      
+  :309   Variable $baseUrl might not be defined.      
+  :310   Variable $baseUrl might not be defined.      
+  :312   Variable $baseUrl might not be defined.      
+  :317   Variable $baseUrl might not be defined.      
+ ------ --------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   components\script-loader.php             
+ ------ ----------------------------------------- 
+  :24    Variable $baseUrl might not be defined.  
+  :28    Variable $baseUrl might not be defined.  
+  :29    Variable $baseUrl might not be defined.  
+  :30    Variable $baseUrl might not be defined.  
+  :31    Variable $baseUrl might not be defined.  
+  :32    Variable $baseUrl might not be defined.  
+  :33    Variable $baseUrl might not be defined.  
+  :36    Variable $baseUrl might not be defined.  
+  :42    Variable $baseUrl might not be defined.  
+  :43    Variable $baseUrl might not be defined.  
+  :48    Variable $baseUrl might not be defined.  
+  :55    Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ --------------------------------------------- 
+  Line   components\sidebar.php                       
+ ------ --------------------------------------------- 
+  :14    Variable $currentUser might not be defined.  
+  :15    Variable $userRole might not be defined.     
+ ------ --------------------------------------------- 
+
+ ------ ----------------------------------------- 
+  Line   components\unified-script-loader.php     
+ ------ ----------------------------------------- 
+  :24    Variable $baseUrl might not be defined.  
+  :28    Variable $baseUrl might not be defined.  
+  :29    Variable $baseUrl might not be defined.  
+  :30    Variable $baseUrl might not be defined.  
+  :31    Variable $baseUrl might not be defined.  
+  :32    Variable $baseUrl might not be defined.  
+  :35    Variable $baseUrl might not be defined.  
+  :38    Variable $baseUrl might not be defined.  
+  :59    Variable $baseUrl might not be defined.  
+  :66    Variable $baseUrl might not be defined.  
+ ------ ----------------------------------------- 
+
+ ------ ------------------------------------------------------------- 
+  Line   data\admin_data.php                                          
+ ------ ------------------------------------------------------------- 
+  :202   Variable $params in empty() always exists and is not falsy.  
+  :245   Variable $params in empty() always exists and is not falsy.  
+ ------ ------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------- 
+  Line   data\dashboard_data.php                                                         
+ ------ -------------------------------------------------------------------------------- 
+  :129   Parameter #1 $year of method DateTime::setISODate() expects int, string given.  
+  :129   Parameter #2 $week of method DateTime::setISODate() expects int, string given.  
+ ------ -------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   data\invoice_data.php                                                
+ ------ --------------------------------------------------------------------- 
+  :100   Variable $params in empty() always exists and is not falsy.          
+  :144   Variable $params in empty() always exists and is not falsy.          
+  :317   Parameter #1 $string of function str_pad expects string, int given.  
+ ------ --------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------- 
+  Line   data\lab_data.php                                            
+ ------ ------------------------------------------------------------- 
+  :226   Variable $params in empty() always exists and is not falsy.  
+ ------ ------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------- 
+  Line   data\patient_data.php                                                
+ ------ --------------------------------------------------------------------- 
+  :243   Variable $patientColumns in empty() always exists and is not falsy.  
+ ------ --------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------------------- 
+  Line   helpers\AuditLogger.php                                                            
+ ------ ----------------------------------------------------------------------------------- 
+  :34    Result of && is always false.                                                      
+  :34    Strict comparison using === between false and true will always evaluate to false.  
+  :36    If condition is always false.                                                      
+ ------ ----------------------------------------------------------------------------------- 
+
+ ------ ---------------------------------------------------------- 
+  Line   services\NotificationService.php                          
+ ------ ---------------------------------------------------------- 
+  :361   Dead catch - Exception is never thrown in the try block.  
+ ------ ---------------------------------------------------------- 
+
+ -- ------------------------------------------------------------------------------------------------------- 
+     Error                                                                                                  
+ -- ------------------------------------------------------------------------------------------------------- 
+     Ignored error pattern #Class .* located in .* does not comply with psr-4# was not matched in reported  
+     errors.                                                                                                
+     Ignored error pattern #PHPDoc tag @param.*has invalid value# was not matched in reported errors.       
+     Ignored error pattern missingType.iterableValue was not matched in reported errors.                    
+ -- ------------------------------------------------------------------------------------------------------- 
+
+ [ERROR] Found 86 errors                                                                                     
+
+

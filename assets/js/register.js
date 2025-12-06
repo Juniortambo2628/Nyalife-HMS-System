@@ -1,142 +1,230 @@
 /**
  * Nyalife HMS - Registration JavaScript
- * 
- * This file contains the JavaScript functionality for handling registration form submissions.
- * Updated to use the Nyalife core modules for form handling, API calls, and notifications.
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if core modules are available
-    const usingCoreModules = typeof NyalifeForms !== 'undefined' && typeof NyalifeAPI !== 'undefined';
+// Initialize registration form when the page is loaded or reloaded via AJAX
+document.addEventListener('DOMContentLoaded', initRegistrationForm);
+document.addEventListener('page:loaded', initRegistrationForm);
+
+function initRegistrationForm() {
+    const registrationForm = document.getElementById('registrationForm');
     
-    if (usingCoreModules) {
-        // Using data attributes for form handling, most functionality is automatic
-        // This script only handles any custom callbacks or additional functionality
+    // Initialize Select2 for dropdowns if available
+    if (typeof $ !== 'undefined' && $.fn.select2) {
+        $('#gender').select2({
+            minimumResultsForSearch: -1, // Hide search box
+            width: '100%'
+        });
         
-        // Find all registration forms
-        const registrationForms = document.querySelectorAll('#registrationForm, [data-nyalife-form="true"][action*="register"]');
+        $('#blood_group').select2({
+            minimumResultsForSearch: -1, // Hide search box
+            width: '100%'
+        });
+    }
+    
+    // Client-side validation
+    if (registrationForm) {
+        // Password validation
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm_password');
         
-        registrationForms.forEach(form => {
-            // Get the form ID or generate one if needed
-            const formId = form.id || 'registrationForm-' + Math.random().toString(36).substr(2, 9);
-            if (!form.id) form.id = formId;
+        if (passwordInput && confirmPasswordInput) {
+            passwordInput.addEventListener('input', validatePassword);
+            confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+        }
+        
+        function validatePassword() {
+            const password = passwordInput.value;
+            const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
             
-            // Initialize the form with the core module
-            NyalifeForms.initForm(formId, {
-                validateOnBlur: true,
-                submitViaAjax: true,
-                resetAfterSubmit: true,
-                onSuccess: function(response) {
+            if (!regex.test(password)) {
+                passwordInput.setCustomValidity('Password must be at least 8 characters and include uppercase, lowercase, and numbers.');
+            } else {
+                passwordInput.setCustomValidity('');
+            }
+        }
+        
+        function validatePasswordMatch() {
+            if (passwordInput.value !== confirmPasswordInput.value) {
+                confirmPasswordInput.setCustomValidity('Passwords do not match');
+            } else {
+                confirmPasswordInput.setCustomValidity('');
+            }
+        }
+        
+        // Form submission with AJAX
+        registrationForm.addEventListener('submit', function(e) {
+            // Only use AJAX if Components is available or we want to enforce it
+            // For now, we'll use it if the form has the class or data attribute, or always
+            e.preventDefault();
+            
+            // Disable submit button
+            const submitBtn = registrationForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Registering...';
+
+            // progress bar handling (animated simulated progress)
+            const progressBar = document.querySelector('.register-progress-bar');
+            let progressInterval = null;
+            function startProgress(){
+                if (!progressBar) return;
+                progressBar.style.width = '10%';
+                let val = 10;
+                progressInterval = setInterval(()=>{
+                    val = Math.min(90, val + Math.random()*10);
+                    progressBar.style.width = val + '%';
+                }, 400);
+            }
+            function finishProgress(){
+                if (!progressBar) return;
+                if (progressInterval) clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                setTimeout(()=>{ progressBar.style.width = '0%'; }, 600);
+            }
+
+            startProgress();
+
+            // Get form data
+            const formData = new FormData(registrationForm);
+
+            // Submit the form via AJAX
+            fetch(registrationForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Finish progress
+                finishProgress();
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Register';
+
+                if (data.success) {
+                    // Dispatch registration success event to allow clearing stored step
+                    registrationForm.dispatchEvent(new Event('registration:success'));
                     // Show success message
-                    NyalifeCoreUI.showNotification('success', response.message || 'Registration successful!');
+                    const successAlert = document.createElement('div');
+                    successAlert.className = 'alert alert-success alert-dismissible fade show';
+                    successAlert.innerHTML = `
+                        <strong>Success!</strong> ${data.message || 'Registration successful! You can now log in.'}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
                     
-                    // Redirect to login page after delay
-                    setTimeout(function() {
-                        // Show login modal if it exists
-                        const loginModal = document.getElementById('loginModal');
-                        if (loginModal) {
-                            const modal = new bootstrap.Modal(loginModal);
-                            modal.show();
+                    // Insert alert before the form
+                    if (registrationForm.parentNode) {
+                        registrationForm.parentNode.insertBefore(successAlert, registrationForm);
+                    }
+                    
+                    // Reset the form
+                    registrationForm.reset();
+                    
+                    // Redirect to login page after a delay
+                    setTimeout(() => {
+                        const loginUrl = window.baseUrl ? window.baseUrl + '/login' : '/login';
+                        if (typeof Components !== 'undefined') {
+                            Components.loadPage(loginUrl);
                         } else {
-                            // Otherwise redirect to home page
-                            window.location.href = '/Nyalife-HMS-System/';
+                            window.location.href = loginUrl;
                         }
-                    }, 2000);
-                },
-                onError: function(error) {
-                    // Error handling is already done by the core module
-                    console.error('Registration error:', error);
+                    }, 3000);
+                } else {
+                    // Show error messages
+                    if (data.errors) {
+                        // Handle field-specific errors
+                        Object.keys(data.errors).forEach(field => {
+                            const input = document.getElementById(field);
+                            if (input) {
+                                input.classList.add('is-invalid');
+                                
+                                // Create or update feedback div
+                                let feedback = input.nextElementSibling;
+                                if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+                                    feedback = document.createElement('div');
+                                    feedback.className = 'invalid-feedback';
+                                    input.parentNode.insertBefore(feedback, input.nextSibling);
+                                }
+                                feedback.textContent = data.errors[field];
+                                
+                                // also add small inline helper message consistent with live validation
+                                let fbInline = input.parentNode.querySelector('.field-feedback');
+                                if (!fbInline) {
+                                    fbInline = document.createElement('div');
+                                    fbInline.className = 'field-feedback small mt-1 text-danger';
+                                    input.parentNode.appendChild(fbInline);
+                                }
+                                fbInline.textContent = data.errors[field];
+                            }
+                        });
+                        
+                        // Show general error if any
+                        if (data.errors.general) {
+                            const generalAlert = document.createElement('div');
+                            generalAlert.className = 'alert alert-danger alert-dismissible fade show';
+                            generalAlert.innerHTML = `
+                                ${data.errors.general}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            `;
+                            
+                            // Insert alert before the form
+                            if (registrationForm.parentNode) {
+                                registrationForm.parentNode.insertBefore(generalAlert, registrationForm);
+                            }
+                        }
+                    } else {
+                        // Show general error
+                        const generalAlert = document.createElement('div');
+                        generalAlert.className = 'alert alert-danger alert-dismissible fade show';
+                        generalAlert.innerHTML = `
+                            <strong>Error!</strong> ${data.message || 'An error occurred during registration. Please try again.'}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        
+                        // Insert alert before the form
+                        if (registrationForm.parentNode) {
+                            registrationForm.parentNode.insertBefore(generalAlert, registrationForm);
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                finishProgress();
+                
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Register';
+                
+                // Show error message
+                const generalAlert = document.createElement('div');
+                generalAlert.className = 'alert alert-danger alert-dismissible fade show';
+                generalAlert.innerHTML = `
+                    <strong>Error!</strong> An unexpected error occurred. Please try again.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                
+                // Insert alert before the form
+                if (registrationForm.parentNode) {
+                    registrationForm.parentNode.insertBefore(generalAlert, registrationForm);
                 }
             });
         });
-    } else {
-        // Fallback for legacy support
-        if (typeof jQuery !== 'undefined') {
-            // Handle registration form submission using jQuery
-            $('#registrationForm').on('submit', function(e) {
-                e.preventDefault();
-
-                // Show the loader
-                if (typeof NyalifeLoader !== 'undefined') {
-                    NyalifeLoader.show('Processing registration...');
-                }
-
-                // Get form data
-                const formData = $(this).serialize();
-                const action = $(this).attr('action');
-
-                // Send AJAX request
-                $.ajax({
-                    type: 'POST',
-                    url: action,
-                    data: formData,
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            // Show success message
-                            if (typeof showAlert === 'function') {
-                                showAlert('success', response.message);
-                            }
-
-                            // Reset form
-                            $('#registrationForm')[0].reset();
-
-                            // Redirect to login page after delay
-                            setTimeout(function() {
-                                // Show login modal if it exists
-                                if ($('#loginModal').length) {
-                                    $('#loginModal').modal('show');
-                                } else {
-                                    // Otherwise redirect to home page
-                                    window.location.href = '/Nyalife-HMS-System/';
-                                }
-                            }, 2000);
-                        } else {
-                            // Show error message
-                            if (typeof showAlert === 'function') {
-                                showAlert('error', response.message);
-                            } else {
-                                alert(response.message);
-                            }
-                        }
-
-                        // Hide the loader
-                        if (typeof NyalifeLoader !== 'undefined') {
-                            NyalifeLoader.hide();
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        // Show error message
-                        if (typeof showAlert === 'function') {
-                            showAlert('error', 'An error occurred during registration. Please try again.');
-                        } else {
-                            alert('An error occurred during registration. Please try again.');
-                        }
-
-                        // Hide the loader
-                        if (typeof NyalifeLoader !== 'undefined') {
-                            NyalifeLoader.hide();
-                        }
-                    }
-                });
-            });
-            
-            // Password validation
-            $('#password, #confirm_password').on('keyup', function() {
-                const password = $('#password').val();
-                const confirmPassword = $('#confirm_password').val();
-
-                // Check if passwords match
-                if (password !== '' && confirmPassword !== '') {
-                    if (password === confirmPassword) {
-                        $('#confirm_password').removeClass('is-invalid').addClass('is-valid');
-                        $('#passwordMatchFeedback').removeClass('invalid-feedback').addClass('valid-feedback').text('Passwords match');
-                    } else {
-                        $('#confirm_password').removeClass('is-valid').addClass('is-invalid');
-                        $('#passwordMatchFeedback').removeClass('valid-feedback').addClass('invalid-feedback').text('Passwords do not match');
-                    }
-                }
-            });
-        }
     }
-});
+    
+    // Add AJAX navigation to links if Components is available
+    if (typeof Components !== 'undefined') {
+        const baseUrl = window.baseUrl || '';
+        const links = document.querySelectorAll('#main-content a[href^="' + baseUrl + '"]');
+        links.forEach(link => {
+            if (!link.hasAttribute('data-no-ajax')) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    Components.loadPage(this.href);
+                });
+            }
+        });
+    }
+}

@@ -18,12 +18,30 @@ try {
     require_once __DIR__ . '/../includes/controllers/api/AppointmentController.php';
     require_once __DIR__ . '/../includes/controllers/api/UserController.php';
     require_once __DIR__ . '/../includes/controllers/api/PatientController.php';
+    require_once __DIR__ . '/../includes/controllers/api/ValidationController.php';
+    require_once __DIR__ . '/../includes/controllers/api/ApiNotificationsController.php';
+    require_once __DIR__ . '/../includes/controllers/api/CommunicationController.php';
     
     // Process URL to get path
-    $requestUri = $_SERVER['REQUEST_URI'];
+    $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $basePath = '/api/';
-    $path = substr($requestUri, strpos($requestUri, $basePath) + strlen($basePath));
-    $path = parse_url($path, PHP_URL_PATH);
+    
+    // Find the position of /api/ in the path (handles subdirectory like /Nyalife-HMS-System/api/)
+    $apiPos = strpos($requestUri, $basePath);
+    if ($apiPos !== false) {
+        $path = substr($requestUri, $apiPos + strlen($basePath));
+    } else {
+        // Fallback: if /api/ not found, try to extract after 'api/'
+        if (($pos = strpos($requestUri, 'api/')) !== false) {
+            $path = substr($requestUri, $pos + strlen('api/'));
+        } else {
+            $path = '';
+        }
+    }
+    
+    // Remove leading/trailing slashes
+    $path = trim($path, '/');
+    
     $method = $_SERVER['REQUEST_METHOD'];
     
     // Create router
@@ -31,7 +49,8 @@ try {
     
     // Register API routes with names for easier reference
     
-    // Appointment routes
+    // Appointment routes (more specific routes first)
+    $router->register('GET', 'appointments/pending-count', 'AppointmentController', 'pendingCount', 'api.appointments.pending-count');
     $router->register('GET', 'appointments/(\d+)', 'AppointmentController', 'getAppointment', 'api.appointment.view');
     $router->register('GET', 'appointments', 'AppointmentController', 'getAppointments', 'api.appointments.list');
     $router->register('POST', 'appointments', 'AppointmentController', 'createAppointment', 'api.appointment.create');
@@ -46,6 +65,21 @@ try {
     // Patient routes
     $router->register('GET', 'patients/(\d+)', 'PatientController', 'getPatient', 'api.patient.view');
     $router->register('GET', 'patients', 'PatientController', 'getPatients', 'api.patients.list');
+    
+    // Validation routes (for client-side checks)
+    $router->register('POST', 'validate-email', 'ValidationController', 'validateEmail', 'api.validate.email');
+    $router->register('POST', 'validate-appointment', 'ValidationController', 'validateAppointment', 'api.validate.appointment');
+    $router->register('GET', 'available-slots', 'ValidationController', 'getAvailableSlots', 'api.available.slots');
+    
+    // Notification routes
+    $router->register('GET', 'notifications', 'ApiNotificationsController', 'index', 'api.notifications.list');
+    $router->register('GET', 'notifications/count', 'ApiNotificationsController', 'count', 'api.notifications.count');
+    $router->register('PUT', 'notifications/(\d+)/read', 'ApiNotificationsController', 'markAsRead', 'api.notification.read');
+    $router->register('PUT', 'notifications/mark-all-read', 'ApiNotificationsController', 'markAllAsRead', 'api.notifications.mark-all-read');
+    
+    // Messages routes  
+    $router->register('GET', 'messages/inbox', 'CommunicationController', 'inbox', 'api.messages.inbox');
+    $router->register('POST', 'messages', 'CommunicationController', 'sendMessage', 'api.messages.send');
     
     // Dispatch the request
     $router->dispatch($method, $path);

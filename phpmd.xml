@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<ruleset name="NyalifeHMS"
+         xmlns="http://pmd.sf.net/ruleset/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0
+                     http://pmd.sf.net/ruleset_xml_schema.xsd"
+         xsi:noNamespaceSchemaLocation="
+                     http://pmd.sf.net/ruleset_xml_schema.xsd">
+    <description>Custom PHPMD ruleset for Nyalife HMS - focuses on critical issues only</description>
+    
+    <!-- Include cleancode rules but exclude non-critical ones -->
+    <rule ref="rulesets/cleancode.xml">
+        <!-- Exclude non-critical rules for legacy codebase -->
+        <exclude name="StaticAccess"/>
+        <exclude name="ExitExpression"/> <!-- Required for redirects -->
+        <exclude name="ElseExpression"/>
+        <exclude name="BooleanArgumentFlag"/>
+        <exclude name="MissingImport"/>
+    </rule>
+    
+    <!-- Include codesize rules with higher thresholds -->
+    <rule ref="rulesets/codesize.xml">
+        <!-- Exclude all codesize rules - focus on unused code only -->
+        <exclude name="CyclomaticComplexity"/>
+        <exclude name="NPathComplexity"/>
+        <exclude name="ExcessiveMethodLength"/>
+        <exclude name="ExcessiveClassLength"/>
+        <exclude name="ExcessiveParameterList"/>
+    </rule>
+    
+    <!-- Include design rules but exclude SRP violations (common in controllers) -->
+    <rule ref="rulesets/design.xml">
+        <exclude name="TooManyMethods"/>
+        <exclude name="TooManyPublicMethods"/>
+        <exclude name="ExcessiveClassComplexity"/>
+    </rule>
+    
+    <!-- Include unusedcode rules - these are the most important -->
+    <rule ref="rulesets/unusedcode.xml"/>
+</ruleset>
+

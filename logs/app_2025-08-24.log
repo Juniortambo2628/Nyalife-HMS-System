@@ -1,0 +1,7 @@
+[2025-08-24 21:47:10] [ERROR] [Database error in UserModel::authenticate] MySQL server has gone away
+[2025-08-24 21:47:14] [ERROR] [System error in WebRouter::dispatch] No connection could be made because the target machine actively refused it
+[2025-08-24 22:19:41] [ERROR] [System error in WebRouter::dispatch] Unknown column 'd.specialization' in 'field list'
+[2025-08-24 23:13:04] [ERROR] [System error in WebRouter::dispatch] Unknown column 'd.specialization' in 'field list'
+[2025-08-24 23:14:25] [ERROR] [System error in WebRouter::dispatch] Unknown column 'd.specialization' in 'field list'
+[2025-08-24 23:56:16] [ERROR] [System error in WebRouter::dispatch] Unknown column 'u.role' in 'field list'
+[2025-08-24 23:56:22] [ERROR] [System error in WebRouter::dispatch] Unknown column 'u.role' in 'field list'

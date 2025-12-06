@@ -1,146 +1,199 @@
 <?php
+/**
+ * Nyalife HMS - Create Consultation View
+ */
+
+$pageTitle = 'Create Consultation - Nyalife HMS';
+
 // Check if there's any form data to repopulate
 $formData = $_SESSION['form_data'] ?? [];
 unset($_SESSION['form_data']); // Clear the form data after using it
+
+// Define status options
+$statusOptions = [
+    'scheduled' => 'Scheduled',
+    'in_progress' => 'In Progress',
+    'completed' => 'Completed',
+    'cancelled' => 'Cancelled'
+];
+
+// Debug - Check if form was submitted
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    error_log("Form submitted: " . json_encode($_POST));
+}
 ?>
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <h1>New Consultation</h1>
-        </div>
-        <div class="col-md-6 text-end">
-            <a href="<?= $baseUrl ?>/consultations" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Back to Consultations
-            </a>
-        </div>
-    </div>
 
-    <div class="card">
-        <div class="card-body">
-            <form id="consultationForm" action="<?= $baseUrl ?>/consultations/store" method="POST">
-                <?php if ($appointment): ?>
-                    <input type="hidden" name="appointment_id" value="<?= $appointment['appointment_id'] ?>">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> This consultation is being created for an existing appointment.
-                    </div>
-                <?php endif; ?>
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h1>New Consultation</h1>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="<?= $baseUrl ?>/consultations" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Consultations
+                </a>
+            </div>
+        </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
+        <!-- Flash Messages -->
+        <?php if (!empty($errorMessage)): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i> <?= htmlspecialchars($errorMessage) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
+        <!-- Consultation Form -->
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="<?= $baseUrl ?>/consultations/create" id="consultation-form">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
                             <label for="patient_id" class="form-label">Patient <span class="text-danger">*</span></label>
-                            <?php if ($appointment): ?>
-                                <input type="hidden" name="patient_id" value="<?= $appointment['patient_id'] ?>">
-                                <input type="text" class="form-control" value="<?= htmlspecialchars($appointment['patient_name']) ?>" readonly>
-                            <?php else: ?>
-                                <select class="form-select" id="patient_id" name="patient_id" required>
-                                    <option value="">Select Patient</option>
-                                    <?php foreach ($patients as $patient): ?>
-                                        <option value="<?= $patient['patient_id'] ?>" 
-                                            <?= ($formData['patient_id'] ?? '') == $patient['patient_id'] ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            <?php endif; ?>
+                            <select name="patient_id" id="patient_id" class="form-select select2" required>
+                                <option value="">Select Patient</option>
+                                <?php foreach ($patients as $patient): ?>
+                                    <option value="<?= $patient['patient_id'] ?>" <?= (($formData['patient_id'] ?? $selectedPatientId ?? '') == $patient['patient_id']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name']) ?> (<?= htmlspecialchars($patient['patient_id']) ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
+                        
+                        <div class="col-md-6">
                             <label for="doctor_id" class="form-label">Doctor <span class="text-danger">*</span></label>
-                            <select class="form-select" id="doctor_id" name="doctor_id" required>
+                            <select name="doctor_id" id="doctor_id" class="form-select select2" required>
                                 <option value="">Select Doctor</option>
                                 <?php foreach ($doctors as $doctor): ?>
-                                    <option value="<?= $doctor['user_id'] ?>" 
-                                        <?= (($formData['doctor_id'] ?? '') == $doctor['user_id'] || 
-                                            (isset($appointment) && $appointment['doctor_id'] == $doctor['user_id'])) ? 'selected' : '' ?>>
+                                    <option value="<?= $doctor['user_id'] ?>" <?= (($formData['doctor_id'] ?? $selectedDoctorId ?? '') == $doctor['user_id']) ? 'selected' : '' ?>>
                                         Dr. <?= htmlspecialchars($doctor['first_name'] . ' ' . $doctor['last_name']) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                     </div>
-                </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
                             <label for="consultation_date" class="form-label">Date <span class="text-danger">*</span></label>
-                            <input type="datetime-local" class="form-control" id="consultation_date" name="consultation_date" 
-                                   value="<?= $formData['consultation_date'] ?? '' ?>" required>
+                            <input type="date" class="form-control datepicker" id="consultation_date" name="consultation_date" 
+                                   value="<?= htmlspecialchars($formData['consultation_date'] ?? date('Y-m-d')) ?>" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="consultation_time" class="form-label">Time <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="consultation_time" name="consultation_time" 
+                                   value="<?= htmlspecialchars($formData['consultation_time'] ?? date('H:i')) ?>" required>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="scheduled" <?= ($formData['status'] ?? 'scheduled') === 'scheduled' ? 'selected' : '' ?>>Scheduled</option>
-                                <option value="in_progress" <?= ($formData['status'] ?? '') === 'in_progress' ? 'selected' : '' ?>>In Progress</option>
-                                <option value="completed" <?= ($formData['status'] ?? '') === 'completed' ? 'selected' : '' ?>>Completed</option>
-                                <option value="cancelled" <?= ($formData['status'] ?? '') === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select name="status" id="status" class="form-select" required>
+                                <?php foreach ($statusOptions as $value => $label): ?>
+                                    <option value="<?= $value ?>" <?= ($formData['status'] ?? 'scheduled') === $value ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="is_walk_in" name="is_walk_in" value="1" 
+                                       <?= isset($formData['is_walk_in']) && $formData['is_walk_in'] ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="is_walk_in">
+                                    Walk-in Consultation
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="mb-3">
-                    <label for="diagnosis" class="form-label">Diagnosis</label>
-                    <textarea class="form-control" id="diagnosis" name="diagnosis" rows="3"><?= htmlspecialchars($formData['diagnosis'] ?? '') ?></textarea>
-                </div>
+                    <div class="mb-3">
+                        <label for="chief_complaint" class="form-label">Chief Complaint <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="chief_complaint" name="chief_complaint" rows="3" required><?= htmlspecialchars($formData['chief_complaint'] ?? '') ?></textarea>
+                    </div>
 
-                <div class="mb-3">
-                    <label for="treatment_plan" class="form-label">Treatment Plan</label>
-                    <textarea class="form-control" id="treatment_plan" name="treatment_plan" rows="3"><?= htmlspecialchars($formData['treatment_plan'] ?? '') ?></textarea>
-                </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Initial Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"><?= htmlspecialchars($formData['notes'] ?? '') ?></textarea>
+                    </div>
 
-                <div class="mb-3">
-                    <label for="notes" class="form-label">Notes</label>
-                    <textarea class="form-control" id="notes" name="notes" rows="3"><?= htmlspecialchars($formData['notes'] ?? '') ?></textarea>
-                </div>
-
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="<?= $baseUrl ?>/consultations" class="btn btn-secondary me-md-2">Cancel</a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i> Save Consultation
-                    </button>
-                </div>
-            </form>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="reset" class="btn btn-outline-secondary me-md-2">Clear</button>
+                        <button type="submit" class="btn btn-primary">Create Consultation</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Form validation
-    const form = document.getElementById('consultationForm');
-    
-    form.addEventListener('submit', function(event) {
-        let isValid = true;
-        
-        // Reset validation
-        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-        
-        // Validate required fields
-        const requiredFields = form.querySelectorAll('[required]');
-        requiredFields.forEach(field => {
-            if (!field.value.trim()) {
-                field.classList.add('is-invalid');
-                isValid = false;
-            }
+// Initialize components when the page is loaded or reloaded via AJAX
+document.addEventListener('DOMContentLoaded', initCreateConsultationPage);
+document.addEventListener('page:loaded', initCreateConsultationPage);
+
+function initCreateConsultationPage() {
+    // Initialize Select2 dropdowns if available
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('.select2').select2({
+            width: '100%',
+            placeholder: 'Select an option'
         });
-        
-        if (!isValid) {
-            event.preventDefault();
-            event.stopPropagation();
+    }
+    
+    // Initialize datepickers if available
+    if (typeof $.fn.datepicker !== 'undefined') {
+        $('.datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true
+        });
+    }
+    
+    // Handle form submission with AJAX
+    const consultationForm = document.getElementById('consultation-form');
+    if (consultationForm && typeof Components !== 'undefined') {
+        consultationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            // Scroll to first invalid field
-            const firstInvalid = form.querySelector('.is-invalid');
-            if (firstInvalid) {
-                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Validate form
+            if (!consultationForm.checkValidity()) {
+                e.stopPropagation();
+                consultationForm.classList.add('was-validated');
+                return;
             }
-        }
-        
-        form.classList.add('was-validated');
-    });
-});
+            
+            // Submit form via AJAX
+            const formData = new FormData(consultationForm);
+            
+            fetch(consultationForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to the view page or consultations list
+                    if (data.redirect) {
+                        Components.loadPage(data.redirect);
+                    } else {
+                        Components.loadPage('<?= $baseUrl ?>/consultations');
+                    }
+                } else {
+                    // Display error message
+                    alert(data.message || 'An error occurred while creating the consultation.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An unexpected error occurred. Please try again.');
+            });
+        });
+    }
+}
 </script>

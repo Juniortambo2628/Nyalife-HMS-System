@@ -1,244 +1,219 @@
 /**
  * Nyalife HMS - Date Utility Functions
  * 
- * This file contains common functions for date and time manipulation
- * Updated to work with the core modules while maintaining backward compatibility
+ * Modern date utilities using date-fns library
+ * Replaces custom date manipulation with well-tested library functions
  */
 
-// Check if core module is available
-if (typeof NyalifeUtils === 'undefined' || !NyalifeUtils.formatDate) {
-    console.log('DateUtils initialized in legacy mode');
-}
+import { format, formatDistanceToNow, differenceInYears, parseISO, isValid } from 'date-fns';
 
-// Date utilities namespace
-const DateUtils = {
+/**
+ * Date utilities namespace using date-fns
+ */
+export const DateUtils = {
     /**
      * Format a date string to localized display format
-     * @param {string} dateString - ISO date string to format
-     * @param {string} format - Optional format specification
+     * @param {string|Date} dateInput - ISO date string or Date object to format
+     * @param {string} formatString - Optional format specification (default: 'MMM d, yyyy')
      * @returns {string} Formatted date string
      */
-    formatDate: function(dateString, format = null) {
-        if (!dateString) return '';
+    formatDate(dateInput, formatString = 'MMM d, yyyy') {
+        if (!dateInput) return '';
 
-        const date = new Date(dateString);
+        try {
+            const date = typeof dateInput === 'string' ? parseISO(dateInput) : dateInput;
+            
+            if (!isValid(date)) {
+                console.warn('Invalid date provided to formatDate:', dateInput);
+                return String(dateInput);
+            }
 
-        // Check if date is valid
-        if (isNaN(date.getTime())) return dateString;
-
-        if (format === 'short') {
-            return date.toLocaleDateString();
-        } else if (format === 'long') {
-            return date.toLocaleDateString(undefined, {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        } else {
-            // Default format
-            return date.toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
+            return format(date, formatString);
+        } catch (error) {
+            console.error('Error formatting date:', error);
+            return String(dateInput);
         }
     },
 
     /**
      * Format a time string to localized display format
-     * @param {string} timeString - Time string to format (can be ISO date or time)
+     * @param {string|Date} timeInput - Time string to format (can be ISO date or time)
      * @param {boolean} includeSeconds - Whether to include seconds
      * @returns {string} Formatted time string
      */
-    formatTime: function(timeString, includeSeconds = false) {
-        if (!timeString) return '';
+    formatTime(timeInput, includeSeconds = false) {
+        if (!timeInput) return '';
 
-        let time;
+        try {
+            let date;
 
-        // Handle different time string formats
-        if (timeString.includes('T') || timeString.includes('-')) {
-            // This is probably a full ISO date
-            time = new Date(timeString);
-        } else if (timeString.includes(':')) {
-            // This is probably just a time string (HH:MM:SS)
-            const [hours, minutes, seconds] = timeString.split(':').map(Number);
-            time = new Date();
-            time.setHours(hours, minutes, seconds || 0);
-        } else {
-            // Just return the original if we can't parse
-            return timeString;
+            if (typeof timeInput === 'string') {
+                if (timeInput.includes('T') || timeInput.includes('-')) {
+                    // Full ISO date
+                    date = parseISO(timeInput);
+                } else if (timeInput.includes(':')) {
+                    // Just time string (HH:MM:SS)
+                    const [hours, minutes, seconds = 0] = timeInput.split(':').map(Number);
+                    date = new Date();
+                    date.setHours(hours, minutes, seconds);
+                } else {
+                    return timeInput;
+                }
+            } else {
+                date = timeInput;
+            }
+
+            if (!isValid(date)) {
+                return String(timeInput);
+            }
+
+            const formatString = includeSeconds ? 'h:mm:ss a' : 'h:mm a';
+            return format(date, formatString);
+        } catch (error) {
+            console.error('Error formatting time:', error);
+            return String(timeInput);
         }
-
-        // Check if time is valid
-        if (isNaN(time.getTime())) return timeString;
-
-        // Format the time
-        const options = {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        };
-
-        if (includeSeconds) {
-            options.second = '2-digit';
-        }
-
-        return time.toLocaleTimeString(undefined, options);
     },
 
     /**
      * Format a datetime string to localized display format
-     * @param {string} dateTimeString - ISO datetime string to format
+     * @param {string|Date} dateTimeInput - ISO datetime string to format
      * @param {boolean} includeSeconds - Whether to include seconds in the time
      * @returns {string} Formatted datetime string
      */
-    formatDateTime: function(dateTimeString, includeSeconds = false) {
-        if (!dateTimeString) return '';
+    formatDateTime(dateTimeInput, includeSeconds = false) {
+        if (!dateTimeInput) return '';
 
-        const date = new Date(dateTimeString);
+        try {
+            const date = typeof dateTimeInput === 'string' ? parseISO(dateTimeInput) : dateTimeInput;
+            
+            if (!isValid(date)) {
+                return String(dateTimeInput);
+            }
 
-        // Check if date is valid
-        if (isNaN(date.getTime())) return dateTimeString;
-
-        // Format date part
-        const formattedDate = this.formatDate(dateTimeString);
-
-        // Format time part
-        const formattedTime = this.formatTime(dateTimeString, includeSeconds);
-
-        return `${formattedDate} at ${formattedTime}`;
+            const formatString = includeSeconds ? 'MMM d, yyyy \'at\' h:mm:ss a' : 'MMM d, yyyy \'at\' h:mm a';
+            return format(date, formatString);
+        } catch (error) {
+            console.error('Error formatting datetime:', error);
+            return String(dateTimeInput);
+        }
     },
 
     /**
      * Calculate age from date of birth
-     * @param {string} dobString - Date of birth as a string
-     * @returns {number} Age in years
+     * Uses date-fns differenceInYears for accurate calculation
+     * @param {string|Date} dobInput - Date of birth
+     * @returns {number|null} Age in years
      */
-    calculateAge: function(dobString) {
-        if (!dobString) return null;
+    calculateAge(dobInput) {
+        if (!dobInput) return null;
 
-        const dob = new Date(dobString);
+        try {
+            const dob = typeof dobInput === 'string' ? parseISO(dobInput) : dobInput;
+            
+            if (!isValid(dob)) {
+                return null;
+            }
 
-        // Check if date is valid
-        if (isNaN(dob.getTime())) return null;
-
-        const today = new Date();
-        let age = today.getFullYear() - dob.getFullYear();
-        const monthDiff = today.getMonth() - dob.getMonth();
-
-        // Adjust age if birthday hasn't occurred yet this year
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-            age--;
+            return differenceInYears(new Date(), dob);
+        } catch (error) {
+            console.error('Error calculating age:', error);
+            return null;
         }
-
-        return age;
     },
 
     /**
      * Get a relative time string (e.g., "2 hours ago")
-     * @param {string} dateTimeString - ISO datetime string
+     * Uses date-fns formatDistanceToNow for consistent formatting
+     * @param {string|Date} dateTimeInput - ISO datetime string or Date object
+     * @param {boolean} addSuffix - Whether to add "ago" suffix (default: true)
      * @returns {string} Relative time string
      */
-    getRelativeTimeString: function(dateTimeString) {
-        if (!dateTimeString) return '';
+    getRelativeTimeString(dateTimeInput, addSuffix = true) {
+        if (!dateTimeInput) return '';
 
-        const date = new Date(dateTimeString);
-
-        // Check if date is valid
-        if (isNaN(date.getTime())) return dateTimeString;
-
-        // Use RelativeTimeFormat API if available
-        if (typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
-            const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
-            const now = new Date();
-            const diffInSeconds = Math.floor((date - now) / 1000);
-
-            if (Math.abs(diffInSeconds) < 60) {
-                return rtf.format(diffInSeconds, 'second');
+        try {
+            const date = typeof dateTimeInput === 'string' ? parseISO(dateTimeInput) : dateTimeInput;
+            
+            if (!isValid(date)) {
+                return String(dateTimeInput);
             }
 
-            const diffInMinutes = Math.floor(diffInSeconds / 60);
-            if (Math.abs(diffInMinutes) < 60) {
-                return rtf.format(diffInMinutes, 'minute');
-            }
-
-            const diffInHours = Math.floor(diffInMinutes / 60);
-            if (Math.abs(diffInHours) < 24) {
-                return rtf.format(diffInHours, 'hour');
-            }
-
-            const diffInDays = Math.floor(diffInHours / 24);
-            if (Math.abs(diffInDays) < 30) {
-                return rtf.format(diffInDays, 'day');
-            }
-
-            const diffInMonths = Math.floor(diffInDays / 30);
-            if (Math.abs(diffInMonths) < 12) {
-                return rtf.format(diffInMonths, 'month');
-            }
-
-            const diffInYears = Math.floor(diffInMonths / 12);
-            return rtf.format(diffInYears, 'year');
-        } else {
-            // Fallback for browsers without RelativeTimeFormat support
-            const now = new Date();
-            const diffInMs = date - now;
-            const diffInSecs = Math.floor(Math.abs(diffInMs) / 1000);
-            const isInPast = diffInMs < 0;
-
-            const timeUnits = [
-                { unit: 'year', seconds: 31536000 },
-                { unit: 'month', seconds: 2592000 },
-                { unit: 'day', seconds: 86400 },
-                { unit: 'hour', seconds: 3600 },
-                { unit: 'minute', seconds: 60 },
-                { unit: 'second', seconds: 1 }
-            ];
-
-            for (const { unit, seconds }
-                of timeUnits) {
-                const value = Math.floor(diffInSecs / seconds);
-                if (value >= 1) {
-                    const plural = value > 1 ? 's' : '';
-                    return isInPast ?
-                        `${value} ${unit}${plural} ago` :
-                        `in ${value} ${unit}${plural}`;
-                }
-            }
-
-            return isInPast ? 'just now' : 'now';
+            return formatDistanceToNow(date, { addSuffix });
+        } catch (error) {
+            console.error('Error getting relative time string:', error);
+            return String(dateTimeInput);
         }
     },
 
     /**
      * Format a date range
-     * @param {string} startDateString - Start date as ISO string
-     * @param {string} endDateString - End date as ISO string 
+     * @param {string|Date} startDateInput - Start date
+     * @param {string|Date} endDateInput - End date
      * @returns {string} Formatted date range string
      */
-    formatDateRange: function(startDateString, endDateString) {
-        if (!startDateString || !endDateString) return '';
+    formatDateRange(startDateInput, endDateInput) {
+        if (!startDateInput || !endDateInput) return '';
 
-        const startDate = new Date(startDateString);
-        const endDate = new Date(endDateString);
+        try {
+            const startDate = typeof startDateInput === 'string' ? parseISO(startDateInput) : startDateInput;
+            const endDate = typeof endDateInput === 'string' ? parseISO(endDateInput) : endDateInput;
 
-        // Check if dates are valid
-        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-            return `${startDateString} - ${endDateString}`;
+            if (!isValid(startDate) || !isValid(endDate)) {
+                return `${startDateInput} - ${endDateInput}`;
+            }
+
+            // If same day, show date with time range
+            if (format(startDate, 'yyyy-MM-dd') === format(endDate, 'yyyy-MM-dd')) {
+                return `${format(startDate, 'MMM d, yyyy h:mm a')} - ${format(endDate, 'h:mm a')}`;
+            }
+
+            // Different days
+            return `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}`;
+        } catch (error) {
+            console.error('Error formatting date range:', error);
+            return `${startDateInput} - ${endDateInput}`;
         }
+    },
 
-        // If same day, just show one date
-        if (startDate.toDateString() === endDate.toDateString()) {
-            return `${this.formatDate(startDateString)} ${this.formatTime(startDateString)} - ${this.formatTime(endDateString)}`;
+    /**
+     * Parse a date string to a Date object
+     * @param {string} dateString - Date string to parse
+     * @returns {Date|null} Parsed Date object or null if invalid
+     */
+    parseDate(dateString) {
+        if (!dateString) return null;
+
+        try {
+            const date = parseISO(dateString);
+            return isValid(date) ? date : null;
+        } catch (error) {
+            console.error('Error parsing date:', error);
+            return null;
         }
+    },
 
-        // Different days
-        return `${this.formatDate(startDateString)} - ${this.formatDate(endDateString)}`;
+    /**
+     * Check if a date is valid
+     * @param {string|Date} dateInput - Date to validate
+     * @returns {boolean} True if valid
+     */
+    isValidDate(dateInput) {
+        if (!dateInput) return false;
+
+        try {
+            const date = typeof dateInput === 'string' ? parseISO(dateInput) : dateInput;
+            return isValid(date);
+        } catch (error) {
+            return false;
+        }
     }
 };
 
-// Export for ES modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = DateUtils;
+// Maintain backward compatibility with global namespace
+if (typeof window !== 'undefined') {
+    window.DateUtils = DateUtils;
 }
+
+// Default export
+export default DateUtils;

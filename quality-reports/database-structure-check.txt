@@ -1,0 +1,124 @@
+=== DATABASE STRUCTURE CHECK ===
+
+1. CHECKING USERS TABLE STRUCTURE:
+================================
+Database columns in 'users' table:
+- user_id (int) - NO - Default: 
+- role_id (int) - NO - Default: 
+- username (varchar(50)) - NO - Default: 
+- password (varchar(255)) - NO - Default: 
+- email (varchar(100)) - NO - Default: 
+- phone (varchar(20)) - YES - Default: 
+- first_name (varchar(50)) - NO - Default: 
+- last_name (varchar(50)) - NO - Default: 
+- date_of_birth (date) - YES - Default: 
+- gender (enum('male','female','other')) - YES - Default: 
+- address (text) - YES - Default: 
+- city (varchar(50)) - YES - Default: 
+- state (varchar(50)) - YES - Default: 
+- country (varchar(50)) - YES - Default: 
+- postal_code (varchar(20)) - YES - Default: 
+- is_active (tinyint(1)) - NO - Default: 1
+- last_login (datetime) - YES - Default: 
+- profile_image (varchar(255)) - YES - Default: 
+- created_at (timestamp) - NO - Default: CURRENT_TIMESTAMP
+- updated_at (timestamp) - NO - Default: CURRENT_TIMESTAMP
+
+2. CODE ANALYSIS - COLUMNS USED IN CODE:
+========================================
+Expected columns from code analysis:
+- user_id
+- role_id
+- username
+- password
+- email
+- phone
+- first_name
+- last_name
+- date_of_birth
+- gender
+- address
+- city
+- state
+- country
+- postal_code
+- is_active
+- last_login
+- profile_image
+- created_at
+- updated_at
+
+3. MISMATCH ANALYSIS:
+=====================
+Γ£à No mismatches found! Database structure matches code expectations.
+
+4. CHECKING OTHER IMPORTANT TABLES:
+==================================
+
+Table: patients
+---------
+- patient_id (int)
+- user_id (int)
+- patient_number (varchar(20))
+- blood_group (enum('A+','A-','B+','B-','AB+','AB-','O+','O-'))
+- height (decimal(5,2))
+- weight (decimal(5,2))
+- allergies (text)
+- chronic_diseases (text)
+- emergency_contact (varchar(20))
+- emergency_name (varchar(100))
+- relationship (varchar(50))
+- occupation (varchar(100))
+- marital_status (enum('single','married','divorced','widowed'))
+- insurance_provider (varchar(100))
+- insurance_id (varchar(50))
+- created_at (timestamp)
+- updated_at (timestamp)
+
+Table: appointments
+---------
+- appointment_id (int)
+- patient_id (int)
+- doctor_id (int)
+- appointment_date (date)
+- appointment_time (time)
+- end_time (time)
+- status (enum('scheduled','completed','cancelled','no_show'))
+- appointment_type (enum('new_visit','follow_up','emergency','routine_checkup','consultation'))
+- reason (text)
+- notes (text)
+- created_by (int)
+- created_at (timestamp)
+- updated_at (timestamp)
+
+Table: staff
+---------
+- staff_id (int)
+- user_id (int)
+- employee_id (varchar(20))
+- department (varchar(100))
+- position (varchar(100))
+- specialization (varchar(100))
+- qualification (text)
+- join_date (date)
+- emergency_contact (varchar(20))
+- emergency_name (varchar(100))
+- created_at (timestamp)
+- updated_at (timestamp)
+- department_id (int)
+
+Table: roles
+---------
+- role_id (int)
+- role_name (varchar(50))
+- description (text)
+- created_at (timestamp)
+- updated_at (timestamp)
+
+5. CHECKING FOR RECENT DATABASE ERRORS:
+======================================
+Γ¥î Recent database errors found:
+   - app_2025-10-31.log: 2 unknown column errors
+
+=== CHECK COMPLETE ===
+ 

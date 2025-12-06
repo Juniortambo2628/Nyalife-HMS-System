@@ -1,4 +1,65 @@
-<div class="container-fluid px-4 py-3">
+<?php
+/**
+ * Nyalife HMS - Doctor Dashboard
+ */
+
+$showSidebar = true;
+$pageTitle = 'Doctor Dashboard - Nyalife HMS';
+?>
+
+<style>
+/* Dashboard Messages Card Styles */
+.message-item {
+    transition: background-color 0.2s ease;
+}
+
+.message-item:hover {
+    background-color: var(--bs-gray-50, #f8f9fa);
+}
+
+.message-item.unread {
+    background-color: rgba(32, 201, 151, 0.05);
+}
+
+.message-item.unread:hover {
+    background-color: rgba(32, 201, 151, 0.1);
+}
+
+.message-item:last-child {
+    border-bottom: none !important;
+}
+
+.message-avatar .rounded-circle {
+    background: linear-gradient(135deg, var(--primary-color, #20c997) 0%, var(--secondary-color, #e91e63) 100%) !important;
+    font-weight: 600;
+}
+
+.message-indicator {
+    background-color: var(--info, #0dcaf0) !important;
+}
+
+/* Dashboard card header gradient */
+.card-header[style*="gradient"] {
+    border-bottom: none;
+}
+
+.card-header[style*="gradient"] .btn-light {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.9);
+    color: var(--primary-color, #20c997);
+}
+
+.card-header[style*="gradient"] .btn-light:hover {
+    background-color: white;
+    border-color: white;
+}
+
+.card-header[style*="gradient"] .btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+</style>
+
+<div class="container-fluid page-wrapper">
     <h1 class="h3 mb-4">Doctor Dashboard</h1>
     
     <!-- Statistics Cards -->
@@ -8,7 +69,7 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold mb-1">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                 Today's Appointments</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800"><?= count($todayAppointments) ?></div>
                         </div>
@@ -78,19 +139,35 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold">Today's Schedule</h6>
-                    <a href="<?= $baseUrl ?>/appointments/calendar" class="btn btn-sm btn-primary">
-                        <i class="fas fa-calendar me-1"></i> View Calendar
-                    </a>
+                    <div class="card-header-actions">
+                        <div class="btn-group-desktop">
+                            <a href="<?= $baseUrl ?>/appointments/create" class="btn btn-sm me-2">
+                                <i class="fas fa-plus me-1"></i> <span class="d-none d-sm-inline">New Appointment</span>
+                            </a>
+                            <a href="<?= $baseUrl ?>/appointments/calendar" class="btn btn-sm">
+                                <i class="fas fa-calendar me-1"></i> <span class="d-none d-sm-inline">View Calendar</span>
+                            </a>
+                        </div>
+                        <div class="dropdown">
+                            <button class="card-header-menu-toggle dropdown-toggle" type="button" id="scheduleMenuToggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="scheduleMenuToggle">
+                                <li><a class="dropdown-item" href="<?= $baseUrl ?>/appointments/create"><i class="fas fa-plus me-2"></i> New Appointment</a></li>
+                                <li><a class="dropdown-item" href="<?= $baseUrl ?>/appointments/calendar"><i class="fas fa-calendar me-2"></i> View Calendar</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <?php if (empty($todayAppointments)): ?>
-                        <div class="text-center py-4">
-                            <img src="<?= $baseUrl ?>/assets/img/illustrations/no-appointments.png" alt="No appointments" class="img-fluid mb-3" style="max-width: 200px;">
-                            <p class="mb-0">You have no appointments scheduled for today.</p>
+                        <div class="text-center p-4">
+                            <img src="<?= $baseUrl ?>/assets/img/illustrations/no-appointments.svg" alt="No appointments" class="img-fluid mb-3 img-max-150 img-error-handler" data-error-icon="fas fa-calendar-times">
+                            <p class="text-muted">No appointments scheduled for today.</p>
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
+                            <table class="table table-bordered table-hover" id="todayAppointmentsTable">
                                 <thead>
                                     <tr>
                                         <th>Time</th>
@@ -112,33 +189,33 @@
                                                     <?= ucfirst($appointment['patient_gender']) ?>, 
                                                     <?php
                                                     $dob = new DateTime($appointment['patient_dob']);
-                                                    $now = new DateTime();
-                                                    $age = $now->diff($dob)->y;
-                                                    echo $age . ' years';
-                                                    ?>
+                                        $now = new DateTime();
+                                        $age = $now->diff($dob)->y;
+                                        echo $age . ' years';
+                                        ?>
                                                 </div>
                                             </td>
                                             <td><?= htmlspecialchars($appointment['reason']) ?></td>
                                             <td>
                                                 <?php
                                                 $statusClass = '';
-                                                switch ($appointment['status']) {
-                                                    case 'scheduled':
-                                                        $statusClass = 'bg-primary';
-                                                        break;
-                                                    case 'completed':
-                                                        $statusClass = 'bg-success';
-                                                        break;
-                                                    case 'cancelled':
-                                                        $statusClass = 'bg-danger';
-                                                        break;
-                                                    case 'pending':
-                                                        $statusClass = 'bg-warning text-dark';
-                                                        break;
-                                                    default:
-                                                        $statusClass = 'bg-secondary';
-                                                }
-                                                ?>
+                                        switch ($appointment['status']) {
+                                            case 'scheduled':
+                                                $statusClass = 'bg-primary';
+                                                break;
+                                            case 'completed':
+                                                $statusClass = 'bg-success';
+                                                break;
+                                            case 'cancelled':
+                                                $statusClass = 'bg-danger';
+                                                break;
+                                            case 'pending':
+                                                $statusClass = 'bg-warning text-dark';
+                                                break;
+                                            default:
+                                                $statusClass = 'bg-secondary';
+                                        }
+                                        ?>
                                                 <span class="badge <?= $statusClass ?>">
                                                     <?= ucfirst($appointment['status']) ?>
                                                 </span>
@@ -168,7 +245,7 @@
         <div class="col-xl-4 col-lg-5">
             <div class="card shadow-sm mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold">Quick Actions</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
@@ -181,8 +258,11 @@
                         <a href="<?= $baseUrl ?>/prescriptions" class="btn btn-success">
                             <i class="fas fa-prescription-bottle-alt me-2"></i> Manage Prescriptions
                         </a>
-                        <a href="<?= $baseUrl ?>/lab-requests" class="btn btn-warning">
+                        <a href="<?= $baseUrl ?>/lab/requests" class="btn btn-warning">
                             <i class="fas fa-flask me-2"></i> Lab Requests
+                        </a>
+                        <a href="<?= $baseUrl ?>/follow-ups" class="btn btn-info">
+                            <i class="fas fa-calendar-check me-2"></i> Follow-ups
                         </a>
                     </div>
                 </div>
@@ -190,11 +270,13 @@
             
             <div class="card shadow-sm mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold">My Information</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">My Information</h6>
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-3">
-                        <img src="<?= $baseUrl ?>/assets/img/profiles/default-doctor.png" class="img-profile rounded-circle" width="100">
+                        <div class="profile-image-container">
+                            <img src="<?= $baseUrl ?>/assets/img/profiles/default-doctor.png" class="img-profile" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-user-md\'></i>';">
+                        </div>
                         <h5 class="mt-2">Dr. <?= htmlspecialchars($currentUser['firstName'] . ' ' . $currentUser['lastName']) ?></h5>
                         <p class="text-muted">
                             <i class="fas fa-user-md me-1"></i> <?= htmlspecialchars($currentUser['specialization'] ?? 'General Practitioner') ?>
@@ -217,9 +299,51 @@
                     </ul>
                     
                     <div class="mt-3 text-center">
-                        <a href="<?= $baseUrl ?>/profile" class="btn btn-outline-primary btn-sm">
+                        <a href="<?= $baseUrl ?>/profile/edit" class="btn btn-outline-primary btn-sm">
                             <i class="fas fa-user-edit me-1"></i> Edit Profile
                         </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Messages Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-gradient-primary-secondary">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-envelope me-2"></i>Recent Messages
+                    </h6>
+                    <div class="card-header-actions">
+                        <div class="btn-group-desktop">
+                            <a href="<?= $baseUrl ?>/messages/compose" class="btn btn-sm me-2">
+                                <i class="fas fa-plus me-1"></i> <span class="d-none d-sm-inline">Compose</span>
+                            </a>
+                            <a href="<?= $baseUrl ?>/messages" class="btn btn-sm">
+                                View All
+                            </a>
+                        </div>
+                        <div class="dropdown">
+                            <button class="card-header-menu-toggle dropdown-toggle" type="button" id="messagesMenuToggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="messagesMenuToggle">
+                                <li><a class="dropdown-item" href="<?= $baseUrl ?>/messages/compose"><i class="fas fa-plus me-2"></i> Compose</a></li>
+                                <li><a class="dropdown-item" href="<?= $baseUrl ?>/messages"><i class="fas fa-envelope me-2"></i> View All</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="dashboard-messages-container">
+                        <div class="text-center p-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading messages...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Loading messages...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -232,9 +356,21 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold">Upcoming Appointments</h6>
-                    <a href="<?= $baseUrl ?>/appointments" class="btn btn-sm btn-primary">
-                        View All
-                    </a>
+                    <div class="card-header-actions">
+                        <div class="btn-group-desktop">
+                            <a href="<?= $baseUrl ?>/appointments" class="btn btn-sm">
+                                View All
+                            </a>
+                        </div>
+                        <div class="dropdown">
+                            <button class="card-header-menu-toggle dropdown-toggle" type="button" id="appointmentsMenuToggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="appointmentsMenuToggle">
+                                <li><a class="dropdown-item" href="<?= $baseUrl ?>/appointments"><i class="fas fa-list me-2"></i> View All</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <?php if (empty($upcomingAppointments)): ?>
@@ -243,7 +379,7 @@
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
+                            <table class="table table-bordered table-hover" id="upcomingAppointmentsTable">
                                 <thead>
                                     <tr>
                                         <th>Date</th>
@@ -267,18 +403,24 @@
                                             <td><?= htmlspecialchars($appointment['reason']) ?></td>
                                             <td>
                                                 <?php
-                                                $statusClass = '';
-                                                switch ($appointment['status']) {
-                                                    case 'scheduled':
-                                                        $statusClass = 'bg-primary';
-                                                        break;
-                                                    case 'pending':
-                                                        $statusClass = 'bg-warning text-dark';
-                                                        break;
-                                                    default:
-                                                        $statusClass = 'bg-secondary';
-                                                }
-                                                ?>
+                                        $statusClass = '';
+                                        switch ($appointment['status']) {
+                                            case 'scheduled':
+                                                $statusClass = 'bg-primary';
+                                                break;
+                                            case 'completed':
+                                                $statusClass = 'bg-success';
+                                                break;
+                                            case 'cancelled':
+                                                $statusClass = 'bg-danger';
+                                                break;
+                                            case 'pending':
+                                                $statusClass = 'bg-warning text-dark';
+                                                break;
+                                            default:
+                                                $statusClass = 'bg-secondary';
+                                        }
+                                        ?>
                                                 <span class="badge <?= $statusClass ?>">
                                                     <?= ucfirst($appointment['status']) ?>
                                                 </span>
@@ -286,9 +428,6 @@
                                             <td>
                                                 <a href="<?= $baseUrl ?>/appointments/view/<?= $appointment['appointment_id'] ?>" class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="<?= $baseUrl ?>/appointments/edit/<?= $appointment['appointment_id'] ?>" class="btn btn-sm btn-warning">
-                                                    <i class="fas fa-edit"></i>
                                                 </a>
                                             </td>
                                         </tr>
@@ -302,3 +441,13 @@
         </div>
     </div>
 </div>
+
+<!-- Bundled Assets -->
+<link rel="stylesheet" href="<?= AssetHelper::getCss('shared') ?>">
+<script src="<?= AssetHelper::getJs('runtime') ?>"></script>
+<script src="<?= AssetHelper::getJs('vendors') ?>"></script>
+<script src="<?= AssetHelper::getJs('shared') ?>"></script>
+<script src="<?= AssetHelper::getJs('app') ?>"></script>
+<script src="<?= AssetHelper::getJs('dashboard-doctor') ?>"></script>
+</body>
+</html>

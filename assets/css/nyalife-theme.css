@@ -8,28 +8,227 @@
     # Core Styles & Utilities
 --------------------------------------------------------------*/
 
+/* Performance optimizations */
+* {
+    box-sizing: border-box;
+}
 
-/* Hide scrollbars and ensure full width */
+/* Optimize animations and transitions - Reduced GPU usage */
+.hero-slide,
+.nav-link,
+.btn,
+.service-tab-img,
+.tooltip-content {
+    /* Only apply GPU acceleration when actually animating */
+    will-change: auto;
+    /* Removed translateZ(0) to prevent unnecessary GPU layers */
+}
 
-html,
-body,
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Appointment Form Progress Indicators */
+.appointment-progress {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(0, 123, 255, 0.05);
+    border-radius: 0.5rem;
+    border-left: 4px solid #007bff;
+}
+
+.appointment-progress .progress {
+    height: 8px;
+    background-color: rgba(0, 123, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.appointment-progress .progress-bar {
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    transition: width 0.3s ease;
+}
+
+.appointment-progress .progress-text {
+    color: #495057;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+/* Form validation improvements */
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+
+/* Loading states */
+.btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Better alert styling */
+.alert {
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-left: 4px solid #17a2b8;
+}
+
+/* Smooth transitions for form elements */
+.form-control,
+.form-select {
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Appointment Loading Overlay Styles */
+#appointment-loading-overlay {
+    font-family: var(--default-font, "Roboto", sans-serif);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+#appointment-loading-overlay .spinner-border {
+    animation: spin 1s linear infinite;
+}
+
+/* Fade in animation for overlay */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Ensure overlay is always on top */
+#appointment-loading-overlay {
+    z-index: 10000 !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.5);
+    overflow: hidden;
+}
+
+/* Prevent interaction with background elements */
+body.appointment-processing {
+    overflow: hidden;
+    pointer-events: none;
+}
+
+body.appointment-processing #appointment-loading-overlay {
+    pointer-events: auto;
+}
+
+
+/* Optimized scrolling and layout */
+
+html {
+    scroll-behavior: smooth;
+
+    /* Improve scroll performance */
+    -webkit-overflow-scrolling: touch;
+}
+
+body {
+    width: 100%;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    /* Prevent layout shifts during scroll */
+    contain: layout style paint;
+}
+
 .dashboard-content {
     width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden !important;
-    scrollbar-width: none;
-    /* Firefox */
-    -ms-overflow-style: none;
-    /* IE and Edge */
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
 }
 
-
-/* Hide webkit scrollbars */
-
- ::-webkit-scrollbar {
-    display: none;
+/* Dashboard main area padding (not applied to landing hero)
+   We expect server-side to add body.app-page on authenticated pages */
+/* Do not apply padding on landing (isLanding=true) - only on app pages */
+body.app-page #main-content,
+body.app-page .container-fluid.page-wrapper,
+body.app-page .dashboard-content {
+    padding: 2rem 2.75rem; /* increase padding y x */
 }
 
+@media (min-width: 992px) {
+    body.app-page #main-content,
+    body.app-page .container-fluid.page-wrapper,
+    body.app-page .dashboard-content {
+        padding: 2.25rem 3rem;
+    }
+}
+
+/* Thin scrollbars for better performance */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
 
 /*--------------------------------------------------------------
     # Variables
@@ -100,9 +299,8 @@ body,
 
 body {
     color: var(--default-color);
-    background-color: rgba(239, 239, 239, 0.142);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background-color: rgba(239, 239, 239, 0.85);
+    /* Removed backdrop-filter to prevent scroll distortions */
     font-family: var(--default-font);
     font-size: 1rem;
     line-height: 1.5;
@@ -113,6 +311,8 @@ a {
     color: var(--primary-color);
     text-decoration: none;
     transition: all 0.3s ease;
+    position: relative;
+    z-index: var(--z-content);
 }
 
 a:hover {
@@ -130,10 +330,55 @@ h6 {
     font-family: var(--heading-font);
     font-weight: 600;
     margin-bottom: 1rem;
+    position: relative;
+    z-index: var(--z-content);
 }
 
 p {
     margin-bottom: 1rem;
+    position: relative;
+    z-index: var(--z-content);
+}
+
+/* Ensure all interactive elements are clickable */
+button, 
+input, 
+select, 
+textarea,
+.btn,
+.nav-link,
+.clickable {
+    position: relative;
+    z-index: var(--z-content);
+}
+
+/* Ensure all content is above any background elements */
+.content-area {
+    position: relative;
+    z-index: var(--z-content);
+}
+
+/* Fix for any invisible overlays blocking clicks */
+.modal-backdrop.fade:not(.show),
+.modal.fade:not(.show) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+}
+
+/* Ensure modals don't block when not visible */
+.modal:not(.show) {
+    display: none !important;
+}
+
+/* Ensure all positioned elements don't block interaction when hidden */
+[class*="modal"]:not(.show),
+[id*="modal"]:not(.show),
+.fade:not(.show) {
+    z-index: -1 !important;
+    pointer-events: none !important;
 }
 
 
@@ -175,47 +420,6 @@ p {
     position: relative;
 }
 
-.section-title {
-    text-align: center;
-    padding-bottom: 30px;
-    position: relative;
-}
-
-.section-title h2 {
-    font-size: 32px;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-    padding-bottom: 35px;
-    position: relative;
-}
-
-.section-title h2:before {
-    content: "";
-    position: absolute;
-    display: block;
-    width: 120px;
-    height: 1px;
-    background: #ddd;
-    bottom: 1px;
-    left: calc(50% - 60px);
-}
-
-.section-title h2:after {
-    content: "";
-    position: absolute;
-    display: block;
-    width: 40px;
-    height: 3px;
-    background: var(--primary-color);
-    bottom: 0;
-    left: calc(50% - 20px);
-}
-
-.section-title p {
-    margin-bottom: 0;
-}
-
 
 /*--------------------------------------------------------------
 # Header & Navigation
@@ -223,7 +427,7 @@ p {
 
 .header {
     transition: all 0.5s;
-    z-index: 997;
+    z-index: var(--z-navbar);
     background-color: var(--background-color);
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
 }
@@ -292,7 +496,7 @@ p {
     height: calc(100vh - 80px);
     background-color: #f8f9fa;
     padding: 20px 0;
-    z-index: 1000;
+    z-index: var(--z-sidebar);
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
     overflow-y: auto;
 }
@@ -322,15 +526,7 @@ p {
     color: #fff;
 }
 
-@media (max-width: 992px) {
-    .sidebar {
-        position: static;
-        width: 100%;
-        height: auto;
-        min-height: 0;
-        box-shadow: none;
-    }
-}
+/* Sidebar responsive styles are now in Global Mobile Responsive Styles section */
 
 
 /*--------------------------------------------------------------
@@ -411,8 +607,8 @@ p {
     transition: all 0.3s ease;
     margin-bottom: 0;
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.06);
-    background-color: rgba(244, 244, 244, 0.291);
-    backdrop-filter: blur(4px);
+    background-color: rgba(244, 244, 244, 0.9);
+    /* Removed backdrop-filter to prevent scroll distortions */
 }
 
 .card:hover {
@@ -421,9 +617,34 @@ p {
 
 .card-header {
     background: linear-gradient(to left, var(--primary-color), var(--secondary-color-dark), var(--secondary-color));
+    color: white;
     border-bottom: 1px solid var(--border-color);
     padding: 1.25rem 2.5rem;
     opacity: 0.7;
+}
+
+/* Global fix: Ensure all card headers with pink/magenta backgrounds have white text */
+.card-header,
+.card-header *,
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5,
+.card-header h6,
+.card-header p,
+.card-header span,
+.card-header i,
+.card-header .text-muted,
+.card-header .text-gray,
+.card-header[style*="pink"],
+.card-header[style*="magenta"],
+.card-header[style*="gradient"],
+.card-header.bg-primary,
+.card-header.bg-secondary,
+.card-header.bg-secondary-light,
+.card-header[class*="bg-"] {
+    color: white !important;
 }
 
 .card-header h6 {
@@ -434,12 +655,12 @@ p {
 
 .card-header.bg-primary {
     background-color: var(--primary-color) !important;
-    color: white;
+    color: white !important;
 }
 
 .card-header.bg-secondary {
     background-color: var(--secondary-color) !important;
-    color: white;
+    color: white !important;
 }
 
 .card-body {
@@ -672,6 +893,36 @@ p {
     background-color: var(--secondary-color) !important;
 }
 
+/* Semantic badge variants used by AJAX formatted responses */
+.badge-status-pending {
+    background-color: #ffc107 !important; /* warning */
+    color: #212529 !important;
+}
+.badge-status-dispensed {
+    background-color: #28a745 !important; /* success */
+    color: #fff !important;
+}
+.badge-status-partial {
+    background-color: #17a2b8 !important; /* info */
+    color: #fff !important;
+}
+.badge-status-cancelled {
+    background-color: #dc3545 !important; /* danger */
+    color: #fff !important;
+}
+.badge-status-default {
+    background-color: #6c757d !important; /* secondary */
+    color: #fff !important;
+}
+
+/* Units helper: place unit text after an element using data-unit attribute */
+.unit-after[data-unit]::after {
+    content: attr(data-unit);
+    margin-left: 0.25rem;
+    font-weight: 500;
+    color: var(--default-color);
+}
+
 
 /* Enhanced alerts styling */
 
@@ -687,8 +938,9 @@ p {
     border-left: 4px solid transparent;
     background-color: var(--secondary-color-dark);
     color: var(--contrast-color);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    /* Reduced backdrop-filter for better scroll performance */
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
 }
 
 #alertsContainer .alert-success {
@@ -775,14 +1027,13 @@ p {
     /* Fallback color */
     color: white;
     position: relative;
-    width: 100%;
-    max-width: 100%;
-    height: calc(80vh - 70px);
+    width: 100vw;
     /* Subtract navbar height for precise sizing */
-    min-height: 550px;
+    max-height: 80vh;
+    height: auto;
     /* Minimum height to ensure content fits */
     margin-top: 0;
-    overflow: hidden;
+    overflow-x: hidden;
     /* Prevent image overflow */
 }
 
@@ -798,10 +1049,16 @@ p {
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 5;
-    /* Increased z-index to ensure content is above overlay */
+    z-index: var(--z-content);
+    /* Ensure content is properly layered */
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 2.5rem;
 }
 
 
@@ -814,17 +1071,20 @@ p {
     width: 100%;
     height: 100%;
     opacity: 0;
-    transition: opacity 1.5s ease;
+    transition: opacity 1.5s ease-in-out;
+    /* Only transition opacity for smooth fades */
     background-size: cover;
     background-position: center;
     transform: scale(1.05);
-    /* Slightly larger to avoid white edges */
-    z-index: 0;
+    /* Start all slides slightly scaled for consistency */
+    z-index: var(--z-background);
+    /* Slides are the bottom layer */
 }
 
 .hero-slide.active {
     opacity: 1;
-    z-index: 1;
+    z-index: calc(var(--z-background) + 1);
+    /* Active slide is one layer above background slides */
 }
 
 .hero-slide:first-child {
@@ -858,33 +1118,35 @@ p {
     animation: zoomSlow 15s infinite alternate;
 }
 
-.hero-slide.active.slide-2,
-.hero-slide.active:nth-child(2) {
-    animation: panRight 15s infinite alternate;
-}
+/* 
+   The 'pan' animations below have been temporarily disabled as animating 'background-position'
+   can cause performance issues and visual distortions (jittering) on some browsers.
+   A more performant solution would involve animating the 'transform' property instead.
+*/
 
-.hero-slide.active.slide-3,
-.hero-slide.active:nth-child(3) {
-    animation: panLeft 15s infinite alternate;
-}
-
-.hero-slide.active.slide-4,
-.hero-slide.active:nth-child(4) {
-    animation: panUp 15s infinite alternate;
-}
-
-
-/* Background animation keyframes */
+/* Background animation keyframes - Optimized for smooth scrolling */
 
 @keyframes zoomSlow {
     from {
-        transform: scale(1.05);
+        transform: scale3d(1.05, 1.05, 1);
     }
     to {
-        transform: scale(1.15);
+        transform: scale3d(1.15, 1.15, 1);
     }
 }
 
+/* Apply GPU optimization only during animations */
+.hero-slide.active {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+.hero-slide:not(.active) {
+    will-change: auto;
+}
+
+/* Pan animations commented out to prevent distortion. */
+/*
 @keyframes panRight {
     from {
         background-position: left center;
@@ -911,6 +1173,7 @@ p {
         background-position: center top;
     }
 }
+*/
 
 
 /* Hero content */
@@ -961,7 +1224,8 @@ p {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1;
+    z-index: calc(var(--z-background) + 2);
+    /* Overlay is above the active slide */
     opacity: 0.5;
     transition: background 1.5s ease-in-out;
     background: linear-gradient(135deg, var(--secondary-color-light), var(--secondary-color-dark));
@@ -1051,8 +1315,8 @@ p {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 6;
-    /* Increase z-index to ensure above overlay */
+    z-index: var(--z-content);
+    /* Controls should be on the same level as other content */
 }
 
 .hero-arrow {
@@ -1065,7 +1329,7 @@ p {
     align-items: center;
     justify-content: center;
     background-color: var(--default-color);
-    backdrop-filter: blur(10px);
+    /* Removed backdrop-filter from small elements to prevent distortions */
     border-radius: 50%;
     transition: all 0.3s ease;
     font-size: 20px;
@@ -1094,6 +1358,222 @@ p {
 .hero-dot.active {
     background: white;
     transform: scale(1.2);
+}
+
+/*--------------------------------------------------------------
+    # Hero Responsive Styles
+--------------------------------------------------------------*/
+
+/* Tablet adjustments */
+@media (max-width: 768px) {
+    .hero {
+        min-height: 500px;
+        height: 500px;
+    }
+    
+    .hero-content {
+        padding: 30px 0;
+        max-width: 100%;
+    }
+    
+    .hero h1 {
+        font-size: 32px;
+        margin-top: 15px;
+        margin-bottom: 8px;
+    }
+    
+    .hero h2 {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+    
+    .hero-controls {
+        bottom: 15px;
+    }
+    
+    .hero-arrow {
+        width: 35px;
+        height: 35px;
+        font-size: 18px;
+        padding: 8px;
+    }
+    
+    .hero-dots {
+        margin: 0 12px;
+    }
+    
+    .hero-dot {
+        width: 8px;
+        height: 8px;
+        margin: 0 4px;
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 576px) {
+    .hero {
+        min-height: 500px;
+        height: auto;
+        padding-bottom: 80px; /* Space for controls and service boxes */
+    }
+    
+    .hero-content {
+        padding: 20px 15px;
+        text-align: center;
+    }
+    
+    .hero-content h1,
+    .hero-content h2 {
+        text-align: center;
+    }
+    
+    .hero h1 {
+        font-size: 22px;
+        margin-top: 10px;
+        margin-bottom: 6px;
+        line-height: 1.3;
+    }
+    
+    .hero h2 {
+        font-size: 14px;
+        margin-bottom: 10px;
+        line-height: 1.4;
+    }
+    
+    .hero-controls {
+        bottom: 10px;
+    }
+    
+    .hero-arrow {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+        padding: 6px;
+    }
+    
+    .hero-dots {
+        margin: 0 10px;
+    }
+    
+    .hero-dot {
+        width: 7px;
+        height: 7px;
+        margin: 0 3px;
+    }
+    
+    /* Service boxes responsive */
+    .why-join {
+        margin-top: 15px;
+    }
+    
+    .why-join h3 {
+        font-size: 18px;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+    
+    .why-join .row {
+        margin-left: -5px;
+        margin-right: -5px;
+    }
+    
+    .why-join .row > [class*="col-"] {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    
+    .why-join-item {
+        min-height: 90px;
+        padding: 10px 5px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .why-join-item i {
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
+    
+    .why-join-item p {
+        font-size: 11px;
+        margin: 0;
+        line-height: 1.2;
+    }
+    
+    /* Reduce animation intensity on mobile for better performance */
+    .hero-slide.active.slide-1,
+    .hero-slide.active:nth-child(1) {
+        animation: zoomSlowMobile 15s infinite alternate;
+    }
+}
+
+@keyframes zoomSlowMobile {
+    from {
+        transform: scale3d(1.02, 1.02, 1);
+    }
+    to {
+        transform: scale3d(1.08, 1.08, 1);
+    }
+}
+
+/* Extra small mobile */
+@media (max-width: 400px) {
+    .hero {
+        min-height: 450px;
+        height: auto;
+        padding-bottom: 70px;
+    }
+    
+    .hero-content {
+        padding: 15px 10px;
+    }
+    
+    .hero h1 {
+        font-size: 20px;
+        margin-top: 8px;
+        margin-bottom: 5px;
+    }
+    
+    .hero h2 {
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .hero-arrow {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+    
+    .hero-dot {
+        width: 6px;
+        height: 6px;
+    }
+    
+    /* Service boxes extra small */
+    .why-join {
+        margin-top: 12px;
+    }
+    
+    .why-join h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    
+    .why-join-item {
+        min-height: 75px;
+        padding: 8px 4px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .why-join-item i {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+    
+    .why-join-item p {
+        font-size: 10px;
+        line-height: 1.2;
+    }
 }
 
 
@@ -1171,7 +1651,8 @@ p {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.3) !important;
     background-color: var(--secondary-color) !important;
     opacity: 0.9 !important;
-    z-index: 10 !important;
+    z-index: calc(var(--z-content) + 1) !important;
+    /* Ensure highlight is above other content */
     transition: all 0.5s ease !important;
     backdrop-filter: blur(5px) !important;
     -webkit-backdrop-filter: blur(5px) !important;
@@ -1203,7 +1684,8 @@ p {
     margin-top: 0;
     color: var(--default-color);
     position: relative;
-    z-index: 10;
+    z-index: var(--z-content);
+    /* Tooltip area is standard content */
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(5, 139, 124, 0.2);
     max-height: 450px;
@@ -1390,7 +1872,7 @@ p {
 }
 
 .modal-dialog {
-    z-index: 1060;
+    z-index: 1055;
 }
 
 .modal-header {
@@ -1419,6 +1901,7 @@ p {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
 .service-modal-bg::before {
@@ -1428,40 +1911,53 @@ p {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(3, 58, 52, 0.6), rgba(61, 6, 25, 0.4));
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    z-index: 1;
+    background: linear-gradient(135deg, rgba(3, 58, 52, 0.8), rgba(61, 6, 25, 0.6));
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    z-index: var(--z-background);
+    /* Should be the base layer within the component */
 }
 
 .service-modal-content {
     position: relative;
-    z-index: 2;
+    z-index: var(--z-content);
+    /* Content layer */
     padding: 3rem;
     color: white;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     width: 100%;
+    max-width: 100%;
+    overflow: visible;
 }
 
 #modalServiceContent h4 {
     color: white;
     font-size: 2.2rem;
     margin-bottom: 1.5rem;
-    font-weight: 900;
+    font-weight: 700;
     text-align: left;
+    position: relative;
+    z-index: calc(var(--z-content) + 1);
+    /* Above the content block */
 }
 
 #modalServiceContent p {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: .8rem;
-    line-height: 1.2;
-    margin-bottom: .5rem;
-    font-weight: 450;
+    color: rgba(255, 255, 255, 1);
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    font-weight: 400;
+    position: relative;
+    z-index: calc(var(--z-content) + 1);
+    /* Above the content block */
 }
 
 .modal-footer {
     border-top: 1px solid rgba(5, 139, 124, 0.2);
     padding: 1.1rem;
+    position: relative;
+    z-index: var(--z-content);
+    /* Standard content z-index */
 }
 
 .modal .btn-primary {
@@ -1471,7 +1967,11 @@ p {
     font-weight: 500;
     border-radius: 30px;
     transition: all 0.3s ease;
-    font-size: .7rem;
+    font-size: 0.9rem;
+    position: relative;
+    z-index: var(--z-modal);
+    /* Ensure buttons are clickable within modal */
+    cursor: pointer;
 }
 
 .modal .btn-primary:hover {
@@ -1487,13 +1987,26 @@ p {
     font-weight: 500;
     border-radius: 30px;
     transition: all 0.3s ease;
-    font-size: .7rem;
+    font-size: 0.9rem;
+    position: relative;
+    z-index: var(--z-modal);
+    /* Ensure buttons are clickable within modal */
+    cursor: pointer;
 }
 
 .modal .btn-secondary:hover {
     background-color: var(--secondary-color-dark);
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(212, 21, 89, 0.3);
+}
+
+/* Ensure service modal buttons are clickable */
+#serviceModal .modal-footer button {
+    position: relative;
+    z-index: calc(var(--z-modal) + 1);
+    /* Buttons must be on top layer within modal */
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 
@@ -1520,7 +2033,7 @@ p {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1040;
+    z-index: var(--z-modal-backdrop, 200);
     width: 100vw;
     height: 100vh;
     background-color: #000;
@@ -1533,6 +2046,59 @@ p {
 
 .modal-backdrop.show {
     opacity: 0.5;
+}
+
+/* Modal dialog and content z-index fix */
+.modal {
+    z-index: var(--z-modal, 300);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    overflow-y: auto;
+}
+
+.modal-open {
+    overflow: hidden;
+    padding-right: 0 !important;
+}
+
+.modal-dialog {
+    z-index: calc(var(--z-modal, 300) + 1);
+    margin: 0 auto;
+    transform: none !important;
+    max-height: calc(100vh - 60px);
+    position: relative;
+}
+
+.modal-content {
+    position: relative;
+    z-index: calc(var(--z-modal, 300) + 2);
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+}
+
+/* Service Details Modal specific fix */
+#serviceDetailsModal {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+#serviceDetailsModal .modal-dialog {
+    margin: 1.75rem auto;
+    position: relative;
+    top: 0;
+    transform: none !important;
+}
+
+/* Fix for modal positioning in general */
+.modal-open .modal {
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
 }
 
 
@@ -1590,7 +2156,7 @@ p {
 
 #loginAlert {
     position: relative;
-    z-index: 2000;
+    z-index: var(--z-alert);
     margin-bottom: 1rem;
     border-radius: 8px;
     font-size: 0.9rem;
@@ -1602,7 +2168,7 @@ p {
 
 .modal .alert {
     position: relative;
-    z-index: 2000;
+    z-index: var(--z-alert);
 }
 
 .sidebar .nav-link,
@@ -1624,7 +2190,181 @@ button[type="submit"],
 [role="tab"],
 [data-bs-toggle] {
     position: relative;
-    z-index: 10 !important;
+    z-index: var(--z-content);
+    /* Removed !important to allow for contextual overrides */
+}
+
+/*--------------------------------------------------------------
+    # Pagination Styling - Theme Consistent
+--------------------------------------------------------------*/
+
+.pagination {
+    margin: 1.5rem 0;
+    justify-content: center;
+}
+
+.pagination .page-item {
+    margin: 0 2px;
+}
+
+.pagination .page-link {
+    color: var(--secondary-color);
+    background-color: white;
+    border: 1px solid var(--secondary-color);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-width: 40px;
+    text-align: center;
+}
+
+.pagination .page-link:hover {
+    background-color: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(212, 21, 89, 0.3);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(212, 21, 89, 0.4);
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.pagination .page-item.disabled .page-link:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: #f8f9fa;
+    color: #6c757d;
+}
+
+/* Pagination info text */
+.pagination-info {
+    text-align: center;
+    color: var(--default-color);
+    font-size: 0.9rem;
+    margin: 1rem 0;
+    font-weight: 500;
+}
+
+/*--------------------------------------------------------------
+    # DataTables Styling - Theme Consistent
+--------------------------------------------------------------*/
+
+/* DataTables search input styling */
+.dataTables_wrapper .dataTables_filter {
+    float: right;
+    text-align: right;
+    margin-bottom: 1rem;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    margin-left: 0.5rem;
+    border: 1px solid var(--secondary-color);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    color: var(--default-color);
+    background-color: white;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(212, 21, 89, 0.25);
+    background-color: #fff;
+}
+
+.dataTables_wrapper .dataTables_filter label {
+    color: var(--default-color);
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+}
+
+/* DataTables length selector styling */
+.dataTables_wrapper .dataTables_length {
+    float: left;
+    margin-bottom: 1rem;
+}
+
+.dataTables_wrapper .dataTables_length label {
+    color: var(--default-color);
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    margin: 0 0.5rem;
+    border: 1px solid var(--secondary-color);
+    border-radius: 8px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+    color: var(--default-color);
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+.dataTables_wrapper .dataTables_length select:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(212, 21, 89, 0.25);
+}
+
+/* DataTables info styling */
+.dataTables_wrapper .dataTables_info {
+    color: var(--default-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding-top: 0.75rem;
+}
+
+/* DataTables pagination wrapper */
+.dataTables_wrapper .dataTables_paginate {
+    float: right;
+    text-align: right;
+    padding-top: 0.5rem;
+}
+
+/* Ensure DataTables controls are properly spaced */
+.dataTables_wrapper::after {
+    clear: both;
+    content: "";
+    display: table;
+}
+
+/* DataTables processing overlay */
+.dataTables_processing {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-radius: 8px;
+    padding: 1rem;
+    font-weight: 500;
+}
+
+/* DataTables empty state */
+.dataTables_empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--default-color);
+    font-style: italic;
 }
 
 @media (max-width: 1400px) {
@@ -1642,4 +2382,491 @@ button[type="submit"],
     .dashboard-content {
         margin-left: 0;
     }
+}
+
+/*--------------------------------------------------------------
+    # Global Mobile Responsive Styles
+--------------------------------------------------------------*/
+
+/* Mobile First - Base Styles for Small Screens */
+@media (max-width: 576px) {
+    /* Dashboard Content Padding - Now handled by layout-system.css */
+    /* Keeping for backward compatibility */
+    body.app-page #main-content,
+    body.app-page .container-fluid.page-wrapper,
+    body.app-page .dashboard-content {
+        padding: 1rem 0.75rem;
+    }
+    
+    /* Sidebar Mobile Styles */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 280px;
+        height: 100vh;
+        z-index: 1050;
+        transition: left 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .sidebar.show {
+        left: 0;
+    }
+    
+    .sidebar .nav-link {
+        padding: 12px 20px;
+        font-size: 15px;
+    }
+    
+    .sidebar .nav-link i {
+        font-size: 20px;
+        width: 24px;
+    }
+    
+    /* Main Content Adjustment for Sidebar */
+    body.app-page.has-sidebar #main-content,
+    body.app-page.has-sidebar .dashboard-content {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    /* Header/Navbar Mobile */
+    .navbar {
+        padding: 0.75rem 1rem;
+    }
+    
+    .navbar-brand {
+        font-size: 20px;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+    
+    /* Cards Mobile */
+    .card {
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+    
+    .card-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .card-header h5,
+    .card-header h6 {
+        font-size: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    /* Buttons Mobile */
+    .btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        border-radius: 8px;
+    }
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+        /* Card header buttons - global pill-shaped white outline style */
+    .card-header .btn:not(.btn-link):not(.dropdown-toggle),
+    .card-header .btn-sm:not(.btn-link):not(.dropdown-toggle),
+    .card-header a.btn:not(.btn-link):not(.dropdown-toggle) {
+        border-radius: 50px !important; /* Pill shape */
+        border: 2px solid white !important;
+        background-color: transparent !important;
+        color: white !important;
+        padding: 6px 16px;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .card-header .btn:hover:not(.btn-link):not(.dropdown-toggle),
+    .card-header .btn-sm:hover:not(.btn-link):not(.dropdown-toggle),
+    .card-header a.btn:hover:not(.btn-link):not(.dropdown-toggle) {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        border-color: white !important;
+        color: white !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(255, 255, 255, 0.3);
+    }
+    
+    .card-header .btn:active:not(.btn-link):not(.dropdown-toggle),
+    .card-header .btn-sm:active:not(.btn-link):not(.dropdown-toggle),
+    .card-header a.btn:active:not(.btn-link):not(.dropdown-toggle) {
+        background-color: rgba(255, 255, 255, 0.3) !important;
+        transform: translateY(0);
+    }
+    
+    /* Card header buttons - specific mobile styles */
+    .card-header .btn,
+    .card-header .btn-sm,
+    .card-header a.btn {
+        padding: 5px 10px;
+        font-size: 11px;
+        white-space: nowrap;
+        min-width: auto;
+        line-height: 1.2;
+    }
+    
+    /* Ensure card headers with buttons wrap properly */
+    .card-header.d-flex {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .card-header.d-flex.justify-content-between {
+        align-items: center;
+    }
+    
+    .card-header.d-flex.justify-content-between h5,
+    .card-header.d-flex.justify-content-between h6 {
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 0;
+        word-wrap: break-word;
+        writing-mode: horizontal-tb; /* Ensure horizontal text */
+        text-orientation: mixed;
+    }
+    
+    .card-header.d-flex.justify-content-between .btn {
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+    
+    /* Card header button group - hide on mobile, show dropdown */
+    .card-header .btn-group-mobile {
+        display: none;
+    }
+    
+    .card-header .card-header-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    /* 3-dot menu for mobile */
+    .card-header .card-header-menu-toggle {
+        display: none;
+        background: transparent;
+        border: 2px solid white;
+        color: white;
+        border-radius: 50px;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1;
+        cursor: pointer;
+    }
+    
+    .card-header .card-header-menu-toggle:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+    }
+    
+    .card-header .card-header-menu-toggle:focus {
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+        outline: none;
+    }
+    
+    .card-header .card-header-menu-toggle[aria-expanded="true"] {
+        background-color: rgba(255, 255, 255, 0.25);
+    }
+    
+    /* Dropdown menu styling for card headers */
+    .card-header .dropdown-menu {
+        border: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        border-radius: 12px;
+        padding: 0.5rem 0;
+        margin-top: 0.5rem;
+        min-width: 180px;
+        background-color: white;
+        z-index: 1050 !important; /* Ensure dropdown is above other elements */
+        position: absolute;
+        right: 0;
+        left: auto;
+    }
+    
+    .card-header .dropdown {
+        position: relative;
+    }
+    
+    .card-header .dropdown-menu .dropdown-item {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text-color);
+    }
+    
+    .card-header .dropdown-menu .dropdown-item i {
+        width: 20px;
+        text-align: center;
+        color: var(--primary-color);
+    }
+    
+    .card-header .dropdown-menu .dropdown-item:hover {
+        background-color: rgba(5, 139, 124, 0.1);
+        color: var(--primary-color);
+        padding-left: 1.5rem;
+    }
+    
+    /* Mobile: Hide button group, show 3-dot menu */
+    @media (max-width: 576px) {
+        .card-header .card-header-actions .btn-group-desktop {
+            display: none !important;
+        }
+        
+        .card-header .card-header-menu-toggle {
+            display: flex;
+        }
+        
+        .card-header h5,
+        .card-header h6 {
+            writing-mode: horizontal-tb !important;
+            text-orientation: mixed !important;
+            white-space: normal;
+            word-break: break-word;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .card-header .dropdown-menu {
+            right: 0 !important;
+            left: auto !important;
+        }
+    }
+    
+    /* Forms Mobile */
+    .form-control,
+    .form-select {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 0.75rem;
+    }
+    
+    .form-label {
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Tables Mobile */
+    .table {
+        font-size: 0.85rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem 0.5rem;
+    }
+    
+    /* Headings Mobile */
+    h1 {
+        font-size: 1.75rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    h3 {
+        font-size: 1.25rem;
+    }
+    
+    h4 {
+        font-size: 1.1rem;
+    }
+    
+    /* Container Fluid Mobile */
+    .container-fluid {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    
+    /* DataTables Mobile */
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_length {
+        float: none;
+        text-align: left;
+        margin-bottom: 0.75rem;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+    
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        float: none;
+        text-align: center;
+        margin-top: 0.75rem;
+    }
+    
+    /* Pagination Mobile */
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .pagination .page-link {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.875rem;
+        min-width: 36px;
+    }
+    
+    /* Badges Mobile */
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+    }
+    
+    /* Alerts Mobile */
+    .alert {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    /* Modal Mobile */
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+    
+    .modal-content {
+        border-radius: 12px;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem;
+    }
+}
+
+/* Tablet Styles */
+@media (min-width: 577px) and (max-width: 768px) {
+    /* Dashboard Content Padding */
+    body.app-page #main-content,
+    body.app-page .container-fluid.page-wrapper,
+    body.app-page .dashboard-content {
+        padding: 1.5rem 1.25rem;
+    }
+    
+    /* Sidebar Tablet */
+    .sidebar {
+        position: fixed;
+        left: -100%;
+        width: 260px;
+    }
+    
+    .sidebar.show {
+        left: 0;
+    }
+    
+    /* Cards Tablet */
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    /* Forms Tablet */
+    .form-control,
+    .form-select {
+        font-size: 15px;
+    }
+    
+    /* Tables Tablet */
+    .table {
+        font-size: 0.9rem;
+    }
+}
+
+/* Small Desktop / Large Tablet */
+@media (min-width: 769px) and (max-width: 991px) {
+    /* Dashboard Content Padding */
+    body.app-page #main-content,
+    body.app-page .container-fluid.page-wrapper,
+    body.app-page .dashboard-content {
+        padding: 1.75rem 2rem;
+    }
+    
+    /* Sidebar Small Desktop */
+    .sidebar {
+        width: 200px;
+    }
+    
+    /* Main Content Adjustment */
+    body.app-page.has-sidebar #main-content,
+    body.app-page.has-sidebar .dashboard-content {
+        margin-left: 200px;
+    }
+}
+
+/* Sidebar Overlay for Mobile */
+@media (max-width: 991px) {
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1049;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    
+    .sidebar-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    display: none;
+}
+
+@media (max-width: 991px) {
+    .sidebar-toggle {
+        display: inline-block;
+        background: none;
+        border: none;
+        color: var(--default-color);
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        cursor: pointer;
+    }
+    
+    .sidebar-toggle:hover {
+        color: var(--primary-color);
+    }
+}
+
+/*tabs styles*/
+.nav-tabs .nav-link {
+    color: white;
+    border-radius: 1.75rem;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--secondary-color);
 }

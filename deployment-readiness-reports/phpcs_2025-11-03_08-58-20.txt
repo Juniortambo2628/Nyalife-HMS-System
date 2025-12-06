@@ -1,0 +1,80 @@
+
+PHP CODE SNIFFER REPORT SUMMARY
+--------------------------------------------------------------------------------
+FILE                                                            ERRORS  WARNINGS
+--------------------------------------------------------------------------------
+...\Nyalife-HMS-System\includes\controllers\BaseController.php  1       1
+...fe-HMS-System\includes\controllers\ComponentsController.php  1       2
+...alife-HMS-System\includes\controllers\ajax\auth_handler.php  0       2
+...alife-HMS-System\includes\controllers\api\ApiController.php  1       1
+...tem\includes\controllers\api\ApiNotificationsController.php  1       2
+...S-System\includes\controllers\api\AppointmentController.php  1       3
+...System\includes\controllers\api\CommunicationController.php  1       1
+...-System\includes\controllers\api\ConsultationController.php  1       10
+...e-HMS-System\includes\controllers\api\DoctorsController.php  1       1
+...-HMS-System\includes\controllers\api\FollowUpController.php  1       1
+...HMS-System\includes\controllers\api\InsuranceController.php  1       7
+...e-HMS-System\includes\controllers\api\LabTestController.php  1       3
+...S-System\includes\controllers\api\MedicationsController.php  1       8
+...e-HMS-System\includes\controllers\api\PaymentController.php  1       1
+...MS-System\includes\controllers\api\ValidationController.php  1       2
+...S-System\includes\controllers\web\AppointmentController.php  1       19
+...life-HMS-System\includes\controllers\web\AuthController.php  1       6
+...-System\includes\controllers\web\ConsultationController.php  1       25
+...HMS-System\includes\controllers\web\DashboardController.php  1       5
+...MS-System\includes\controllers\web\DepartmentController.php  1       1
+...ife-HMS-System\includes\controllers\web\ErrorController.php  1       1
+...-HMS-System\includes\controllers\web\FollowUpController.php  1       1
+...tem\includes\controllers\web\GuestAppointmentController.php  1       8
+...life-HMS-System\includes\controllers\web\HomeController.php  1       1
+...e-HMS-System\includes\controllers\web\InvoiceController.php  1       1
+...MS-System\includes\controllers\web\LabRequestController.php  1       5
+...MS-System\includes\controllers\web\LabResultsController.php  1       5
+...e-HMS-System\includes\controllers\web\LabTestController.php  1       6
+...-HMS-System\includes\controllers\web\MessagesController.php  1       3
+...System\includes\controllers\web\NotificationsController.php  1       1
+...e-HMS-System\includes\controllers\web\PatientController.php  1       6
+...e-HMS-System\includes\controllers\web\PaymentController.php  1       1
+...-HMS-System\includes\controllers\web\PharmacyController.php  1       1
+...-System\includes\controllers\web\PrescriptionController.php  1       6
+...e-HMS-System\includes\controllers\web\ReportsController.php  1       2
+...-HMS-System\includes\controllers\web\SettingsController.php  1       1
+...life-HMS-System\includes\controllers\web\UserController.php  1       3
+...HMS-System\includes\controllers\web\VitalSignController.php  1       12
+...alife-HMS-System\includes\controllers\web\WebController.php  1       2
+C:\wamp64\www\Nyalife-HMS-System\includes\core\Auth.php         1       1
+...64\www\Nyalife-HMS-System\includes\core\DatabaseManager.php  1       0
+...amp64\www\Nyalife-HMS-System\includes\core\ErrorHandler.php  1       0
+C:\wamp64\www\Nyalife-HMS-System\includes\core\Router.php       1       1
+...p64\www\Nyalife-HMS-System\includes\core\SessionManager.php  1       0
+C:\wamp64\www\Nyalife-HMS-System\includes\core\Utilities.php    1       0
+C:\wamp64\www\Nyalife-HMS-System\includes\core\WebRouter.php    1       2
+...www\Nyalife-HMS-System\includes\models\AppointmentModel.php  1       2
+C:\wamp64\www\Nyalife-HMS-System\includes\models\BaseModel.php  1       3
+...ww\Nyalife-HMS-System\includes\models\ConsultationModel.php  1       0
+...\www\Nyalife-HMS-System\includes\models\DepartmentModel.php  1       2
+...mp64\www\Nyalife-HMS-System\includes\models\DoctorModel.php  1       2
+...\Nyalife-HMS-System\includes\models\DoctorScheduleModel.php  1       2
+...64\www\Nyalife-HMS-System\includes\models\FollowUpModel.php  1       1
+...p64\www\Nyalife-HMS-System\includes\models\InvoiceModel.php  1       1
+...w\Nyalife-HMS-System\includes\models\LabAttachmentModel.php  1       2
+...ww\Nyalife-HMS-System\includes\models\LabParameterModel.php  1       1
+...\www\Nyalife-HMS-System\includes\models\LabRequestModel.php  1       1
+...p64\www\Nyalife-HMS-System\includes\models\LabTestModel.php  1       5
+...\Nyalife-HMS-System\includes\models\MedicalHistoryModel.php  1       1
+...\www\Nyalife-HMS-System\includes\models\MedicationModel.php  1       4
+...p64\www\Nyalife-HMS-System\includes\models\MessageModel.php  1       3
+...ww\Nyalife-HMS-System\includes\models\NotificationModel.php  1       8
+...p64\www\Nyalife-HMS-System\includes\models\PatientModel.php  1       2
+...p64\www\Nyalife-HMS-System\includes\models\PaymentModel.php  1       1
+...ww\Nyalife-HMS-System\includes\models\PrescriptionModel.php  1       4
+...amp64\www\Nyalife-HMS-System\includes\models\StaffModel.php  1       1
+C:\wamp64\www\Nyalife-HMS-System\includes\models\UserModel.php  1       2
+...4\www\Nyalife-HMS-System\includes\models\VitalSignModel.php  1       2
+--------------------------------------------------------------------------------
+A TOTAL OF 67 ERRORS AND 221 WARNINGS WERE FOUND IN 68 FILES
+--------------------------------------------------------------------------------
+
+Time: 38.65 secs; Memory: 20MB
+
+

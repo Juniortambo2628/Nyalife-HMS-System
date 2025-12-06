@@ -1,0 +1,2 @@
+[2025-10-27 15:40:20] [ERROR] [Database error in LabTestModel::getRequestById] Table 'nyalifew_hms_prod.lab_tests' doesn't exist
+[2025-10-27 15:41:16] [ERROR] [Database error in LabTestModel::getRequestById] Table 'nyalifew_hms_prod.lab_tests' doesn't exist

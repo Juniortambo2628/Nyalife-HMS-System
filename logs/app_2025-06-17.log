@@ -1,0 +1,14 @@
+[2025-06-17 12:27:59] [ERROR] [Database error in AppointmentModel::getAllAppointmentsByDate] Table 'nyalifew_hms_prod.doctors' doesn't exist
+[2025-06-17 12:27:59] [ERROR] [Database error in AppointmentModel::getUpcomingAppointmentsByDateRange] Table 'nyalifew_hms_prod.doctors' doesn't exist
+[2025-06-17 12:29:28] [ERROR] [Database error in LabTestModel::getPendingTests] Unknown column 'r.test_id' in 'ON'
+[2025-06-17 12:33:11] [ERROR] [Database error in UserModel::createRememberToken] Table 'nyalifew_hms_prod.remember_tokens' doesn't exist
+[2025-06-17 12:41:17] [ERROR] [Database error in UserModel::createRememberToken] Table 'nyalifew_hms_prod.remember_tokens' doesn't exist
+[2025-06-17 12:56:28] [ERROR] [Database error in AppointmentModel::getAllAppointmentsByDate] Table 'nyalifew_hms_prod.doctors' doesn't exist
+[2025-06-17 12:56:28] [ERROR] [Database error in AppointmentModel::getUpcomingAppointmentsByDateRange] Table 'nyalifew_hms_prod.doctors' doesn't exist
+[2025-06-17 13:05:44] [ERROR] [Database error in MedicationModel::getAllMedications] Table 'nyalifew_hms_prod.medication_categories' doesn't exist
+[2025-06-17 13:09:41] [ERROR] [Database error in ConsultationModel::create] Cannot add or update a child row: a foreign key constraint fails (`nyalifew_hms_prod`.`consultations`, CONSTRAINT `consultations_ibfk_3` FOREIGN KEY (`doctor_id`) REFERENCES `staff` (`staff_id`))
+[2025-06-17 13:09:57] [ERROR] [Database error in ConsultationModel::create] Cannot add or update a child row: a foreign key constraint fails (`nyalifew_hms_prod`.`consultations`, CONSTRAINT `consultations_ibfk_3` FOREIGN KEY (`doctor_id`) REFERENCES `staff` (`staff_id`))
+[2025-06-17 13:38:00] [ERROR] [Database error in AppointmentModel::getAllAppointmentsByDate] Unknown column 'd.user_id' in 'ON'
+[2025-06-17 13:38:00] [ERROR] [Database error in AppointmentModel::getUpcomingAppointmentsByDateRange] Unknown column 'd.user_id' in 'ON'
+[2025-06-17 13:40:14] [ERROR] [Database error in AppointmentModel::getAllAppointmentsByDate] Unknown column 'd.user_id' in 'ON'
+[2025-06-17 13:40:14] [ERROR] [Database error in AppointmentModel::getUpcomingAppointmentsByDateRange] Unknown column 'd.user_id' in 'ON'

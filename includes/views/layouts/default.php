@@ -1,3 +1,11 @@
+<?php
+/**
+ * Nyalife HMS - Default Layout
+ */
+
+$pageTitle = 'Dashboard - Nyalife HMS';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +14,9 @@
     <meta name="base-url" content="<?= $baseUrl ?>">
     <title><?= isset($pageTitle) ? $pageTitle . ' - ' : '' ?>Nyalife HMS</title>
     
-    <?php if (isset($headExtras)) echo $headExtras; ?>
+    <?php if (isset($headExtras)) {
+        echo $headExtras;
+    } ?>
     <!--favicon-->
     <link rel="icon" href="<?= $baseUrl ?>/assets/img/logo/Logo2-transparent.png" type="image/x-icon">
 
@@ -20,12 +30,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
-    
+       <!-- Load FullCalendar CSS -->
+       <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="<?= $baseUrl ?>/assets/css/modern-loader.css">
+    <link rel="stylesheet" href="<?= $baseUrl ?>/assets/css/z-index.css">
+    <link rel="stylesheet" href="<?= $baseUrl ?>/assets/css/nyalife-loader-unified.css">
     <link rel="stylesheet" href="<?= $baseUrl ?>/assets/css/footer.css">
+    <link rel="stylesheet" href="<?= $baseUrl ?>/assets/css/layout-system.css">
     <link href="<?= $baseUrl ?>/assets/css/nyalife-theme.css" rel="stylesheet">
     <link href="<?= $baseUrl ?>/assets/css/style.css" rel="stylesheet">
+    <link href="<?= $baseUrl ?>/assets/css/custom.css" rel="stylesheet">
+    <link href="<?= $baseUrl ?>/assets/css/notifications.css" rel="stylesheet">
+    <link href="<?= $baseUrl ?>/assets/css/messages.css" rel="stylesheet">
+    <link href="<?= $baseUrl ?>/assets/css/header-mobile.css" rel="stylesheet">
 
     <!-- Additional CSS -->
     <?php if (isset($styles)): ?>
@@ -35,123 +52,53 @@
     <?php endif; ?>
 
 </head>
-<body>  
-     <!--Modern Loader-->
-     <?php include_once __DIR__ . '/modern-loader.php'; ?>
+<?php $bodyClasses = (function_exists('get_body_classes') ? get_body_classes() : '');
+// Add app-page and has-sidebar on all non-landing pages to enable centralized padding
+if (empty($isLanding) || !$isLanding) {
+    $bodyClasses = trim($bodyClasses . ' app-page has-sidebar');
+}
+// Detect authentication pages (login / register / forgot password) and mark them as auth pages
+$requestPath = isset($_SERVER['REQUEST_URI']) ? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/') : '';
+$pathSegments = $requestPath === '' ? [] : explode('/', $requestPath);
+$authKeywords = ['login', 'register', 'forgot', 'forgot-password', 'password-reset', 'password'];
+$isAuthPage = false;
+foreach ($pathSegments as $seg) {
+    if (in_array(strtolower($seg), $authKeywords, true)) {
+        $isAuthPage = true;
+        break;
+    }
+}
+if ($isAuthPage) {
+    // mark auth page and ensure we DO NOT include has-sidebar on auth pages
+    $bodyClasses = trim(($bodyClasses . ' auth-page'));
+    $bodyClasses = preg_replace('/\bhas-sidebar\b/', '', $bodyClasses);
+    $bodyClasses = trim(preg_replace('/\s+/', ' ', $bodyClasses));
+}
+?>
+<body class="<?= htmlspecialchars($bodyClasses) ?>">  
+    <!-- Nyalife Loader will be injected by nyalife-loader-unified.js -->
 
-    <!-- Header -->
-    <header class="header">
-        <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--primary-color);">
-            <div class="container">
-                <a class="navbar-brand" href="<?= $baseUrl ?>">
-                    <img src="<?= $baseUrl ?>/assets/img/logo/Logo2-transparent.png" alt="Nyalife HMS" height="40">
-                    Nyalife HMS
-                </a>
-                
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <?php if ($isLoggedIn): ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= rtrim($baseUrl, '/') ?>/dashboard">Dashboard</a>
-                            </li>
-                            
-                            <?php if (isset($currentUser['role']) && in_array($currentUser['role'], ['admin', 'nurse', 'doctor'])): ?>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="<?= rtrim($baseUrl, '/') ?>/patients">Patients</a>
-                                </li>
-                            <?php endif; ?>
-                            
-                            <?php if (isset($currentUser['role']) && in_array($currentUser['role'], ['admin', 'nurse', 'doctor', 'patient'])): ?>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="<?= rtrim($baseUrl, '/') ?>/appointments">Appointments</a>
-                                </li>
-                            <?php endif; ?>
-                            
-                            <?php if (isset($currentUser['role']) && in_array($currentUser['role'], ['admin', 'doctor', 'nurse'])): ?>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="<?= rtrim($baseUrl, '/') ?>/consultations">Consultations</a>
-                                </li>
-                            <?php endif; ?>
-                            
-                            <?php if (isset($currentUser['role']) && in_array($currentUser['role'], ['admin', 'lab_technician', 'doctor'])): ?>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="labDropdown" role="button" data-bs-toggle="dropdown">
-                                        Laboratory
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="<?= rtrim($baseUrl, '/') ?>/lab/requests">Lab Requests</a></li>
-                                        <?php if (in_array($currentUser['role'], ['admin', 'lab_technician'])): ?>
-                                            <li><a class="dropdown-item" href="<?= rtrim($baseUrl, '/') ?>/lab/tests">Lab Tests</a></li>
-                                        <?php endif; ?>
-                                    </ul>
-                                </li>
-                            <?php endif; ?>
-                            
-                            <?php if (isset($currentUser['role']) && in_array($currentUser['role'], ['admin', 'pharmacist', 'doctor'])): ?>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="pharmacyDropdown" role="button" data-bs-toggle="dropdown">
-                                        Pharmacy
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="<?= rtrim($baseUrl, '/') ?>/pharmacy/medicines">Medicines</a></li>
-                                        <li><a class="dropdown-item" href="<?= rtrim($baseUrl, '/') ?>/pharmacy/inventory">Inventory</a></li>
-                                        <li><a class="dropdown-item" href="<?= rtrim($baseUrl, '/') ?>/pharmacy/orders">Orders</a></li>
-                                    </ul>
-                                </li>
-                            <?php endif; ?>
-                            
-                            <?php if (isset($currentUser['role']) && in_array($currentUser['role'], ['admin', 'doctor'])): ?>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="<?= rtrim($baseUrl, '/') ?>/prescriptions">Prescriptions</a>
-                                </li>
-                            <?php endif; ?>
-                            
-                            <?php if (isset($currentUser['role']) && $currentUser['role'] === 'admin'): ?>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
-                                        Administration
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="<?= rtrim($baseUrl, '/') ?>/users">Users</a></li>
-                                        <li><a class="dropdown-item" href="<?= rtrim($baseUrl, '/') ?>/settings">System Settings</a></li>
-                                        <li><a class="dropdown-item" href="<?= rtrim($baseUrl, '/') ?>/reports">Reports</a></li>
-                                    </ul>
-                                </li>
-                            <?php endif; ?>
-                        <?php endif; ?>
-                    </ul>
-                    
-                    <ul class="navbar-nav">
-                        <?php if ($isLoggedIn): ?>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                    <?= $currentUser['firstName'] ?> <?= $currentUser['lastName'] ?>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="<?= rtrim($baseUrl, '/') ?>/profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
-                                    <li><a class="dropdown-item" href="<?= rtrim($baseUrl, '/') ?>/profile/edit"><i class="fas fa-user-edit me-2"></i>Edit Profile</a></li>
-                                    <li><a class="dropdown-item" href="<?= rtrim($baseUrl, '/') ?>/profile/change-password"><i class="fas fa-key me-2"></i>Change Password</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="<?= rtrim($baseUrl, '/') ?>/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-                                </ul>
-                            </li>
-                        <?php else: ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= rtrim($baseUrl, '/') ?>/login">Login</a>
-                            </li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <!-- Header - Using reusable component -->
+    <?php
+    // Define NYALIFE_INCLUDED to allow direct inclusion of the header
+    define('NYALIFE_INCLUDED', true);
+include_once __DIR__ . '/../../components/header.php';
+
+// Include sidebar on all non-landing pages when user is logged in, but skip auth pages
+if (isset($isLoggedIn) && $isLoggedIn && isset($currentUser) && (empty($isLanding) || !$isLanding) && empty($isAuthPage)):
+    include_once __DIR__ . '/../../components/sidebar.php';
+endif;
+?>
     
     <!-- Main Content -->
-    <main class="container py-5 px-5">
+    <main class="main-content">
+        <!-- Sidebar Toggle in Header (Desktop) -->
+        <?php if (isset($isLoggedIn) && $isLoggedIn && (empty($isLanding) || !$isLanding)): ?>
+        <button class="sidebar-toggle-header d-none d-md-block" id="sidebarToggleHeader" title="Toggle Sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+        <?php endif; ?>
+        
         <!-- Flash Messages -->
         <?php if (!empty($flashMessages)): ?>
             <?php foreach ($flashMessages as $flash): ?>
@@ -164,109 +111,177 @@
         
         <!-- Page Content -->
         <?= $content ?>
+
+        <!-- Footer - placed inside main content so it aligns with the main area when sidebar is present; hide on auth pages -->
+        <?php
+    // Already defined NYALIFE_INCLUDED above
+    if (empty($isAuthPage)) {
+        include_once __DIR__ . '/../../components/footer.php';
+    }
+?>
     </main>
     
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-top">
-            <div class="container">
-                <div class="row g-4">
-                    <div class="col-lg-4 col-md-6">
-                        <div class="footer-about">
-                            <a href="<?= $baseUrl ?>" class="footer-logo">
-                                <img src="<?= $baseUrl ?>/assets/img/logo/Logo2-transparent.png" alt="Nyalife HMS" height="50">
-                            </a>
-                            <p>Nyalife Women's Clinic is dedicated to providing exceptional healthcare services with compassion and expertise.</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-md-6">
-                        <div class="footer-links">
-                            <h4>Quick Links</h4>
-                            <ul>
-                                <li><a href="<?= $baseUrl ?>"><i class="fas fa-chevron-right"></i> Home</a></li>
-                                <li><a href="<?= $baseUrl ?>/about"><i class="fas fa-chevron-right"></i> About Us</a></li>
-                                <li><a href="<?= $baseUrl ?>/services"><i class="fas fa-chevron-right"></i> Services</a></li>
-                                <li><a href="<?= $baseUrl ?>/doctors"><i class="fas fa-chevron-right"></i> Doctors</a></li>
-                                <li><a href="<?= $baseUrl ?>/contact"><i class="fas fa-chevron-right"></i> Contact</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="footer-contact">
-                            <h4>Contact Us</h4>
-                            <ul>
-                                <li><i class="fas fa-map-marker-alt"></i> JemPark Complex, Suite A5, Sabaki, Kenya</li>
-                                <li><i class="fas fa-phone-alt"></i> +254 746 516 514</li>
-                                <li><i class="fas fa-envelope"></i> info@nyalifewomensclinic.com</li>
-                                <li><i class="fas fa-clock"></i> Mon - Sat: 8:00 AM - 8:00 PM</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6">
-                        <div class="footer-newsletter">
-                            <h4>Newsletter</h4>
-                            <p>Subscribe to our newsletter for health tips and updates.</p>
-                            <form class="newsletter-form">
-                                <input type="email" placeholder="Your Email Address">
-                                <button type="submit"><i class="fas fa-paper-plane"></i></button>
-                            </form>
-                            <div class="social-links mt-3">
-                                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                                <a href="#"><i class="fab fa-twitter"></i></a>
-                                <a href="#"><i class="fab fa-instagram"></i></a>
-                                <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="container">
-                <div class="row">
-                    <div class="col-12 text-center">
-                        <p class="mb-0">&copy; <?= date('Y') ?> Nyalife Women's Clinic. All Rights Reserved.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
-    
-    <!-- Load jQuery FIRST -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <!-- AOS Animation Library -->
-    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-    
-    <!-- Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Core modules -->
-    <script src="<?= $baseUrl ?>/assets/js/core/forms.js"></script>
-    
-    <!-- Utils -->
-    <script src="<?= $baseUrl ?>/assets/js/common/utils.js"></script>
-    <script src="<?= $baseUrl ?>/assets/js/common/auth-utils.js"></script>
-    <script src="<?= $baseUrl ?>/assets/js/common/validation.js"></script>
-    <script src="<?= $baseUrl ?>/assets/js/common/date-utils.js"></script>
-    
-    <!-- Modern Loader -->
-    <script src="<?= $baseUrl ?>/assets/js/modern-loader.js"></script>
-    
-    <!-- Main Application JS -->
-    <script src="<?= $baseUrl ?>/assets/js/nyalife.js"></script>
-    <script src="<?= $baseUrl ?>/assets/js/alerts.js"></script>
-    
-    <!-- Additional Scripts -->
-    <?php if (isset($scripts)): ?>
-        <?php foreach ($scripts as $script): ?>
-            <script src="<?= $baseUrl ?>/assets/js/<?= $script ?>"></script>
-        <?php endforeach; ?>
-    <?php endif; ?>
-
+    <!-- Initialize Global Variables -->
     <script>
-        // Initialize AOS
-        AOS.init();
+    // Set global variables for notifications and API calls
+    window.baseUrl = '<?= $baseUrl ?>';
+    window.isLoggedIn = <?= $isLoggedIn ? 'true' : 'false' ?>;
+    </script>
+
+    <!-- Scripts - Using unified script loader -->
+    <?php
+    // Initialize page specific scripts if not set
+    if (!isset($pageSpecificScripts)) {
+        $pageSpecificScripts = [];
+    }
+    
+    // Add dashboard scripts if not landing and not auth
+    if ((empty($isLanding) || !$isLanding) && empty($isAuthPage)) {
+        $pageSpecificScripts = array_merge($pageSpecificScripts, ['components.js', 'notifications.js', 'messages.js']);
+    }
+
+    // If on auth pages, add the auth validation script
+    if (!empty($isAuthPage)) {
+        $additionalScripts = isset($additionalScripts) ? $additionalScripts : [];
+        $additionalScripts = array_merge($additionalScripts, ['auth-validation.js','register-steps.js']);
+    }
+    
+    // If landing page, add landing.js
+    if (!empty($isLanding) && $isLanding) {
+        // AssetHelper returns the full path relative to web root (e.g. assets/dist/js/landing.hash.js)
+        // unified-script-loader will handle it correctly if it starts with assets/
+        $pageSpecificScripts[] = AssetHelper::getJs('landing');
+    }
+    
+    include_once __DIR__ . '/../../components/unified-script-loader.php';
+    ?>
+   
+    <script>
+    (function(){
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function nl2br(str) {
+            return String(str).replace(/\r?\n/g, '<br>');
+        }
+
+        // Show Bootstrap toast
+        window.showToast = function(message, type = 'success', timeout = 4000) {
+            const container = document.getElementById('globalToasts');
+            if (!container) return;
+            const toastId = 'toast-' + Date.now();
+            const toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-bg-' + (type === 'danger' ? 'danger' : 'success') + ' border-0';
+            toast.id = toastId;
+            toast.setAttribute('role','alert');
+            toast.setAttribute('aria-live','assertive');
+            toast.setAttribute('aria-atomic','true');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${escapeHtml(String(message))}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            container.appendChild(toast);
+            const btoast = new bootstrap.Toast(toast, { delay: timeout });
+            btoast.show();
+            toast.addEventListener('hidden.bs.toast', function(){ toast.remove(); });
+        };
+
+        // Generic AJAX form handler for update endpoints
+        document.addEventListener('submit', function(e){
+            const form = e.target;
+            if (!form || !form.action) return;
+            // Handle update endpoints (update-field, update-vitals, update-*) or forms marked data-ajax
+            const isUpdate = form.dataset.ajax === 'true' || /\/update(-|_)[a-z]+\//.test(form.action) || /\/update(?:-field|_vitals|_vital)/.test(form.action);
+            if (!isUpdate) return;
+            e.preventDefault();
+            const formData = new FormData(form);
+            fetch(form.action, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' }})
+                .then(r => r.json())
+                .then(json => {
+                    if (json && json.success) {
+                        // If updated fields returned, update elements with data-field attributes
+                        if (json.updated && typeof json.updated === 'object') {
+                        Object.keys(json.updated).forEach(function(k){
+                                const els = document.querySelectorAll('[data-field~="'+k+'"]');
+                                els.forEach(function(el){ el.innerHTML = nl2br(escapeHtml(String(json.updated[k]))); });
+                            });
+                        }
+                        // If vitals returned under json.vitals, update elements with data-field names
+                        if (json.vitals && typeof json.vitals === 'object') {
+                        Object.keys(json.vitals).forEach(function(k){
+                                const els = document.querySelectorAll('[data-field~="'+k+'"]');
+                                els.forEach(function(el){ el.innerHTML = nl2br(escapeHtml(String(json.vitals[k]))); });
+                            });
+                        }
+                        // If server returned a newly created vital record, insert into patient vitals table if present
+                        if (json.vitals && json.vital_id) {
+                            try {
+                                const tbody = document.querySelector('#vitals table tbody');
+                                if (tbody) {
+                                    const v = json.vitals;
+                                    const newRow = `
+                                        <tr>
+                                            <td>${v.measured_at || ''}</td>
+                                            <td>${v.blood_pressure || ''}</td>
+                                            <td>${v.pulse || ''}</td>
+                                            <td>${v.temperature || ''}</td>
+                                            <td>${v.respiratory_rate || ''}</td>
+                                            <td>${v.oxygen_saturation || ''}</td>
+                                            <td>${v.recorded_by || ''}</td>
+                                        </tr>`;
+                                    tbody.insertAdjacentHTML('afterbegin', newRow);
+                                    // If DataTable present, try to redraw
+                                    try {
+                                        if (typeof $ !== 'undefined' && $.fn.DataTable) {
+                                            const table = $(tbody).closest('table');
+                                            if (table && table.length && table.dataTable) {
+                                                // simple redraw
+                                                table.DataTable().rows().invalidate().draw(false);
+                                            }
+                                        }
+                                    } catch (e) {}
+                                }
+                            } catch (e) { console.error('Insert vitals row error', e); }
+                        }
+                        window.showToast(json.message || 'Updated', 'success');
+                    } else {
+                        // If server returned field errors, map them to form fields
+                        if (json && json.errors && typeof json.errors === 'object') {
+                            Object.keys(json.errors).forEach(function(field){
+                                // try name selector then id
+                                const inputs = document.querySelectorAll('[name="' + field + '"]');
+                                if (inputs.length) {
+                                    inputs.forEach(function(inp){
+                                        inp.classList.add('is-invalid');
+                                        const fb = inp.closest('.form-group')?.querySelector('.invalid-feedback');
+                                        if (fb) fb.textContent = json.errors[field];
+                                    });
+                                } else {
+                                    const el = document.getElementById(field);
+                                    if (el) {
+                                        el.classList.add('is-invalid');
+                                        const fb = el.closest('.form-group')?.querySelector('.invalid-feedback');
+                                        if (fb) fb.textContent = json.errors[field];
+                                    }
+                                }
+                            });
+                            window.showToast(json.message || 'Validation failed', 'danger');
+                        } else {
+                            const msg = (json && json.message) ? json.message : 'Update failed';
+                            window.showToast(msg, 'danger');
+                        }
+                    }
+                }).catch(err=>{ console.error(err); window.showToast('Update failed', 'danger'); });
+        }, false);
+    })();
     </script>
 </body>
 </html>

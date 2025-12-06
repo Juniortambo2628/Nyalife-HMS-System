@@ -1,0 +1,369 @@
+/**
+ * Nyalife HMS - Header Mobile Optimizations
+ * Enhanced mobile design for notifications, messages, and profile dropdown
+ */
+
+/*--------------------------------------------------------------
+    # Notification & Messages Icons - Mobile Optimized
+--------------------------------------------------------------*/
+
+/* Base styles for notification and message icons */
+#notifications-container,
+#messages-container {
+    position: relative;
+}
+
+#notificationsToggle,
+#messagesToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    margin: 0 0.25rem;
+}
+
+#notificationsToggle:hover,
+#messagesToggle:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+#notificationsToggle:active,
+#messagesToggle:active {
+    transform: scale(0.95);
+}
+
+#notificationsToggle i,
+#messagesToggle i {
+    font-size: 1.25rem;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+#notificationsToggle:hover i,
+#messagesToggle:hover i {
+    color: #fff;
+    transform: scale(1.1);
+}
+
+/* Badge styling for counts */
+#notification-count,
+#messages-count {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Notification badge (red) */
+#notification-count {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Messages badge (blue/info) */
+#messages-count {
+    background-color: #0dcaf0;
+    color: white;
+}
+
+/*--------------------------------------------------------------
+    # Profile Dropdown - Mobile Optimized
+--------------------------------------------------------------*/
+
+/* Profile dropdown toggle */
+#userDropdown {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 25px;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    min-height: 44px;
+    gap: 0.5rem;
+}
+
+#userDropdown:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+#userDropdown i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+#userDropdown::after {
+    margin-left: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+#userDropdown[aria-expanded="true"]::after {
+    transform: rotate(180deg);
+}
+
+/* Profile dropdown menu */
+#userDropdown + .dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+    min-width: 200px;
+    background-color: white;
+}
+
+#userDropdown + .dropdown-menu .dropdown-item {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+#userDropdown + .dropdown-menu .dropdown-item i {
+    width: 20px;
+    text-align: center;
+    color: var(--primary-color);
+}
+
+#userDropdown + .dropdown-menu .dropdown-item:hover {
+    background-color: rgba(5, 139, 124, 0.1);
+    color: var(--primary-color);
+    padding-left: 1.5rem;
+}
+
+#userDropdown + .dropdown-menu .dropdown-item.text-danger {
+    color: #dc3545 !important;
+}
+
+#userDropdown + .dropdown-menu .dropdown-item.text-danger:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545 !important;
+}
+
+#userDropdown + .dropdown-menu .dropdown-divider {
+    margin: 0.5rem 0;
+}
+
+/*--------------------------------------------------------------
+    # Mobile Responsive Styles
+--------------------------------------------------------------*/
+
+/* Mobile: Enhanced touch targets and layout */
+@media (max-width: 768px) {
+    /* Notification and Messages Icons */
+    #notifications-container,
+    #messages-container {
+        margin: 0 0.25rem;
+    }
+    
+    #notificationsToggle,
+    #messagesToggle {
+        width: 48px;
+        height: 48px;
+        margin: 0;
+    }
+    
+    #notificationsToggle i,
+    #messagesToggle i {
+        font-size: 1.4rem;
+    }
+    
+    /* Badge positioning on mobile */
+    #notification-count,
+    #messages-count {
+        top: 2px !important;
+        right: 2px !important;
+        min-width: 22px;
+        height: 22px;
+        font-size: 0.75rem;
+        padding: 0 7px;
+    }
+    
+    /* Profile dropdown on mobile */
+    #userDropdown {
+        padding: 0.5rem 0.5rem !important;
+        min-height: 48px;
+        font-size: 0.9rem;
+    }
+    
+    #userDropdown i {
+        font-size: 1.4rem;
+    }
+    
+    /* Hide user name on very small screens, show only icon */
+    #userDropdown span:not(.d-none) {
+        display: none;
+    }
+    
+    /* Profile dropdown menu - full width on mobile */
+    #userDropdown + .dropdown-menu {
+        min-width: calc(100vw - 2rem);
+        max-width: 280px;
+        right: 0 !important;
+        left: auto !important;
+        margin-top: 0.75rem;
+    }
+    
+    /* Navbar adjustments for mobile */
+    .navbar-nav:last-child {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .navbar-nav:last-child .nav-item {
+        margin: 0;
+    }
+}
+
+/* Very small mobile screens */
+@media (max-width: 576px) {
+    /* Even larger touch targets */
+    #notificationsToggle,
+    #messagesToggle {
+        width: 44px;
+        height: 44px;
+    }
+    
+    #notificationsToggle i,
+    #messagesToggle i {
+        font-size: 1.3rem;
+    }
+    
+    /* Profile dropdown - icon only */
+    #userDropdown {
+        padding: 0.5rem !important;
+        min-width: 44px;
+        justify-content: center;
+    }
+    
+    #userDropdown span {
+        display: none !important;
+    }
+    
+    #userDropdown::after {
+        display: none;
+    }
+    
+    /* Dropdown menu positioning */
+    #userDropdown + .dropdown-menu {
+        right: 0.5rem !important;
+        left: auto !important;
+        min-width: 200px;
+    }
+}
+
+/*--------------------------------------------------------------
+    # Desktop Enhancements
+--------------------------------------------------------------*/
+
+@media (min-width: 769px) {
+    /* Hover effects for desktop */
+    #notificationsToggle:hover,
+    #messagesToggle:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    #userDropdown:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Show user name on desktop */
+    #userDropdown span {
+        display: inline;
+        color: white;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+}
+
+/*--------------------------------------------------------------
+    # Active/Notification States
+--------------------------------------------------------------*/
+
+/* Active notification state (has unread) */
+#notificationsToggle.has-notifications {
+    animation: notificationPulse 2s infinite;
+}
+
+@keyframes notificationPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(220, 53, 69, 0);
+    }
+}
+
+/* Active messages state (has unread) */
+#messagesToggle.has-messages {
+    animation: messagePulse 2s infinite;
+}
+
+@keyframes messagePulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(13, 202, 240, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(13, 202, 240, 0);
+    }
+}
+
+/*--------------------------------------------------------------
+    # Accessibility Improvements
+--------------------------------------------------------------*/
+
+/* Focus states for keyboard navigation */
+#notificationsToggle:focus,
+#messagesToggle:focus,
+#userDropdown:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    #notificationsToggle,
+    #messagesToggle,
+    #userDropdown {
+        border: 2px solid white;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    #notificationsToggle,
+    #messagesToggle,
+    #userDropdown,
+    #notification-count,
+    #messages-count {
+        animation: none;
+        transition: none;
+    }
+}
+

@@ -10,10 +10,57 @@
 
 // Include required files
 require_once __DIR__ . '/constants.php';
-require_once __DIR__ . '/validation_functions.php';
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/validation_functions.php';
 require_once __DIR__ . '/id_generator.php';
 require_once __DIR__ . '/modal_functions.php';
+require_once __DIR__ . '/includes/db_utils.php';
+
+// Global variable to store body classes
+$GLOBALS['body_classes'] = [];
+
+/**
+ * Add one or more classes to the body element
+ * 
+ * @param string $classes Space-separated list of classes to add
+ * @return void
+ */
+function add_body_class($classes) {
+    if (!isset($GLOBALS['body_classes'])) {
+        $GLOBALS['body_classes'] = [];
+    }
+    
+    $class_array = explode(' ', $classes);
+    foreach ($class_array as $class) {
+        if (!empty($class) && !in_array($class, $GLOBALS['body_classes'])) {
+            $GLOBALS['body_classes'][] = $class;
+        }
+    }
+}
+
+/**
+ * Get all body classes as a space-separated string
+ * 
+ * @return string Space-separated list of body classes
+ */
+function get_body_classes() {
+    return isset($GLOBALS['body_classes']) ? implode(' ', $GLOBALS['body_classes']) : '';
+}
+
+/**
+ * Force hide the page loader
+ * 
+ * @return string JavaScript to hide the loader
+ */
+function dashboard_force_hide_loader() {
+    return '<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (window.NyalifeLoader && typeof NyalifeLoader.hide === "function") {
+                NyalifeLoader.hide(true); // true = immediate hide
+            }
+        });
+    </script>';
+}
 
 // Start session if not already started
 function ensureSession() {
@@ -101,26 +148,51 @@ function sendJsonResponse($response) {
     exit();
 }
 
-// Get base URL
-function getBaseUrl() {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-    $domainName = $_SERVER['HTTP_HOST'];
+/**
+ * Get the base URL for the application
+ * 
+ * @return string The base URL
+ */
+if (!function_exists('getBaseUrl')) {
+    function getBaseUrl() {
+    // Check if running from command line
+    $isCli = php_sapi_name() === 'cli';
     
-    // Special handling for localhost XAMPP environment in Windows
-    if ($domainName === 'localhost' || strpos($domainName, '127.0.0.1') !== false) {
-        $path = '/Nyalife-HMS-System';
+    if ($isCli) {
+        // For CLI, provide a default base URL
+        return 'http://localhost' . (defined('APP_PATH') ? APP_PATH : '/Nyalife-HMS-System');
+    }
+
+    // Get the protocol (http or https)
+    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || 
+                (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? 
+                'https://' : 'http://';
+    
+    // Get the domain and port
+    $domain = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+    
+    // Check if APP_PATH constant is defined
+    if (defined('APP_PATH')) {
+        $baseUrl = $protocol . $domain . APP_PATH;
     } else {
-        // For production, determine the proper subdirectory if any
-        $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
-        $path = ($scriptDir == '/' || $scriptDir == '\\') ? '' : $scriptDir;
-        
-        // If somehow the path doesn't include our project directory, add it
-        if (strpos($path, 'Nyalife-HMS-System') === false) {
-            $path = '/Nyalife-HMS-System';
-        }
+        // Fallback if APP_PATH is not defined: extract from script path
+        $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '');
+        $appPath = ($scriptDir == '/' || $scriptDir == '\\') ? '' : $scriptDir;
+        $baseUrl = $protocol . $domain . $appPath;
     }
     
-    return $protocol . $domainName . $path;
+    // Debug information
+    if (defined('DEBUG_MODE') && DEBUG_MODE) {
+        error_log("Base URL calculation:");
+        error_log("  Protocol: {$protocol}");
+        error_log("  Domain: {$domain}");
+        error_log("  APP_PATH: " . (defined('APP_PATH') ? APP_PATH : 'Not defined'));
+        error_log("  Script Dir: " . dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+        error_log("  Final Base URL: {$baseUrl}");
+    }
+    
+    return $baseUrl;
+    }
 }
 
 // Get dashboard URL based on role
@@ -128,22 +200,8 @@ function getDashboardUrl() {
     $baseUrl = getBaseUrl();
     $role = $_SESSION['role'] ?? '';
     
-    switch ($role) {
-        case 'admin':
-            return $baseUrl . '/includes/views/dashboard/admin.php';
-        case 'doctor':
-            return $baseUrl . '/includes/views/dashboard/doctor.php';
-        case 'nurse':
-            return $baseUrl . '/includes/views/dashboard/nurse.php';
-        case 'lab_technician':
-            return $baseUrl . '/includes/views/dashboard/lab.php';
-        case 'pharmacist':
-            return $baseUrl . '/includes/views/dashboard/pharmacist.php';
-        case 'patient':
-            return $baseUrl . '/includes/views/dashboard/patient.php';
-        default:
-            return $baseUrl;
-    }
+    // Use the dashboard route with role parameter instead of direct file paths
+    return $baseUrl . '/dashboard/' . $role;
 }
 
 // Check if current page is active
@@ -766,10 +824,9 @@ function getPatientDetailsForVitals($patient_id) {
 
 function saveVitalSigns($data) {
     try {
-        $db = connectDB();
-        $db->beginTransaction();
+        $conn = beginTransaction();
         // Insert vital signs
-        $vital_id = insertQuery(
+        $vital_id = executeQuery(
             "INSERT INTO vital_signs (
                 patient_id, consultation_id, blood_pressure, heart_rate,
                 respiratory_rate, temperature, weight, height, bmi,
@@ -793,15 +850,15 @@ function saveVitalSigns($data) {
         );
         // Update appointment status if needed
         if (isset($data['appointment_id'])) {
-            updateQuery(
+            executeQuery(
                 "UPDATE appointments SET status = 'in_progress' WHERE appointment_id = ?",
                 [$data['appointment_id']]
             );
         }
-        $db->commit();
+        commitTransaction($conn);
         return ['success' => true, 'vital_id' => $vital_id];
     } catch (Exception $e) {
-        $db->rollBack();
+        rollbackTransaction($conn);
         return ['success' => false, 'message' => $e->getMessage()];
     }
 }
@@ -815,7 +872,7 @@ function getPatientId($user_id) {
 
 function getPatientDetails($patient_id) {
     return selectSingle(
-        "SELECT p.*, u.email, u.phone_number
+        "SELECT p.*, u.email, u.phone
          FROM patients p
          JOIN users u ON p.user_id = u.user_id
          WHERE p.patient_id = ?",
@@ -1041,11 +1098,10 @@ function getPrescriptionItems($prescription_id) {
 
 function dispenseMedication($data) {
     try {
-        $db = connectDB();
-        $db->beginTransaction();
+        $conn = beginTransaction();
         
         // Insert dispensed medication record
-        $dispensed_id = insertQuery(
+        $dispensed_id = executeQuery(
             "INSERT INTO dispensed_medications (
                 prescription_id, medication_id, quantity, 
                 dispensed_by, dispensed_at, notes
@@ -1060,7 +1116,7 @@ function dispenseMedication($data) {
         );
         
         // Update medication stock
-        updateQuery(
+        executeQuery(
             "UPDATE medications 
              SET stock_quantity = stock_quantity - ? 
              WHERE medication_id = ?",
@@ -1068,7 +1124,7 @@ function dispenseMedication($data) {
         );
         
         // Update prescription item status
-        updateQuery(
+        executeQuery(
             "UPDATE prescription_items 
              SET status = 'dispensed' 
              WHERE prescription_id = ? 
@@ -1087,7 +1143,7 @@ function dispenseMedication($data) {
         
         if ($pending_items === 0) {
             // Update prescription status to completed
-            updateQuery(
+            executeQuery(
                 "UPDATE prescriptions 
                  SET status = 'completed' 
                  WHERE prescription_id = ?",
@@ -1095,10 +1151,10 @@ function dispenseMedication($data) {
             );
         }
         
-        $db->commit();
+        commitTransaction($conn);
         return ['success' => true, 'dispensed_id' => $dispensed_id];
     } catch (Exception $e) {
-        $db->rollBack();
+        rollbackTransaction($conn);
         return ['success' => false, 'message' => $e->getMessage()];
     }
 }
@@ -1121,4 +1177,3 @@ function checkRole($requiredRole) {
     
     return $auth->hasRole($requiredRole);
 }
-?> 

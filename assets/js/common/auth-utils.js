@@ -46,8 +46,28 @@ document.addEventListener('DOMContentLoaded', function() {
             initRegisterForm();
         }
     }
+
+    AuthUtils.init();
 });
 
+/**
+ * Show login alert message
+ * @param {string} type - Alert type (success, danger, warning, info)
+ * @param {string} message - Alert message
+ */
+function showLoginAlert(type, message) {
+    const alertDiv = $('#loginAlert');
+    alertDiv.removeClass().addClass('alert alert-' + type);
+    alertDiv.html(message);
+    alertDiv.show();
+
+    // Auto-hide after 5 seconds for success messages
+    if (type === 'success') {
+        setTimeout(function() {
+            alertDiv.fadeOut();
+        }, 5000);
+    }
+}
 
 /**
  * Initialize login form functionality (works for both modal and regular forms)
@@ -74,8 +94,37 @@ function initLoginForm() {
             dataType: 'json',
             success: function(response) {
                 if (response.success) {
-                    // FIX 4: Use server-provided absolute URL
-                    window.location.href = response.redirect;
+                    // Handle redirect properly
+                    if (response.redirect) {
+                        // Ensure the redirect URL is absolute
+                        let redirectUrl = response.redirect;
+                        
+                        // If it's not an absolute URL (doesn't start with http:// or https://),
+                        // and it doesn't start with a slash, add a slash
+                        if (!redirectUrl.match(/^https?:\/\//i) && !redirectUrl.startsWith('/')) {
+                            redirectUrl = '/' + redirectUrl;
+                        }
+                        
+                        // Get the base URL from meta tag if available
+                        const baseUrlMeta = document.querySelector('meta[name="base-url"]');
+                        const baseUrl = baseUrlMeta ? baseUrlMeta.getAttribute('content') : '';
+                        
+                        // If we have a baseUrl and the redirectUrl is relative (starts with /),
+                        // combine them properly
+                        if (baseUrl && redirectUrl.startsWith('/')) {
+                            // Remove trailing slash from baseUrl if present
+                            const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+                            redirectUrl = cleanBaseUrl + redirectUrl;
+                        }
+                        
+                        console.log('Redirecting to:', redirectUrl);
+                        window.location.href = redirectUrl;
+                    } else {
+                        // Fallback to dashboard
+                        const baseUrlMeta = document.querySelector('meta[name="base-url"]');
+                        const baseUrl = baseUrlMeta ? baseUrlMeta.getAttribute('content') : '';
+                        window.location.href = baseUrl ? baseUrl + '/dashboard' : '/dashboard';
+                    }
                 } else {
                     showLoginAlert('danger', response.message);
                     $('#loginSpinner').addClass('d-none');
@@ -201,3 +250,117 @@ function initRegisterForm() {
         });
     });
 }
+
+/**
+ * Authentication Utilities
+ * Provides client-side authentication helpers
+ */
+
+const AuthUtils = {
+    /**
+     * Check if user is logged in by checking session
+     */
+    isLoggedIn: function() {
+        // This could check for a session token or make an API call
+        return document.body.hasAttribute('data-user-logged-in');
+    },
+
+    /**
+     * Get current user role
+     */
+    getUserRole: function() {
+        return document.body.getAttribute('data-user-role') || null;
+    },
+
+    /**
+     * Get current user ID
+     */
+    getUserId: function() {
+        return document.body.getAttribute('data-user-id') || null;
+    },
+
+    /**
+     * Logout user
+     */
+    logout: function() {
+        window.location.href = BASE_URL + '/logout';
+    },
+
+    /**
+     * Redirect to login page
+     */
+    redirectToLogin: function() {
+        window.location.href = BASE_URL + '/login';
+    },
+
+    /**
+     * Check if user has specific role
+     */
+    hasRole: function(role) {
+        const userRole = this.getUserRole();
+        if (Array.isArray(role)) {
+            return role.includes(userRole);
+        }
+        return userRole === role;
+    },
+
+    /**
+     * Check if user has any of the specified roles
+     */
+    hasAnyRole: function(roles) {
+        const userRole = this.getUserRole();
+        return roles.includes(userRole);
+    },
+
+    /**
+     * Set authentication data on page load
+     */
+    setAuthData: function(userId, userRole, isLoggedIn = true) {
+        if (isLoggedIn) {
+            document.body.setAttribute('data-user-logged-in', 'true');
+            document.body.setAttribute('data-user-id', userId);
+            document.body.setAttribute('data-user-role', userRole);
+        } else {
+            document.body.removeAttribute('data-user-logged-in');
+            document.body.removeAttribute('data-user-id');
+            document.body.removeAttribute('data-user-role');
+        }
+    },
+
+    /**
+     * Initialize auth utilities
+     */
+    init: function() {
+        // Auto-logout on certain conditions
+        this.checkSessionExpiry();
+        
+        // Set up periodic session check
+        setInterval(() => {
+            this.checkSessionExpiry();
+        }, 300000); // Check every 5 minutes
+    },
+
+    /**
+     * Check session expiry (basic implementation)
+     */
+    checkSessionExpiry: function() {
+        // This is a basic implementation
+        // In a real application, you might want to make an AJAX call to check session status
+        if (this.isLoggedIn()) {
+            // Optionally ping the server to verify session is still active
+            // fetch(BASE_URL + '/api/session/check').then(response => {
+            //     if (!response.ok) {
+            //         this.redirectToLogin();
+            //     }
+            // });
+        }
+    }
+};
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    AuthUtils.init();
+});
+
+// Export for global access
+window.AuthUtils = AuthUtils;

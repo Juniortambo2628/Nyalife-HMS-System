@@ -1,0 +1,86 @@
+[2025-06-12 16:38:49] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-12 16:38:57] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-12 16:39:45] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 16:39:45] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'doctor_id' in 'where clause'
+[2025-06-12 16:39:51] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 16:39:51] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'doctor_id' in 'where clause'
+[2025-06-12 16:40:06] [ERROR] [Database error in MedicationModel::getAllMedications] Table 'nyalife_hms.medication_batches' doesn't exist
+[2025-06-12 16:40:32] [ERROR] [Database error in MedicationModel::getAllMedications] Table 'nyalife_hms.medication_batches' doesn't exist
+[2025-06-12 16:40:40] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-12 16:41:18] [ERROR] [Database error in MedicationModel::getAllMedications] Table 'nyalife_hms.medication_batches' doesn't exist
+[2025-06-12 16:45:27] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-12 16:47:46] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-12 16:49:40] [ERROR] [Database error in AppointmentModel::getAllAppointmentsByDate] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 16:49:40] [ERROR] [Database error in AppointmentModel::getUpcomingAppointmentsByDateRange] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 17:01:15] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-12 17:16:08] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-12 18:04:25] [ERROR] [Database error in UserModel::create] Unknown column 'specialization' in 'field list'
+[2025-06-12 18:04:25] [ERROR] [System error in UserController::store] Failed to create user
+[2025-06-12 18:06:31] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-12 18:06:59] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 18:07:00] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'doctor_id' in 'where clause'
+[2025-06-12 18:11:24] [ERROR] [Database error in LabTestModel::getPendingTests] Unknown column 'r.test_type_id' in 'on clause'
+[2025-06-12 18:11:24] [ERROR] [Database error in LabTestModel::getCompletedTests] Unknown column 't.type_id' in 'on clause'
+[2025-06-12 18:11:34] [ERROR] [Database error in LabTestModel::getPendingTests] Unknown column 'r.test_type_id' in 'on clause'
+[2025-06-12 18:11:34] [ERROR] [Database error in LabTestModel::getCompletedTests] Unknown column 't.type_id' in 'on clause'
+[2025-06-12 18:11:36] [ERROR] [Database error in LabTestModel::getCompletedTests] Unknown column 't.type_id' in 'on clause'
+[2025-06-12 18:11:36] [ERROR] [Database error in LabTestModel::countCompletedTests] Unknown column 't.type_id' in 'on clause'
+[2025-06-12 18:11:42] [ERROR] [Database error in LabTestModel::getPendingTests] Unknown column 'r.test_type_id' in 'on clause'
+[2025-06-12 18:11:42] [ERROR] [Database error in LabTestModel::getCompletedTests] Unknown column 't.type_id' in 'on clause'
+[2025-06-12 18:12:04] [ERROR] [Database error in LabTestModel::getPendingTests] Unknown column 'r.test_type_id' in 'on clause'
+[2025-06-12 18:12:04] [ERROR] [Database error in LabTestModel::getCompletedTests] Unknown column 't.type_id' in 'on clause'
+[2025-06-12 18:44:19] [ERROR] [Database error in PatientModel::create] Unknown column 'medical_conditions' in 'field list'
+[2025-06-12 18:44:19] [ERROR] [Database error in PatientModel::createPatient] Failed to create patient record
+[2025-06-12 18:56:17] [ERROR] [System error in WebRouter::dispatch] AuditLogger.php not found at: C:\xampp\htdocs\Nyalife-HMS-System\includes\controllers\web/../../includes/helpers/AuditLogger.php
+[2025-06-12 19:58:39] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Unknown column 'p.created_by' in 'where clause'
+[2025-06-12 19:58:39] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'created_by' in 'where clause'
+[2025-06-12 19:59:11] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Unknown column 'p.created_by' in 'where clause'
+[2025-06-12 19:59:11] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'created_by' in 'where clause'
+[2025-06-12 20:08:33] [ERROR] [Database error in PrescriptionModel::getPrescriptionsByDoctor] Unknown column 'p.doctor_id' in 'where clause'
+[2025-06-12 20:08:33] [ERROR] [Database error in PrescriptionModel::countPrescriptionsByDoctor] Unknown column 'doctor_id' in 'where clause'
+[2025-06-12 21:18:09] [ERROR] [Database error in UserModel::update] Unknown column 'specialization' in 'field list'
+[2025-06-12 21:18:09] [ERROR] [System error in UserController::update] Failed to update user
+[2025-06-12 21:46:45] [ERROR] [Database error in UserModel::updateLastLogin] MySQL server has gone away
+[2025-06-12 21:46:49] [ERROR] [System error in WebRouter::dispatch] No connection could be made because the target machine actively refused it
+[2025-06-12 21:46:53] [ERROR] [System error in WebRouter::dispatch] No connection could be made because the target machine actively refused it
+[2025-06-12 21:46:57] [ERROR] [System error in WebRouter::dispatch] No connection could be made because the target machine actively refused it
+[2025-06-12 21:47:05] [ERROR] [Database error in PrescriptionModel::getAllPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:47:05] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:47:21] [ERROR] [Database error in PrescriptionModel::getAllPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:47:21] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:47:40] [ERROR] [Database error in PrescriptionModel::getAllPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:47:40] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:47:49] [ERROR] [Database error in PrescriptionModel::getAllPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:47:49] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:47:54] [ERROR] [Database error in PrescriptionModel::getAllPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:47:54] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:47:58] [ERROR] [Database error in PrescriptionModel::getAllPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:47:58] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:48:03] [ERROR] [Database error in PrescriptionModel::getAllPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:48:03] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:48:18] [ERROR] [Database error in PrescriptionModel::getAllPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:48:18] [ERROR] [Database error in PrescriptionModel::getCompletedPrescriptions] Table 'nyalife_hms.doctors' doesn't exist
+[2025-06-12 21:49:07] [ERROR] [Database error in LabTestModel::getPendingTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-12 21:49:07] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-12 21:49:18] [ERROR] [Database error in LabTestModel::getPendingTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-12 21:49:18] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-12 21:49:23] [ERROR] [Database error in LabTestModel::getPendingTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-12 21:49:23] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-12 21:49:25] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-12 21:49:25] [ERROR] [Database error in LabTestModel::countCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-12 21:49:28] [ERROR] [Database error in LabTestModel::getPendingTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-12 21:49:28] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-12 21:49:30] [ERROR] [Database error in LabTestModel::getSamplesByStatus] Unknown column 't.type_id' in 'on clause'
+[2025-06-12 21:49:30] [ERROR] [Database error in LabTestModel::countSamplesByStatus] Unknown column 't.type_id' in 'on clause'
+[2025-06-12 21:49:35] [ERROR] [Database error in LabTestModel::getSamplesByStatus] Unknown column 't.type_id' in 'on clause'
+[2025-06-12 21:49:35] [ERROR] [Database error in LabTestModel::countSamplesByStatus] Unknown column 't.type_id' in 'on clause'
+[2025-06-12 21:49:37] [ERROR] [Database error in LabTestModel::getPendingTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-12 21:49:37] [ERROR] [Database error in LabTestModel::getCompletedTests] Table 'nyalife_hms.lab_tests' doesn't exist
+[2025-06-12 22:40:04] [ERROR] [Database error in ConsultationModel::create] Cannot add or update a child row: a foreign key constraint fails (`nyalife_hms`.`consultations`, CONSTRAINT `consultations_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`))
+[2025-06-12 22:40:14] [ERROR] [Database error in ConsultationModel::create] Cannot add or update a child row: a foreign key constraint fails (`nyalife_hms`.`consultations`, CONSTRAINT `consultations_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`))
+[2025-06-12 22:45:29] [ERROR] [Database error in ConsultationModel::create] Column 'appointment_id' cannot be null
+[2025-06-12 22:49:33] [ERROR] [System error in WebRouter::dispatch] No connection could be made because the target machine actively refused it
+[2025-06-12 22:49:43] [ERROR] [System error in WebRouter::dispatch] No connection could be made because the target machine actively refused it
+[2025-06-12 22:49:49] [ERROR] [System error in WebRouter::dispatch] No connection could be made because the target machine actively refused it
+[2025-06-12 22:58:38] [ERROR] [System error in WebRouter::dispatch] MySQL server has gone away
+[2025-06-12 22:59:45] [ERROR] [System error in WebRouter::dispatch] No connection could be made because the target machine actively refused it

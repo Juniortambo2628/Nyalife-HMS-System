@@ -1,0 +1,103 @@
+/* Invoice Print Styles */
+@media print {
+    body { margin: 0; }
+    .no-print { display: none !important; }
+}
+
+.invoice-print body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #fff;
+    color: #333;
+}
+
+.invoice-print .header {
+    text-align: center;
+    border-bottom: 2px solid #333;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.invoice-print .hospital-name {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.invoice-print .hospital-info {
+    font-size: 14px;
+    color: #666;
+}
+
+.invoice-print .invoice-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.invoice-print .invoice-details {
+    flex: 1;
+}
+
+.invoice-print .invoice-number {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.invoice-print .invoice-info {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.invoice-print .patient-info {
+    flex: 1;
+    text-align: right;
+}
+
+.invoice-print .patient-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.invoice-print .patient-details {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.invoice-print .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
+
+.invoice-print .items-table th {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 12px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.invoice-print .items-table td {
+    border: 1px solid #dee2e6;
+    padding: 12px;
+}
+
+.invoice-print .total-section {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.invoice-print .total-row {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 0;
+}
+
+.invoice-print .total-amount {
+    font-size: 20px;
+    color: #20c997;
+}
+

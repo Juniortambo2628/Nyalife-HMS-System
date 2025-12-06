@@ -1,11 +1,19 @@
-<div class="container-fluid px-4 py-5">
+<?php
+/**
+ * Nyalife HMS - Default Dashboard
+ */
+
+$pageTitle = 'Dashboard - Nyalife HMS';
+?>
+<div class="container-fluid">
+
     <h1 class="h3 mb-4">Dashboard</h1>
     
     <div class="row">
         <div class="col-12 mb-4">
             <div class="card shadow-sm">
                 <div class="card-body text-center py-5">
-                    <img src="<?= $baseUrl ?>/assets/img/illustrations/welcome.png" alt="Welcome" class="img-fluid mb-4" style="max-width: 250px;">
+                    <img src="<?= $baseUrl ?>/assets/img/illustrations/welcome.png" alt="Welcome" class="img-fluid mb-4 img-max-250">
                     <h2>Welcome to Nyalife Hospital Management System!</h2>
                     <p class="lead text-muted">
                         You're logged in as <strong><?= htmlspecialchars($currentUser['firstName'] . ' ' . $currentUser['lastName']) ?></strong>.
@@ -44,7 +52,7 @@
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-3">
-                        <img src="<?= $baseUrl ?>/assets/img/logo.png" alt="Nyalife HMS Logo" class="img-fluid mb-3" style="max-width: 150px;">
+                        <img src="<?= $baseUrl ?>/assets/img/logo.png" alt="Nyalife HMS Logo" class="img-fluid mb-3 img-max-150">
                         <h5>Nyalife Hospital Management System</h5>
                         <p class="text-muted small">Version 1.0.0</p>
                     </div>

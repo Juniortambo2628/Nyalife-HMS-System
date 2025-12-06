@@ -20,7 +20,10 @@ const NyalifeAPI = (function() {
      * @param {string} message - Message to display in loader
      */
     function showLoader(message = 'Loading...') {
-        if (window.NyalifeLoader && typeof window.NyalifeLoader.show === 'function') {
+        // Don't show loader on dashboard pages
+        const isDashboard = document.body.classList.contains('dashboard-page') || 
+                           document.body.classList.contains('has-sidebar');
+        if (window.NyalifeLoader && typeof window.NyalifeLoader.show === 'function' && !isDashboard) {
             window.NyalifeLoader.show(message);
         } else {
             console.log('Loader: ' + message);

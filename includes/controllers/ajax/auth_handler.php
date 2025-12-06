@@ -1,7 +1,8 @@
 <?php
+
 /**
  * Nyalife HMS - AJAX Authentication Handler
- * 
+ *
  * Direct handler for AJAX authentication requests that bypasses routing issues.
  */
 
@@ -16,7 +17,19 @@ require_once __DIR__ . '/../../models/UserModel.php';
 SessionManager::ensureStarted();
 
 // Set base URL for redirects
-$baseUrl = '/Nyalife-HMS-System';
+if (!defined('APP_PATH')) {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+    $domainName = $_SERVER['HTTP_HOST'];
+
+    if ($domainName === 'localhost' || str_contains((string) $domainName, '127.0.0.1')) {
+        define('APP_PATH', '/Nyalife-HMS-System');
+    } else {
+        $scriptDir = dirname((string) $_SERVER['SCRIPT_NAME'], 4);
+        define('APP_PATH', ($scriptDir === '/' || $scriptDir === '\\') ? '' : $scriptDir);
+    }
+}
+
+$baseUrl = APP_PATH;
 
 // Set content type to JSON
 header('Content-Type: application/json');
@@ -32,19 +45,19 @@ try {
     }
 
     // Get credentials
-    $username = isset($_POST['username']) ? $_POST['username'] : '';
-    $password = isset($_POST['password']) ? $_POST['password'] : '';
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
     $remember = isset($_POST['remember']) && $_POST['remember'] == '1';
 
     // Attempt authentication
     $auth = Auth::getInstance();
-    
+
     if ($auth->authenticate($username, $password, $remember)) {
         // Success
         $role = $auth->getUserRole();
         $redirectUrl = $baseUrl . '/dashboard';
-        if ($role) {
-            $redirectUrl .= '/' . strtolower($role);
+        if ($role !== null && $role !== '' && $role !== '0') {
+            $redirectUrl .= '/' . strtolower((string) $role);
         }
         echo json_encode([
             'success' => true,
@@ -60,8 +73,8 @@ try {
     }
 } catch (Exception $e) {
     // Log error
-    ErrorHandler::logSystemError($e, __METHOD__);
-    
+    ErrorHandler::logSystemError($e, 'auth_handler.php');
+
     // Return error response
     echo json_encode([
         'success' => false,

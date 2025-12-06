@@ -1,7 +1,7 @@
 <?php
 /**
  * Nyalife HMS - Dashboard Data Access Layer
- * 
+ *
  * This file provides standardized functions for dashboard data operations.
  */
 
@@ -10,12 +10,13 @@ require_once __DIR__ . '/../date_utils.php';
 
 /**
  * Get user statistics summary
- * 
+ *
  * @param int $userId User ID
  * @return array User statistics
  */
-function getUserStatisticsSummary($userId) {
-    $result = [
+function getUserStatisticsSummary($userId): array
+{
+    return [
         'last_login' => dbSelectValue(
             "SELECT login_time FROM login_logs 
              WHERE user_id = ? 
@@ -32,18 +33,17 @@ function getUserStatisticsSummary($userId) {
             [$userId]
         )
     ];
-    
-    return $result;
 }
 
 /**
  * Get system statistics
- * 
+ *
  * @return array System statistics
  */
-function getSystemStatistics() {
+function getSystemStatistics(): array
+{
     return [
-        'total_users' => dbSelectValue("SELECT COUNT(*) FROM users WHERE status = 'active'"),
+        'total_users' => dbSelectValue("SELECT COUNT(*) FROM users WHERE is_active = 1"),
         'total_patients' => dbSelectValue("SELECT COUNT(*) FROM patients"),
         'total_doctors' => dbSelectValue("SELECT COUNT(*) FROM doctors"),
         'total_appointments' => dbSelectValue(
@@ -58,7 +58,7 @@ function getSystemStatistics() {
 
 /**
  * Get generic chart data for a time period
- * 
+ *
  * @param string $tableName Table to query
  * @param string $dateColumn Date column to group by
  * @param string $groupBy Period to group by (day, week, month)
@@ -68,20 +68,27 @@ function getSystemStatistics() {
  * @param string $endDate End date (YYYY-MM-DD)
  * @return array Chart data with labels and values
  */
-function getChartDataByPeriod($tableName, $dateColumn, $groupBy = 'day', $whereClause = '', 
-                              $whereParams = [], $startDate = null, $endDate = null) {
+function getChartDataByPeriod(
+    $tableName,
+    $dateColumn,
+    $groupBy = 'day',
+    $whereClause = '',
+    $whereParams = [],
+    $startDate = null,
+    $endDate = null
+): array {
     if (!$startDate) {
         // Default to last 30 days
         $startDate = date('Y-m-d', strtotime('-30 days'));
     }
-    
+
     if (!$endDate) {
         $endDate = date('Y-m-d');
     }
-    
+
     $groupFormat = '%Y-%m-%d'; // Default to daily
     $labelFormat = 'M d'; // Default label format
-    
+
     if ($groupBy === 'week') {
         $groupFormat = '%x-W%v'; // ISO year and week number
         $labelFormat = '\WW'; // Week label format
@@ -89,33 +96,33 @@ function getChartDataByPeriod($tableName, $dateColumn, $groupBy = 'day', $whereC
         $groupFormat = '%Y-%m'; // Year and month
         $labelFormat = 'M Y'; // Month label format
     }
-    
+
     $sql = "SELECT 
                 DATE_FORMAT($dateColumn, '$groupFormat') as period,
                 COUNT(*) as count
             FROM $tableName
             WHERE $dateColumn BETWEEN ? AND ?";
-    
+
     $params = [$startDate, $endDate];
-    
+
     if ($whereClause) {
         $sql .= " AND $whereClause";
         $params = array_merge($params, $whereParams);
     }
-    
+
     $sql .= " GROUP BY period ORDER BY period";
-    
+
     $data = dbSelect($sql, $params);
-    
+
     // Format for charts
     $labels = [];
     $values = [];
-    
+
     foreach ($data as $row) {
         // Convert period to a date for formatting
         if ($groupBy === 'week') {
             // Parse "YYYY-WNN" format
-            list($year, $week) = explode('-W', $row['period']);
+            [$year, $week] = explode('-W', (string) $row['period']);
             $date = new DateTime();
             $date->setISODate($year, $week);
         } elseif ($groupBy === 'month') {
@@ -125,11 +132,11 @@ function getChartDataByPeriod($tableName, $dateColumn, $groupBy = 'day', $whereC
             // Parse "YYYY-MM-DD" format
             $date = DateTime::createFromFormat('Y-m-d', $row['period']);
         }
-        
+
         $labels[] = $date->format($labelFormat);
         $values[] = (int)$row['count'];
     }
-    
+
     return [
         'labels' => $labels,
         'values' => $values
@@ -138,21 +145,22 @@ function getChartDataByPeriod($tableName, $dateColumn, $groupBy = 'day', $whereC
 
 /**
  * Get calendar events for a user
- * 
+ *
  * @param int $userId User ID
  * @param string $startDate Start date (YYYY-MM-DD)
  * @param string $endDate End date (YYYY-MM-DD)
  * @return array Calendar events
  */
-function getUserCalendarEvents($userId, $startDate = null, $endDate = null) {
+function getUserCalendarEvents($userId, $startDate = null, $endDate = null): array
+{
     if (!$startDate) {
         $startDate = date('Y-m-d');
     }
-    
+
     if (!$endDate) {
         $endDate = date('Y-m-d', strtotime('+30 days'));
     }
-    
+
     // Get user role
     $user = dbSelectOne(
         "SELECT u.*, r.role_name 
@@ -161,18 +169,18 @@ function getUserCalendarEvents($userId, $startDate = null, $endDate = null) {
          WHERE u.user_id = ?",
         [$userId]
     );
-    
+
     $events = [];
-    
+
     if (!$user) {
         return $events;
     }
-    
+
     // Get appropriate events based on user role
     switch ($user['role_name']) {
         case 'doctor':
             $doctorId = getStaffIdFromUserId($userId);
-            
+
             if ($doctorId) {
                 $events = dbSelect(
                     "SELECT 
@@ -192,13 +200,13 @@ function getUserCalendarEvents($userId, $startDate = null, $endDate = null) {
                 );
             }
             break;
-            
+
         case 'patient':
             $patientId = dbSelectValue(
                 "SELECT patient_id FROM patients WHERE user_id = ?",
                 [$userId]
             );
-            
+
             if ($patientId) {
                 $events = dbSelect(
                     "SELECT 
@@ -210,15 +218,14 @@ function getUserCalendarEvents($userId, $startDate = null, $endDate = null) {
                         a.status,
                         'appointment' as event_type
                      FROM appointments a
-                     JOIN doctors d ON a.doctor_id = d.doctor_id
-                     JOIN users u ON d.user_id = u.user_id
+                     JOIN users u ON a.doctor_id = u.user_id
                      WHERE a.patient_id = ?
                      AND DATE(a.appointment_date) BETWEEN ? AND ?",
                     [$patientId, $startDate, $endDate]
                 );
             }
             break;
-            
+
         default:
             // Other staff may have different events
             $events = dbSelect(
@@ -236,23 +243,23 @@ function getUserCalendarEvents($userId, $startDate = null, $endDate = null) {
             );
             break;
     }
-    
+
     // Format events for calendar display
     $formattedEvents = [];
-    
+
     foreach ($events as $event) {
         $startDateTime = $event['start_date'] . ' ' . $event['start_time'];
         $endDateTime = null;
-        
+
         if (isset($event['duration']) && $event['duration']) {
             $start = new DateTime($startDateTime);
             $end = clone $start;
             $end->add(new DateInterval('PT' . (int)$event['duration'] . 'M'));
             $endDateTime = $end->format('Y-m-d H:i:s');
         }
-        
+
         $eventColor = '#3788d8'; // Default color
-        
+
         // Set color based on event type or status
         if (isset($event['event_type'])) {
             switch ($event['event_type']) {
@@ -282,7 +289,7 @@ function getUserCalendarEvents($userId, $startDate = null, $endDate = null) {
                     break;
             }
         }
-        
+
         $formattedEvents[] = [
             'id' => $event['id'],
             'title' => $event['title'],
@@ -293,6 +300,6 @@ function getUserCalendarEvents($userId, $startDate = null, $endDate = null) {
             'status' => $event['status'] ?? null
         ];
     }
-    
+
     return $formattedEvents;
-} 
+}

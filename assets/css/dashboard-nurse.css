@@ -1,0 +1,46 @@
+/* Nurse Dashboard Styles */
+.dashboard-nurse .message-item {
+    transition: background-color 0.2s ease;
+}
+
+.dashboard-nurse .message-item:hover {
+    background-color: var(--bs-gray-50, #f8f9fa);
+}
+
+.dashboard-nurse .message-item.unread {
+    background-color: rgba(32, 201, 151, 0.05);
+}
+
+.dashboard-nurse .message-item.unread:hover {
+    background-color: rgba(32, 201, 151, 0.1);
+}
+
+.dashboard-nurse .message-item:last-child {
+    border-bottom: none !important;
+}
+
+.dashboard-nurse .message-avatar .rounded-circle {
+    background: linear-gradient(135deg, var(--primary-color, #20c997) 0%, var(--secondary-color, #e91e63) 100%) !important;
+    font-weight: 600;
+}
+
+.dashboard-nurse .message-indicator {
+    background-color: var(--info, #0dcaf0) !important;
+}
+
+/* Dashboard card header gradient */
+.dashboard-nurse .card-header[style*="gradient"] {
+    border-bottom: none;
+}
+
+.dashboard-nurse .card-header[style*="gradient"] .btn-light {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.9);
+    color: var(--primary-color, #20c997);
+}
+
+.dashboard-nurse .card-header[style*="gradient"] .btn-light:hover {
+    background-color: white;
+    border-color: white;
+}
+

@@ -1,4 +1,11 @@
-<div class="container-fluid px-4 py-3">
+<?php
+/**
+ * Nyalife HMS - Pharmacist Dashboard
+ */
+
+$pageTitle = 'Pharmacist Dashboard - Nyalife HMS';
+?>
+<div class="container-fluid page-wrapper">
     <h1 class="h3 mb-4">Pharmacist Dashboard</h1>
     
     <!-- Statistics Cards -->
@@ -84,13 +91,13 @@
                 </div>
                 <div class="card-body">
                     <?php if (empty($pendingPrescriptions)): ?>
-                        <div class="text-center py-4">
-                            <img src="<?= $baseUrl ?>/assets/img/illustrations/no-data.png" alt="No prescriptions" class="img-fluid mb-3" style="max-width: 200px;">
-                            <p class="mb-0">There are no pending prescriptions at the moment.</p>
+                        <div class="text-center p-4">
+                            <img src="<?= $baseUrl ?>/assets/img/illustrations/no-appointments.svg" alt="No prescriptions" class="img-fluid mb-3 img-max-150 img-error-handler" data-error-icon="fas fa-prescription-bottle">
+                            <p class="text-muted">No prescriptions are currently waiting for dispensation.</p>
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
+                            <table class="table table-bordered table-hover" id="pendingPrescriptionsTable">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -117,24 +124,24 @@
                                             <td>
                                                 <?php
                                                 $statusClass = '';
-                                                switch ($prescription['status'] ?? '') {
-                                                    case 'pending':
-                                                        $statusClass = 'bg-warning text-dark';
-                                                        break;
-                                                    case 'partially_dispensed':
-                                                        $statusClass = 'bg-info';
-                                                        break;
-                                                    case 'dispensed':
-                                                        $statusClass = 'bg-success';
-                                                        break;
-                                                    case 'cancelled':
-                                                        $statusClass = 'bg-danger';
-                                                        break;
-                                                    default:
-                                                        $statusClass = 'bg-secondary';
-                                                        break;
-                                                }
-                                                ?>
+                                        switch ($prescription['status'] ?? '') {
+                                            case 'pending':
+                                                $statusClass = 'bg-warning text-dark';
+                                                break;
+                                            case 'partially_dispensed':
+                                                $statusClass = 'bg-info';
+                                                break;
+                                            case 'dispensed':
+                                                $statusClass = 'bg-success';
+                                                break;
+                                            case 'cancelled':
+                                                $statusClass = 'bg-danger';
+                                                break;
+                                            default:
+                                                $statusClass = 'bg-secondary';
+                                                break;
+                                        }
+                                        ?>
                                                 <span class="badge <?= $statusClass ?>">
                                                     <?= ucfirst(str_replace('_', ' ', $prescription['status'] ?? 'pending')) ?>
                                                 </span>
@@ -187,7 +194,9 @@
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-3">
-                        <img src="<?= $baseUrl ?>/assets/img/profiles/default-pharmacist.png" class="img-profile rounded-circle" width="100">
+                        <div class="profile-image-container">
+                            <img src="<?= $baseUrl ?>/assets/img/profiles/default-pharmacist.png" class="img-profile" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-prescription-bottle\'></i>';">
+                        </div>
                         <h5 class="mt-2"><?= htmlspecialchars($currentUser['firstName'] . ' ' . $currentUser['lastName']) ?></h5>
                         <p class="text-muted">
                             <i class="fas fa-prescription-bottle me-1"></i> Pharmacist
@@ -232,7 +241,7 @@
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover">
+                            <table class="table table-bordered table-hover" id="completedPrescriptionsTable">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -253,13 +262,13 @@
                                                 </a>
                                             </td>
                                             <td><?= htmlspecialchars($prescription['doctor_name'] ?? 'Unknown') ?></td>
-                                            <td><?= isset($prescription['dispensed_at']) ? date('M d, Y', strtotime($prescription['dispensed_at'])) : 'N/A' ?></td>
+                                            <td><?= isset($prescription['dispensed_date']) ? date('M d, Y', strtotime($prescription['dispensed_date'])) : 'N/A' ?></td>
                                             <td><?= htmlspecialchars($prescription['dispensed_by_name'] ?? 'Unknown') ?></td>
                                             <td>
                                                 <a href="<?= $baseUrl ?>/prescriptions/view/<?= $prescription['prescription_id'] ?? 0 ?>" class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="<?= $baseUrl ?>/prescriptions/print/<?= $prescription['prescription_id'] ?? 0 ?>" class="btn btn-sm btn-secondary">
+                                                <a href="<?= $baseUrl ?>/prescriptions/print/<?= $prescription['prescription_id'] ?? 0 ?>" class="btn btn-sm btn-secondary" data-no-ajax>
                                                     <i class="fas fa-print"></i>
                                                 </a>
                                             </td>
@@ -274,3 +283,13 @@
         </div>
     </div>
 </div>
+
+    <!-- Bundled Assets -->
+    <link rel="stylesheet" href="<?= AssetHelper::getCss('shared') ?>">
+    <script src="<?= AssetHelper::getJs('runtime') ?>"></script>
+    <script src="<?= AssetHelper::getJs('vendors') ?>"></script>
+    <script src="<?= AssetHelper::getJs('shared') ?>"></script>
+    <script src="<?= AssetHelper::getJs('app') ?>"></script>
+    <script src="<?= AssetHelper::getJs('dashboard-pharmacist') ?>"></script>
+</body>
+</html>

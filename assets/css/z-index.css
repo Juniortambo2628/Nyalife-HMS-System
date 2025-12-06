@@ -13,9 +13,9 @@
   
   /* UI components (11-100) */
   --z-card: 20;
-  --z-dropdown: 30;
-  --z-sticky: 40;
-  --z-navbar: 50;
+  --z-dropdown: 1050;
+  --z-sticky: 1020;
+  --z-navbar: 1030;
   --z-sidebar: 60;
   --z-tooltip: 70;
   
@@ -72,7 +72,8 @@ textarea {
 
 .navbar,
 .header {
-  z-index: var(--z-navbar);
+  z-index: var(--z-navbar) !important;
+  position: relative !important;
 }
 
 .sidebar {

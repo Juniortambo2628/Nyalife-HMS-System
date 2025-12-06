@@ -6,13 +6,6 @@
  */
 $pageTitle = 'Reports - Nyalife HMS';
 ?>
-
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0">
-                    <i class="fas fa-chart-bar text-primary me-2"></i>
                     System Reports
                 </h1>
                 <a href="<?= $baseUrl ?>/dashboard" class="btn btn-secondary">

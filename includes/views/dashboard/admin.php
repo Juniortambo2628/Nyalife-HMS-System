@@ -5,6 +5,7 @@
 
 $showSidebar = true;
 $pageTitle = 'Admin Dashboard - Nyalife HMS';
+$pageSpecificScripts[] = AssetHelper::getJs('dashboard-admin');
 ?>
 <div class="container-fluid page-wrapper">
     <h1 class="h3 mb-4">Administrator Dashboard</h1>
@@ -346,38 +347,3 @@ $pageTitle = 'Admin Dashboard - Nyalife HMS';
         </div>
     </div>
 </div>
-
-    <!-- Bundled Assets -->
-    <link rel="stylesheet" href="<?= AssetHelper::getCss('shared') ?>">
-    <script src="<?= AssetHelper::getJs('runtime') ?>"></script>
-    <script src="<?= AssetHelper::getJs('vendors') ?>"></script>
-    <script src="<?= AssetHelper::getJs('shared') ?>"></script>
-    <script src="<?= AssetHelper::getJs('app') ?>"></script>
-    <script src="<?= AssetHelper::getJs('dashboard-admin') ?>"></script>
-    <script>
-    // Ensure dropdowns are initialized after all scripts load
-    (function() {
-        function initDropdowns() {
-            if (typeof window.bootstrap !== 'undefined' && window.bootstrap.Dropdown) {
-                const dropdowns = document.querySelectorAll('.dropdown-toggle');
-                dropdowns.forEach(function(toggle) {
-                    if (!window.bootstrap.Dropdown.getInstance(toggle)) {
-                        new window.bootstrap.Dropdown(toggle);
-                    }
-                });
-            } else {
-                setTimeout(initDropdowns, 100);
-            }
-        }
-        // Try immediately
-        if (document.readyState === 'complete') {
-            initDropdowns();
-        } else {
-            window.addEventListener('load', initDropdowns);
-        }
-        // Also try after a delay
-        setTimeout(initDropdowns, 500);
-    })();
-    </script>
-</body>
-</html>

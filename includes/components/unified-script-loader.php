@@ -20,15 +20,7 @@ if (!$isAjax && !defined('NYALIFE_INCLUDED')) {
 ?>
 
 <!-- Set webpack publicPath dynamically before loading bundles -->
-<script>
-// Set webpack public path dynamically based on APP_PATH
-// This ensures chunk files load from the correct path
-<?php
-$appPath = defined('APP_PATH') ? APP_PATH : '';
-$webpackPublicPath = $appPath !== '' && $appPath !== '0' ? rtrim($appPath, '/') . '/assets/dist/' : '/assets/dist/';
-?>
-__webpack_public_path__ = '<?= $webpackPublicPath ?>';
-</script>
+
 
 <!-- Core Webpack Bundles -->
 <script src="<?= AssetHelper::getJs('runtime') ?>"></script>

@@ -11,7 +11,7 @@
 /* Main Content Area - Adjusts for sidebar */
 body.app-page.has-sidebar .main-content {
     margin-left: 0;
-    width: 100%;
+    width: auto;
     transition: margin-left 0.3s ease;
 }
 

@@ -156,6 +156,7 @@ class ReportsController extends WebController
         } catch (Exception $e) {
             error_log("Error getting system stats: " . $e->getMessage());
             return [
+                'error' => $e->getMessage(),
                 'totalUsers' => 0,
                 'totalPatients' => 0,
                 'totalDoctors' => 0,

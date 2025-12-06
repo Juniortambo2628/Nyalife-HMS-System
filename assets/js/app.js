@@ -3,6 +3,12 @@
  * Aggregates common utilities and core modules
  */
 
+// Set webpack public path dynamically if window.baseUrl is defined
+// This is critical for chunks to be loaded from the correct path
+if (typeof window !== 'undefined' && window.baseUrl) {
+    __webpack_public_path__ = window.baseUrl.replace(/\/+$/, '') + '/assets/dist/';
+}
+
 // Common Utilities
 import './common/date-utils';
 import './common/http';

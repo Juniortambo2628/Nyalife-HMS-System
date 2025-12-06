@@ -5,6 +5,7 @@
 
 $showSidebar = true;
 $pageTitle = 'Doctor Dashboard - Nyalife HMS';
+$pageSpecificScripts[] = AssetHelper::getJs('dashboard-doctor');
 ?>
 
 <style>
@@ -139,7 +140,7 @@ $pageTitle = 'Doctor Dashboard - Nyalife HMS';
             <div class="card shadow-sm mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold">Today's Schedule</h6>
-                    <div class="card-header-actions">
+                    <div class="card-header-actions d-flex align-items-center">
                         <div class="btn-group-desktop">
                             <a href="<?= $baseUrl ?>/appointments/create" class="btn btn-sm me-2">
                                 <i class="fas fa-plus me-1"></i> <span class="d-none d-sm-inline">New Appointment</span>
@@ -148,15 +149,7 @@ $pageTitle = 'Doctor Dashboard - Nyalife HMS';
                                 <i class="fas fa-calendar me-1"></i> <span class="d-none d-sm-inline">View Calendar</span>
                             </a>
                         </div>
-                        <div class="dropdown">
-                            <button class="card-header-menu-toggle dropdown-toggle" type="button" id="scheduleMenuToggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="scheduleMenuToggle">
-                                <li><a class="dropdown-item" href="<?= $baseUrl ?>/appointments/create"><i class="fas fa-plus me-2"></i> New Appointment</a></li>
-                                <li><a class="dropdown-item" href="<?= $baseUrl ?>/appointments/calendar"><i class="fas fa-calendar me-2"></i> View Calendar</a></li>
-                            </ul>
-                        </div>
+
                     </div>
                 </div>
                 <div class="card-body">
@@ -316,7 +309,7 @@ $pageTitle = 'Doctor Dashboard - Nyalife HMS';
                     <h6 class="m-0 font-weight-bold">
                         <i class="fas fa-envelope me-2"></i>Recent Messages
                     </h6>
-                    <div class="card-header-actions">
+                    <div class="card-header-actions d-flex align-items-center">
                         <div class="btn-group-desktop">
                             <a href="<?= $baseUrl ?>/messages/compose" class="btn btn-sm me-2">
                                 <i class="fas fa-plus me-1"></i> <span class="d-none d-sm-inline">Compose</span>
@@ -325,15 +318,7 @@ $pageTitle = 'Doctor Dashboard - Nyalife HMS';
                                 View All
                             </a>
                         </div>
-                        <div class="dropdown">
-                            <button class="card-header-menu-toggle dropdown-toggle" type="button" id="messagesMenuToggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="messagesMenuToggle">
-                                <li><a class="dropdown-item" href="<?= $baseUrl ?>/messages/compose"><i class="fas fa-plus me-2"></i> Compose</a></li>
-                                <li><a class="dropdown-item" href="<?= $baseUrl ?>/messages"><i class="fas fa-envelope me-2"></i> View All</a></li>
-                            </ul>
-                        </div>
+
                     </div>
                 </div>
                 <div class="card-body p-0">
@@ -356,20 +341,13 @@ $pageTitle = 'Doctor Dashboard - Nyalife HMS';
             <div class="card shadow-sm mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold">Upcoming Appointments</h6>
-                    <div class="card-header-actions">
+                    <div class="card-header-actions d-flex align-items-center">
                         <div class="btn-group-desktop">
                             <a href="<?= $baseUrl ?>/appointments" class="btn btn-sm">
                                 View All
                             </a>
                         </div>
-                        <div class="dropdown">
-                            <button class="card-header-menu-toggle dropdown-toggle" type="button" id="appointmentsMenuToggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="appointmentsMenuToggle">
-                                <li><a class="dropdown-item" href="<?= $baseUrl ?>/appointments"><i class="fas fa-list me-2"></i> View All</a></li>
-                            </ul>
-                        </div>
+
                     </div>
                 </div>
                 <div class="card-body">
@@ -443,11 +421,3 @@ $pageTitle = 'Doctor Dashboard - Nyalife HMS';
 </div>
 
 <!-- Bundled Assets -->
-<link rel="stylesheet" href="<?= AssetHelper::getCss('shared') ?>">
-<script src="<?= AssetHelper::getJs('runtime') ?>"></script>
-<script src="<?= AssetHelper::getJs('vendors') ?>"></script>
-<script src="<?= AssetHelper::getJs('shared') ?>"></script>
-<script src="<?= AssetHelper::getJs('app') ?>"></script>
-<script src="<?= AssetHelper::getJs('dashboard-doctor') ?>"></script>
-</body>
-</html>

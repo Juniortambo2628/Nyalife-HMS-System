@@ -33,7 +33,6 @@ $pageTitle = 'Dashboard - Nyalife HMS';
        <!-- Load FullCalendar CSS -->
        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="<?= $baseUrl ?>/assets/css/z-index.css">
     <link rel="stylesheet" href="<?= $baseUrl ?>/assets/css/nyalife-loader-unified.css">
     <link rel="stylesheet" href="<?= $baseUrl ?>/assets/css/footer.css">
     <link rel="stylesheet" href="<?= $baseUrl ?>/assets/css/layout-system.css">
@@ -43,6 +42,7 @@ $pageTitle = 'Dashboard - Nyalife HMS';
     <link href="<?= $baseUrl ?>/assets/css/notifications.css" rel="stylesheet">
     <link href="<?= $baseUrl ?>/assets/css/messages.css" rel="stylesheet">
     <link href="<?= $baseUrl ?>/assets/css/header-mobile.css" rel="stylesheet">
+    <link href="<?= $baseUrl ?>/assets/css/z-index.css" rel="stylesheet">
 
     <!-- Additional CSS -->
     <?php if (isset($styles)): ?>

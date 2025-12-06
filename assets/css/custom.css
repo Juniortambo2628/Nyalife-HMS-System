@@ -326,3 +326,55 @@
         padding: 10px 14px;
     }
 }
+
+/* 
+   --------------------------------------------------------------
+   Card Header Button Styling - Global Overrides 
+   --------------------------------------------------------------
+*/
+
+/* 1. Default Case & Colored Backgrounds: 
+   Since .card-header has a gradient by default in this theme, 
+   buttons should default to White Outline.
+*/
+.card-header .btn,
+.card-header[class*="bg-"] .btn,
+.card-header[style*="gradient"] .btn {
+    border-radius: 50px !important; /* Pill shape */
+    background-color: transparent !important;
+    border-color: rgba(255, 255, 255, 0.8) !important;
+    color: white !important;
+    box-shadow: none !important;
+}
+
+.card-header .btn:hover,
+.card-header[class*="bg-"] .btn:hover,
+.card-header[style*="gradient"] .btn:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    border-color: white !important;
+    color: white !important;
+}
+
+/* 2. White/Transparent Background Case:
+   Only when explicitly white/light/transparent.
+   Rule: Green Font, Green Outline, Transparent BG.
+*/
+.card-header.bg-white .btn,
+.card-header.bg-light .btn,
+.card-header.bg-transparent .btn {
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+    background-color: transparent !important;
+}
+
+.card-header.bg-white .btn:hover,
+.card-header.bg-light .btn:hover,
+.card-header.bg-transparent .btn:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+/* Ensure icons inherit the color */
+.card-header .btn i {
+    color: inherit !important;
+}

@@ -1,6 +1,6 @@
 {
   "files": {
-    "app.js": "assets/dist/js/app.d7bee0e1.js",
+    "app.js": "assets/dist/js/app.51be188a.js",
     "core.js": "assets/dist/js/core.c854199e.js",
     "dashboard-admin.js": "assets/dist/js/dashboard-admin.594d3c86.js",
     "dashboard-doctor.js": "assets/dist/js/dashboard-doctor.e3e3b35e.js",
@@ -27,7 +27,7 @@
     "vendors.js": "assets/dist/js/vendors.fd2297c1.js",
     "shared.css": "assets/dist/css/shared.f92a9025.css",
     "shared.js": "assets/dist/js/shared.770056b3.js",
-    "app.d7bee0e1.js.map": "assets/dist/js/app.d7bee0e1.js.map",
+    "app.51be188a.js.map": "assets/dist/js/app.51be188a.js.map",
     "core.c854199e.js.map": "assets/dist/js/core.c854199e.js.map",
     "dashboard-admin.594d3c86.js.map": "assets/dist/js/dashboard-admin.594d3c86.js.map",
     "dashboard-doctor.e3e3b35e.js.map": "assets/dist/js/dashboard-doctor.e3e3b35e.js.map",

@@ -1,0 +1,65 @@
+---
+deployment:
+  tasks:
+    # ── Define paths ──────────────────────────────────────
+    - export REPODIR=/home1/nyalifew/repositories/Nyalife-HMS-System
+    - export COREDIR=/home1/nyalifew/nyalife_core
+    - export PUBLICDIR=/home1/nyalifew/public_html
+
+    # ── Create destination if first deploy ────────────────
+    - mkdir -p $COREDIR
+    - mkdir -p $COREDIR/storage/framework/{sessions,views,cache/data}
+    - mkdir -p $COREDIR/storage/logs
+    - mkdir -p $COREDIR/bootstrap/cache
+
+    # ── Deploy backend files to nyalife_core ──────────────
+    - /bin/cp -R $REPODIR/app $COREDIR/
+    - /bin/cp -R $REPODIR/bootstrap $COREDIR/
+    - /bin/cp -R $REPODIR/config $COREDIR/
+    - /bin/cp -R $REPODIR/database $COREDIR/
+    - /bin/cp -R $REPODIR/resources $COREDIR/
+    - /bin/cp -R $REPODIR/routes $COREDIR/
+    - /bin/cp -R $REPODIR/storage/app $COREDIR/storage/
+    - /bin/cp -f $REPODIR/artisan $COREDIR/
+    - /bin/cp -f $REPODIR/composer.json $COREDIR/
+    - /bin/cp -f $REPODIR/composer.lock $COREDIR/
+    - /bin/cp -f $REPODIR/package.json $COREDIR/
+    - /bin/cp -f $REPODIR/vite.config.js $COREDIR/
+    - /bin/cp -f $REPODIR/.editorconfig $COREDIR/ 2>/dev/null ; true
+    - /bin/cp -f $REPODIR/phpunit.xml $COREDIR/ 2>/dev/null ; true
+    - /bin/cp -f $REPODIR/tailwind.config.js $COREDIR/ 2>/dev/null ; true
+    - /bin/cp -R $REPODIR/Documents-from-clinic $COREDIR/ 2>/dev/null ; true
+
+    # ── Deploy public assets to public_html ───────────────
+    - /bin/cp -R $REPODIR/public/build $PUBLICDIR/
+    - /bin/cp -R $REPODIR/public/assets $PUBLICDIR/
+    - /bin/cp -f $REPODIR/public/favicon.ico $PUBLICDIR/ 2>/dev/null ; true
+    - /bin/cp -f $REPODIR/public/robots.txt $PUBLICDIR/ 2>/dev/null ; true
+
+    # ── Create bridge index.php (only if missing) ─────────
+    - >
+      test -f $PUBLICDIR/index.php && grep -q 'nyalife_core' $PUBLICDIR/index.php || 
+      /bin/cp -f $REPODIR/docs/production/index.php $PUBLICDIR/index.php
+    - >
+      test -f $PUBLICDIR/.htaccess && grep -q 'HTTPS' $PUBLICDIR/.htaccess ||
+      /bin/cp -f $REPODIR/docs/production/.htaccess $PUBLICDIR/.htaccess
+
+    # ── Install Composer dependencies ─────────────────────
+    - cd $COREDIR && composer install --no-dev --optimize-autoloader --no-interaction 2>&1
+
+    # ── Run migrations ────────────────────────────────────
+    - cd $COREDIR && php artisan migrate --force 2>&1
+
+    # ── Optimize caches ──────────────────────────────────
+    - cd $COREDIR && php artisan config:cache
+    - cd $COREDIR && php artisan route:cache
+    - cd $COREDIR && php artisan view:cache
+
+    # ── Fix permissions ──────────────────────────────────
+    - chmod -R 775 $COREDIR/storage
+    - chmod -R 775 $COREDIR/bootstrap/cache
+
+    # ── Create storage symlink if needed ─────────────────
+    - >
+      test -L $PUBLICDIR/storage || 
+      ln -sf $COREDIR/storage/app/public $PUBLICDIR/storage

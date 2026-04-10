@@ -1,4 +1,0 @@
-[2025-08-14 01:11:42] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/ValidationController.php
-[2025-08-14 01:11:55] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/ValidationController.php
-[2025-08-14 01:12:08] [ERROR] [System error in WebRouter::dispatch] Controller file not found: C:\xampp\htdocs\Nyalife-HMS-System\includes\core/../controllers/web/ValidationController.php
-[2025-08-14 03:36:04] [ERROR] [Database error in VitalSignModel::create] Unknown column 'pulse_rate' in 'field list'

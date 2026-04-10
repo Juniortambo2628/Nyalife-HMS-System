@@ -1,196 +1,183 @@
 <?php
-/**
- * Nyalife HMS Database Configuration
- * 
- * This file contains the configuration settings for the database connection.
- */
 
-if (!function_exists('connectDB')) {
-    function connectDB() {
-        // Check if we're in development environment (localhost)
-        $isLocal = (isset($_SERVER['HTTP_HOST']) && 
-                   ($_SERVER['HTTP_HOST'] === 'localhost' || 
-                    strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false));
-        
-        if ($isLocal) {
-            // Use XAMPP default credentials for local development
-            $host = 'localhost';
-            $user = 'root';
-            $pass = '';
-            $name = 'nyalifew_hms_prod';
-        } else {
-            // Load DB credentials from .env variables with fallbacks for production
-            $host = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?? 'localhost';
-            $user = $_ENV['DB_USER'] ?? getenv('DB_USER') ?? 'nyalifew_admin_prod';
-            $pass = $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?? 'NYALIFEADMIN123';
-            $name = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?? 'nyalifew_hms_prod';
-        }
+use Illuminate\Support\Str;
 
-        $conn = new mysqli($host, $user, $pass, $name);
+return [
 
-        // Check connection
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Default Database Connection Name
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify which of the database connections below you wish
+    | to use as your default connection for database operations. This is
+    | the connection which will be utilized unless another connection
+    | is explicitly specified when you execute a query / statement.
+    |
+    */
 
-        $conn->set_charset("utf8mb4");
-        return $conn;
-    }
-}
+    'default' => env('DB_CONNECTION', 'sqlite'),
 
-// Function to sanitize input data
-if (!function_exists('sanitize')) {
-    function sanitize($conn, $data) {
-        if (is_array($data)) {
-            foreach ($data as $key => $value) {
-                $data[$key] = sanitize($conn, $value);
-            }
-        } else {
-            $data = trim($data);
-            $data = stripslashes($data);
-            $data = htmlspecialchars($data);
-            $data = $conn->real_escape_string($data);
-        }
-        return $data;
-    }
-}
+    /*
+    |--------------------------------------------------------------------------
+    | Database Connections
+    |--------------------------------------------------------------------------
+    |
+    | Below are all of the database connections defined for your application.
+    | An example configuration is provided for each database system which
+    | is supported by Laravel. You're free to add / remove connections.
+    |
+    */
 
-// Common database operations
+    'connections' => [
 
-// Function to execute a SELECT query and return results as an associative array
-if (!function_exists('selectQuery')) {
-    function selectQuery($sql, $params = []) {
-        $conn = connectDB();
-        $result = [];
-        
-        try {
-            $stmt = $conn->prepare($sql);
-            
-            if ($stmt) {
-                if (!empty($params)) {
-                    $types = '';
-                    $bindParams = [];
-                    
-                    foreach ($params as $key => $param) {
-                        if (is_int($param)) {
-                            $types .= 'i';
-                        } elseif (is_float($param)) {
-                            $types .= 'd';
-                        } elseif (is_string($param)) {
-                            $types .= 's';
-                        } else {
-                            $types .= 'b';
-                        }
-                        // Store by reference in array
-                        $bindParams[] = &$params[$key];
-                    }
-                    
-                    // Create a dynamic call to bind_param with proper references
-                    $refParams = array_merge(array($types), $bindParams);
-                    call_user_func_array(array($stmt, 'bind_param'), $refParams);
-                }
-                
-                $stmt->execute();
-                $query_result = $stmt->get_result();
-                
-                if ($query_result) {
-                    while ($row = $query_result->fetch_assoc()) {
-                        $result[] = $row;
-                    }
-                }
-                
-                $stmt->close();
-            }
-        } catch (Exception $e) {
-            error_log("Database error: " . $e->getMessage());
-        }
-        
-        $conn->close();
-        return $result;
-    }
-}
+        'sqlite' => [
+            'driver' => 'sqlite',
+            'url' => env('DB_URL'),
+            'database' => env('DB_DATABASE', database_path('database.sqlite')),
+            'prefix' => '',
+            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+            'busy_timeout' => null,
+            'journal_mode' => null,
+            'synchronous' => null,
+            'transaction_mode' => 'DEFERRED',
+        ],
 
-// Function to execute an INSERT, UPDATE, or DELETE query
-if (!function_exists('executeQuery')) {
-    function executeQuery($sql, $params = []) {
-        $conn = connectDB();
-        $result = false;
-        
-        try {
-            $stmt = $conn->prepare($sql);
-            
-            if ($stmt) {
-                if (!empty($params)) {
-                    $types = '';
-                    $bindParams = [];
-                    
-                    foreach ($params as $key => $param) {
-                        if (is_int($param)) {
-                            $types .= 'i';
-                        } elseif (is_float($param)) {
-                            $types .= 'd';
-                        } elseif (is_string($param)) {
-                            $types .= 's';
-                        } else {
-                            $types .= 'b';
-                        }
-                        // Store by reference in array
-                        $bindParams[] = &$params[$key];
-                    }
-                    
-                    // Create a dynamic call to bind_param with proper references
-                    $refParams = array_merge(array($types), $bindParams);
-                    call_user_func_array(array($stmt, 'bind_param'), $refParams);
-                }
-                
-                $result = $stmt->execute();
-                
-                if ($result && strpos(strtoupper($sql), 'INSERT') === 0) {
-                    $result = $stmt->insert_id;
-                }
-                
-                $stmt->close();
-            }
-        } catch (Exception $e) {
-            error_log("Database error: " . $e->getMessage());
-        }
-        
-        $conn->close();
-        return $result;
-    }
-}
+        'mysql' => [
+            'driver' => 'mysql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
 
-// Function to get a single row from a SELECT query
-if (!function_exists('selectSingle')) {
-    function selectSingle($sql, $params = []) {
-        $result = selectQuery($sql, $params);
-        return !empty($result) ? $result[0] : null;
-    }
-}
+        'mariadb' => [
+            'driver' => 'mariadb',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
 
-// Function to begin a transaction
-if (!function_exists('beginTransaction')) {
-    function beginTransaction() {
-        $conn = connectDB();
-        $conn->begin_transaction();
-        return $conn;
-    }
-}
+        'pgsql' => [
+            'driver' => 'pgsql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '5432'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('DB_SSLMODE', 'prefer'),
+        ],
 
-// Function to commit a transaction
-if (!function_exists('commitTransaction')) {
-    function commitTransaction($conn) {
-        $success = $conn->commit();
-        $conn->close();
-        return $success;
-    }
-}
+        'sqlsrv' => [
+            'driver' => 'sqlsrv',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', 'localhost'),
+            'port' => env('DB_PORT', '1433'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            // 'encrypt' => env('DB_ENCRYPT', 'yes'),
+            // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
+        ],
 
-// Function to rollback a transaction
-if (!function_exists('rollbackTransaction')) {
-    function rollbackTransaction($conn) {
-        $success = $conn->rollback();
-        $conn->close();
-        return $success;
-    }
-}
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Migration Repository Table
+    |--------------------------------------------------------------------------
+    |
+    | This table keeps track of all the migrations that have already run for
+    | your application. Using this information, we can determine which of
+    | the migrations on disk haven't actually been run on the database.
+    |
+    */
+
+    'migrations' => [
+        'table' => 'migrations',
+        'update_date_on_publish' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Redis Databases
+    |--------------------------------------------------------------------------
+    |
+    | Redis is an open source, fast, and advanced key-value store that also
+    | provides a richer body of commands than a typical key-value system
+    | such as Memcached. You may define your connection settings here.
+    |
+    */
+
+    'redis' => [
+
+        'client' => env('REDIS_CLIENT', 'phpredis'),
+
+        'options' => [
+            'cluster' => env('REDIS_CLUSTER', 'redis'),
+            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
+            'persistent' => env('REDIS_PERSISTENT', false),
+        ],
+
+        'default' => [
+            'url' => env('REDIS_URL'),
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
+            'password' => env('REDIS_PASSWORD'),
+            'port' => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_DB', '0'),
+            'max_retries' => env('REDIS_MAX_RETRIES', 3),
+            'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
+            'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
+            'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
+        ],
+
+        'cache' => [
+            'url' => env('REDIS_URL'),
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
+            'password' => env('REDIS_PASSWORD'),
+            'port' => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_CACHE_DB', '1'),
+            'max_retries' => env('REDIS_MAX_RETRIES', 3),
+            'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
+            'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
+            'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
+        ],
+
+    ],
+
+];

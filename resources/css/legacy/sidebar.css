@@ -1,0 +1,555 @@
+/**
+ * Nyalife HMS - Sidebar Styles
+ * Role-based collapsible sidebar with notification badges
+ */
+
+/* Restrict html and body to viewport height with no margins on all pages with sidebar */
+/* Exclude auth and landing pages */
+body.has-sidebar:not(.auth-page):not(.landing),
+.has-sidebar body:not(.auth-page):not(.landing) {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Sidebar Container - Fixed positioning to ensure it stays sticky */
+.nyalife-sidebar {
+    position: fixed !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    height: 100vh !important;
+    width: 260px;
+    background: linear-gradient(180deg, #e91e63 0%, #c2185b 100%);
+    color: white;
+    z-index: 100 !important;
+    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    /* Ensure sidebar stays fixed and sticky during scroll */
+    will-change: transform;
+    transform: translateZ(0);
+    /* Prevent any layout shifts and ensure proper rendering */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    /* Ensure sidebar is positioned relative to viewport, not any parent */
+    isolation: isolate;
+    /* Force full height - ensure no gaps */
+    box-sizing: border-box !important;
+}
+
+/* Sidebar when collapsed (shows only icons - 70px width) */
+.nyalife-sidebar.collapsed {
+    width: 70px !important;
+}
+
+.nyalife-sidebar.collapsed .sidebar-toggle-btn {
+    right: 18px !important;
+}
+
+.nyalife-sidebar.collapsed .sidebar-toggle-btn i {
+    transform: rotate(180deg) !important;
+}
+
+.nyalife-sidebar.collapsed .sidebar-logo,
+.nyalife-sidebar.collapsed .logo-text,
+.nyalife-sidebar.collapsed .logo-brand,
+.nyalife-sidebar.collapsed .logo-subtitle,
+.nyalife-sidebar.collapsed .sidebar-text {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    overflow: hidden !important;
+}
+
+.nyalife-sidebar.collapsed .sidebar-header {
+    padding: 20px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.nyalife-sidebar.collapsed .logo-img {
+    max-width: 40px;
+}
+
+.nyalife-sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 15px 10px;
+}
+
+.nyalife-sidebar.collapsed .sidebar-icon {
+    margin: 0;
+}
+
+.nyalife-sidebar.collapsed .menu-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e91e63;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+    background: #f8f9fa;
+    transform: scale(1.05);
+}
+
+.sidebar-toggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.25);
+}
+
+/* Update toggle position when sidebar is collapsed */
+.nyalife-sidebar.collapsed + .sidebar-toggle,
+.sidebar-toggle {
+    transition: left 0.3s ease;
+}
+
+.nyalife-sidebar.collapsed ~ .sidebar-toggle {
+    left: 15px;
+}
+
+/* Sidebar Content */
+.sidebar-content {
+    padding: 20px 0;
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle-btn {
+    position: absolute;
+    top: 15px;
+    right: 10px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e91e63;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1001;
+}
+
+.sidebar-toggle-btn:hover {
+    background: #f8f9fa;
+    transform: scale(1.05);
+}
+
+.sidebar-toggle-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.25);
+}
+
+.sidebar-toggle-btn i {
+    transition: transform 0.3s ease;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    padding: 20px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 15px;
+    flex-shrink: 0;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.logo-img {
+    max-width: calc(100% - 40px);
+    height: auto;
+    max-height: 50px;
+    object-fit: contain;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+.logo-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.logo-subtitle {
+    font-size: 0.7rem;
+    opacity: 0.9;
+    letter-spacing: 2px;
+}
+
+.sidebar-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+    text-transform: capitalize;
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+    padding: 0 10px;
+    flex: 1 1 auto !important;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0 !important;
+    /* Ensure nav fills available space and extends to bottom */
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    /* Ensure menu extends to bottom - no whitespace */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-menu-item {
+    margin-bottom: 10px;
+}
+
+/* Remove margin from last menu item to prevent bottom whitespace */
+.sidebar-menu-item:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* Sidebar Links */
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    position: relative;
+    background: transparent;
+    font-weight: 500;
+    gap: 12px;
+    min-height: 48px;
+}
+
+/* Inactive Link Styles */
+.sidebar-link {
+    background: transparent;
+    color: white;
+}
+
+/* Active Link Styles */
+.sidebar-link.active {
+    background: white;
+    color: #e91e63;
+}
+
+.sidebar-link:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Sidebar Icon */
+.sidebar-icon {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+    margin-right: 12px;
+}
+
+/* Sidebar Text */
+.sidebar-text {
+    flex: 1;
+    white-space: nowrap;
+}
+
+/* Sidebar Tooltip - Pill shaped, white bubble, pink font */
+.sidebar-tooltip {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%) translateX(-15px);
+    background: white;
+    color: #e91e63;
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+    z-index: 2000;
+}
+
+.sidebar-link:hover .sidebar-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(10px);
+}
+
+/* Sidebar Badge */
+.sidebar-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: white;
+    color: #e91e63;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: auto;
+}
+
+/* Hidden badges by default */
+.sidebar-badge:empty,
+.sidebar-badge[data-count="0"] {
+    display: none;
+}
+
+/* Sidebar Overlay (for mobile) */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Main Content Wrapper - offset only when sidebar is present */
+/* Apply fixed height and scrollable overflow on all pages with sidebar (except auth/landing) */
+.has-sidebar:not(.auth-page):not(.landing) .main-content,
+.has-sidebar .main-content {
+    margin-left: 260px;
+    transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), padding 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100vh !important;
+    max-height: 100vh !important;
+    padding: 20px 30px;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box;
+}
+
+/* Auth and landing pages maintain normal scrolling */
+.auth-page .main-content,
+.landing .main-content {
+    min-height: 100vh;
+    overflow-y: visible;
+}
+
+.main-content-container {
+    transition: padding-left 0.3s ease;
+}
+
+/* Adjust main content when sidebar is collapsed (shows only icons - 70px) */
+.has-sidebar .nyalife-sidebar.collapsed ~ .main-content,
+.has-sidebar .nyalife-sidebar.collapsed .main-content {
+    margin-left: 70px;
+    /* Maintain scrollable height when collapsed on all pages with sidebar */
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow-y: auto !important;
+}
+
+/* Sidebar Toggle in Main Content Header */
+.sidebar-toggle-header {
+    position: fixed;
+    top: 80px;
+    left: 275px;
+    z-index: 999;
+    background: white;
+    border: none;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e91e63;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle-header:hover {
+    background: #f8f9fa;
+    transform: scale(1.05);
+}
+
+.sidebar-toggle-header:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.25);
+}
+
+/* Adjust toggle position when sidebar is collapsed */
+.has-sidebar .nyalife-sidebar.collapsed ~ .main-content .sidebar-toggle-header,
+.has-sidebar .sidebar-toggle-header {
+    left: 85px;
+}
+
+/* Breadcrumb Styles */
+.breadcrumb-container {
+    background: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.breadcrumb {
+    margin: 0;
+    background: transparent;
+    padding: 0;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item a {
+    color: #e91e63;
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+    color: #6c757d;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "/";
+    color: #6c757d;
+    padding: 0 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nyalife-sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .nyalife-sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        padding: 15px !important;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    .info-modal-panel {
+        min-height: auto !important;
+        border-radius: 0 !important;
+    }
+}
+
+/* Modal Sidebar Alignment - Center relative to visible screen */
+@media (min-width: 769px) {
+    body.has-sidebar .info-modal-panel {
+        transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-left: 130px; /* Offset by half sidebar width */
+    }
+    
+    body.has-sidebar.sidebar-collapsed .info-modal-panel {
+        margin-left: 35px; /* Offset by half collapsed sidebar width */
+    }
+}
+
+/* Scrollbar Styling */
+.nyalife-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.nyalife-sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nyalife-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.nyalife-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Animation for badge updates */
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.sidebar-badge.updated {
+    animation: badgePulse 0.5s ease;
+}
+

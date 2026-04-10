@@ -1,1 +1,0 @@
-[2025-07-06 06:45:45] [ERROR] [Database error in UserModel::getAllDoctors] Unknown column 'u.phone_number' in 'field list'

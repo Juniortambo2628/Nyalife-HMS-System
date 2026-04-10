@@ -1,1 +1,54 @@
-node_modules
+*.log
+.DS_Store
+.env
+.env.backup
+.env.production
+.env.local
+.phpactor.json
+.phpunit.result.cache
+
+# IDE
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+
+# Auth
+/auth.json
+
+# Dependencies
+/node_modules
+/vendor
+
+# Build output
+/public/build
+/public/hot
+/public/storage
+
+# Storage keys
+/storage/*.key
+/storage/pail
+
+# Legacy/backup
+/legacy_backup
+
+# OS files
+Homestead.json
+Homestead.yaml
+Thumbs.db
+desktop.ini
+
+# Temp/scratch/debug scripts
+inspect_excel.php
+read_docs.php
+verify_*.php
+views_implementation_report.json
+webpack.config.js
+*.swp
+*.swo
+*~
+
+# SQL dumps (sensitive)
+*.sql

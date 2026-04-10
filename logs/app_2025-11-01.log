@@ -1,1 +1,0 @@
-[2025-11-01 04:24:28] [ERROR] [Database error in PatientModel::create] Duplicate entry '' for key 'patients.patient_number'

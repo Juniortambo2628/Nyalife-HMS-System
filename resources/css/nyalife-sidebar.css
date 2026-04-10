@@ -1,0 +1,462 @@
+/**
+ * Nyalife HMS - Redesigned Sidebar Styles
+ * Fresh sidebar implementation with proper z-index layering
+ */
+
+/* ============================================
+   Z-INDEX HIERARCHY (properly ordered)
+   ============================================
+   - Sidebar: 100
+   - Sidebar Overlay: 99
+   - Modal Backdrop: 1040
+   - Modal: 1050
+   - Dropdown: 1060
+   - Tooltip: 1070
+   ============================================ */
+
+:root {
+    --nyl-sidebar-width: 260px;
+    --nyl-sidebar-width-collapsed: 70px;
+    --nyl-sidebar-bg: linear-gradient(180deg, #e91e63 0%, #c2185b 100%);
+    --nyl-sidebar-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --nyl-sidebar-z-index: 100;
+    --nyl-overlay-z-index: 99;
+    --nyl-modal-backdrop-z-index: 1040;
+    --nyl-modal-z-index: 1050;
+}
+
+/* ============================================
+   SIDEBAR BASE
+   ============================================ */
+
+.nyalife-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--nyl-sidebar-width);
+    height: 100vh;
+    background: var(--nyl-sidebar-bg);
+    color: white;
+    z-index: var(--nyl-sidebar-z-index);
+    transition: width var(--nyl-sidebar-transition);
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ============================================
+   SIDEBAR COLLAPSED STATE
+   ============================================ */
+
+.nyalife-sidebar.collapsed {
+    width: var(--nyl-sidebar-width-collapsed);
+}
+
+/* Hide text elements completely when collapsed */
+.nyalife-sidebar.collapsed .sidebar-text,
+.nyalife-sidebar.collapsed .logo-text,
+.nyalife-sidebar.collapsed .logo-brand,
+.nyalife-sidebar.collapsed .logo-subtitle {
+    opacity: 0;
+    width: 0;
+    visibility: hidden;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity 0.15s ease, width 0.15s ease, visibility 0.15s ease;
+}
+
+.nyalife-sidebar.collapsed .sidebar-header {
+    padding: 20px 15px;
+    justify-content: center;
+}
+
+.nyalife-sidebar.collapsed .sidebar-logo {
+    justify-content: center;
+}
+
+.nyalife-sidebar.collapsed .logo-img {
+    max-width: 35px;
+}
+
+.nyalife-sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 14px 0;
+    text-align: center;
+}
+
+.nyalife-sidebar.collapsed .sidebar-icon {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.nyalife-sidebar.collapsed .sidebar-toggle-btn {
+    right: 50%;
+    transform: translateX(50%);
+}
+
+.nyalife-sidebar.collapsed .sidebar-toggle-btn i {
+    transform: rotate(180deg);
+}
+
+/* ============================================
+   SIDEBAR TOGGLE BUTTON
+   ============================================ */
+
+.sidebar-toggle-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e91e63;
+    font-size: 0.85rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.sidebar-toggle-btn:hover {
+    background: #f8f9fa;
+    transform: scale(1.1);
+}
+
+.sidebar-toggle-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.25);
+}
+
+.sidebar-toggle-btn i {
+    transition: transform 0.3s ease;
+}
+
+/* ============================================
+   SIDEBAR HEADER
+   ============================================ */
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-img {
+    max-width: 180px;
+    max-height: 45px;
+    height: auto;
+    object-fit: contain;
+    transition: max-width 0.3s ease;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+.logo-brand {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.logo-subtitle {
+    font-size: 0.65rem;
+    opacity: 0.85;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* ============================================
+   SIDEBAR NAVIGATION
+   ============================================ */
+
+.sidebar-nav {
+    flex: 1;
+    padding: 0 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu-item {
+    margin-bottom: 6px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 13px 16px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    font-weight: 500;
+    font-size: 0.9rem;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+}
+
+.sidebar-link.active {
+    background: white;
+    color: #e91e63;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-icon {
+    font-size: 1rem;
+    width: 22px;
+    text-align: center;
+    flex-shrink: 0;
+    transition: margin 0.3s ease;
+}
+
+.sidebar-text {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+/* ============================================
+   SIDEBAR TOOLTIP (for collapsed state)
+   ============================================ */
+
+.nyalife-sidebar.collapsed .sidebar-link::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    color: #e91e63;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.nyalife-sidebar.collapsed .sidebar-link:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ============================================
+   SIDEBAR OVERLAY (Mobile)
+   ============================================ */
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: var(--nyl-overlay-z-index);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* ============================================
+   MAIN CONTENT AREA
+   ============================================ */
+
+.has-sidebar .main-content {
+    margin-left: var(--nyl-sidebar-width);
+    min-height: 100vh;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 24px 30px;
+    transition: margin-left var(--nyl-sidebar-transition);
+    box-sizing: border-box;
+}
+
+.has-sidebar.sidebar-collapsed .main-content,
+.sidebar-collapsed .main-content {
+    margin-left: var(--nyl-sidebar-width-collapsed);
+}
+
+/* Mobile toggle button in header */
+.sidebar-toggle-header {
+    display: none;
+}
+
+/* ============================================
+   MODAL Z-INDEX FIXES
+   ============================================ */
+
+/* HeadlessUI Dialog overlay and modal */
+[id="modal"],
+[role="dialog"] {
+    z-index: var(--nyl-modal-z-index) !important;
+}
+
+/* Modal backdrop */
+[id="modal"] > div:first-child,
+[role="dialog"] > div:first-child {
+    z-index: var(--nyl-modal-backdrop-z-index) !important;
+}
+
+/* Modal panel - ensure it's above backdrop */
+[data-headlessui-state] [class*="DialogPanel"],
+.info-modal-panel {
+    z-index: calc(var(--nyl-modal-z-index) + 1) !important;
+    position: relative;
+}
+
+/* Ensure modal content is clickable */
+[role="dialog"] [role="button"],
+[role="dialog"] button,
+[role="dialog"] a,
+[role="dialog"] input,
+[role="dialog"] select,
+[role="dialog"] textarea {
+    position: relative;
+    z-index: calc(var(--nyl-modal-z-index) + 5);
+}
+
+/* Fix for Tailwind z-50 being too low */
+.fixed.z-50 {
+    z-index: var(--nyl-modal-z-index) !important;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+.nyalife-sidebar::-webkit-scrollbar,
+.sidebar-nav::-webkit-scrollbar {
+    width: 5px;
+}
+
+.nyalife-sidebar::-webkit-scrollbar-track,
+.sidebar-nav::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nyalife-sidebar::-webkit-scrollbar-thumb,
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+}
+
+.nyalife-sidebar::-webkit-scrollbar-thumb:hover,
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* ============================================
+   RESPONSIVE - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .nyalife-sidebar {
+        transform: translateX(-100%);
+        width: var(--nyl-sidebar-width);
+    }
+
+    .nyalife-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .nyalife-sidebar.collapsed {
+        width: var(--nyl-sidebar-width);
+    }
+
+    .nyalife-sidebar.collapsed .sidebar-text,
+    .nyalife-sidebar.collapsed .logo-text {
+        opacity: 1;
+        width: auto;
+        visibility: visible;
+    }
+
+    .nyalife-sidebar.collapsed .sidebar-link {
+        justify-content: flex-start;
+        padding: 13px 16px;
+    }
+
+    .has-sidebar .main-content,
+    .has-sidebar.sidebar-collapsed .main-content,
+    .sidebar-collapsed .main-content {
+        margin-left: 0;
+        padding: 20px 15px;
+    }
+
+    .sidebar-toggle-header {
+        display: flex;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 90;
+        background: white;
+        border: none;
+        border-radius: 10px;
+        width: 42px;
+        height: 42px;
+        align-items: center;
+        justify-content: center;
+        color: #e91e63;
+        font-size: 1.2rem;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .sidebar-toggle-btn {
+        display: none;
+    }
+}
+
+/* ============================================
+   BODY STATE CLASSES
+   ============================================ */
+
+body.has-sidebar {
+    overflow: hidden;
+}
+
+body.has-sidebar:not(.auth-page):not(.landing) {
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}

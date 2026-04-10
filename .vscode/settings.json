@@ -1,16 +1,9 @@
 {
-  "files.associations": {
-    "*.sql": "sql"
+  "intelephense.files.exclude": [
+    "**/legacy_backup/**"
+  ],
+  "files.exclude": {
+    "**/legacy_backup": true
   },
-  "sql.dialect": "MySQL",
-  "sql.format.dialect": "MySQL",
-  "sql.validate.enable": true,
-  "sql.validate.dialect": "MySQL",
-  "sql.format.enable": true,
-  "sql.format.keywordCase": "upper",
-  "sql.format.identifierCase": "lower",
-  "sql.format.dataTypeCase": "upper",
-  "sql.format.functionCase": "upper",
-  "editor.tabCompletion": "on",
-  "diffEditor.codeLens": true
+  "git.ignoreLimitWarning": true
 }

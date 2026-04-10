@@ -1,0 +1,201 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\QuickStorePatientRequest;
+use App\Http\Requests\StorePatientRequest;
+use App\Http\Requests\UpdatePatientRequest;
+use App\Http\Resources\PatientResource;
+use App\Models\Patient;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
+
+class PatientController extends Controller
+{
+    /**
+     * Display a listing of patients.
+     */
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $query = Patient::with(['user', 'appointments' => function ($q) {
+            $q->latest()->limit(5);
+        }]);
+
+        if ($user && in_array($user->role, ['doctor', 'admin'])) {
+            $query->with(['consultations' => function ($q) {
+                $q->latest()->limit(5);
+            }]);
+        }
+
+        if ($user && $user->role === 'patient') {
+            $query->where('user_id', $user->user_id);
+        }
+
+        $patients = $query->searchByUserName($request->search)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+        
+        return Inertia::render('Patients/Index', [
+            'patients' => PatientResource::collection($patients),
+            'filters' => $request->only(['search']),
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new patient.
+     */
+    public function create()
+    {
+        return Inertia::render('Patients/Create');
+    }
+
+    /**
+     * Store a newly created patient.
+     */
+    public function store(StorePatientRequest $request)
+    {
+        $validated = $request->validated();
+
+        // Create user account
+        $user = User::create([
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'username' => strtolower($validated['first_name'] . '.' . $validated['last_name']),
+            'password' => Hash::make('password123'), // Default password
+            'role_id' => \App\Models\Role::where('role_name', 'patient')->first()->role_id ?? 7,
+            'is_active' => true,
+        ]);
+        
+        // Create patient record
+        Patient::create([
+            'user_id' => $user->user_id,
+            'date_of_birth' => $validated['date_of_birth'],
+            'gender' => $validated['gender'],
+            'address' => $validated['address'] ?? null,
+            'blood_group' => $validated['blood_group'] ?? null,
+            'emergency_contact' => $validated['emergency_contact'] ?? null,
+        ]);
+        
+        return redirect()->route('patients.index')
+                         ->with('success', 'Patient registered successfully.');
+    }
+
+    /**
+     * Display the specified patient.
+     */
+    public function show($id)
+    {
+        $user = Auth::user();
+
+        $with = [
+            'user', 
+            'appointments.doctor.user',
+            'vitals',
+        ];
+
+        if ($user && in_array($user->role, ['doctor', 'admin'])) {
+            $with[] = 'consultations.doctor.user';
+            $with[] = 'prescriptions.items';
+        }
+
+        $patient = Patient::with($with)->findOrFail($id);
+        
+        return Inertia::render('Patients/Show', [
+            'patient' => PatientResource::make($patient),
+        ]);
+    }
+
+    /**
+     * Update the specified patient.
+     */
+    public function update(UpdatePatientRequest $request, $id)
+    {
+        $patient = Patient::with('user')->findOrFail($id);
+        $validated = $request->validated();
+
+        // Update user
+        if (isset($validated['first_name']) || isset($validated['last_name']) || isset($validated['phone'])) {
+            $patient->user->update([
+                'first_name' => $validated['first_name'] ?? $patient->user->first_name,
+                'last_name' => $validated['last_name'] ?? $patient->user->last_name,
+                'phone' => $validated['phone'] ?? $patient->user->phone,
+            ]);
+        }
+        
+        // Update patient
+        $patient->update([
+            'address' => $validated['address'] ?? $patient->address,
+            'blood_group' => $validated['blood_group'] ?? $patient->blood_group,
+            'emergency_contact' => $validated['emergency_contact'] ?? $patient->emergency_contact,
+        ]);
+        
+        return redirect()->back()->with('success', 'Patient updated successfully.');
+    }
+
+    /**
+     * Store a newly created patient (Quick Create version).
+     */
+    public function quickStore(QuickStorePatientRequest $request)
+    {
+        $validated = $request->validated();
+
+        $email = $validated['email'] ?? strtolower($validated['first_name'] . '.' . $validated['last_name'] . '.' . time() . '@nyalife.com');
+
+        $user = User::create([
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'email' => $email,
+            'phone' => $validated['phone'],
+            'username' => strtolower($validated['first_name'] . '.' . $validated['last_name'] . '.' . time()),
+            'password' => Hash::make('password123'),
+            'role_id' => \App\Models\Role::where('role_name', 'patient')->first()->role_id ?? 7,
+            'is_active' => true,
+        ]);
+        
+        // Create patient record
+        $patient = Patient::create([
+            'user_id' => $user->user_id,
+            'date_of_birth' => $validated['date_of_birth'],
+            'gender' => $validated['gender'],
+            'patient_number' => 'PAT-' . date('Ymd') . '-' . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'patient_id' => $patient->patient_id,
+            'full_name' => $user->first_name . ' ' . $user->last_name,
+            'message' => 'Patient created successfully.'
+        ]);
+    }
+
+    /**
+     * Search patients for AJAX selects.
+     */
+    public function searchAjax(Request $request)
+    {
+        $search = $request->query('q');
+        
+        $patients = Patient::with('user')
+            ->whereHas('user', function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
+            })
+            ->orWhere('patient_id', 'like', "%{$search}%")
+            ->limit(20)
+            ->get();
+            
+        return response()->json($patients->map(function($p) {
+            return [
+                'value' => $p->patient_id,
+                'label' => $p->user->first_name . ' ' . $p->user->last_name . ' (PAT-' . $p->patient_id . ')',
+                'id' => $p->patient_id
+            ];
+        }));
+    }
+}

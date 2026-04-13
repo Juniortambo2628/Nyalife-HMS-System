@@ -121,10 +121,10 @@ export default function AuthenticatedLayout({ header, children }) {
         initDropdowns();
     }, [sidebarCollapsed]);
 
-    // Get display name
-    const displayName = user.first_name && user.last_name 
+    // Get display name (safely)
+    const displayName = (user && user.first_name && user.last_name)
         ? `${user.first_name} ${user.last_name}` 
-        : user.name || user.username || 'User';
+        : (user?.name || user?.username || 'User');
 
     return (
         <div className={`has-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -139,7 +139,10 @@ export default function AuthenticatedLayout({ header, children }) {
                 <div className="sidebar-header h-auto">
                     <div className="sidebar-logo h-auto">
                         <img src="/assets/img/logo/Logo2-transparent.png" alt="Nyalife HMS" className="logo-img rounded-2" 
-                             onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
+                             onError={(e) => { 
+                                 if (e.target) e.target.style.display = 'none'; 
+                                 if (e.target?.nextElementSibling) e.target.nextElementSibling.style.display = 'flex'; 
+                             }} />
                     </div>
                 </div>
                 

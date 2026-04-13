@@ -94,9 +94,9 @@ export default function Medicines({ medicines, filters, auth }) {
 
             <div className="py-0">
                 <div className="row g-4">
-                    {medicines.data.length > 0 ? (
-                        medicines.data.map((med) => (
-                            <div key={med.medication_id} className="col-md-3">
+                    {medicines.data && medicines.data.length > 0 ? (
+                        medicines.data.filter(med => med !== null).map((med) => (
+                            <div key={med.medication_id || `med-${Math.random()}`} className="col-md-3">
                                 <div className="card h-100 shadow-sm border-0 rounded-2xl bg-white overflow-hidden hover-lift p-4 text-center">
                                     <div className="avatar-lg bg-soft-success text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style={{ width: '48px', height: '48px' }}>
                                         <i className="fas fa-pills fs-5"></i>

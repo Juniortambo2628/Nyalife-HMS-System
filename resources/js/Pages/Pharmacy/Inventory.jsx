@@ -1,10 +1,5 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router, useForm } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
-import Pagination from '@/Components/Pagination';
-import Modal from '@/Components/Modal';
-import DashboardSearch from '@/Components/DashboardSearch';
-import { useState } from 'react';
+import DashboardTable from '@/Components/DashboardTable';
+import { useMemo } from 'react';
 
 export default function Inventory({ inventory, filters, auth }) {
     const [search, setSearch] = useState(filters?.search || '');
@@ -41,6 +36,45 @@ export default function Inventory({ inventory, filters, auth }) {
         });
     };
 
+    const columns = useMemo(() => [
+        {
+            header: 'Medicine Name',
+            accessorKey: 'medication_name',
+            cell: ({ row }) => <span className="fw-bold">{row.original.medication_name || 'N/A'}</span>
+        },
+        {
+            header: 'Type',
+            accessorKey: 'medication_type',
+            cell: ({ row }) => <span className="text-muted">{row.original.medication_type || 'General'}</span>
+        },
+        {
+            header: 'Stock Level',
+            accessorKey: 'stock_quantity',
+            cell: ({ row }) => <span className="fw-semibold">{row.original.stock_quantity ?? 0} {row.original.unit || 'units'}</span>
+        },
+        {
+            header: 'Status',
+            accessorKey: 'status',
+            cell: ({ row }) => {
+                const isLow = (row.original.stock_quantity ?? 0) < 50;
+                return (
+                    <span className={`badge rounded-pill px-3 py-1 ${isLow ? 'bg-danger' : 'bg-success'}`}>
+                        {isLow ? 'Low Stock' : 'In Stock'}
+                    </span>
+                );
+            }
+        },
+        {
+            header: 'Actions',
+            id: 'actions',
+            cell: ({ row }) => (
+                <div className="text-end">
+                    <button onClick={() => openUpdateModal(row.original)} className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm transition-all hover-scale">Update Stock</button>
+                </div>
+            )
+        }
+    ], []);
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -61,50 +95,12 @@ export default function Inventory({ inventory, filters, auth }) {
             />
 
             <div className="py-0">
-                <div className="card shadow-sm border-0 rounded-xl overflow-hidden bg-white">
-                    <div className="table-responsive">
-                        <table className="table table-hover align-middle mb-0">
-                            <thead className="bg-light">
-                                <tr className="text-uppercase small tracking-wider">
-                                    <th className="px-4 py-3 text-muted">Medicine Name</th>
-                                    <th className="py-3 text-muted">Type</th>
-                                    <th className="py-3 text-muted">Stock Level</th>
-                                    <th className="py-3 text-muted">Status</th>
-                                    <th className="pe-4 py-3 text-end text-muted">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {inventory.data && inventory.data.length > 0 ? (
-                                    inventory.data.filter(item => item !== null).map((item) => (
-                                        <tr key={item.medication_id || `temp-${Math.random()}`}>
-                                            <td className="px-4 fw-bold">{item.medication_name || 'N/A'}</td>
-                                            <td className="text-muted">{item.medication_type || 'General'}</td>
-                                            <td className="font-semibold">{item.stock_quantity ?? 0} {item.unit || 'units'}</td>
-                                            <td>
-                                                <span className={`badge rounded-pill px-3 py-1 ${(item.stock_quantity ?? 0) < 50 ? 'bg-danger' : 'bg-success'}`}>
-                                                    {(item.stock_quantity ?? 0) < 50 ? 'Low Stock' : 'In Stock'}
-                                                </span>
-                                            </td>
-                                            <td className="pe-4 text-end">
-                                                <button onClick={() => openUpdateModal(item)} className="btn btn-sm btn-outline-primary rounded-pill px-3">Update Stock</button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="5" className="text-center py-5 text-muted">
-                                            No inventory items found.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div className="mt-4">
-                    <Pagination links={inventory.links} />
-                </div>
+                <DashboardTable 
+                    columns={columns}
+                    data={inventory.data || []}
+                    pagination={inventory}
+                    emptyMessage="No inventory items found."
+                />
             </div>
 
             <Modal show={showModal} onClose={closeModal} maxWidth="md">

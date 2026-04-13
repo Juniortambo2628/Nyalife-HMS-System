@@ -57,15 +57,24 @@ export default function DashboardSearch({
             <div className="d-flex flex-wrap gap-2 mt-2 px-2 overflow-auto no-scrollbar">
                 <small className="text-gray-400 font-bold uppercase tracking-wider align-middle pt-1 me-2" style={{fontSize: '0.65rem'}}>Quick Filters:</small>
                 {/* These could be passed as props later, hardcoding for now as examples or leaving empty context */}
-                <span className="badge rounded-pill bg-light text-gray-500 border px-3 py-2 cursor-pointer hover-bg-gray-100 transition-all font-semibold">Recently Added</span>
-                <span className="badge rounded-pill bg-light text-gray-500 border px-3 py-2 cursor-pointer hover-bg-gray-100 transition-all font-semibold">Active Only</span>
-                <span className="badge rounded-pill bg-light text-gray-500 border px-3 py-2 cursor-pointer hover-bg-gray-100 transition-all font-semibold">Archived</span>
+                <span className="badge rounded-pill nyl-filter-badge border px-3 py-2 cursor-pointer transition-all font-semibold">Recently Added</span>
+                <span className="badge rounded-pill nyl-filter-badge border px-3 py-2 cursor-pointer transition-all font-semibold">Active Only</span>
+                <span className="badge rounded-pill nyl-filter-badge border px-3 py-2 cursor-pointer transition-all font-semibold">Archived</span>
             </div>
         </div>
     );
 }
 
             <style>{`
+                .nyl-filter-badge {
+                    background-color: #fff;
+                    color: #e91e63;
+                    border-color: #e91e6333 !important;
+                }
+                .nyl-filter-badge:hover {
+                    background-color: #e91e63 !important;
+                    color: #fff !important;
+                }
                 .no-focus-outline:focus { outline: none !important; box-shadow: none !important; }
                 .shadow-hover:hover { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important; }
                 .hover-scale { transition: transform 0.2s; }

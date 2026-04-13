@@ -44,8 +44,16 @@ class LabController extends Controller
 
     public function tests()
     {
+        $labCategories = [
+            'Hematology', 'Chemistry', 'Reproductive', 'Serology', 
+            'Microbiology', 'Pathology', 'Parasitology', 'Biochemistry', 'Laboratory'
+        ];
+
         return Inertia::render('Lab/Tests', [
-            'tests' => LabTestType::all()
+            'tests' => LabTestType::whereIn('category', $labCategories)
+                ->where('is_active', true)
+                ->orderBy('test_name')
+                ->get()
         ]);
     }
 

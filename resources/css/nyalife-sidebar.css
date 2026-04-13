@@ -327,21 +327,24 @@
    ============================================ */
 
 /* HeadlessUI Dialog overlay and modal */
+[id="nyalife-modal"],
 [id="modal"],
 [role="dialog"] {
-    z-index: var(--nyl-modal-z-index) !important;
+    z-index: 10000 !important;
 }
 
-/* Modal backdrop */
+/* Modal backdrop - ensure it remains behind panel */
+#nyalife-modal [class*="TransitionChild"] div,
 [id="modal"] > div:first-child,
 [role="dialog"] > div:first-child {
-    z-index: var(--nyl-modal-backdrop-z-index) !important;
+    z-index: 1040 !important;
 }
 
 /* Modal panel - ensure it's above backdrop */
+#nyalife-modal [class*="DialogPanel"],
 [data-headlessui-state] [class*="DialogPanel"],
 .info-modal-panel {
-    z-index: calc(var(--nyl-modal-z-index) + 1) !important;
+    z-index: 1050 !important;
     position: relative;
 }
 

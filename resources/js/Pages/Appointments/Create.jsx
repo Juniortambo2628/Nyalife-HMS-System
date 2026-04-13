@@ -2,6 +2,9 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import DashboardSelect from '@/Components/DashboardSelect';
+import Modal from '@/Components/Modal';
+import axios from 'axios';
+import { useState } from 'react';
 
 export default function Create({ preselected_patient_id, preselected_patient_label, preselected_doctor_id, preselected_doctor_label, auth }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -14,6 +17,45 @@ export default function Create({ preselected_patient_id, preselected_patient_lab
         reason: '',
         notes: '',
     });
+
+    const [showQuickAdd, setShowQuickAdd] = useState(false);
+    const [quickData, setQuickData] = useState({
+        first_name: '',
+        last_name: '',
+        phone: '',
+        gender: 'female',
+        date_of_birth: '2000-01-01',
+    });
+    const [quickProcessing, setQuickProcessing] = useState(false);
+    const [quickErrors, setQuickErrors] = useState({});
+
+    const handleQuickAdd = async (e) => {
+        e.preventDefault();
+        setQuickProcessing(true);
+        setQuickErrors({});
+        
+        try {
+            const response = await axios.post(route('patients.quick-store'), quickData);
+            if (response.data.success) {
+                setData('patient_id', response.data.patient_id);
+                setShowQuickAdd(false);
+                // Optionally reset quickData
+                setQuickData({
+                    first_name: '',
+                    last_name: '',
+                    phone: '',
+                    gender: 'female',
+                    date_of_birth: '2000-01-01',
+                });
+            }
+        } catch (error) {
+            if (error.response?.data?.errors) {
+                setQuickErrors(error.response.data.errors);
+            }
+        } finally {
+            setQuickProcessing(false);
+        }
+    };
 
     const submit = (e) => {
         e.preventDefault();
@@ -45,7 +87,16 @@ export default function Create({ preselected_patient_id, preselected_patient_lab
                                 <form onSubmit={submit}>
                                     <div className="row g-3">
                                         <div className="col-md-6">
-                                            <label className="form-label fw-bold">Patient <span className="text-danger">*</span></label>
+                                            <div className="d-flex justify-content-between align-items-end mb-2">
+                                                <label className="form-label fw-bold mb-0">Patient <span className="text-danger">*</span></label>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => setShowQuickAdd(true)}
+                                                    className="btn btn-link btn-sm p-0 text-decoration-none fw-bold"
+                                                >
+                                                    <i className="fas fa-plus-circle me-1"></i>New Patient
+                                                </button>
+                                            </div>
                                             <DashboardSelect 
                                                 asyncUrl="/patients/search"
                                                 value={data.patient_id}
@@ -165,6 +216,80 @@ export default function Create({ preselected_patient_id, preselected_patient_lab
                     </div>
                 </div>
             </div>
+            
+            <Modal show={showQuickAdd} onClose={() => setShowQuickAdd(false)} maxWidth="md">
+                <form onSubmit={handleQuickAdd} className="p-4">
+                    <h5 className="fw-bold mb-4 text-primary">Quick Add New Patient</h5>
+                    
+                    <div className="row g-3 mb-3">
+                        <div className="col-md-6">
+                            <label className="form-label small fw-bold">First Name</label>
+                            <input 
+                                type="text"
+                                className={`form-control ${quickErrors.first_name ? 'is-invalid' : ''}`}
+                                value={quickData.first_name}
+                                onChange={e => setQuickData({...quickData, first_name: e.target.value})}
+                                required
+                            />
+                        </div>
+                        <div className="col-md-6">
+                            <label className="form-label small fw-bold">Last Name</label>
+                            <input 
+                                type="text"
+                                className={`form-control ${quickErrors.last_name ? 'is-invalid' : ''}`}
+                                value={quickData.last_name}
+                                onChange={e => setQuickData({...quickData, last_name: e.target.value})}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="mb-3">
+                        <label className="form-label small fw-bold">Phone Number</label>
+                        <input 
+                            type="tel"
+                            className={`form-control ${quickErrors.phone ? 'is-invalid' : ''}`}
+                            value={quickData.phone}
+                            onChange={e => setQuickData({...quickData, phone: e.target.value})}
+                            required
+                        />
+                        {quickErrors.phone && <div className="invalid-feedback">{quickErrors.phone[0]}</div>}
+                    </div>
+
+                    <div className="row g-3 mb-4">
+                        <div className="col-md-6">
+                            <label className="form-label small fw-bold">Gender</label>
+                            <select 
+                                className="form-select"
+                                value={quickData.gender}
+                                onChange={e => setQuickData({...quickData, gender: e.target.value})}
+                                required
+                            >
+                                <option value="female">Female</option>
+                                <option value="male">Male</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div className="col-md-6">
+                            <label className="form-label small fw-bold">DOB</label>
+                            <input 
+                                type="date"
+                                className="form-control"
+                                value={quickData.date_of_birth}
+                                onChange={e => setQuickData({...quickData, date_of_birth: e.target.value})}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <button type="button" onClick={() => setShowQuickAdd(false)} className="btn btn-light rounded-pill px-4">Cancel</button>
+                        <button type="submit" disabled={quickProcessing} className="btn btn-primary rounded-pill px-4 fw-bold">
+                            {quickProcessing ? 'Saving...' : 'Create & Select'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
         </AuthenticatedLayout>
     );
 }

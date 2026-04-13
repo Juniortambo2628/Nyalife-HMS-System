@@ -1,3 +1,5 @@
+import DashboardTable from '@/Components/DashboardTable';
+import { useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
@@ -12,6 +14,50 @@ export default function LabTechnician({ auth, stats }) {
             });
         }
     };
+
+    const columns = useMemo(() => [
+        {
+            header: 'Date',
+            accessorKey: 'request_date',
+            cell: ({ row }) => <span className="text-muted small">{row.original.request_date}</span>
+        },
+        {
+            header: 'Patient',
+            accessorKey: 'patient',
+            cell: ({ row }) => <span className="fw-semibold">{row.original.patient?.user?.first_name} {row.original.patient?.user?.last_name}</span>
+        },
+        {
+            header: 'Test Type',
+            accessorKey: 'test_type',
+            cell: ({ row }) => <span className="text-muted">{row.original.test_type?.test_name || 'N/A'}</span>
+        },
+        {
+            header: 'Priority',
+            accessorKey: 'priority',
+            cell: ({ row }) => (
+                <div>
+                    <span className={`badge ${row.original.priority === 'urgent' ? 'bg-danger' : 'bg-info'}`}>
+                        {row.original.priority?.toUpperCase() || 'NORMAL'}
+                    </span>
+                </div>
+            )
+        },
+        {
+            header: 'Action',
+            id: 'actions',
+            cell: ({ row }) => (
+                <div className="text-end pe-2">
+                    <button 
+                        onClick={() => handleProcess(row.original.request_id)}
+                        className="btn btn-sm btn-primary rounded-pill px-3 shadow-sm transition-all hover-scale"
+                    >
+                        Process
+                    </button>
+                </div>
+            )
+        }
+    ], []);
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -62,47 +108,11 @@ export default function LabTechnician({ auth, stats }) {
                                 <Link href={route('lab.index')} className="small text-decoration-none">View All</Link>
                             </div>
                             <div className="card-body p-0">
-                                <div className="table-responsive">
-                                    <table className="table table-hover align-middle mb-0">
-                                        <thead className="bg-light">
-                                            <tr>
-                                                <th className="px-4">Date</th>
-                                                <th>Patient</th>
-                                                <th>Test Type</th>
-                                                <th className="text-center">Priority</th>
-                                                <th className="pe-4 text-end">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {stats.recent_requests?.length > 0 ? (
-                                                stats.recent_requests.map((r) => (
-                                                    <tr key={r.request_id}>
-                                                        <td className="px-4">{r.request_date}</td>
-                                                        <td>{r.patient?.user?.first_name} {r.patient?.user?.last_name}</td>
-                                                        <td>{r.test_type?.test_name || 'N/A'}</td>
-                                                        <td className="text-center">
-                                                            <span className={`badge ${r.priority === 'urgent' ? 'bg-danger' : 'bg-info'}`}>
-                                                                {r.priority?.toUpperCase() || 'NORMAL'}
-                                                            </span>
-                                                        </td>
-                                                        <td className="pe-4 text-end">
-                                                            <button 
-                                                                onClick={() => handleProcess(r.request_id)}
-                                                                className="btn btn-sm btn-primary shadow-sm"
-                                                            >
-                                                                Process
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            ) : (
-                                                <tr>
-                                                    <td colSpan="5" className="text-center py-5 text-muted">No pending requests.</td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <DashboardTable 
+                                    columns={columns}
+                                    data={stats.recent_requests || []}
+                                    emptyMessage="No pending requests."
+                                />
                             </div>
                         </div>
                     </div>

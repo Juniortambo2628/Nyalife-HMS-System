@@ -43,6 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/appointments/{id}', [\App\Http\Controllers\AppointmentController::class, 'show'])->name('appointments.show');
     Route::put('/appointments/{id}', [\App\Http\Controllers\AppointmentController::class, 'update'])->name('appointments.update');
     Route::delete('/appointments/{id}', [\App\Http\Controllers\AppointmentController::class, 'destroy'])->name('appointments.destroy');
+    Route::post('/appointments/{id}/check-in', [\App\Http\Controllers\AppointmentController::class, 'checkIn'])->name('appointments.check-in');
     
     // Patients
     Route::get('/patients', [\App\Http\Controllers\PatientController::class, 'index'])->name('patients.index');

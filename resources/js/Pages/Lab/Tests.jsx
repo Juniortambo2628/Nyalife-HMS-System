@@ -1,8 +1,21 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
+import DashboardSearch from '@/Components/DashboardSearch';
+import { useState, useMemo } from 'react';
 
 export default function Tests({ tests }) {
+    const [search, setSearch] = useState('');
+
+    const filteredTests = useMemo(() => {
+        if (!search) return tests;
+        const q = search.toLowerCase();
+        return tests.filter(t => 
+            t.test_name.toLowerCase().includes(q) || 
+            (t.description && t.description.toLowerCase().includes(q))
+        );
+    }, [search, tests]);
+
     return (
         <AuthenticatedLayout
             header="Laboratory Tests"
@@ -19,8 +32,14 @@ export default function Tests({ tests }) {
                 }
             />
 
-            <div className="py-0">
-                <div className="row g-4">
+            <div className="container-fluid px-0">
+                <DashboardSearch 
+                    placeholder="Search test catalog by name or description..."
+                    value={search}
+                    onChange={setSearch}
+                />
+                
+                <div className="row g-4 mt-1">
                     {tests.length > 0 ? (
                         tests.map((test) => (
                             <div key={test.test_type_id} className="col-md-4">

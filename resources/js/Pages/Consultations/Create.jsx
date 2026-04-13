@@ -5,14 +5,21 @@ import PageHeader from '@/Components/PageHeader';
 import FormSection from '@/Components/FormSection';
 import FormField from '@/Components/FormField';
 import FormSelect from '@/Components/FormSelect';
+import QuickPatientModal from '@/Components/QuickPatientModal';
 import { useState } from 'react';
 
-export default function Create({ patients, doctors, appointment_id, preselected_patient_id, preselected_patient_label, auth }) {
+import { toLocalISO } from '@/Utils/dateUtils';
+
+export default function Create({ patients, doctors, appointment_id, preselected_patient_id, preselected_patient_label, priority = 'normal', auth }) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [quickPatientLabel, setQuickPatientLabel] = useState('');
+    
     const { data, setData, post, processing, errors, reset } = useForm({
         patient_id: preselected_patient_id || '',
         doctor_id: auth.user.role === 'doctor' && auth.user.staff ? auth.user.staff.staff_id : '',
         appointment_id: appointment_id || '',
-        consultation_date: new Date().toISOString().slice(0, 16),
+        consultation_date: toLocalISO(),
+        priority: priority || 'normal',
         is_walk_in: !appointment_id,
         status: 'pending',
         
@@ -136,10 +143,15 @@ export default function Create({ patients, doctors, appointment_id, preselected_
                             <DashboardSelect 
                                 asyncUrl="/patients/search"
                                 value={data.patient_id}
-                                onChange={val => setData('patient_id', val)}
-                                initialLabel={preselected_patient_label}
+                                onChange={(val, opt) => {
+                                    setData('patient_id', val);
+                                    if (opt) setQuickPatientLabel(opt.label);
+                                }}
+                                initialLabel={quickPatientLabel || preselected_patient_label}
                                 disabled={!!preselected_patient_id}
                                 placeholder="Select Patient..."
+                                onAddNew={() => setIsModalOpen(true)}
+                                addNewLabel="Quick Register Walk-in"
                             />
                         </FormField>
 
@@ -153,13 +165,44 @@ export default function Create({ patients, doctors, appointment_id, preselected_
                         </FormField>
 
                         <FormField label="Date & Time" required className="col-md-4">
-                            <input 
-                                type="datetime-local" 
-                                className="form-control form-control-lg bg-light border-0"
-                                value={data.consultation_date}
-                                onChange={e => setData('consultation_date', e.target.value)}
-                                required
-                            />
+                            <div className="input-group">
+                                <input 
+                                    type="datetime-local" 
+                                    className="form-control form-control-lg bg-light border-0 shadow-none"
+                                    value={data.consultation_date}
+                                    onChange={e => setData('consultation_date', e.target.value)}
+                                    required
+                                />
+                                <button 
+                                    type="button" 
+                                    className="btn btn-outline-primary border-0 bg-light-subtle px-3" 
+                                    title="Set to Current Time"
+                                    onClick={() => setData('consultation_date', toLocalISO())}
+                                >
+                                    <i className="fas fa-clock"></i>
+                                </button>
+                            </div>
+                        </FormField>
+                    </div>
+
+                    <div className="row g-3 mb-4">
+                        <FormField label="Priority Level" className="col-md-4">
+                            <div className="d-flex gap-2">
+                                <button 
+                                    type="button" 
+                                    className={`btn rounded-pill px-4 flex-fill fw-bold transition-all ${data.priority === 'normal' ? 'btn-primary shadow' : 'btn-light border text-muted'}`}
+                                    onClick={() => setData('priority', 'normal')}
+                                >
+                                    Normal
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className={`btn rounded-pill px-4 flex-fill fw-bold transition-all ${data.priority === 'emergency' ? 'btn-danger shadow' : 'btn-light border text-muted'}`}
+                                    onClick={() => setData('priority', 'emergency')}
+                                >
+                                    <i className="fas fa-bolt me-2"></i>Emergency
+                                </button>
+                            </div>
                         </FormField>
                     </div>
                     
@@ -405,6 +448,15 @@ export default function Create({ patients, doctors, appointment_id, preselected_
                     </button>
                 </div>
             </form>
+
+            <QuickPatientModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={(patient) => {
+                    setData('patient_id', patient.value);
+                    setQuickPatientLabel(patient.label);
+                }}
+            />
         </AuthenticatedLayout>
     );
 }

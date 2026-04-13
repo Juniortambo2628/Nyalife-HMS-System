@@ -10,6 +10,7 @@ import { useState, useMemo } from 'react';
 export default function Index({ patients, filters, auth }) {
     const [view, setView] = useState(() => localStorage.getItem('patients_view') || 'list');
     const [search, setSearch] = useState(filters.search || '');
+    const [activeFilter, setActiveFilter] = useState(filters.status || '');
 
     const [modalConfig, setModalConfig] = useState({
         show: false,
@@ -22,7 +23,15 @@ export default function Index({ patients, filters, auth }) {
     };
 
     const applyFilters = (searchValue) => {
-        router.get(route('patients.index'), { search: searchValue }, {
+        router.get(route('patients.index'), { search: searchValue, status: activeFilter }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleFilterChange = (filterValue) => {
+        setActiveFilter(filterValue);
+        router.get(route('patients.index'), { search, status: filterValue }, {
             preserveState: true,
             replace: true,
         });
@@ -30,6 +39,7 @@ export default function Index({ patients, filters, auth }) {
 
     const resetFilters = () => {
         setSearch('');
+        setActiveFilter('');
         router.get(route('patients.index'));
     };
 
@@ -68,11 +78,17 @@ export default function Index({ patients, filters, auth }) {
         {
             header: 'Gender',
             accessorKey: 'gender',
-            cell: ({ row }) => (
-                <span className={`badge rounded-pill px-3 py-2 ${row.original.gender === 'male' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}`}>
-                    {(row.original.gender || 'other').charAt(0).toUpperCase() + (row.original.gender || 'other').slice(1)}
-                </span>
-            )
+            cell: ({ row }) => {
+                const gender = (row.original.gender || 'unknown').toLowerCase();
+                const isMale = gender === 'male' || gender === 'm';
+                const isFemale = gender === 'female' || gender === 'f';
+                
+                return (
+                    <span className={`badge rounded-pill px-3 py-2 ${isMale ? 'bg-blue-100 text-blue-700' : (isFemale ? 'bg-pink-100 text-pink-700' : 'bg-gray-100 text-gray-700')}`}>
+                        {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                    </span>
+                );
+            }
         },
         {
             header: 'Age',
@@ -279,6 +295,13 @@ export default function Index({ patients, filters, auth }) {
                     value={search}
                     onChange={setSearch}
                     onSubmit={applyFilters}
+                    onFilterChange={handleFilterChange}
+                    filters={[
+                        { label: 'All Patients', value: '' },
+                        { label: 'Recently Registered', value: 'recent' },
+                        { label: 'Male Only', value: 'male' },
+                        { label: 'Female Only', value: 'female' },
+                    ]}
                 />
 
                 {/* View Content */}

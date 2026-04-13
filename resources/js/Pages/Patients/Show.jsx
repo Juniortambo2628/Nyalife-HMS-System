@@ -50,8 +50,12 @@ export default function Show({ patient, auth }) {
                                 <p className="text-muted small mb-3">ID: {patient.patient_id} | No: {patient.patient_number}</p>
                                 
                                 <div className="d-flex justify-content-center gap-2 mb-4">
-                                    <span className="badge bg-light text-dark border px-3 py-2">{(patient.gender || 'U').charAt(0).toUpperCase() + (patient.gender || 'unknown').slice(1)}</span>
-                                    <span className="badge bg-light text-dark border px-3 py-2">{calculateAge(patient.user?.date_of_birth)} Years</span>
+                                    <span className="badge bg-light text-dark border px-3 py-2">
+                                        {(patient.gender || 'unknown').charAt(0).toUpperCase() + (patient.gender || 'unknown').slice(1).toLowerCase()}
+                                    </span>
+                                    <span className="badge bg-light text-dark border px-3 py-2">
+                                        {calculateAge(patient.date_of_birth || patient.user?.date_of_birth)} Years
+                                    </span>
                                     {patient.blood_group && <span className="badge bg-danger px-3 py-2">{patient.blood_group}</span>}
                                 </div>
 

@@ -12,6 +12,7 @@ use App\Models\LabTestRequest;
 use App\Models\Prescription;
 use App\Models\Staff;
 use App\Models\Invoice;
+use App\Models\Consultation;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -100,12 +101,25 @@ class DashboardController extends Controller
                 break;
                 
             case 'nurse':
+                 // Triage Queue: Patients who have arrived but have no open or completed consultation yet today
+                 $stats['triage_queue'] = Appointment::whereDate('appointment_date', today())
+                        ->where('status', 'arrived')
+                        ->whereDoesntHave('consultations')
+                        ->count() + 
+                        Consultation::whereDate('consultation_date', today())
+                        ->where('consultation_status', 'pending')
+                        ->where('is_walk_in', true)
+                        ->count();
+
                  $stats['checked_in_patients'] = Appointment::whereDate('appointment_date', today())
                         ->whereIn('status', ['confirmed', 'arrived'])
                         ->count();
-                 $stats['upcoming_appointments'] = Appointment::where('appointment_date', '>', today())
+
+                 $stats['upcoming_appointments'] = Appointment::whereDate('appointment_date', '>=', today())
+                        ->whereIn('status', ['pending', 'confirmed'])
                         ->orderBy('appointment_date')
-                        ->limit(5)
+                        ->orderBy('appointment_time')
+                        ->limit(10)
                         ->with(['patient.user', 'doctor.user'])
                         ->get();
                 break;

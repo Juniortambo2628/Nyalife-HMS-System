@@ -1,5 +1,10 @@
 import DashboardTable from '@/Components/DashboardTable';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, router, useForm } from '@inertiajs/react';
+import PageHeader from '@/Components/PageHeader';
+import Modal from '@/Components/Modal';
+import DashboardSearch from '@/Components/DashboardSearch';
 
 export default function Inventory({ inventory, filters, auth }) {
     const [search, setSearch] = useState(filters?.search || '');

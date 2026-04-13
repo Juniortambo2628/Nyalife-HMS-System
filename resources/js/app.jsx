@@ -2,7 +2,6 @@ import '../css/app.css';
 import '../css/nyalife-sidebar.css';
 import './bootstrap';
 import './echo';
-import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Ensure Bootstrap JS is loaded for togglers/modals
 
 import { createInertiaApp } from '@inertiajs/react';

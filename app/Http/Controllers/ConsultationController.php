@@ -68,6 +68,7 @@ class ConsultationController extends Controller
             'appointment_id' => $appointmentId,
             'preselected_patient_id' => $patientId,
             'preselected_patient_label' => $appointment ? ($appointment->patient->user->first_name . ' ' . $appointment->patient->user->last_name) : null,
+            'priority' => $request->query('priority', 'normal'),
              // Link doctors to users for the dropdown
             'doctors' => Staff::with('user')->get()->map(function($s) {
                  return [

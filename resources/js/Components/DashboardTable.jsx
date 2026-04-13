@@ -36,8 +36,13 @@ export default function DashboardTable({
                                         return (
                                             <th 
                                                 key={header.id} 
-                                                className={`px-4 py-4 text-white text-uppercase small fw-bold tracking-wider border-0 ${isSortable ? 'cursor-pointer' : ''}`}
-                                                style={{ minWidth: header.column.columnDef.minWidth || 'auto' }}
+                                                className={`px-4 py-4 text-white text-uppercase small fw-bold tracking-wider border-0 text-start ${isSortable ? 'cursor-pointer' : ''}`}
+                                                style={{ 
+                                                    minWidth: header.column.columnDef.minWidth || 'auto',
+                                                    color: 'white !important',
+                                                    background: 'transparent',
+                                                    textAlign: 'left'
+                                                }}
                                                 onClick={isSortable && onSort ? () => onSort(header.column.id) : undefined}
                                             >
                                                 <div className="d-flex align-items-center gap-2">
@@ -76,7 +81,7 @@ export default function DashboardTable({
                                 table.getRowModel().rows.map(row => (
                                     <tr key={row.id} className="border-bottom border-light hover-bg-light transition-all cursor-default">
                                         {row.getVisibleCells().map(cell => (
-                                            <td key={cell.id} className="px-4 py-3.5 border-0">
+                                            <td key={cell.id} className="px-4 py-3.5 border-0 text-start">
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </td>
                                         ))}

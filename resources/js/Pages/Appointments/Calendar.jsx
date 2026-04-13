@@ -30,14 +30,20 @@ export default function Calendar({ appointments, auth }) {
         >
             <Head title="Appointments Calendar" />
 
-            <div className="container-fluid appointments-page px-0">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2 className="mb-0">Calendar View</h2>
-                    <Link href={route('appointments.index')} className="btn btn-outline-secondary">
+            <PageHeader 
+                title="Schedules & Appointments"
+                breadcrumbs={[
+                    { label: 'Appointments', url: route('appointments.index') },
+                    { label: 'Calendar View', active: true }
+                ]}
+                actions={
+                    <Link href={route('appointments.index')} className="btn btn-outline-secondary rounded-pill px-4 shadow-sm fw-bold">
                         <i className="fas fa-list me-2"></i>List View
                     </Link>
-                </div>
+                }
+            />
 
+            <div className="container-fluid appointments-page px-0">
                 <div className="card shadow-sm border-0">
                     <div className="card-body p-4">
                         <FullCalendar

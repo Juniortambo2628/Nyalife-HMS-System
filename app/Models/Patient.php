@@ -18,6 +18,9 @@ class Patient extends Model
         'emergency_name',
         'emergency_contact',
         'chronic_diseases', // Mapped from medical_conditions in legacy logic, ensure column exists
+        'gender',
+        'date_of_birth',
+        'address',
     ];
 
     public function user()

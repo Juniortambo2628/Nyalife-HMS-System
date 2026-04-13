@@ -19,6 +19,7 @@ class Consultation extends Model
         'consultation_date',
         'consultation_status',
         'is_walk_in',
+        'priority',
         'chief_complaint',
         'history_present_illness',
         'past_medical_history',

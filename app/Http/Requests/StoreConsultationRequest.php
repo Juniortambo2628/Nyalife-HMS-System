@@ -19,6 +19,8 @@ class StoreConsultationRequest extends FormRequest
             'consultation_date' => 'required|date',
             'chief_complaint' => 'required|string',
             'status' => 'required|string',
+            'priority' => 'nullable|string|in:normal,emergency',
+            'is_walk_in' => 'nullable|boolean',
             'history_present_illness' => 'nullable|string',
             'vital_signs' => 'nullable|array',
             'menstrual_history' => 'nullable|array',

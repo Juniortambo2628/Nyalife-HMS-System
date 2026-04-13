@@ -5,9 +5,16 @@ export default function DashboardSearch({
     value = "", 
     onChange, 
     onSubmit,
-    className = ""
+    className = "",
+    filters = [
+        { label: 'Recently Added', value: 'recent' },
+        { label: 'Active Only', value: 'active' },
+        { label: 'Archived', value: 'archived' }
+    ],
+    onFilterChange
 }) {
     const [localValue, setLocalValue] = useState(value);
+    const [activeFilter, setActiveFilter] = useState(null);
 
     // Sync local state when external value changes
     useEffect(() => {
@@ -18,6 +25,12 @@ export default function DashboardSearch({
         const newValue = e.target.value;
         setLocalValue(newValue);
         if (onChange) onChange(newValue);
+    };
+
+    const handleFilterClick = (filter) => {
+        const val = filter.value === activeFilter ? null : filter.value;
+        setActiveFilter(val);
+        if (onFilterChange) onFilterChange(val);
     };
 
     const handleSubmit = (e) => {
@@ -53,27 +66,35 @@ export default function DashboardSearch({
                 </div>
             </form>
             
-            {/* Quick Filters / Shortcuts suggestions could go here */}
+            {/* Quick Filters / Shortcuts suggestions */}
             <div className="d-flex flex-wrap gap-2 mt-2 px-2 overflow-auto no-scrollbar">
                 <small className="text-gray-400 font-bold uppercase tracking-wider align-middle pt-1 me-2" style={{fontSize: '0.65rem'}}>Quick Filters:</small>
-                {/* These could be passed as props later, hardcoding for now as examples or leaving empty context */}
-                <span className="badge rounded-pill nyl-filter-badge border px-3 py-2 cursor-pointer transition-all font-semibold">Recently Added</span>
-                <span className="badge rounded-pill nyl-filter-badge border px-3 py-2 cursor-pointer transition-all font-semibold">Active Only</span>
-                <span className="badge rounded-pill nyl-filter-badge border px-3 py-2 cursor-pointer transition-all font-semibold">Archived</span>
+                {filters.map((filter, idx) => (
+                    <span 
+                        key={idx}
+                        onClick={() => handleFilterClick(filter)}
+                        className={`badge rounded-pill nyl-filter-badge border px-3 py-2 cursor-pointer transition-all font-semibold shadow-sm ${activeFilter === filter.value ? 'active-filter' : ''}`}
+                    >
+                        {filter.label}
+                    </span>
+                ))}
             </div>
-        </div>
-    );
-}
-
+            
             <style>{`
                 .nyl-filter-badge {
                     background-color: #fff;
-                    color: #e91e63;
+                    color: #e91e63 !important;
                     border-color: #e91e6333 !important;
                 }
                 .nyl-filter-badge:hover {
                     background-color: #e91e63 !important;
                     color: #fff !important;
+                    transform: translateY(-1px);
+                }
+                .active-filter {
+                    background-color: #e91e63 !important;
+                    color: #fff !important;
+                    border-color: #e91e63 !important;
                 }
                 .no-focus-outline:focus { outline: none !important; box-shadow: none !important; }
                 .shadow-hover:hover { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important; }
@@ -81,3 +102,6 @@ export default function DashboardSearch({
                 .hover-scale:hover { transform: scale(1.02); }
                 .hover-scale:active { transform: scale(0.98); }
             `}</style>
+        </div>
+    );
+}

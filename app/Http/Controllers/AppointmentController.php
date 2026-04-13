@@ -240,6 +240,17 @@ class AppointmentController extends Controller
     }
 
     /**
+     * Check in a patient (update status to arrived).
+     */
+    public function checkIn($id)
+    {
+        $appointment = Appointment::findOrFail($id);
+        $appointment->update(['status' => 'arrived']);
+        
+        return redirect()->back()->with('success', 'Patient checked in successfully! You can now start the consultation.');
+    }
+
+    /**
      * Display calendar view.
      */
     public function calendar(Request $request)

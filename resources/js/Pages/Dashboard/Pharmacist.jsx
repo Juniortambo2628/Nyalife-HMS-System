@@ -1,8 +1,40 @@
+import DashboardTable from '@/Components/DashboardTable';
+import { useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
+import { formatDateTime } from '@/Utils/dateUtils';
 
 export default function Pharmacist({ auth, stats }) {
+    const columns = useMemo(() => [
+        {
+            header: 'Date',
+            accessorKey: 'prescription_date',
+            cell: ({ row }) => <span className="text-muted small">{formatDateTime(row.original.prescription_date)}</span>
+        },
+        {
+            header: 'Patient',
+            accessorKey: 'patient',
+            cell: ({ row }) => <span className="fw-semibold">{row.original.patient.user.first_name} {row.original.patient.user.last_name}</span>
+        },
+        {
+            header: 'Doctor',
+            accessorKey: 'doctor',
+            cell: ({ row }) => <span className="text-muted">Dr. {row.original.doctor.first_name} {row.original.doctor.last_name}</span>
+        },
+        {
+            header: 'Action',
+            id: 'actions',
+            cell: ({ row }) => (
+                <div className="text-end pe-2">
+                    <Link href={route('prescriptions.show', row.original.prescription_id)} className="btn btn-sm btn-success rounded-pill px-3 shadow-sm transition-all hover-scale">
+                        Dispense
+                    </Link>
+                </div>
+            )
+        }
+    ], []);
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -66,36 +98,11 @@ export default function Pharmacist({ auth, stats }) {
                                 <Link href={route('prescriptions.index')} className="small text-decoration-none">View All</Link>
                             </div>
                             <div className="card-body p-0">
-                                <div className="table-responsive">
-                                    <table className="table table-hover align-middle mb-0">
-                                        <thead className="bg-light">
-                                            <tr>
-                                                <th className="px-4">Date</th>
-                                                <th>Patient</th>
-                                                <th>Doctor</th>
-                                                <th className="pe-4 text-end">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {stats.recent_prescriptions?.length > 0 ? (
-                                                stats.recent_prescriptions.map((p) => (
-                                                    <tr key={p.prescription_id}>
-                                                        <td className="px-4">{p.prescription_date}</td>
-                                                        <td>{p.patient.user.first_name} {p.patient.user.last_name}</td>
-                                                        <td>Dr. {p.doctor.first_name} {p.doctor.last_name}</td>
-                                                        <td className="pe-4 text-end">
-                                                            <Link href={route('prescriptions.show', p.prescription_id)} className="btn btn-sm btn-success shadow-sm">Dispense</Link>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            ) : (
-                                                <tr>
-                                                    <td colSpan="4" className="text-center py-5 text-muted">No pending prescriptions.</td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <DashboardTable 
+                                    columns={columns}
+                                    data={stats.recent_prescriptions || []}
+                                    emptyMessage="No pending prescriptions."
+                                />
                             </div>
                         </div>
                     </div>

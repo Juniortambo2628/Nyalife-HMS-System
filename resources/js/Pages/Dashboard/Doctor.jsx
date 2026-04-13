@@ -1,8 +1,44 @@
+import DashboardTable from '@/Components/DashboardTable';
+import { useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 
 export default function Doctor({ auth, stats }) {
+    const columns = useMemo(() => [
+        {
+            header: 'Time',
+            accessorKey: 'appointment_time',
+            cell: ({ row }) => <span className="fw-bold">{row.original.appointment_time}</span>
+        },
+        {
+            header: 'Patient',
+            accessorKey: 'patient',
+            cell: ({ row }) => (
+                <div>
+                    <div className="fw-semibold">{row.original.patient.user.first_name} {row.original.patient.user.last_name}</div>
+                    <small className="text-muted">ID: {row.original.patient_id}</small>
+                </div>
+            )
+        },
+        {
+            header: 'Type',
+            accessorKey: 'appointment_type',
+            cell: ({ row }) => <span className="badge bg-light text-dark border">{row.original.appointment_type}</span>
+        },
+        {
+            header: 'Action',
+            id: 'actions',
+            cell: ({ row }) => (
+                <div className="text-end pe-2">
+                    <Link href={route('consultations.create', { appointment_id: row.original.appointment_id })} className="btn btn-sm btn-primary rounded-pill px-3 shadow-sm transition-all hover-scale">
+                        Start Consultation
+                    </Link>
+                </div>
+            )
+        }
+    ], []);
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -80,41 +116,11 @@ export default function Doctor({ auth, stats }) {
                                 <Link href={route('appointments.index')} className="small text-decoration-none">View All</Link>
                             </div>
                             <div className="card-body p-0">
-                                <div className="table-responsive">
-                                    <table className="table table-hover align-middle mb-0">
-                                        <thead className="bg-light">
-                                            <tr>
-                                                <th className="px-4">Time</th>
-                                                <th>Patient</th>
-                                                <th>Type</th>
-                                                <th className="pe-4 text-end">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {stats.today_appointments?.length > 0 ? (
-                                                stats.today_appointments.map((a) => (
-                                                    <tr key={a.appointment_id}>
-                                                        <td className="px-4 fw-bold">{a.appointment_time}</td>
-                                                        <td>
-                                                            <div className="fw-semibold">{a.patient.user.first_name} {a.patient.user.last_name}</div>
-                                                            <small className="text-muted">ID: {a.patient_id}</small>
-                                                        </td>
-                                                        <td><span className="badge bg-light text-dark border">{a.appointment_type}</span></td>
-                                                        <td className="pe-4 text-end">
-                                                            <Link href={route('consultations.create', { appointment_id: a.appointment_id })} className="btn btn-sm btn-primary">
-                                                                Start Consultation
-                                                            </Link>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            ) : (
-                                                <tr>
-                                                    <td colSpan="4" className="text-center py-5 text-muted">No appointments for today.</td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <DashboardTable 
+                                    columns={columns}
+                                    data={stats.today_appointments || []}
+                                    emptyMessage="No appointments for today."
+                                />
                             </div>
                         </div>
                     </div>

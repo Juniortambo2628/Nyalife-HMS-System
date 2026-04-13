@@ -6,10 +6,12 @@ import ViewToggle from '@/Components/ViewToggle';
 import InfoModal from '@/Components/InfoModal';
 import PageHeader from '@/Components/PageHeader';
 import { useState, useMemo } from 'react';
+import { formatDateTime } from '@/Utils/dateUtils';
 
 export default function Index({ consultations, filters, auth }) {
     const [view, setView] = useState(() => localStorage.getItem('consultations_view') || 'list');
     const [search, setSearch] = useState(filters.search || '');
+    const [activeFilter, setActiveFilter] = useState(filters.status || '');
     
     const [modalConfig, setModalConfig] = useState({
         show: false,
@@ -22,7 +24,15 @@ export default function Index({ consultations, filters, auth }) {
     };
 
     const handleSearch = (searchValue) => {
-        router.get(route('consultations.index'), { search: searchValue }, {
+        router.get(route('consultations.index'), { search: searchValue, status: activeFilter }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleFilterChange = (filterValue) => {
+        setActiveFilter(filterValue);
+        router.get(route('consultations.index'), { search, status: filterValue }, {
             preserveState: true,
             replace: true,
         });
@@ -33,7 +43,7 @@ export default function Index({ consultations, filters, auth }) {
             header: 'Date',
             accessorKey: 'consultation_date',
             cell: ({ row }) => (
-                <div className="fw-bold text-gray-900">{row.original.consultation_date}</div>
+                <div className="fw-bold text-gray-900">{formatDateTime(row.original.consultation_date)}</div>
             )
         },
         {
@@ -248,6 +258,13 @@ export default function Index({ consultations, filters, auth }) {
                     value={search}
                     onChange={setSearch}
                     onSubmit={handleSearch}
+                    onFilterChange={handleFilterChange}
+                    filters={[
+                        { label: 'All Consultations', value: '' },
+                        { label: 'Recently Closed', value: 'closed' },
+                        { label: 'In Progress', value: 'in_progress' },
+                        { label: 'Pending Assessment', value: 'pending' },
+                    ]}
                 />
 
                 {/* Content View */}

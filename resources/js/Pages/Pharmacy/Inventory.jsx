@@ -74,15 +74,15 @@ export default function Inventory({ inventory, filters, auth }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {inventory.data.length > 0 ? (
-                                    inventory.data.map((item) => (
-                                        <tr key={item.medication_id}>
-                                            <td className="px-4 fw-bold">{item.medication_name}</td>
+                                {inventory.data && inventory.data.length > 0 ? (
+                                    inventory.data.filter(item => item !== null).map((item) => (
+                                        <tr key={item.medication_id || `temp-${Math.random()}`}>
+                                            <td className="px-4 fw-bold">{item.medication_name || 'N/A'}</td>
                                             <td className="text-muted">{item.medication_type || 'General'}</td>
-                                            <td className="font-semibold">{item.stock_quantity} {item.unit || 'units'}</td>
+                                            <td className="font-semibold">{item.stock_quantity ?? 0} {item.unit || 'units'}</td>
                                             <td>
-                                                <span className={`badge rounded-pill px-3 py-1 ${item.stock_quantity < 50 ? 'bg-danger' : 'bg-success'}`}>
-                                                    {item.stock_quantity < 50 ? 'Low Stock' : 'In Stock'}
+                                                <span className={`badge rounded-pill px-3 py-1 ${(item.stock_quantity ?? 0) < 50 ? 'bg-danger' : 'bg-success'}`}>
+                                                    {(item.stock_quantity ?? 0) < 50 ? 'Low Stock' : 'In Stock'}
                                                 </span>
                                             </td>
                                             <td className="pe-4 text-end">

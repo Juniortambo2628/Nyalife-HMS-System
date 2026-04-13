@@ -128,12 +128,22 @@ class ConsultationController extends Controller
     public function show($id)
     {
         $user = Auth::user();
-        if ($user && in_array($user->role, ['nurse', 'receptionist', 'lab_technician'])) {
+        
+        // Block receptionists from clinical details
+        if ($user && $user->role === 'receptionist') {
             abort(403, 'Unauthorized access to clinical details.');
         }
 
         $consultation = Consultation::with(['patient.user', 'doctor.user', 'appointment'])
             ->findOrFail($id);
+
+        // Ownership check for patients
+        if ($user && $user->role === 'patient') {
+            $patient = Patient::where('user_id', $user->user_id)->first();
+            if (!$patient || $consultation->patient_id !== $patient->patient_id) {
+                abort(403, 'You are not authorized to view this consultation.');
+            }
+        }
             
         return Inertia::render('Consultations/View', [
             'consultation' => ConsultationResource::make($consultation)

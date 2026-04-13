@@ -23,7 +23,7 @@
 /vendor
 
 # Build output
-/public/build
+# /public/build (Uncommented for shared hosting deployment)
 /public/hot
 /public/storage
 

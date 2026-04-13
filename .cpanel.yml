@@ -44,17 +44,6 @@ deployment:
       test -f $PUBLICDIR/.htaccess && grep -q 'HTTPS' $PUBLICDIR/.htaccess ||
       /bin/cp -f $REPODIR/docs/production/.htaccess $PUBLICDIR/.htaccess
 
-    # ── Install Composer dependencies ─────────────────────
-    - cd $COREDIR && composer install --no-dev --optimize-autoloader --no-interaction 2>&1
-
-    # ── Run migrations ────────────────────────────────────
-    - cd $COREDIR && php artisan migrate --force 2>&1
-
-    # ── Optimize caches ──────────────────────────────────
-    - cd $COREDIR && php artisan config:cache
-    - cd $COREDIR && php artisan route:cache
-    - cd $COREDIR && php artisan view:cache
-
     # ── Fix permissions ──────────────────────────────────
     - chmod -R 775 $COREDIR/storage
     - chmod -R 775 $COREDIR/bootstrap/cache

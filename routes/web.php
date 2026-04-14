@@ -25,11 +25,18 @@ Route::get('/blogs/{slug}', [\App\Http\Controllers\BlogPublicController::class, 
 Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
-// Temporary Debug Route - Verify Production .env
+// Temporary Debug Route - Verify Production .env and Logs
 Route::get('/auth/google/check-config', function() {
     $calculated = route('auth.google.callback');
     if (app()->environment('production') && !str_starts_with($calculated, 'https')) {
         $calculated = str_replace('http://', 'https://', $calculated);
+    }
+
+    $logFile = storage_path('logs/laravel.log');
+    $lastLogs = [];
+    if (file_exists($logFile)) {
+        $logs = file($logFile);
+        $lastLogs = array_slice($logs, -20);
     }
 
     return [
@@ -40,6 +47,13 @@ Route::get('/auth/google/check-config', function() {
         'APP_URL' => env('APP_URL'),
         'SOCIALITE_GOOGLE_CONFIGURED' => config('services.google') ? 'YES' : 'NO',
         'APP_ENV' => app()->environment(),
+        'PHP_VERSION' => PHP_VERSION,
+        'EXTENSIONS' => [
+            'curl' => extension_loaded('curl'),
+            'openssl' => extension_loaded('openssl'),
+            'json' => extension_loaded('json'),
+        ],
+        'LOG_ENTRIES' => $lastLogs,
     ];
 });
 Route::get('/auth/google/complete-profile', [\App\Http\Controllers\Auth\GoogleController::class, 'completeProfileView'])->name('auth.google.complete-profile');

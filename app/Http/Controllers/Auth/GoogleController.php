@@ -14,16 +14,29 @@ class GoogleController extends Controller
 {
     public function redirectToGoogle(Request $request)
     {
-        if ($request->role) {
-            session(['auth_role' => $request->role]);
+        try {
+            if ($request->role) {
+                session(['auth_role' => $request->role]);
+            }
+            // Dynamically build the callback URL using the named route to ensure correct protocol (https/http)
+            $redirectUrl = route('auth.google.callback');
+            
+            return Socialite::driver('google')->redirectUrl($redirectUrl)->redirect();
+        } catch (\Exception $e) {
+            \Log::error('Google Auth Redirect Error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'role' => $request->role
+            ]);
+
+            $route = $request->role === 'staff' ? 'login.staff' : 'login.patient';
+            return redirect()->route($route)->with('error', 'Could not initialize Google authentication. Please try again or contact support.');
         }
-        return Socialite::driver('google')->redirect();
     }
 
     public function handleGoogleCallback()
     {
         try {
-            $googleUser = Socialite::driver('google')->user();
+            $googleUser = Socialite::driver('google')->redirectUrl(route('auth.google.callback'))->user();
             $authRole = session('auth_role', 'patient');
             session()->forget('auth_role');
             

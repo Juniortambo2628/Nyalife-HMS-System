@@ -156,6 +156,7 @@ export default function Create({ auth }) {
                                             />
                                             {errors.address && <div className="invalid-feedback">{errors.address}</div>}
                                         </div>
+                                    </div>
 
                                     <h5 className="mb-4 border-bottom pb-2 text-primary">Next of Kin (NOK)</h5>
                                     <div className="row g-3 mb-4">

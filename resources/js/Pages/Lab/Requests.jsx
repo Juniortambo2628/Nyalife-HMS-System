@@ -6,6 +6,8 @@ import DashboardTable from '@/Components/DashboardTable';
 import { useState, useMemo } from 'react';
 
 export default function Requests({ requests, filters }) {
+    const [search, setSearch] = useState('');
+
     const handleProcess = (id) => {
         if (confirm('Start processing this lab request?')) {
             router.post(route('lab.update-status', id), {
@@ -16,24 +18,6 @@ export default function Requests({ requests, filters }) {
         }
     };
 
-    return (
-        <AuthenticatedLayout
-            header="Lab Requests"
-        >
-            <Head title="Lab Requests" />
-
-            <PageHeader 
-                title="Laboratory Requests"
-                breadcrumbs={[{ label: 'Lab', url: route('lab.index') }, { label: 'Requests', active: true }]}
-                actions={
-                    <Link href={route('lab.tests')} className="btn btn-outline-primary rounded-pill px-4 font-bold shadow-sm">
-                        <i className="fas fa-list me-2"></i>Test Catalog
-                    </Link>
-                }
-            />
-
-    const [search, setSearch] = useState('');
-    
     const columns = useMemo(() => [
         {
             header: 'Req ID',
@@ -138,9 +122,6 @@ export default function Requests({ requests, filters }) {
                     emptyMessage="No laboratory requests found."
                 />
             </div>
-        </AuthenticatedLayout>
-    );
-}
         </AuthenticatedLayout>
     );
 }

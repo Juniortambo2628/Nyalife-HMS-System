@@ -1,0 +1,1 @@
+const r=e=>{const t=new Date,n=t.getTimezoneOffset()*6e4;return new Date(t.getTime()-n).toISOString().slice(0,16)},a=(e,t={})=>{if(!e)return"N/A";try{const n=new Date(e);return new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit",hour12:!0,...t}).format(n)}catch{return e}};export{a as f,r as t};

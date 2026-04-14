@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -18,26 +19,34 @@ class GoogleController extends Controller
             if ($request->role) {
                 session(['auth_role' => $request->role]);
             }
-            // Dynamically build the callback URL using the named route to ensure correct protocol (https/http)
+            // Dynamically build the callback URL using the named route
             $redirectUrl = route('auth.google.callback');
             
-            return Socialite::driver('google')->redirectUrl($redirectUrl)->redirect();
+            // Use stateless() to avoid session-related 'State mismatch' errors in production
+            return Socialite::driver('google')
+                ->stateless()
+                ->redirectUrl($redirectUrl)
+                ->redirect();
         } catch (\Exception $e) {
-            \Log::error('Google Auth Redirect Error: ' . $e->getMessage(), [
+            Log::error('Google Auth Redirect Error: ' . $e->getMessage(), [
                 'exception' => $e,
                 'role' => $request->role
             ]);
 
             $route = $request->role === 'staff' ? 'login.staff' : 'login.patient';
-            return redirect()->route($route)->with('error', 'Could not initialize Google authentication. Please try again or contact support.');
+            return redirect()->route($route)->with('error', 'Could not initialize Google authentication. Error: ' . $e->getMessage());
         }
     }
 
     public function handleGoogleCallback()
     {
+        $authRole = session('auth_role', 'patient');
         try {
-            $googleUser = Socialite::driver('google')->redirectUrl(route('auth.google.callback'))->user();
-            $authRole = session('auth_role', 'patient');
+            $googleUser = Socialite::driver('google')
+                ->stateless()
+                ->redirectUrl(route('auth.google.callback'))
+                ->user();
+            
             session()->forget('auth_role');
             
             $user = User::where('google_id', $googleUser->id)
@@ -81,8 +90,12 @@ class GoogleController extends Controller
                 return redirect()->route('auth.google.complete-profile');
             }
         } catch (\Exception $e) {
+            Log::error('Google Auth Callback Error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'role' => $authRole
+            ]);
             $route = $authRole === 'staff' ? 'login.staff' : 'login.patient';
-            return redirect()->route($route)->with('error', 'Google authentication failed.');
+            return redirect()->route($route)->with('error', 'Google authentication failed. Error: ' . $e->getMessage());
         }
     }
 

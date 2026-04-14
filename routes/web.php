@@ -24,6 +24,17 @@ Route::get('/blogs/{slug}', [\App\Http\Controllers\BlogPublicController::class, 
 // Google Authentication
 Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+
+// Temporary Debug Route - Verify Production .env
+Route::get('/auth/google/check-config', function() {
+    return [
+        'GOOGLE_CLIENT_ID' => substr(env('GOOGLE_CLIENT_ID'), 0, 8) . '...',
+        'GOOGLE_CLIENT_SECRET' => substr(env('GOOGLE_CLIENT_SECRET'), 0, 3) . '...',
+        'GOOGLE_REDIRECT_URI' => env('GOOGLE_REDIRECT_URI'),
+        'APP_URL' => env('APP_URL'),
+        'SOCIALITE_GOOGLE_CONFIGURED' => config('services.google') ? 'YES' : 'NO',
+    ];
+});
 Route::get('/auth/google/complete-profile', [\App\Http\Controllers\Auth\GoogleController::class, 'completeProfileView'])->name('auth.google.complete-profile');
 Route::post('/auth/google/complete-profile', [\App\Http\Controllers\Auth\GoogleController::class, 'storeProfile'])->name('auth.google.store-profile');
 

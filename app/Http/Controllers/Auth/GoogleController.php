@@ -19,10 +19,22 @@ class GoogleController extends Controller
             if ($request->role) {
                 session(['auth_role' => $request->role]);
             }
-            // Dynamically build the callback URL using the named route
+            
+            // Re-calculate the callback URL.
+            // If the server's APP_URL is null, route() might fail to produce the correct domain/protocol.
             $redirectUrl = route('auth.google.callback');
             
-            // Use stateless() to avoid session-related 'State mismatch' errors in production
+            // Safety: If we are on production but the generated URL is not https, force it.
+            if (app()->environment('production') && !str_starts_with($redirectUrl, 'https')) {
+                $redirectUrl = str_replace('http://', 'https://', $redirectUrl);
+            }
+
+            Log::info('Google Auth Initializing', [
+                'redirect_url' => $redirectUrl,
+                'role' => $request->role,
+                'app_env' => app()->environment()
+            ]);
+            
             return Socialite::driver('google')
                 ->stateless()
                 ->redirectUrl($redirectUrl)
@@ -30,7 +42,8 @@ class GoogleController extends Controller
         } catch (\Exception $e) {
             Log::error('Google Auth Redirect Error: ' . $e->getMessage(), [
                 'exception' => $e,
-                'role' => $request->role
+                'role' => $request->role,
+                'trace' => $e->getTraceAsString()
             ]);
 
             $route = $request->role === 'staff' ? 'login.staff' : 'login.patient';

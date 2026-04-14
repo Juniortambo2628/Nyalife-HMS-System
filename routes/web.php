@@ -27,12 +27,19 @@ Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleController
 
 // Temporary Debug Route - Verify Production .env
 Route::get('/auth/google/check-config', function() {
+    $calculated = route('auth.google.callback');
+    if (app()->environment('production') && !str_starts_with($calculated, 'https')) {
+        $calculated = str_replace('http://', 'https://', $calculated);
+    }
+
     return [
         'GOOGLE_CLIENT_ID' => substr(env('GOOGLE_CLIENT_ID'), 0, 8) . '...',
         'GOOGLE_CLIENT_SECRET' => substr(env('GOOGLE_CLIENT_SECRET'), 0, 3) . '...',
-        'GOOGLE_REDIRECT_URI' => env('GOOGLE_REDIRECT_URI'),
+        'GOOGLE_REDIRECT_URI_ENV' => env('GOOGLE_REDIRECT_URI'),
+        'CALCULATED_REDIRECT_URI' => $calculated,
         'APP_URL' => env('APP_URL'),
         'SOCIALITE_GOOGLE_CONFIGURED' => config('services.google') ? 'YES' : 'NO',
+        'APP_ENV' => app()->environment(),
     ];
 });
 Route::get('/auth/google/complete-profile', [\App\Http\Controllers\Auth\GoogleController::class, 'completeProfileView'])->name('auth.google.complete-profile');

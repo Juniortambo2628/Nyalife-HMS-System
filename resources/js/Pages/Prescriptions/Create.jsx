@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import DashboardSelect from '@/Components/DashboardSelect';
+import QuickMedicationModal from '@/Components/QuickMedicationModal';
 import { useState } from 'react';
 
 export default function Create({ preselected_patient_id, preselected_patient_label, consultation_id, auth }) {
@@ -11,6 +12,10 @@ export default function Create({ preselected_patient_id, preselected_patient_lab
         items: [{ medicine_name: '', medication_id: '', dosage: '', frequency: '', duration: '' }],
         notes: '',
     });
+
+    const [isQuickMedModalOpen, setIsQuickMedModalOpen] = useState(false);
+    const [activeItemIndex, setActiveItemIndex] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const addItem = () => {
         setData('items', [...data.items, { medicine_name: '', dosage: '', frequency: '', duration: '' }]);
@@ -101,6 +106,11 @@ export default function Create({ preselected_patient_id, preselected_patient_lab
                                                 }}
                                                 initialLabel={item.medicine_name}
                                                 placeholder="Search Medicine..."
+                                                onAddNew={() => {
+                                                    setActiveItemIndex(index);
+                                                    setIsQuickMedModalOpen(true);
+                                                }}
+                                                addNewLabel="Medicine not found? Add to Catalog"
                                             />
                                         </div>
                                         <div className="col-md-3">
@@ -164,6 +174,17 @@ export default function Create({ preselected_patient_id, preselected_patient_lab
                     </div>
                 </form>
             </div>
+
+            <QuickMedicationModal 
+                isOpen={isQuickMedModalOpen}
+                onClose={() => setIsQuickMedModalOpen(false)}
+                onSuccess={(newMed) => {
+                    const newItems = [...data.items];
+                    newItems[activeItemIndex].medication_id = newMed.value;
+                    newItems[activeItemIndex].medicine_name = newMed.label;
+                    setData('items', newItems);
+                }}
+            />
         </AuthenticatedLayout>
     );
 }

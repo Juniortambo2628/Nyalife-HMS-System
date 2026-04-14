@@ -13,7 +13,14 @@ class VitalController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Vitals/Index');
+        $appointments = \App\Models\Appointment::with(['patient.user'])
+            ->whereDate('appointment_date', today())
+            ->orderBy('appointment_time')
+            ->get();
+
+        return Inertia::render('Vitals/Index', [
+            'appointments' => $appointments
+        ]);
     }
 
     public function create(Request $request)

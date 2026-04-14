@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { useEffect } from 'react';
+import CookieBanner from '@/Components/CookieBanner';
 
 export default function GuestLayout({ children }) {
     useEffect(() => {
@@ -16,6 +17,7 @@ export default function GuestLayout({ children }) {
                     </div>
                 </div>
             </div>
+            <CookieBanner />
         </div>
     );
 }

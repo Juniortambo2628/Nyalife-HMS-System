@@ -217,7 +217,17 @@ export default function Index({ appointments, filters, auth }) {
                         </div>
                         <div className="flex gap-3">
                             {apt.status === 'scheduled' && (
-                                <button className="btn btn-primary px-4 py-2 rounded-xl font-bold shadow-sm">Confirm Arrival</button>
+                                <button 
+                                    onClick={() => {
+                                        router.post(route('appointments.check-in', apt.appointment_id), {}, {
+                                            preserveScroll: true,
+                                            onSuccess: () => closeModal()
+                                        });
+                                    }}
+                                    className="btn btn-primary px-4 py-2 rounded-xl font-bold shadow-sm"
+                                >
+                                    Confirm Arrival
+                                </button>
                             )}
                             <Link href={route('appointments.show', apt.appointment_id)} className="btn btn-outline-secondary px-4 py-2 rounded-xl font-bold">View Full Records</Link>
                         </div>

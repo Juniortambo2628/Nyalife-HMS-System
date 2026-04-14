@@ -24,10 +24,8 @@ class LabController extends Controller
                 $query->where('patient_id', $patient->patient_id);
             }
         } elseif ($user && $user->role === 'doctor') {
-            $staff = \App\Models\Staff::where('user_id', $user->user_id)->first();
-            if ($staff) {
-                $query->where('doctor_id', $staff->staff_id);
-            }
+            // Lab requests are tracked by the user who requested them
+            $query->where('requested_by', $user->user_id);
         }
 
         $query = $query->searchByPatientName($request->search)

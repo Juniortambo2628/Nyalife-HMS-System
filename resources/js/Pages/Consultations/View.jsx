@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
+import { formatDateTime } from '@/Utils/dateUtils';
 
 export default function View({ consultation, auth }) {
     // Helpers to safely display JSON or text data

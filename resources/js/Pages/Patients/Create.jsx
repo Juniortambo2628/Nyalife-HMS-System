@@ -10,7 +10,8 @@ export default function Create({ auth }) {
         date_of_birth: '',
         gender: 'male',
         address: '',
-        blood_group: '',
+        blood_group: 'Unknown',
+        emergency_name: '',
         emergency_contact: '',
     });
 
@@ -105,7 +106,7 @@ export default function Create({ auth }) {
                                                 value={data.blood_group}
                                                 onChange={e => setData('blood_group', e.target.value)}
                                             >
-                                                <option value="">Unknown</option>
+                                                <option value="Unknown">Unknown</option>
                                                 <option value="A+">A+</option>
                                                 <option value="A-">A-</option>
                                                 <option value="B+">B+</option>
@@ -156,14 +157,27 @@ export default function Create({ auth }) {
                                             {errors.address && <div className="invalid-feedback">{errors.address}</div>}
                                         </div>
 
-                                        <div className="col-12">
-                                            <label className="form-label fw-bold">Emergency Contact (Name & Phone)</label>
+                                    <h5 className="mb-4 border-bottom pb-2 text-primary">Next of Kin (NOK)</h5>
+                                    <div className="row g-3 mb-4">
+                                        <div className="col-md-6">
+                                            <label className="form-label fw-bold">NOK Full Name</label>
+                                            <input 
+                                                type="text"
+                                                className={`form-control ${errors.emergency_name ? 'is-invalid' : ''}`}
+                                                value={data.emergency_name}
+                                                onChange={e => setData('emergency_name', e.target.value)}
+                                                placeholder="e.g. John Doe"
+                                            />
+                                            {errors.emergency_name && <div className="invalid-feedback">{errors.emergency_name}</div>}
+                                        </div>
+                                        <div className="col-md-6">
+                                            <label className="form-label fw-bold">NOK Phone Number</label>
                                             <input 
                                                 type="text"
                                                 className={`form-control ${errors.emergency_contact ? 'is-invalid' : ''}`}
                                                 value={data.emergency_contact}
                                                 onChange={e => setData('emergency_contact', e.target.value)}
-                                                placeholder="e.g. John Doe - 0712345678"
+                                                placeholder="e.g. 0712345678"
                                             />
                                             {errors.emergency_contact && <div className="invalid-feedback">{errors.emergency_contact}</div>}
                                         </div>

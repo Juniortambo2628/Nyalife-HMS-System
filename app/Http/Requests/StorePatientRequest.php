@@ -25,7 +25,8 @@ class StorePatientRequest extends FormRequest
             'gender' => 'required|in:male,female,other',
             'address' => 'nullable|string',
             'blood_group' => 'nullable|string',
-            'emergency_contact' => 'nullable|string',
+            'emergency_name' => 'nullable|string|max:255',
+            'emergency_contact' => 'nullable|string|max:20',
         ];
     }
 }

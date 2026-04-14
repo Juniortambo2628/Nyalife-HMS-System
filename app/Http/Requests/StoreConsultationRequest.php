@@ -17,7 +17,7 @@ class StoreConsultationRequest extends FormRequest
             'patient_id' => 'required|exists:patients,patient_id',
             'doctor_id' => 'required',
             'consultation_date' => 'required|date',
-            'chief_complaint' => 'required|string',
+            'chief_complaint' => 'nullable|string',
             'status' => 'required|string',
             'priority' => 'nullable|string|in:normal,emergency',
             'is_walk_in' => 'nullable|boolean',
@@ -33,6 +33,13 @@ class StoreConsultationRequest extends FormRequest
             'review_of_systems' => 'nullable|string',
             'general_examination' => 'nullable|string',
             'systems_examination' => 'nullable|string',
+            'diagnosis' => 'nullable|string',
+            'treatment_plan' => 'nullable|string',
+            'follow_up_instructions' => 'nullable|string',
+            'notes' => 'nullable|string',
+            'requested_procedures' => 'nullable|array',
+            'requested_labs' => 'nullable|array',
+            'requested_service_items' => 'nullable|array',
         ];
     }
 }

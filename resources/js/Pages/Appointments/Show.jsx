@@ -42,9 +42,15 @@ export default function Show({ appointment, auth }) {
                     { label: 'Details', active: true }
                 ]}
                 actions={
-                    <Link href={route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id })} className="btn btn-primary rounded-pill px-4 font-bold shadow-sm">
-                        <i className="fas fa-stethoscope me-2"></i>Start Consultation
-                    </Link>
+                    auth?.user?.role === 'nurse' ? (
+                        <Link href={route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id })} className="btn btn-primary rounded-pill px-4 font-bold shadow-sm">
+                            <i className="fas fa-heartbeat me-2"></i>Record Vitals
+                        </Link>
+                    ) : (
+                        <Link href={route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id })} className="btn btn-primary rounded-pill px-4 font-bold shadow-sm">
+                            <i className="fas fa-stethoscope me-2"></i>Start Consultation
+                        </Link>
+                    )
                 }
             />
 

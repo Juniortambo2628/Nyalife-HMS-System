@@ -20,6 +20,8 @@ class QuickStorePatientRequest extends FormRequest
             'phone' => 'required|string|max:20',
             'date_of_birth' => 'required|date',
             'gender' => 'required|in:male,female,other',
+            'emergency_name' => 'nullable|string|max:255',
+            'emergency_contact' => 'nullable|string|max:20',
         ];
     }
 }

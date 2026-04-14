@@ -21,6 +21,25 @@ Route::get('/', function () {
 Route::get('/blogs', [\App\Http\Controllers\BlogPublicController::class, 'index'])->name('blogs.public.index');
 Route::get('/blogs/{slug}', [\App\Http\Controllers\BlogPublicController::class, 'show'])->name('blogs.public.show');
 
+// Google Authentication
+Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+Route::get('/auth/google/complete-profile', [\App\Http\Controllers\Auth\GoogleController::class, 'completeProfileView'])->name('auth.google.complete-profile');
+Route::post('/auth/google/complete-profile', [\App\Http\Controllers\Auth\GoogleController::class, 'storeProfile'])->name('auth.google.store-profile');
+
+// Legal Policies
+Route::get('/privacy-policy', function () {
+    return Inertia::render('PrivacyPolicy');
+})->name('privacy-policy');
+
+Route::get('/cookie-policy', function () {
+    return Inertia::render('CookiePolicy');
+})->name('cookie-policy');
+
+Route::get('/terms-of-service', function () {
+    return Inertia::render('TermsOfService');
+})->name('terms-of-service');
+
 Route::post('/contact', [App\Http\Controllers\ContactMessageController::class, 'store'])->name('contact.store');
 Route::post('/guest-appointment', [App\Http\Controllers\AppointmentController::class, 'storeGuest'])->name('appointments.guest.store');
 Route::post('/check-guest-data', [App\Http\Controllers\CheckGuestDataController::class, 'check'])->name('guest.check');
@@ -145,7 +164,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/admin/cms', [\App\Http\Controllers\CMSController::class, 'index'])->name('cms.index');
     Route::post('/admin/cms', [\App\Http\Controllers\CMSController::class, 'update'])->name('cms.update');
     Route::post('/admin/cms/service-tabs', [\App\Http\Controllers\CMSController::class, 'updateServiceTabs'])->name('cms.service-tabs.update');
+
+    // Insurance Management
+    Route::get('/admin/insurances', [\App\Http\Controllers\InsuranceController::class, 'index'])->name('insurances.index');
+    Route::post('/admin/insurances', [\App\Http\Controllers\InsuranceController::class, 'store'])->name('insurances.store');
+    Route::post('/admin/insurances/{id}', [\App\Http\Controllers\InsuranceController::class, 'update'])->name('insurances.update'); // POST for multipart/form-data compatibility
+    Route::delete('/admin/insurances/{id}', [\App\Http\Controllers\InsuranceController::class, 'destroy'])->name('insurances.destroy');
+    Route::post('/admin/insurances/{id}/toggle', [\App\Http\Controllers\InsuranceController::class, 'toggle'])->name('insurances.toggle');
+
+    // Medical Procedures (Admin)
+    Route::get('/admin/medical-procedures', [\App\Http\Controllers\MedicalProcedureController::class, 'index'])->name('medical-procedures.index');
+    Route::post('/admin/medical-procedures', [\App\Http\Controllers\MedicalProcedureController::class, 'store'])->name('medical-procedures.store');
+    Route::put('/admin/medical-procedures/{id}', [\App\Http\Controllers\MedicalProcedureController::class, 'update'])->name('medical-procedures.update');
+    Route::delete('/admin/medical-procedures/{id}', [\App\Http\Controllers\MedicalProcedureController::class, 'destroy'])->name('medical-procedures.destroy');
+    Route::post('/admin/medical-procedures/{id}/toggle', [\App\Http\Controllers\MedicalProcedureController::class, 'toggle'])->name('medical-procedures.toggle');
 });
+
+// Insurance Public API
+Route::get('/api/insurances', [\App\Http\Controllers\InsuranceController::class, 'publicList'])->name('api.insurances.list');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

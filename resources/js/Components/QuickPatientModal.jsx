@@ -8,7 +8,9 @@ export default function QuickPatientModal({ isOpen, onClose, onSuccess }) {
         phone: '',
         gender: '',
         date_of_birth: '',
-        email: ''
+        email: '',
+        emergency_name: '',
+        emergency_contact: '',
     });
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
@@ -112,15 +114,27 @@ export default function QuickPatientModal({ isOpen, onClose, onSuccess }) {
                                     />
                                     {errors.date_of_birth && <div className="invalid-feedback">{errors.date_of_birth[0]}</div>}
                                 </div>
-                                <div className="col-12">
-                                    <label className="form-label small fw-bold">Email (Optional)</label>
+                                <div className="col-md-6">
+                                    <label className="form-label small fw-bold">Next of Kin Name</label>
                                     <input 
-                                        type="email" 
-                                        className={`form-control ${errors.email ? 'is-invalid' : ''}`} 
-                                        value={formData.email}
-                                        onChange={e => setFormData({...formData, email: e.target.value})}
+                                        type="text" 
+                                        className={`form-control ${errors.emergency_name ? 'is-invalid' : ''}`} 
+                                        value={formData.emergency_name}
+                                        onChange={e => setFormData({...formData, emergency_name: e.target.value})}
+                                        placeholder="Full Name"
                                     />
-                                    {errors.email && <div className="invalid-feedback">{errors.email[0]}</div>}
+                                    {errors.emergency_name && <div className="invalid-feedback">{errors.emergency_name[0]}</div>}
+                                </div>
+                                <div className="col-md-6">
+                                    <label className="form-label small fw-bold">Next of Kin Phone</label>
+                                    <input 
+                                        type="text" 
+                                        className={`form-control ${errors.emergency_contact ? 'is-invalid' : ''}`} 
+                                        value={formData.emergency_contact}
+                                        onChange={e => setFormData({...formData, emergency_contact: e.target.value})}
+                                        placeholder="Phone Number"
+                                    />
+                                    {errors.emergency_contact && <div className="invalid-feedback">{errors.emergency_contact[0]}</div>}
                                 </div>
                             </div>
                         </div>

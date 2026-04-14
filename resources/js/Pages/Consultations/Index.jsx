@@ -8,7 +8,7 @@ import PageHeader from '@/Components/PageHeader';
 import { useState, useMemo } from 'react';
 import { formatDateTime } from '@/Utils/dateUtils';
 
-export default function Index({ consultations, filters, auth }) {
+export default function Index({ consultations, drafts = [], filters, auth }) {
     const [view, setView] = useState(() => localStorage.getItem('consultations_view') || 'list');
     const [search, setSearch] = useState(filters.search || '');
     const [activeFilter, setActiveFilter] = useState(filters.status || '');
@@ -253,6 +253,61 @@ export default function Index({ consultations, filters, auth }) {
             />
 
             <div className="px-0">
+                {/* Active Drafts Section */}
+                {drafts && drafts.data && drafts.data.length > 0 && (
+                    <div className="mb-5 animate-in fade-in slide-in-from-top-4 duration-700">
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h5 className="fw-extrabold text-gray-900 mb-0 d-flex align-items-center gap-2">
+                                <span className="bg-warning-subtle text-warning p-2 rounded-lg" style={{ borderRadius: '12px' }}>
+                                    <i className="fas fa-edit"></i>
+                                </span>
+                                Active Drafts
+                                <span className="badge bg-warning rounded-pill fs-xs px-2 py-1 ms-1 animate__animated animate__pulse animate__infinite">
+                                    {drafts.data.length}
+                                </span>
+                            </h5>
+                        </div>
+                        <div className="row g-3 flex-nowrap overflow-auto pb-3 custom-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                            {drafts.data.map((draft) => (
+                                <div key={draft.consultation_id} className="col-11 col-md-5 col-lg-4 flex-shrink-0">
+                                    <div className="card h-100 border-0 shadow-sm rounded-2xl bg-white border-start border-4 border-warning">
+                                        <div className="card-body p-4">
+                                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <div className="bg-light p-2 rounded-circle text-primary fw-bold" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        {draft.patient.user.first_name.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <h6 className="fw-bold mb-0 text-truncate" style={{ maxWidth: '140px' }}>
+                                                            {draft.patient.user.first_name} {draft.patient.user.last_name}
+                                                        </h6>
+                                                        <small className="text-muted extra-small">ID: PAT-{draft.patient_id}</small>
+                                                    </div>
+                                                </div>
+                                                <div className="text-end">
+                                                    <div className="text-muted extra-small font-bold text-uppercase">{formatDateTime(draft.updated_at || draft.consultation_date)}</div>
+                                                </div>
+                                            </div>
+                                            <div className="bg-warning-subtle p-2 rounded-xl mb-3">
+                                                <p className="extra-small text-warning-emphasis fw-medium mb-0 line-clamp-2 italic">
+                                                    "{draft.chief_complaint || 'No complaint notes...'}"
+                                                </p>
+                                            </div>
+                                            <Link 
+                                                href={route('consultations.edit', draft.consultation_id)} 
+                                                className="btn btn-warning w-100 rounded-xl fw-extrabold text-white shadow-sm py-2 d-flex align-items-center justify-content-center gap-2 transition-all hover-translate-up"
+                                            >
+                                                <i className="fas fa-play-circle"></i>
+                                                Resume Assessment
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <DashboardSearch 
                     placeholder="Search by diagnosis, complaint or patient name..." 
                     value={search}

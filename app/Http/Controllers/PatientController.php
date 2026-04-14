@@ -79,6 +79,7 @@ class PatientController extends Controller
             'gender' => $validated['gender'],
             'address' => $validated['address'] ?? null,
             'blood_group' => $validated['blood_group'] ?? null,
+            'emergency_name' => $validated['emergency_name'] ?? null,
             'emergency_contact' => $validated['emergency_contact'] ?? null,
         ]);
         
@@ -163,6 +164,8 @@ class PatientController extends Controller
             'user_id' => $user->user_id,
             'date_of_birth' => $validated['date_of_birth'],
             'gender' => $validated['gender'],
+            'emergency_name' => $validated['emergency_name'] ?? null,
+            'emergency_contact' => $validated['emergency_contact'] ?? null,
             'patient_number' => 'PAT-' . date('Ymd') . '-' . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
         ]);
         

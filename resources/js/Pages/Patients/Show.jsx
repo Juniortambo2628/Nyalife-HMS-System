@@ -92,8 +92,12 @@ export default function Show({ patient, auth }) {
                                             <i className="fas fa-heartbeat"></i>
                                         </div>
                                         <div>
-                                            <div className="small text-muted">Emergency Contact</div>
-                                            <div className="fw-semibold">{patient.emergency_contact || 'N/A'}</div>
+                                            <div className="small text-muted">Next of Kin (NOK)</div>
+                                            <div className="fw-semibold">
+                                                {patient.emergency_name ? `${patient.emergency_name}` : ''}
+                                                {patient.emergency_name && patient.emergency_contact ? ' - ' : ''}
+                                                {patient.emergency_contact || (patient.emergency_name ? '' : 'N/A')}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

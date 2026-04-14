@@ -73,7 +73,7 @@ export default function LabTechnician({ auth, stats }) {
             <div className="container-fluid dashboard-page px-0 h-auto">
                 <div className="row g-4 mb-8 h-auto">
                     <div className="col-md-6">
-                        <div className="card shadow-sm border-0 h-100 p-4 border-start border-4 border-primary">
+                        <div className="card shadow-sm border-0 h-100 p-4">
                             <div className="d-flex justify-content-between align-items-center">
                                 <div>
                                     <div className="text-muted small fw-bold text-uppercase">Pending Tests</div>
@@ -86,7 +86,7 @@ export default function LabTechnician({ auth, stats }) {
                         </div>
                     </div>
                     <div className="col-md-6">
-                        <div className="card shadow-sm border-0 h-100 p-4 border-start border-4 border-success">
+                        <div className="card shadow-sm border-0 h-100 p-4">
                             <div className="d-flex justify-content-between align-items-center">
                                 <div>
                                     <div className="text-muted small fw-bold text-uppercase">Completed Today</div>

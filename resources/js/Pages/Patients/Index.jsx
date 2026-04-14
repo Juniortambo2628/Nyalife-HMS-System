@@ -197,8 +197,12 @@ export default function Index({ patients, filters, auth }) {
                             </div>
                         </div>
                         <div className="bg-pink-50 rounded-2xl p-6 border border-pink-100">
-                            <h4 className="text-pink-600 text-xs font-bold uppercase tracking-widest mb-3">Emergency Contact</h4>
-                            <div className="font-semibold text-gray-800">{patient.emergency_contact || 'None registered'}</div>
+                            <h4 className="text-pink-600 text-xs font-bold uppercase tracking-widest mb-3">Next of Kin (NOK)</h4>
+                            <div className="font-semibold text-gray-800">
+                                {patient.emergency_name ? `${patient.emergency_name}` : ''}
+                                {patient.emergency_name && patient.emergency_contact ? ' - ' : ''}
+                                {patient.emergency_contact || (patient.emergency_name ? '' : 'None registered')}
+                            </div>
                         </div>
                     </div>
                 )

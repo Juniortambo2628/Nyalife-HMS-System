@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
+import CookieBanner from '@/Components/CookieBanner';
 
 // Role-based sidebar menu items matching legacy system
 const sidebarMenus = {
@@ -16,6 +17,7 @@ const sidebarMenus = {
         { id: 'reports', text: 'Reports', url: '/reports', icon: 'fas fa-chart-bar' },
         { id: 'blog-manage', text: 'Manage Blogs', url: route('blog.manage'), icon: 'fas fa-blog' },
         { id: 'cms-manage', text: 'Landing CMS', url: route('cms.index'), icon: 'fas fa-laptop-code' },
+        { id: 'insurance-manage', text: 'Accepted Insurances', url: route('insurances.index'), icon: 'fas fa-shield-alt' },
         { id: 'contact-messages', text: 'Website Messages', url: route('admin.messages.index'), icon: 'fas fa-envelope-open-text' },
     ],
     doctor: [
@@ -51,6 +53,7 @@ const sidebarMenus = {
         { id: 'appointments', text: 'Appointments', url: '/appointments', icon: 'fas fa-calendar-alt' },
         { id: 'patients', text: 'Patients', url: '/patients', icon: 'fas fa-users' },
         { id: 'invoices', text: 'Invoices', url: '/invoices', icon: 'fas fa-file-invoice' },
+        { id: 'insurance-manage', text: 'Health Insurances', url: route('insurances.index'), icon: 'fas fa-shield-alt' },
     ],
     patient: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
@@ -138,7 +141,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 {/* Sidebar Header with Logo */}
                 <div className="sidebar-header h-auto">
                     <div className="sidebar-logo h-auto">
-                        <img src="/assets/img/logo/Logo2-transparent.png" alt="Nyalife HMS" className="logo-img rounded-2" 
+                        <img src="/assets/img/logo/Logo2-transparent.png" alt="Nyalife HMS" className="logo-img me-2 bg-white rounded-2 p-1" 
                              onError={(e) => { 
                                  if (e.target) e.target.style.display = 'none'; 
                                  if (e.target?.nextElementSibling) e.target.nextElementSibling.style.display = 'flex'; 
@@ -188,12 +191,12 @@ export default function AuthenticatedLayout({ header, children }) {
                 </button>
 
                 {/* Top Header Bar */}
-                <div className="dashboard-header mb-4">
-                    <div className="d-flex justify-content-between align-items-center">
-                        <div>
+                <div className="dashboard-header mb-4" style={{ paddingTop: '10px' }}>
+                    <div className="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div className="d-none d-md-block">
                             {header && <div className="page-title mb-0">{header}</div>}
                         </div>
-                        <div className="d-flex align-items-center gap-3">
+                        <div className="d-flex align-items-center gap-2 gap-md-3 ms-auto">
                             {/* Messages Toggle */}
                             <div className="dropdown">
                                 <button 
@@ -209,7 +212,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </span>
                                     )}
                                 </button>
-                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-lg border-0 rounded-2xl overflow-hidden mt-3" style={{ width: '320px' }}>
+                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-lg border-0 rounded-2xl overflow-hidden mt-3" style={{ width: '280px', maxWidth: '90vw' }}>
                                     <li className="px-4 py-3 bg-white border-b border-gray-100 d-flex justify-content-between align-items-center">
                                         <span className="fw-bold text-gray-900">Recent Messages</span>
                                         <Link href="/messages" className="text-xs text-pink-500 hover:underline">View All</Link>
@@ -236,7 +239,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </span>
                                     )}
                                 </button>
-                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-lg border-0 rounded-2xl overflow-hidden mt-3" style={{ width: '320px' }}>
+                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-lg border-0 rounded-2xl overflow-hidden mt-3" style={{ width: '280px', maxWidth: '90vw' }}>
                                     <li className="px-4 py-3 bg-white border-b border-gray-100 d-flex justify-content-between align-items-center">
                                         <span className="fw-bold text-gray-900">Notifications</span>
                                         <Link href="/notifications" className="text-xs text-pink-500 hover:underline">View All</Link>
@@ -248,7 +251,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </ul>
                             </div>
 
-                            <div className="vr mx-2 bg-gray-200" style={{ height: '24px' }}></div>
+                            <div className="vr mx-1 mx-md-2 bg-gray-200 d-none d-sm-block" style={{ height: '24px' }}></div>
                             {/* User Info */}
                             <div className="dropdown">
                                 <button 
@@ -258,20 +261,22 @@ export default function AuthenticatedLayout({ header, children }) {
                                     aria-expanded="false"
                                 >
                                     <div className="avatar-circle" style={{
-                                        width: '40px', 
-                                        height: '40px', 
+                                        width: '36px', 
+                                        height: '36px', 
                                         borderRadius: '50%', 
                                         background: 'linear-gradient(135deg, #e91e63, #c2185b)',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         color: 'white',
-                                        fontWeight: 'bold'
+                                        fontWeight: 'bold',
+                                        fontSize: '0.85rem',
+                                        flexShrink: 0
                                     }}>
                                         {displayName.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="d-none d-md-block text-start">
-                                        <div className="fw-semibold text-dark">{displayName}</div>
+                                        <div className="fw-semibold text-dark" style={{ fontSize: '0.9rem' }}>{displayName}</div>
                                         <small className="text-muted text-capitalize">{userRole.replace('_', ' ')}</small>
                                     </div>
                                 </button>
@@ -297,6 +302,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 {/* Page Content */}
                 {children}
             </main>
+            <CookieBanner />
         </div>
     );
 }

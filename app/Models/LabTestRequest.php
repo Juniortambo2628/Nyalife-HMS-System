@@ -21,15 +21,19 @@ class LabTestRequest extends Model
         'requested_by',
         'status', // pending, completed
         'request_date',
-        'processed_by',
-        'processed_at',
-        'results'
+        'completed_at',
+        'results',
+        'assigned_to',
+        'sample_collected_by',
+        'notes',
+        'consultation_id',
+        'appointment_id'
     ];
 
     protected $casts = [
         'results' => 'array',
         'request_date' => 'datetime',
-        'processed_at' => 'datetime'
+        'completed_at' => 'datetime'
     ];
 
     public function patient()

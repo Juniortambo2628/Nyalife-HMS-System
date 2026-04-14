@@ -14,11 +14,32 @@ use Inertia\Response;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
+     * Display the generic login view (Redirects to Patient by default).
      */
     public function create(): Response
     {
+        return $this->createPatient();
+    }
+
+    /**
+     * Display the Patient login view.
+     */
+    public function createPatient(): Response
+    {
         return Inertia::render('Auth/Login', [
+            'authType' => 'patient',
+            'canResetPassword' => Route::has('password.request'),
+            'status' => session('status'),
+        ]);
+    }
+
+    /**
+     * Display the Staff login view.
+     */
+    public function createStaff(): Response
+    {
+        return Inertia::render('Auth/Login', [
+            'authType' => 'staff',
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
         ]);

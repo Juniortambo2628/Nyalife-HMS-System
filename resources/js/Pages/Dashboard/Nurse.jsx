@@ -84,7 +84,7 @@ export default function Nurse({ auth, stats }) {
             <div className="container-fluid dashboard-page px-0 h-auto">
                 <div className="row g-4 mb-8 h-auto">
                     <div className="col-md-6">
-                        <div className="card shadow-sm border-0 h-100 p-4 border-start border-4 border-info">
+                        <div className="card shadow-sm border-0 h-100 p-4">
                             <div className="d-flex justify-content-between align-items-center">
                                 <div>
                                     <div className="text-muted small fw-bold text-uppercase">Checked-In Today</div>
@@ -97,7 +97,7 @@ export default function Nurse({ auth, stats }) {
                         </div>
                     </div>
                     <div className="col-md-6">
-                        <div className="card shadow-sm border-0 h-100 p-4 border-start border-4 border-primary">
+                        <div className="card shadow-sm border-0 h-100 p-4">
                             <div className="d-flex justify-content-between align-items-center">
                                 <div>
                                     <div className="text-muted small fw-bold text-uppercase">Triage Queue</div>
@@ -132,9 +132,9 @@ export default function Nurse({ auth, stats }) {
                             <div className="card-header bg-white py-3 border-0">
                                 <h6 className="mb-0 fw-bold">Nursing Quick Actions</h6>
                             </div>
-                            <div className="card-body p-4 pt-0">
+                            <div className="card-body p-4 pt-0 mt-3">
                                 <div className="d-grid gap-3">
-                                    <Link href={route('patients.create')} className="btn btn-light border text-start p-3 d-flex align-items-center">
+                                    <Link href={route('patients.create')} className="btn btn-light border text-start p-3 d-flex align-items-center rounded-3">
                                         <div className="bg-primary-subtle text-primary p-2 rounded me-3">
                                             <i className="fas fa-user-plus"></i>
                                         </div>
@@ -145,7 +145,7 @@ export default function Nurse({ auth, stats }) {
                                     </Link>
                                     <button 
                                         onClick={() => setIsEmergencyModalOpen(true)}
-                                        className="btn btn-light border text-start p-3 d-flex align-items-center"
+                                        className="btn btn-light border text-start p-3 d-flex align-items-center rounded-3"
                                     >
                                         <div className="bg-danger-subtle text-danger p-2 rounded me-3">
                                             <i className="fas fa-notes-medical"></i>

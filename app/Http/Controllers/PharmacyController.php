@@ -43,7 +43,15 @@ class PharmacyController extends Controller
     public function storeMedicine(StoreMedicineRequest $request)
     {
         $validated = $request->validated();
-        Medication::create($validated + ['stock_quantity' => 0]);
+        $medication = Medication::create($validated + ['stock_quantity' => 0]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'medication_id' => $medication->medication_id,
+                'message' => 'Medicine added to catalog successfully.'
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Medicine added to catalog successfully.');
     }

@@ -33,10 +33,18 @@ Route::get('/auth/google/check-config', function() {
     }
 
     $logFile = storage_path('logs/laravel.log');
-    $lastLogs = [];
+    $relevantErrors = [];
+    $last100Lines = [];
+    
     if (file_exists($logFile)) {
         $logs = file($logFile);
-        $lastLogs = array_slice($logs, -20);
+        $last100Lines = array_slice($logs, -100);
+        foreach (array_reverse($last100Lines) as $line) {
+            if (str_contains($line, '.ERROR:') || str_contains($line, 'Exception')) {
+                $relevantErrors[] = trim($line);
+                if (count($relevantErrors) >= 5) break;
+            }
+        }
     }
 
     return [
@@ -51,9 +59,10 @@ Route::get('/auth/google/check-config', function() {
         'EXTENSIONS' => [
             'curl' => extension_loaded('curl'),
             'openssl' => extension_loaded('openssl'),
-            'json' => extension_loaded('json'),
         ],
-        'LOG_ENTRIES' => $lastLogs,
+        'LOG_WRITABLE' => is_writable($logFile),
+        'RELEVANT_ERRORS' => $relevantErrors,
+        'LAST_20_LINES' => array_slice($last100Lines, -20),
     ];
 });
 Route::get('/auth/google/complete-profile', [\App\Http\Controllers\Auth\GoogleController::class, 'completeProfileView'])->name('auth.google.complete-profile');

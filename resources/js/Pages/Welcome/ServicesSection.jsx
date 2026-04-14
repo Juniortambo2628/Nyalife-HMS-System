@@ -66,8 +66,15 @@ export default function ServicesSection({ serviceTabs }) {
                 </div>
             </div>
             <style>{`
-                .nav-pills .nav-link.active { background-color: white !important; color: var(--bs-primary) !important; }
-                .nav-pills .nav-link:hover:not(.active) { background-color: rgba(0,0,0,0.05); }
+                .nav-pills .nav-link.active,
+                .nav-pills .nav-link.active:hover { 
+                    background-color: #d7056a !important; 
+                    color: white !important; 
+                }
+                .nav-pills .nav-link:hover:not(.active) { 
+                    background-color: #d7056a; 
+                    color: white !important; 
+                }
             `}</style>
         </section>
     );

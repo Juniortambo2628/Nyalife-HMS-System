@@ -20,13 +20,17 @@ if (reverbKey && reverbHost && reverbPort) {
             // Suppress Pusher connection warnings in console
             Pusher.logToConsole = false;
 
+            const wsPort = parseInt(reverbPort) || 8080;
+            const wssPort = parseInt(reverbPort) || 443;
+            const protocol = import.meta.env.VITE_REVERB_SCHEME ?? 'http';
+
             window.Echo = new Echo({
                 broadcaster: 'reverb',
                 key: reverbKey,
                 wsHost: reverbHost,
-                wsPort: reverbPort ?? 80,
-                wssPort: reverbPort ?? 443,
-                forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
+                wsPort: wsPort,
+                wssPort: wssPort,
+                forceTLS: protocol === 'https',
                 enabledTransports: ['ws', 'wss'],
                 enableStats: false,
                 // Add heartbeat/retry limits to prevent console flooding

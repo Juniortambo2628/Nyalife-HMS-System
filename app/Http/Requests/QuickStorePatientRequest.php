@@ -22,6 +22,7 @@ class QuickStorePatientRequest extends FormRequest
             'gender' => 'required|in:male,female,other',
             'emergency_name' => 'nullable|string|max:255',
             'emergency_contact' => 'nullable|string|max:20',
+            'blood_group' => 'nullable|string|max:10',
         ];
     }
 }

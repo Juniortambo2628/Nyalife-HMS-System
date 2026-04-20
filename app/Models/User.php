@@ -85,6 +85,14 @@ class User extends Authenticatable
      */
     protected $appends = ['role'];
 
+    /**
+     * Get the staff associated with the user.
+     */
+    public function staff()
+    {
+        return $this->hasOne(Staff::class, 'user_id', 'user_id');
+    }
+
     public function scopeSearch($query, $search)
     {
         if (empty($search)) {

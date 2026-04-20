@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 
 export default function Index({ stats }) {
@@ -65,9 +65,15 @@ export default function Index({ stats }) {
                             <h4 className="fw-bold text-gray-900 mb-3">Enterprise Analytics Dashboard</h4>
                             <p className="text-muted mb-4">View comprehensive clinical and financial reports. Filter by department, doctor, or date range to gain actionable insights into hospital operations.</p>
                             <div className="d-flex flex-wrap gap-2">
-                                <button className="btn btn-primary rounded-pill px-4 shadow-sm">Daily Census</button>
-                                <button className="btn btn-outline-info rounded-pill px-4">Financial Summary</button>
-                                <button className="btn btn-outline-warning rounded-pill px-4">Medication Usage</button>
+                                <Link href={route('appointments.index')} className="btn btn-primary rounded-pill px-4 shadow-sm text-white no-underline flex items-center">
+                                    <i className="fas fa-calendar-check me-2"></i>Daily Census
+                                </Link>
+                                <Link href={route('invoices.index')} className="btn btn-outline-info rounded-pill px-4 flex items-center">
+                                    <i className="fas fa-file-invoice-dollar me-2"></i>Financial Summary
+                                </Link>
+                                <Link href={route('pharmacy.inventory')} className="btn btn-outline-warning rounded-pill px-4 flex items-center">
+                                    <i className="fas fa-pills me-2"></i>Medication Usage
+                                </Link>
                             </div>
                         </div>
                         <div className="col-md-5 text-center d-none d-md-block">

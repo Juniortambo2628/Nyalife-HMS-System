@@ -32,24 +32,39 @@ export default function Dashboard({ auth }) {
                             <div className="col-md-4 h-auto">
                                 <div className="card border-0 bg-light-blue p-4 rounded-xl h-100">
                                     <h5 className="fw-bold mb-3"><i className="fas fa-calendar-check text-blue-500 me-2"></i>Appointments</h5>
-                                    <p className="small text-muted mb-4">View and manage your upcoming medical consultations.</p>
+                                    <p className="small text-muted mb-4">View and manage upcoming medical consultations.</p>
                                     <Link href="/appointments" className="btn btn-primary btn-sm rounded-pill px-4">View All</Link>
                                 </div>
                             </div>
-                            <div className="col-md-4 h-auto">
-                                <div className="card border-0 bg-light-pink p-4 rounded-xl h-100">
-                                    <h5 className="fw-bold mb-3"><i className="fas fa-file-prescription text-pink-500 me-2"></i>Prescriptions</h5>
-                                    <p className="small text-muted mb-4">Access your prescribed medications and health plans.</p>
-                                    <Link href="/prescriptions" className="btn btn-primary btn-sm rounded-pill px-4">View All</Link>
+                            
+                            {user.role_name !== 'receptionist' && (
+                                <>
+                                    <div className="col-md-4 h-auto">
+                                        <div className="card border-0 bg-light-pink p-4 rounded-xl h-100">
+                                            <h5 className="fw-bold mb-3"><i className="fas fa-file-prescription text-pink-500 me-2"></i>Prescriptions</h5>
+                                            <p className="small text-muted mb-4">Access prescribed medications and health plans.</p>
+                                            <Link href="/prescriptions" className="btn btn-primary btn-sm rounded-pill px-4">View All</Link>
+                                        </div>
+                                    </div>
+                                    <div className="col-md-4 h-auto">
+                                        <div className="card border-0 bg-light-green p-4 rounded-xl h-100">
+                                            <h5 className="fw-bold mb-3"><i className="fas fa-flask text-success me-2"></i>Lab Results</h5>
+                                            <p className="small text-muted mb-4">Check the status and results of laboratory tests.</p>
+                                            <Link href="/lab-results" className="btn btn-primary btn-sm rounded-pill px-4">View All</Link>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            
+                            {user.role_name === 'receptionist' && (
+                                <div className="col-md-4 h-auto">
+                                    <div className="card border-0 bg-light-pink p-4 rounded-xl h-100">
+                                        <h5 className="fw-bold mb-3"><i className="fas fa-users text-pink-500 me-2"></i>Patients</h5>
+                                        <p className="small text-muted mb-4">Register new patients and manage records.</p>
+                                        <Link href="/patients" className="btn btn-primary btn-sm rounded-pill px-4">View All</Link>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="col-md-4 h-auto">
-                                <div className="card border-0 bg-light-green p-4 rounded-xl h-100">
-                                    <h5 className="fw-bold mb-3"><i className="fas fa-flask text-success me-2"></i>Lab Results</h5>
-                                    <p className="small text-muted mb-4">Check the status and results of your laboratory tests.</p>
-                                    <Link href="/lab-results" className="btn btn-primary btn-sm rounded-pill px-4">View All</Link>
-                                </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>

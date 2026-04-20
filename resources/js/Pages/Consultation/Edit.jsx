@@ -1,8 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import ConsultationForm from './Form';
+import ConsultationDraftSwitcher from '@/Components/ConsultationDraftSwitcher';
 
-export default function Edit({ auth, consultation, patients, doctors }) {
+export default function Edit({ auth, consultation, patients, doctors, ...props }) {
+    const consultationDrafts = props.drafts || { data: [] };
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -21,6 +23,7 @@ export default function Edit({ auth, consultation, patients, doctors }) {
                      />
                 </div>
             </div>
+            <ConsultationDraftSwitcher drafts={consultationDrafts.data || []} />
         </AuthenticatedLayout>
     );
 }

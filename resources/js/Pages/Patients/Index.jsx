@@ -47,9 +47,16 @@ export default function Index({ patients, filters, auth }) {
         if (!dob) return 'N/A';
         const birthDate = new Date(dob);
         if (isNaN(birthDate.getTime())) return 'N/A';
-        const difference = Date.now() - birthDate.getTime();
-        const ageDate = new Date(difference);
-        return Math.abs(ageDate.getUTCFullYear() - 1970);
+        
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        
+        return age;
     };
 
     const columns = useMemo(() => [

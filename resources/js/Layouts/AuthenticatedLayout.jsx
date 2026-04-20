@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import CookieBanner from '@/Components/CookieBanner';
+import { Toaster } from 'react-hot-toast';
 
 // Role-based sidebar menu items matching legacy system
 const sidebarMenus = {
@@ -131,6 +132,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className={`has-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+            <Toaster position="top-right" reverseOrder={false} />
             {/* Sidebar */}
             <aside id="nyalifeSidebar" className={`nyalife-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${sidebarOpen ? 'open' : ''}`}>
                 {/* Sidebar Toggle Button */}

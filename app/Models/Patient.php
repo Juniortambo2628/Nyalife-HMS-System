@@ -14,13 +14,20 @@ class Patient extends Model
     protected $fillable = [
         'user_id',
         'patient_number',
-        'blood_type',
+        'blood_group',
+        'height',
+        'weight',
+        'allergies',
+        'chronic_diseases',
         'emergency_name',
         'emergency_contact',
-        'chronic_diseases', // Mapped from medical_conditions in legacy logic, ensure column exists
         'gender',
         'date_of_birth',
         'address',
+        'marital_status',
+        'occupation',
+        'insurance_provider',
+        'insurance_id',
     ];
 
     public function user()

@@ -60,16 +60,22 @@ class PatientController extends Controller
     {
         $validated = $request->validated();
 
+        // Handle optional email
+        $email = $validated['email'] ?? strtolower($validated['first_name'] . '.' . $validated['last_name'] . '.' . rand(1000, 9999) . '@nyalife-hms.com');
+
         // Create user account
         $user = User::create([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
-            'email' => $validated['email'],
+            'email' => $email,
             'phone' => $validated['phone'],
-            'username' => strtolower($validated['first_name'] . '.' . $validated['last_name']),
+            'username' => strtolower($validated['first_name'] . '.' . $validated['last_name'] . '.' . rand(1000, 9999)),
             'password' => Hash::make('password123'), // Default password
             'role_id' => \App\Models\Role::where('role_name', 'patient')->first()->role_id ?? 7,
             'is_active' => true,
+            'gender' => $validated['gender'],
+            'date_of_birth' => $validated['date_of_birth'],
+            'address' => $validated['address'] ?? null,
         ]);
         
         // Create patient record
@@ -81,6 +87,7 @@ class PatientController extends Controller
             'blood_group' => $validated['blood_group'] ?? null,
             'emergency_name' => $validated['emergency_name'] ?? null,
             'emergency_contact' => $validated['emergency_contact'] ?? null,
+            'patient_number' => 'PAT-' . date('Ymd') . '-' . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
         ]);
         
         return redirect()->route('patients.index')
@@ -113,6 +120,17 @@ class PatientController extends Controller
     }
 
     /**
+     * Show the form for editing the specified patient.
+     */
+    public function edit($id)
+    {
+        $patient = Patient::with('user')->findOrFail($id);
+        return Inertia::render('Patients/Edit', [
+            'patient' => PatientResource::make($patient),
+        ]);
+    }
+
+    /**
      * Update the specified patient.
      */
     public function update(UpdatePatientRequest $request, $id)
@@ -121,22 +139,29 @@ class PatientController extends Controller
         $validated = $request->validated();
 
         // Update user
-        if (isset($validated['first_name']) || isset($validated['last_name']) || isset($validated['phone'])) {
-            $patient->user->update([
-                'first_name' => $validated['first_name'] ?? $patient->user->first_name,
-                'last_name' => $validated['last_name'] ?? $patient->user->last_name,
-                'phone' => $validated['phone'] ?? $patient->user->phone,
-            ]);
-        }
-        
-        // Update patient
-        $patient->update([
-            'address' => $validated['address'] ?? $patient->address,
-            'blood_group' => $validated['blood_group'] ?? $patient->blood_group,
-            'emergency_contact' => $validated['emergency_contact'] ?? $patient->emergency_contact,
+        $userData = $request->only([
+            'first_name',
+            'last_name',
+            'phone',
+            'email',
+            'address',
+            'gender',
+            'date_of_birth',
         ]);
+        $patient->user->update($userData);
+
+        // Update patient
+        $patientData = $request->only([
+            'address',
+            'gender',
+            'date_of_birth',
+            'blood_group',
+            'emergency_name',
+            'emergency_contact',
+        ]);
+        $patient->update($patientData);
         
-        return redirect()->back()->with('success', 'Patient updated successfully.');
+        return redirect()->route('patients.show', $id)->with('success', 'Patient updated successfully.');
     }
 
     /**
@@ -166,6 +191,7 @@ class PatientController extends Controller
             'gender' => $validated['gender'],
             'emergency_name' => $validated['emergency_name'] ?? null,
             'emergency_contact' => $validated['emergency_contact'] ?? null,
+            'blood_group' => $validated['blood_group'] ?? null,
             'patient_number' => 'PAT-' . date('Ymd') . '-' . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
         ]);
         
@@ -173,6 +199,7 @@ class PatientController extends Controller
             'success' => true,
             'patient_id' => $patient->patient_id,
             'full_name' => $user->first_name . ' ' . $user->last_name,
+            'gender' => $patient->gender,
             'message' => 'Patient created successfully.'
         ]);
     }

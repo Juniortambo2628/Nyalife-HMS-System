@@ -4,6 +4,7 @@ import PageHeader from '@/Components/PageHeader';
 import ConsultationForm from './Form';
 
 export default function Create({ auth, patients, doctors, appointment }) {
+    console.log('SINGULAR CONSULTATION CREATE');
     return (
         <AuthenticatedLayout
             user={auth.user}

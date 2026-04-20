@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import { toast } from 'react-hot-toast';
 
 export default function ServiceTabsManager({ tabs: initialTabs }) {
     const [tabs, setTabs] = useState(initialTabs || []); // Manage local state for tabs
     const [activeIndex, setActiveIndex] = useState(null);
-    const { post, processing } = useForm({ tabs });
+    const { setData, post, processing } = useForm({ tabs });
 
     const toggleAccordion = (index) => {
         setActiveIndex(activeIndex === index ? null : index);
@@ -14,12 +15,16 @@ export default function ServiceTabsManager({ tabs: initialTabs }) {
 
     const addTab = () => {
         const newTab = { title: 'New Service', icon: 'fa-star', content_title: '', content_lead: '', content_body: '' };
-        setTabs([...tabs, newTab]);
+        const newTabs = [...tabs, newTab];
+        setTabs(newTabs);
+        setData('tabs', newTabs);
         setActiveIndex(tabs.length); // Open the new tab
     };
 
     const removeTab = (index) => {
-        setTabs(tabs.filter((_, i) => i !== index));
+        const newTabs = tabs.filter((_, i) => i !== index);
+        setTabs(newTabs);
+        setData('tabs', newTabs);
         if (activeIndex === index) setActiveIndex(null);
     };
 
@@ -27,12 +32,14 @@ export default function ServiceTabsManager({ tabs: initialTabs }) {
         const newTabs = [...tabs];
         newTabs[index][field] = value;
         setTabs(newTabs);
+        setData('tabs', newTabs);
     };
 
     const saveTabs = () => {
         post(route('cms.service-tabs.update'), {
-            data: { tabs },
-            preserveScroll: true
+            preserveScroll: true,
+            onSuccess: () => toast.success('Service tabs updated successfully!'),
+            onError: () => toast.error('Failed to update service tabs.')
         });
     };
 

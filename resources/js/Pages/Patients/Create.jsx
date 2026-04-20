@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import PageHeader from '@/Components/PageHeader';
 
 export default function Create({ auth }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -10,7 +11,7 @@ export default function Create({ auth }) {
         date_of_birth: '',
         gender: 'male',
         address: '',
-        blood_group: 'Unknown',
+        blood_group: '',
         emergency_name: '',
         emergency_contact: '',
     });
@@ -27,15 +28,17 @@ export default function Create({ auth }) {
         >
             <Head title="Register Patient" />
 
+            <PageHeader 
+                title="Register New Patient"
+                breadcrumbs={[
+                    { label: 'Patients', href: route('patients.index') },
+                    { label: 'Register', active: true }
+                ]}
+                showBack={true}
+                backUrl={route('patients.index')}
+            />
+
             <div className="container-fluid patients-page px-0">
-                <div className="row mb-4">
-                    <div className="col-12 d-flex justify-content-between align-items-center">
-                        <h2 className="mb-0">New Patient Registration</h2>
-                        <Link href={route('patients.index')} className="btn btn-outline-secondary">
-                            <i className="fas fa-arrow-left me-2"></i>Back to Registry
-                        </Link>
-                    </div>
-                </div>
 
                 <div className="row justify-content-center">
                     <div className="col-lg-10">
@@ -106,7 +109,7 @@ export default function Create({ auth }) {
                                                 value={data.blood_group}
                                                 onChange={e => setData('blood_group', e.target.value)}
                                             >
-                                                <option value="Unknown">Unknown</option>
+                                                <option value="">Select...</option>
                                                 <option value="A+">A+</option>
                                                 <option value="A-">A-</option>
                                                 <option value="B+">B+</option>

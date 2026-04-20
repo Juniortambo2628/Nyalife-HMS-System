@@ -4,6 +4,7 @@ import { useState } from 'react';
 import PageHeader from '@/Components/PageHeader';
 
 export default function Show({ appointment, auth }) {
+    const isReceptionist = auth.user.role === 'receptionist';
     const [activeTab, setActiveTab] = useState('summary');
     const { patch, processing } = useForm({
         status: appointment.status,
@@ -127,26 +128,30 @@ export default function Show({ appointment, auth }) {
                                     >
                                         General Info
                                     </button>
-                                    <button
-                                        onClick={() => setActiveTab('history')}
-                                        className={`${
-                                            activeTab === 'history'
-                                                ? 'border-pink-500 text-pink-600'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                        } whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors`}
-                                    >
-                                        Clinical History
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveTab('prescriptions')}
-                                        className={`${
-                                            activeTab === 'prescriptions'
-                                                ? 'border-pink-500 text-pink-600'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                        } whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors`}
-                                    >
-                                        Prescriptions
-                                    </button>
+                                    {!isReceptionist && (
+                                        <>
+                                            <button
+                                                onClick={() => setActiveTab('history')}
+                                                className={`${
+                                                    activeTab === 'history'
+                                                        ? 'border-pink-500 text-pink-600'
+                                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                                } whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors`}
+                                            >
+                                                Clinical History
+                                            </button>
+                                            <button
+                                                onClick={() => setActiveTab('prescriptions')}
+                                                className={`${
+                                                    activeTab === 'prescriptions'
+                                                        ? 'border-pink-500 text-pink-600'
+                                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                                } whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors`}
+                                            >
+                                                Prescriptions
+                                            </button>
+                                        </>
+                                    )}
                                 </nav>
                             </div>
                             <div className="card-body p-4 pt-0">

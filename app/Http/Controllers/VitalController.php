@@ -37,12 +37,24 @@ class VitalController extends Controller
     public function store(StoreVitalRequest $request)
     {
         $validated = $request->validated();
+        
+        // Calculate BMI if both height (cm) and weight (kg) are provided
+        $bmi = null;
+        if (!empty($validated['weight']) && !empty($validated['height'])) {
+            $heightInMeters = $validated['height'] / 100;
+            if ($heightInMeters > 0) {
+                $bmi = round($validated['weight'] / ($heightInMeters * $heightInMeters), 2);
+            }
+        }
+
         Vital::create(array_merge($validated, [
+            'bmi' => $bmi,
             'measured_at' => now(),
             'recorded_by' => Auth::id(),
         ]));
 
-        return redirect()->route('dashboard', 'nurse')
+        $role = Auth::user()->role;
+        return redirect()->route('dashboard', ['role' => $role])
                          ->with('success', 'Vital signs recorded successfully.');
     }
 }

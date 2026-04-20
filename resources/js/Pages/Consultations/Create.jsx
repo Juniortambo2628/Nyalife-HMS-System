@@ -6,6 +6,8 @@ import FormSection from '@/Components/FormSection';
 import FormField from '@/Components/FormField';
 import FormSelect from '@/Components/FormSelect';
 import QuickPatientModal from '@/Components/QuickPatientModal';
+import Modal from '@/Components/Modal';
+import ConsultationDraftSwitcher from '@/Components/ConsultationDraftSwitcher';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { toLocalISO } from '@/Utils/dateUtils';
@@ -13,7 +15,9 @@ import { toLocalISO } from '@/Utils/dateUtils';
 const AUTOSAVE_KEY = 'nyalife_consultation_draft';
 const AUTOSAVE_INTERVAL = 15000; // 15 seconds
 
-export default function Create({ patients, doctors, medical_procedures = [], lab_test_types = [], procedure_services = [], appointment_id, preselected_patient_id, preselected_patient_label, preselected_patient_gender, priority = 'normal', auth }) {
+export default function Create({ patients, doctors, medical_procedures = [], lab_test_types = [], procedure_services = [], appointment_id, preselected_patient_id, preselected_patient_label, preselected_patient_gender, priority = 'normal', auth, ...props }) {
+    const consultationDrafts = props.drafts || { data: [] };
+    console.log('Consultation Create Props:', { consultationDrafts });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [quickPatientLabel, setQuickPatientLabel] = useState(preselected_patient_label || "");
     const [showLabConfirmModal, setShowLabConfirmModal] = useState(false);
@@ -24,34 +28,43 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
     const [autosaveStatus, setAutosaveStatus] = useState('');
     const autosaveTimerRef = useRef(null);
     
+    const [showDraftAlert, setShowDraftAlert] = useState(false);
+    const isDiscardingRef = useRef(false);
+    
     // Try to restore draft from localStorage
-    const loadDraft = () => {
+    const loadDraft = useCallback(() => {
         try {
             const saved = localStorage.getItem(AUTOSAVE_KEY);
             if (saved) {
-                const draft = JSON.parse(saved);
+                const draftData = JSON.parse(saved);
                 // Only restore if it's for the same appointment/patient context
-                if (draft.appointment_id == (appointment_id || '') && draft.patient_id == (preselected_patient_id || '')) {
-                    return draft;
+                if (draftData.appointment_id == (appointment_id || '') && draftData.patient_id == (preselected_patient_id || '')) {
+                    return draftData;
                 }
             }
         } catch (e) { /* ignore corrupt data */ }
         return null;
-    };
+    }, [appointment_id, preselected_patient_id]);
 
-    const draft = loadDraft();
+    const initialDraft = useRef(loadDraft());
+
+    useEffect(() => {
+        if (initialDraft.current) {
+            setShowDraftAlert(true);
+        }
+    }, []);
 
     const { data, setData, post, processing, errors, reset } = useForm({
-        patient_id: draft?.patient_id || preselected_patient_id || '',
-        doctor_id: draft?.doctor_id || (auth.user.role === 'doctor' && auth.user.staff ? auth.user.staff.staff_id : ''),
+        patient_id: initialDraft.current?.patient_id || preselected_patient_id || '',
+        doctor_id: initialDraft.current?.doctor_id || (auth.user.role === 'doctor' && auth.user.staff ? auth.user.staff.staff_id : ''),
         appointment_id: appointment_id || '',
-        consultation_date: draft?.consultation_date || toLocalISO(),
-        priority: draft?.priority || priority || 'normal',
+        consultation_date: initialDraft.current?.consultation_date || toLocalISO(),
+        priority: initialDraft.current?.priority || priority || 'normal',
         is_walk_in: !appointment_id,
         status: 'pending',
         
         // Vitals
-        vital_signs: draft?.vital_signs || {
+        vital_signs: initialDraft.current?.vital_signs || {
             blood_pressure: '',
             temperature: '',
             heart_rate: '',
@@ -63,52 +76,53 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
         },
 
         // Chief Complaint
-        chief_complaint: draft?.chief_complaint || '',
-        history_present_illness: draft?.history_present_illness || '',
+        chief_complaint: initialDraft.current?.chief_complaint || '',
+        history_present_illness: initialDraft.current?.history_present_illness || '',
         
         // Gynaecological History
-        menstrual_history: draft?.menstrual_history || {
+        menstrual_history: initialDraft.current?.menstrual_history || {
             last_period_date: '',
             regularity: 'regular',
             flow_duration: '',
             dysmenorrhea: 'none',
         },
-        cervical_screening: draft?.cervical_screening || '',
-        contraceptive_history: draft?.contraceptive_history || '',
-        sexual_history: draft?.sexual_history || '',
+        cervical_screening: initialDraft.current?.cervical_screening || '',
+        contraceptive_history: initialDraft.current?.contraceptive_history || '',
+        sexual_history: initialDraft.current?.sexual_history || '',
         
         // Obstetric History
-        parity: draft?.parity || '',
-        current_pregnancy: draft?.current_pregnancy || '',
-        past_obstetric: draft?.past_obstetric || [],
+        parity: initialDraft.current?.parity || '',
+        current_pregnancy: initialDraft.current?.current_pregnancy || '',
+        past_obstetric: initialDraft.current?.past_obstetric || [],
         
         // Medical & Surgical
-        past_medical_history: draft?.past_medical_history || '',
-        surgical_history: draft?.surgical_history || '',
+        past_medical_history: initialDraft.current?.past_medical_history || '',
+        surgical_history: initialDraft.current?.surgical_history || '',
         
         // Family & Social
-        family_history: draft?.family_history || '',
-        social_history: draft?.social_history || '',
+        family_history: initialDraft.current?.family_history || '',
+        social_history: initialDraft.current?.social_history || '',
         
         // System Review & Examination
-        review_of_systems: draft?.review_of_systems || '',
-        general_examination: draft?.general_examination || '',
-        systems_examination: draft?.systems_examination || '',
+        review_of_systems: initialDraft.current?.review_of_systems || '',
+        general_examination: initialDraft.current?.general_examination || '',
+        systems_examination: initialDraft.current?.systems_examination || '',
         
         // Assessment & Plan
-        diagnosis: draft?.diagnosis || '',
-        treatment_plan: draft?.treatment_plan || '',
-        follow_up_instructions: draft?.follow_up_instructions || '',
-        notes: draft?.notes || '',
+        diagnosis: initialDraft.current?.diagnosis || '',
+        treatment_plan: initialDraft.current?.treatment_plan || '',
+        follow_up_instructions: initialDraft.current?.follow_up_instructions || '',
+        notes: initialDraft.current?.notes || '',
 
         // Clinical Services & Billing
-        requested_procedures: draft?.requested_procedures || [],
-        requested_labs: draft?.requested_labs || [],
-        requested_service_items: draft?.requested_service_items || [],
+        requested_procedures: initialDraft.current?.requested_procedures || [],
+        requested_labs: initialDraft.current?.requested_labs || [],
+        requested_service_items: initialDraft.current?.requested_service_items || [],
     });
 
     // ====== AUTOSAVE ======
     const saveDraft = useCallback(() => {
+        if (isDiscardingRef.current) return;
         try {
             localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
             setAutosaveStatus('Draft saved');
@@ -129,7 +143,14 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
     }, [saveDraft]);
 
     const clearDraft = () => {
+        isDiscardingRef.current = true;
         localStorage.removeItem(AUTOSAVE_KEY);
+        setShowDraftAlert(false);
+        setAutosaveStatus('');
+        // We don't necessarily need to reload if we manually reset
+        reset();
+        // Give a small delay before allowing autosave again (optional, since the component might unmount/remount)
+        setTimeout(() => { isDiscardingRef.current = false; }, 1000);
     };
 
     // Helper for nested state updates
@@ -291,15 +312,16 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
                 </div>
             )}
 
-            {draft && (
-                <div className="alert alert-info border-0 shadow-sm rounded-3 d-flex align-items-center mb-4">
+            {showDraftAlert && (
+                <div className="alert alert-info border-0 shadow-sm rounded-3 d-flex align-items-center mb-4 animate__animated animate__fadeIn">
                     <i className="fas fa-history fa-lg me-3 text-info"></i>
                     <div className="flex-grow-1">
                         <strong>Draft restored.</strong> Your previous unsaved consultation data has been recovered.
                     </div>
-                    <button type="button" className="btn btn-sm btn-outline-info ms-3" onClick={() => { clearDraft(); window.location.reload(); }}>
+                    <button type="button" className="btn btn-sm btn-outline-info ms-3" onClick={clearDraft}>
                         <i className="fas fa-trash me-1"></i>Discard Draft
                     </button>
+                    <button type="button" className="btn-close ms-2" onClick={() => setShowDraftAlert(false)} aria-label="Close"></button>
                 </div>
             )}
 
@@ -781,40 +803,39 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
             </form>
 
             <QuickPatientModal 
-                isOpen={isModalOpen} 
+                show={isModalOpen} 
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={(patient) => {
                     setData('patient_id', patient.value);
                     setQuickPatientLabel(patient.label);
+                    if (patient.gender) setPatientGender(patient.gender.toLowerCase());
                 }}
             />
 
             {/* Lab Confirmation Modal */}
-            {showLabConfirmModal && (
-                <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1060 }}>
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content border-0 shadow-lg rounded-4">
-                            <div className="modal-header bg-primary text-white p-4 rounded-top-4">
-                                <h5 className="modal-title fw-bold">
-                                    <i className="fas fa-microscope me-2"></i>Register Lab Requests?
-                                </h5>
-                                <button type="button" className="btn-close btn-close-white" onClick={() => setShowLabConfirmModal(false)}></button>
-                            </div>
-                            <div className="modal-body p-4 text-center">
-                                <p className="mb-4 fs-5">
-                                    You have <strong>{data.requested_service_items.length} item(s)</strong> selected in the 
-                                    <em> Services, Procedures & Diagnostics</em> section.
-                                </p>
-                                <p className="text-muted">Would you like to register these as <strong>official Lab Requests</strong> so they appear on the laboratory dashboard?</p>
-                            </div>
-                            <div className="modal-footer p-3 bg-light rounded-bottom-4 border-0 justify-content-center gap-2">
-                                <button type="button" className="btn btn-outline-secondary px-4 rounded-pill" onClick={skipMoveToLabs}>Keep as Services only</button>
-                                <button type="button" className="btn btn-primary px-5 rounded-pill fw-bold shadow-sm" onClick={confirmMoveToLabs}>Yes, Move to Labs & Save</button>
-                            </div>
-                        </div>
+            <Modal show={showLabConfirmModal} onClose={() => setShowLabConfirmModal(false)} maxWidth="lg">
+                <div className="border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div className="bg-gradient-to-r from-pink-500 to-pink-700 text-white p-6 border-0">
+                        <h5 className="text-xl font-bold flex items-center m-0">
+                            <i className="fas fa-microscope me-3"></i>Register Lab Requests?
+                        </h5>
+                    </div>
+                    <div className="p-8 text-center bg-white">
+                        <p className="mb-4 text-lg text-gray-700">
+                            You have <strong className="text-pink-600 px-2 py-1 bg-pink-50 rounded-lg">{data.requested_service_items.length} item(s)</strong> selected in the 
+                            <em className="text-pink-500 font-medium"> Services, Procedures & Diagnostics</em> section.
+                        </p>
+                        <p className="text-gray-500 leading-relaxed">Would you like to register these as <strong className="text-gray-900">official Lab Requests</strong> so they appear on the laboratory dashboard?</p>
+                    </div>
+                    <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-center gap-4">
+                        <button type="button" className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all" onClick={skipMoveToLabs}>Keep as Services only</button>
+                        <button type="button" className="px-8 py-3 rounded-2xl font-bold text-white bg-pink-600 hover:bg-pink-700 shadow-lg shadow-pink-100 transition-all flex items-center gap-2" onClick={confirmMoveToLabs}>
+                            <i className="fas fa-check-circle"></i>
+                            Yes, Move to Labs & Save
+                        </button>
                     </div>
                 </div>
-            )}
+            </Modal>
 
             {/* Simple Toast Notification */}
             {toast && (
@@ -825,6 +846,9 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
                     </div>
                 </div>
             )}
+
+            {/* Context Switching Widget */}
+            <ConsultationDraftSwitcher drafts={consultationDrafts.data || []} />
         </AuthenticatedLayout>
     );
 }

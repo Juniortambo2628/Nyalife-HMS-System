@@ -114,6 +114,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/patients', [\App\Http\Controllers\PatientController::class, 'store'])->name('patients.store');
     Route::get('/patients/{id}', [\App\Http\Controllers\PatientController::class, 'show'])->name('patients.show');
     Route::put('/patients/{id}', [\App\Http\Controllers\PatientController::class, 'update'])->name('patients.update');
+    Route::get('/patients/{id}/edit', [\App\Http\Controllers\PatientController::class, 'edit'])->name('patients.edit');
     Route::post('/patients/quick-store', [\App\Http\Controllers\PatientController::class, 'quickStore'])->name('patients.quick-store');
     
     // Consultations
@@ -208,7 +209,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Insurance Management
     Route::get('/admin/insurances', [\App\Http\Controllers\InsuranceController::class, 'index'])->name('insurances.index');
+    Route::get('/admin/insurances/create', [\App\Http\Controllers\InsuranceController::class, 'create'])->name('insurances.create');
     Route::post('/admin/insurances', [\App\Http\Controllers\InsuranceController::class, 'store'])->name('insurances.store');
+    Route::get('/admin/insurances/{id}/edit', [\App\Http\Controllers\InsuranceController::class, 'edit'])->name('insurances.edit');
     Route::post('/admin/insurances/{id}', [\App\Http\Controllers\InsuranceController::class, 'update'])->name('insurances.update'); // POST for multipart/form-data compatibility
     Route::delete('/admin/insurances/{id}', [\App\Http\Controllers\InsuranceController::class, 'destroy'])->name('insurances.destroy');
     Route::post('/admin/insurances/{id}/toggle', [\App\Http\Controllers\InsuranceController::class, 'toggle'])->name('insurances.toggle');
@@ -227,6 +230,7 @@ Route::get('/api/insurances', [\App\Http\Controllers\InsuranceController::class,
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/image', [ProfileController::class, 'updateImage'])->name('profile.image.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

@@ -4,6 +4,7 @@ import PageHeader from '@/Components/PageHeader';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
 import TextInput from '@/Components/TextInput';
+import { toast } from 'react-hot-toast';
 
 // FilePond imports
 import { FilePond, registerPlugin } from 'react-filepond';
@@ -40,7 +41,10 @@ export default function Settings({ settings, serviceTabs }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('cms.update'));
+        post(route('cms.update'), {
+            onSuccess: () => toast.success('CMS Configuration updated successfully!'),
+            onError: () => toast.error('Failed to update CMS Configuration. Please check for errors.')
+        });
     };
 
     return (

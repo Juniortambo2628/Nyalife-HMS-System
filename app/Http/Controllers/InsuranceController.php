@@ -20,6 +20,14 @@ class InsuranceController extends Controller
     }
 
     /**
+     * Show the form for creating a new insurance.
+     */
+    public function create()
+    {
+        return Inertia::render('Insurances/Create');
+    }
+
+    /**
      * API for public landing page.
      */
     public function publicList()
@@ -50,8 +58,18 @@ class InsuranceController extends Controller
         }
 
         Insurance::create($validated);
+        return redirect()->route('insurances.index')->with('success', 'Insurance added successfully.');
+    }
 
-        return redirect()->back()->with('success', 'Insurance added successfully.');
+    /**
+     * Show the form for editing an insurance.
+     */
+    public function edit($id)
+    {
+        $insurance = Insurance::findOrFail($id);
+        return Inertia::render('Insurances/Edit', [
+            'insurance' => $insurance
+        ]);
     }
 
     /**
@@ -79,8 +97,7 @@ class InsuranceController extends Controller
         }
 
         $insurance->update($validated);
-
-        return redirect()->back()->with('success', 'Insurance updated successfully.');
+        return redirect()->route('insurances.index')->with('success', 'Insurance updated successfully.');
     }
 
     /**

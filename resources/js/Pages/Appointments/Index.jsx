@@ -170,7 +170,7 @@ export default function Index({ appointments, filters, auth }) {
     const getAppointmentTabs = (apt) => {
         if (!apt) return [];
         
-        return [
+        const tabs = [
             {
                 id: 'details',
                 label: 'Visit Details',
@@ -233,8 +233,11 @@ export default function Index({ appointments, filters, auth }) {
                         </div>
                     </div>
                 )
-            },
-            {
+            }
+        ];
+
+        if (auth.user.role_name !== 'receptionist') {
+            tabs.push({
                 id: 'clinical',
                 label: 'Clinical Notes',
                 icon: 'fa-stethoscope',
@@ -273,8 +276,9 @@ export default function Index({ appointments, filters, auth }) {
                         )}
                     </div>
                 )
-            },
-            {
+            });
+
+            tabs.push({
                 id: 'prescriptions',
                 label: 'Prescriptions',
                 icon: 'fa-pills',
@@ -306,8 +310,10 @@ export default function Index({ appointments, filters, auth }) {
                         )}
                     </div>
                 )
-            }
-        ];
+            });
+        }
+
+        return tabs;
     };
 
     return (

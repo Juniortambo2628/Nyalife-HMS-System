@@ -53,7 +53,7 @@ export default function InfoModal({ show, onClose, title, subtitle, icon, tabs =
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 2147483647, // Maximum z-index value
+        zIndex: 1050, 
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -64,7 +64,7 @@ export default function InfoModal({ show, onClose, title, subtitle, icon, tabs =
 
     const panelStyle = {
         position: 'relative',
-        zIndex: 2147483647,
+        zIndex: 1051,
         backgroundColor: 'white',
         borderRadius: '1rem',
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',

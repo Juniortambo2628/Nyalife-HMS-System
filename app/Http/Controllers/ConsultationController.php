@@ -59,7 +59,7 @@ class ConsultationController extends Controller
 
         return Inertia::render('Consultations/Index', [
             'consultations' => ConsultationResource::collection($consultations),
-            'drafts' => ConsultationResource::collection($activeDrafts),
+            'drafts' => ConsultationResource::collection($this->getActiveDrafts()),
             'filters' => $request->only(['search', 'doctor_id', 'patient_id']),
         ]);
     }
@@ -88,13 +88,16 @@ class ConsultationController extends Controller
             'preselected_patient_label' => $patient ? ($patient->user->first_name . ' ' . $patient->user->last_name) : null,
             'preselected_patient_gender' => $patient ? $patient->user->gender : null,
             'priority' => $request->query('priority', 'normal'),
-             // Link doctors to users for the dropdown
-            'doctors' => Staff::with('user')->get()->map(function($s) {
+              // Link doctors to users for the dropdown
+            'doctors' => Staff::whereHas('user.roleRelation', function($query) {
+                $query->where('role_name', 'doctor');
+            })->with('user')->get()->map(function($s) {
                  return [
                     'value' => $s->staff_id,
                     'label' => 'Dr. ' . ($s->user->last_name ?? 'Unknown')
                  ];
             }),
+            'drafts' => ConsultationResource::collection($this->getActiveDrafts()),
             'appointment' => $appointment,
             'medical_procedures' => \App\Models\MedicalProcedure::where('is_active', true)->orderBy('name')->get(),
             'lab_test_types' => \App\Models\LabTestType::whereIn('category', [
@@ -297,12 +300,15 @@ class ConsultationController extends Controller
                     'label' => $p->user->first_name . ' ' . $p->user->last_name
                 ];
             }),
-            'doctors' => Staff::with('user')->get()->map(function($s) {
+            'doctors' => Staff::whereHas('user.roleRelation', function($query) {
+                $query->where('role_name', 'doctor');
+            })->with('user')->get()->map(function($s) {
                  return [
                     'value' => $s->staff_id,
                     'label' => 'Dr. ' . ($s->user->last_name ?? 'Unknown')
                  ];
             }),
+            'drafts' => ConsultationResource::collection($this->getActiveDrafts()),
         ]);
     }
 
@@ -336,5 +342,24 @@ class ConsultationController extends Controller
         $consultation = Consultation::findOrFail($id);
         $consultation->delete();
         return redirect()->route('consultations.index')->with('success', 'Consultation deleted successfully.');
+    }
+    /**
+     * Get active in-progress drafts for the current user context.
+     */
+    private function getActiveDrafts()
+    {
+        $user = Auth::user();
+        return Consultation::with(['patient.user', 'doctor.user'])
+            ->where('consultation_status', 'in_progress')
+            ->when($user && $user->role === 'doctor', function($q) use ($user) {
+                $staff = Staff::where('user_id', $user->user_id)->first();
+                return $staff ? $q->where('doctor_id', $staff->staff_id) : $q;
+            })
+            ->when($user && $user->role === 'patient', function($q) use ($user) {
+                $patient = Patient::where('user_id', $user->user_id)->first();
+                return $patient ? $q->where('patient_id', $patient->patient_id) : $q;
+            })
+            ->latest()
+            ->get();
     }
 }

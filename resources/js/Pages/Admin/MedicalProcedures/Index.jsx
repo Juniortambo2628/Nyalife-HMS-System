@@ -1,7 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
-import React, { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import PageHeader from '@/Components/PageHeader';
+import DashboardTable from '@/Components/DashboardTable';
+import { toast } from 'react-hot-toast';
 
 export default function Index({ procedures, auth }) {
     const [isEditing, setIsEditing] = useState(false);
@@ -15,7 +17,7 @@ export default function Index({ procedures, auth }) {
         standard_fee: '',
     });
 
-    const openModal = (procedure = null) => {
+    const openModal = useCallback((procedure = null) => {
         if (procedure) {
             setIsEditing(true);
             setData({
@@ -30,7 +32,7 @@ export default function Index({ procedures, auth }) {
             reset();
         }
         setShowModal(true);
-    };
+    }, [setData, reset]);
 
     const closeModal = () => {
         setShowModal(false);
@@ -42,28 +44,106 @@ export default function Index({ procedures, auth }) {
         e.preventDefault();
         if (isEditing) {
             put(route('medical-procedures.update', data.procedure_id), {
-                onSuccess: () => closeModal(),
+                onSuccess: () => {
+                    closeModal();
+                    toast.success('Procedure updated successfully!');
+                },
+                onError: () => toast.error('Failed to update procedure.')
             });
         } else {
             post(route('medical-procedures.store'), {
-                onSuccess: () => closeModal(),
+                onSuccess: () => {
+                    closeModal();
+                    toast.success('New procedure created successfully!');
+                },
+                onError: () => toast.error('Failed to create procedure.')
             });
         }
     };
 
-    const toggleStatus = (id) => {
-        router.post(route('medical-procedures.toggle', id));
-    };
+    const toggleStatus = useCallback((id) => {
+        router.post(route('medical-procedures.toggle', id), {}, {
+            onSuccess: () => toast.success('Status updated!'),
+            onError: () => toast.error('Failed to update status.')
+        });
+    }, []);
 
-    const deleteProcedure = (id) => {
+    const deleteProcedure = useCallback((id) => {
         if (confirm('Are you sure you want to delete this procedure?')) {
-            destroy(route('medical-procedures.destroy', id));
+            destroy(route('medical-procedures.destroy', id), {
+                onSuccess: () => toast.success('Procedure deleted successfully!'),
+                onError: () => toast.error('Failed to delete procedure.')
+            });
         }
-    };
+    }, [destroy]);
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES' }).format(amount);
     };
+
+    const columns = useMemo(() => [
+        {
+            header: 'Name & Description',
+            accessorKey: 'name',
+            cell: ({ row }) => (
+                <div className="px-1">
+                    <div className="fw-extrabold text-gray-900">{row.original.name}</div>
+                    <div className="text-muted extra-small text-truncate" style={{maxWidth: '300px'}}>
+                        {row.original.description || 'No description provided'}
+                    </div>
+                </div>
+            )
+        },
+        {
+            header: 'Category',
+            accessorKey: 'category',
+            cell: ({ row }) => (
+                <span className="badge bg-secondary-subtle text-secondary px-3 py-1 rounded-pill fw-bold text-uppercase tracking-wider text-xs border border-secondary-subtle shadow-sm">
+                    {row.original.category}
+                </span>
+            )
+        },
+        {
+            header: 'Standard Fee',
+            accessorKey: 'standard_fee',
+            cell: ({ row }) => (
+                <div className="fw-extrabold text-gray-800">
+                    {formatCurrency(row.original.standard_fee)}
+                </div>
+            )
+        },
+        {
+            header: 'Status',
+            accessorKey: 'is_active',
+            cell: ({ row }) => (
+                <div className="form-check form-switch ms-2">
+                    <input 
+                        className="form-check-input transition-all" 
+                        type="checkbox" 
+                        checked={row.original.is_active} 
+                        onChange={() => toggleStatus(row.original.procedure_id)}
+                        style={{cursor: 'pointer', transform: 'scale(1.2)'}}
+                    />
+                </div>
+            )
+        },
+        {
+            header: 'Actions',
+            id: 'actions',
+            cell: ({ row }) => (
+                <div className="text-end">
+                    <div className="d-flex justify-content-end gap-2">
+                        <button onClick={() => openModal(row.original)} className="btn btn-sm btn-white border shadow-sm rounded-circle d-flex align-items-center justify-content-center transition-all hover-scale" style={{width: 34, height: 34}} title="Edit">
+                            <i className="fas fa-edit text-primary"></i>
+                        </button>
+                        <button onClick={() => deleteProcedure(row.original.procedure_id)} className="btn btn-sm btn-white border shadow-sm rounded-circle d-flex align-items-center justify-content-center transition-all hover-scale" style={{width: 34, height: 34}} title="Delete">
+                            <i className="fas fa-trash-alt text-danger"></i>
+                        </button>
+                    </div>
+                </div>
+            )
+        }
+    ], [openModal, deleteProcedure, toggleStatus]);
 
     return (
         <AuthenticatedLayout header="Medical Procedures Catalog">
@@ -79,68 +159,12 @@ export default function Index({ procedures, auth }) {
                 }
             />
 
-            <div className="card shadow-sm border-0 rounded-2xl mb-4">
-                <div className="card-header bg-white border-bottom-0 py-4 px-4 rounded-top-2xl">
-                    <h5 className="fw-bold mb-0 text-gray-800">Master Service Price List</h5>
-                    <p className="text-muted small mb-0 mt-1">Manage standard surgical fees, imaging, and consultation baselines.</p>
-                </div>
-                <div className="table-responsive">
-                    <table className="table table-hover align-middle mb-0">
-                        <thead className="bg-light">
-                            <tr>
-                                <th className="px-4 py-3 text-muted text-uppercase small fw-bold">Name & Description</th>
-                                <th className="px-4 py-3 text-muted text-uppercase small fw-bold">Category</th>
-                                <th className="px-4 py-3 text-muted text-uppercase small fw-bold">Standard Fee</th>
-                                <th className="px-4 py-3 text-muted text-uppercase small fw-bold">Status</th>
-                                <th className="px-4 py-3 text-end text-muted text-uppercase small fw-bold">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {procedures.map((proc) => (
-                                <tr key={proc.procedure_id}>
-                                    <td className="px-4 py-3">
-                                        <div className="fw-bold text-gray-900">{proc.name}</div>
-                                        <div className="text-muted small text-truncate" style={{maxWidth: '300px'}}>{proc.description || 'No description provided'}</div>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <span className="badge bg-secondary-subtle text-secondary px-3 py-1 rounded-pill uppercase tracking-wider text-xs border border-secondary-subtle">
-                                            {proc.category}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3 fw-bold text-gray-700">
-                                        {formatCurrency(proc.standard_fee)}
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <div className="form-check form-switch ms-2">
-                                            <input 
-                                                className="form-check-input" 
-                                                type="checkbox" 
-                                                checked={proc.is_active} 
-                                                onChange={() => toggleStatus(proc.procedure_id)}
-                                                style={{cursor: 'pointer'}}
-                                            />
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-end">
-                                        <div className="d-flex justify-content-end gap-2">
-                                            <button onClick={() => openModal(proc)} className="btn btn-sm btn-light border text-primary rounded-circle" style={{width: 32, height: 32}} title="Edit">
-                                                <i className="fas fa-edit"></i>
-                                            </button>
-                                            <button onClick={() => deleteProcedure(proc.procedure_id)} className="btn btn-sm btn-light border text-danger rounded-circle" style={{width: 32, height: 32}} title="Delete">
-                                                <i className="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {procedures.length === 0 && (
-                                <tr>
-                                    <td colSpan="5" className="text-center py-5 text-muted">No procedures found in the catalog.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+            <div className="py-0">
+                <DashboardTable 
+                    columns={columns}
+                    data={procedures}
+                    emptyMessage="No procedures found in the catalog."
+                />
             </div>
 
             {/* Modal */}
@@ -219,4 +243,19 @@ export default function Index({ procedures, auth }) {
             )}
         </AuthenticatedLayout>
     );
+}
+
+const styles = `
+    .extra-small { font-size: 0.75rem; }
+    .hover-scale:hover { transform: scale(1.1); }
+    .btn-white { background: white; }
+    .btn-white:hover { background: #f8f9fa; }
+    .rounded-3xl { border-radius: 1.75rem; }
+    .rounded-xl { border-radius: 1rem; }
+`;
+
+if (typeof document !== 'undefined') {
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = styles;
+    document.head.appendChild(styleSheet);
 }

@@ -31,7 +31,7 @@ export default function Modal({
             <Dialog
                 as="div"
                 id="nyalife-modal"
-                className="fixed inset-0 flex transform items-center overflow-y-auto px-4 py-6 transition-all sm:px-0"
+                className={`fixed inset-0 flex transform items-center overflow-y-auto px-4 py-6 transition-all sm:px-0 ${show ? 'show' : ''}`}
                 style={{ zIndex: 999999 }}
                 onClose={close}
             >

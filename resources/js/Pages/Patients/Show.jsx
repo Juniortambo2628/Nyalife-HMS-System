@@ -4,7 +4,8 @@ import { useState } from 'react';
 import PageHeader from '@/Components/PageHeader';
 
 export default function Show({ patient, auth }) {
-    const [activeTab, setActiveTab] = useState(patient.consultations ? 'consultations' : 'appointments');
+    const isReceptionist = auth.user.role_name === 'receptionist';
+    const [activeTab, setActiveTab] = useState(patient.consultations && !isReceptionist ? 'consultations' : 'appointments');
 
     const calculateAge = (dob) => {
         const birthDate = new Date(dob);
@@ -104,7 +105,7 @@ export default function Show({ patient, auth }) {
 
                                 <hr className="my-4" />
                                 <div className="d-grid gap-2">
-                                    <Link href="#" className="btn btn-outline-primary btn-sm">
+                                    <Link href={route('patients.edit', patient.patient_id)} className="btn btn-outline-primary btn-sm">
                                         <i className="fas fa-edit me-2"></i>Edit Profile
                                     </Link>
                                     <Link href={route('appointments.create', { patient_id: patient.patient_id })} className="btn btn-primary btn-sm">
@@ -156,7 +157,7 @@ export default function Show({ patient, auth }) {
                         <div className="card shadow-sm border-0 mb-4">
                             <div className="card-header bg-white border-bottom-0 pt-3">
                                 <ul className="nav nav-tabs card-header-tabs border-bottom-0 gap-3">
-                                    {patient.consultations && (
+                                    {patient.consultations && !isReceptionist && (
                                     <li className="nav-item">
                                         <button 
                                             className={`nav-link border-0 bg-transparent rounded-0 px-1 ${activeTab === 'consultations' ? 'fw-bold text-primary border-bottom border-primary border-3' : 'text-muted'}`} 
@@ -174,7 +175,7 @@ export default function Show({ patient, auth }) {
                                             Appointments
                                         </button>
                                     </li>
-                                    {patient.prescriptions && (
+                                    {patient.prescriptions && !isReceptionist && (
                                     <li className="nav-item">
                                         <button 
                                             className={`nav-link border-0 bg-transparent rounded-0 px-1 ${activeTab === 'prescriptions' ? 'fw-bold text-primary border-bottom border-primary border-3' : 'text-muted'}`} 

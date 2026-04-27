@@ -22,7 +22,7 @@ class UpdateAppointmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'sometimes|in:scheduled,confirmed,completed,cancelled,no_show',
+            'status' => 'sometimes|in:scheduled,confirmed,completed,cancelled,no_show,arrived',
             'appointment_date' => 'sometimes|date',
             'appointment_time' => 'sometimes',
             'notes' => 'nullable|string',

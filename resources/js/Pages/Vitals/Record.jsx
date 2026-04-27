@@ -1,159 +1,263 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import DashboardSelect from '@/Components/DashboardSelect';
+import FormSection from '@/Components/FormSection';
+import FormField from '@/Components/FormField';
 import QuickPatientModal from '@/Components/QuickPatientModal';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-export default function Record({ preselected_patient_id, preselected_patient_label, auth }) {
+/**
+ * Record Vitals Page - Standardized to match the clinical premium design system.
+ * Aligned with the Consultations workflow for consistency across the HMS.
+ */
+export default function Record({ preselected_patient_id, preselected_patient_label, latest_height, auth, ...props }) {
     const [showQuickModal, setShowQuickModal] = useState(false);
 
     const { data, setData, post, processing, errors } = useForm({
         patient_id: preselected_patient_id || '',
+        patient_label: preselected_patient_label || '',
         temperature: '',
         blood_pressure: '',
         heart_rate: '',
         respiratory_rate: '',
         weight: '',
-        height: '',
+        height: latest_height || '',
         oxygen_saturation: '',
+        priority: 'normal',
         notes: '',
     });
 
+    useEffect(() => {
+        if (data.patient_id) {
+            axios.get(`/patients/${data.patient_id}/latest-vitals`)
+                .then(res => {
+                    if (res.data && res.data.height) {
+                        setData('height', res.data.height);
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+    }, [data.patient_id]);
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('vitals.store'));
+        post(route('vitals.store'), {
+            onSuccess: () => {
+                // Clear state if needed or redirect
+            }
+        });
     };
 
     const handleQuickSuccess = (newPatient) => {
-        setData('patient_id', newPatient.patient_id);
+        setData(d => ({
+            ...d,
+            patient_id: newPatient.patient_id,
+            patient_label: `${newPatient.first_name} ${newPatient.last_name}`
+        }));
     };
 
-    const labelClass = "form-label font-bold text-gray-500 mb-2 small text-uppercase tracking-wider";
-    const inputClass = "form-control border-0 bg-light rounded-xl py-3 px-4 focus:bg-white focus:ring-2 focus:ring-pink-100 transition-all";
-
     return (
-        <AuthenticatedLayout user={auth.user} header="Record Vitals">
-            <Head title="Record Vitals" />
+        <AuthenticatedLayout user={auth.user} header="Clinical Assessment">
+            <Head title="Capture Vital Signs" />
 
             <PageHeader 
-                title="Capture Vital Signs"
+                title="Record Clinical Vitals"
                 breadcrumbs={[
                     { label: 'Dashboard', url: route('dashboard') },
-                    { label: 'Vitals', active: true }
+                    { label: 'Vitals Ledger', url: route('vitals.index') },
+                    { label: 'Capture New', active: true }
                 ]}
-                actions={
-                    <button 
-                        onClick={() => setShowQuickModal(true)}
-                        className="btn btn-pink-light rounded-pill px-4 fw-bold shadow-sm"
-                    >
-                        <i className="fas fa-plus-circle me-2"></i> Register New Patient
-                    </button>
-                }
             />
 
-            <div className="row justify-content-center">
-                <div className="col-lg-8">
-                    <div className="card shadow-sm border-0 rounded-2xl bg-white">
-                        <div className="card-header bg-white border-bottom p-4">
-                            <h5 className="fw-bold mb-0 text-gray-900">
-                                <i className="fas fa-heartbeat text-pink-500 me-2"></i>
-                                Assessment Form
-                            </h5>
-                        </div>
-                        <div className="card-body p-4 p-md-5">
-                            <form onSubmit={handleSubmit}>
-                                <div className="mb-5">
-                                    <label className={labelClass}>Select Patient</label>
+            <div className="row justify-content-center pb-5">
+                <div className="col-lg-10 col-xl-9">
+                    <form onSubmit={handleSubmit}>
+                        {/* 1. Patient Selection Section */}
+                        <FormSection 
+                            title="Patient Identification" 
+                            icon="fas fa-id-card"
+                            headerClassName="bg-gradient-primary-to-secondary text-white p-4"
+                        >
+                            <div className="row g-3">
+                                <FormField 
+                                    label="Select Registered Patient" 
+                                    required 
+                                    error={errors.patient_id} 
+                                    className="col-12"
+                                    labelClassName="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-2"
+                                >
                                     <DashboardSelect 
                                         asyncUrl="/patients/search"
                                         value={data.patient_id}
-                                        onChange={val => setData('patient_id', val)}
-                                        initialLabel={preselected_patient_label}
-                                        placeholder="Search by name or ID..."
-                                        className={errors.patient_id ? 'is-invalid' : ''}
+                                        onChange={(val, opt) => {
+                                            setData(d => ({
+                                                ...d,
+                                                patient_id: val,
+                                                patient_label: opt ? opt.label : ''
+                                            }));
+                                        }}
+                                        initialLabel={data.patient_label || preselected_patient_label}
+                                        placeholder="Scan catalog or search by name/ID..."
                                         onAddNew={() => setShowQuickModal(true)}
-                                        addNewLabel="New Patient Registry"
+                                        addNewLabel="Quick Register New Patient"
                                     />
-                                    {errors.patient_id && <div className="text-danger small mt-2">{errors.patient_id}</div>}
+                                </FormField>
+                            </div>
+                        </FormSection>
+
+                        {/* 2. Vital Signs Section */}
+                        <FormSection 
+                            title="Clinical Measurements" 
+                            icon="fas fa-heartbeat"
+                            headerClassName="bg-white border-bottom text-primary p-4"
+                        >
+                            <div className="row g-4">
+                                <FormField label="Temperature (°C)" error={errors.temperature} className="col-md-6">
+                                    <div className="input-group">
+                                        <input 
+                                            type="text" 
+                                            className="form-control form-control-lg bg-light border-0 fw-bold px-4" 
+                                            placeholder="e.g. 36.5" 
+                                            value={data.temperature} 
+                                            onChange={e => setData('temperature', e.target.value)} 
+                                        />
+                                        <span className="input-group-text bg-light border-0 text-muted px-4"><i className="fas fa-thermometer-half"></i></span>
+                                    </div>
+                                </FormField>
+
+                                <FormField label="Blood Pressure (mmHg)" error={errors.blood_pressure} className="col-md-6">
+                                    <div className="input-group">
+                                        <input 
+                                            type="text" 
+                                            className="form-control form-control-lg bg-light border-0 fw-bold px-4" 
+                                            placeholder="e.g. 120/80" 
+                                            value={data.blood_pressure} 
+                                            onChange={e => setData('blood_pressure', e.target.value)} 
+                                        />
+                                        <span className="input-group-text bg-light border-0 text-muted px-4"><i className="fas fa-tint"></i></span>
+                                    </div>
+                                </FormField>
+
+                                <FormField label="Heart Rate (bpm)" error={errors.heart_rate} className="col-md-6">
+                                    <div className="input-group">
+                                        <input 
+                                            type="text" 
+                                            className="form-control form-control-lg bg-light border-0 fw-bold px-4" 
+                                            placeholder="e.g. 72" 
+                                            value={data.heart_rate} 
+                                            onChange={e => setData('heart_rate', e.target.value)} 
+                                        />
+                                        <span className="input-group-text bg-light border-0 text-muted px-4"><i className="fas fa-heart"></i></span>
+                                    </div>
+                                </FormField>
+
+                                <FormField label="Respiratory Rate (bpm)" error={errors.respiratory_rate} className="col-md-6">
+                                    <div className="input-group">
+                                        <input 
+                                            type="text" 
+                                            className="form-control form-control-lg bg-light border-0 fw-bold px-4" 
+                                            placeholder="e.g. 16" 
+                                            value={data.respiratory_rate} 
+                                            onChange={e => setData('respiratory_rate', e.target.value)} 
+                                        />
+                                        <span className="input-group-text bg-light border-0 text-muted px-4"><i className="fas fa-lungs"></i></span>
+                                    </div>
+                                </FormField>
+
+                                <div className="col-12 py-2">
+                                    <hr className="opacity-10" />
                                 </div>
 
-                                <div className="row g-4 mb-4">
-                                    <div className="col-md-6">
-                                        <label className={labelClass}>Temperature (°C)</label>
-                                        <div className="input-group">
-                                            <input type="text" className={inputClass} placeholder="e.g. 36.5" value={data.temperature} onChange={e => setData('temperature', e.target.value)} />
-                                            <span className="input-group-text bg-light border-0 rounded-end-xl"><i className="fas fa-thermometer-half text-muted"></i></span>
-                                        </div>
-                                        {errors.temperature && <div className="text-danger small mt-1">{errors.temperature}</div>}
-                                    </div>
-                                    <div className="col-md-6">
-                                        <label className={labelClass}>Blood Pressure (mmHg)</label>
-                                        <div className="input-group">
-                                            <input type="text" className={inputClass} placeholder="e.g. 120/80" value={data.blood_pressure} onChange={e => setData('blood_pressure', e.target.value)} />
-                                            <span className="input-group-text bg-light border-0 rounded-end-xl"><i className="fas fa-tint text-muted"></i></span>
-                                        </div>
-                                        {errors.blood_pressure && <div className="text-danger small mt-1">{errors.blood_pressure}</div>}
-                                    </div>
-                                </div>
+                                <FormField label="Weight (kg)" error={errors.weight} className="col-md-4">
+                                    <input 
+                                        type="text" 
+                                        className="form-control form-control-lg bg-light border-0 fw-bold px-4" 
+                                        placeholder="0.0" 
+                                        value={data.weight} 
+                                        onChange={e => setData('weight', e.target.value)} 
+                                    />
+                                </FormField>
 
-                                <div className="row g-4 mb-4">
-                                    <div className="col-md-6">
-                                        <label className={labelClass}>Heart Rate (bpm)</label>
-                                        <div className="input-group">
-                                            <input type="text" className={inputClass} placeholder="e.g. 72" value={data.heart_rate} onChange={e => setData('heart_rate', e.target.value)} />
-                                            <span className="input-group-text bg-light border-0 rounded-end-xl"><i className="fas fa-heart text-muted"></i></span>
-                                        </div>
-                                        {errors.heart_rate && <div className="text-danger small mt-1">{errors.heart_rate}</div>}
-                                    </div>
-                                    <div className="col-md-6">
-                                        <label className={labelClass}>Respiratory Rate (bpm)</label>
-                                        <div className="input-group">
-                                            <input type="text" className={inputClass} placeholder="e.g. 16" value={data.respiratory_rate} onChange={e => setData('respiratory_rate', e.target.value)} />
-                                            <span className="input-group-text bg-light border-0 rounded-end-xl"><i className="fas fa-lungs text-muted"></i></span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <FormField label="Height (cm)" error={errors.height} className="col-md-4">
+                                    <input 
+                                        type="text" 
+                                        className="form-control form-control-lg bg-light border-0 fw-bold px-4" 
+                                        placeholder="0" 
+                                        value={data.height} 
+                                        onChange={e => setData('height', e.target.value)} 
+                                    />
+                                </FormField>
 
-                                <div className="row g-4 mb-4">
-                                    <div className="col-md-4">
-                                        <label className={labelClass}>Weight (kg)</label>
-                                        <input type="text" className={inputClass} placeholder="e.g. 70" value={data.weight} onChange={e => setData('weight', e.target.value)} />
-                                    </div>
-                                    <div className="col-md-4">
-                                        <label className={labelClass}>Height (cm)</label>
-                                        <input type="text" className={inputClass} placeholder="e.g. 175" value={data.height} onChange={e => setData('height', e.target.value)} />
-                                    </div>
-                                    <div className="col-md-4">
-                                        <label className={labelClass}>SPO2 (%)</label>
-                                        <input type="text" className={inputClass} placeholder="e.g. 98" value={data.oxygen_saturation} onChange={e => setData('oxygen_saturation', e.target.value)} />
-                                    </div>
-                                </div>
+                                <FormField label="SPO2 (%)" error={errors.oxygen_saturation} className="col-md-4">
+                                    <input 
+                                        type="text" 
+                                        className="form-control form-control-lg bg-light border-0 fw-bold px-4" 
+                                        placeholder="98" 
+                                        value={data.oxygen_saturation} 
+                                        onChange={e => setData('oxygen_saturation', e.target.value)} 
+                                    />
+                                </FormField>
+                            </div>
+                        </FormSection>
 
-                                <div className="mb-4">
-                                    <label className={labelClass}>Notes / Observations</label>
-                                    <textarea 
-                                        className={inputClass} 
-                                        rows="3" 
-                                        placeholder="Any additional observations..."
-                                        value={data.notes}
-                                        onChange={e => setData('notes', e.target.value)}
-                                    ></textarea>
-                                </div>
-
-                                <div className="text-end mt-5">
-                                    <button type="submit" className="btn btn-primary rounded-pill px-5 py-3 font-bold shadow-lg transition-all hover-lift" disabled={processing}>
-                                        {processing ? (
-                                            <span className="spinner-border spinner-border-sm me-2"></span>
-                                        ) : (
-                                            <i className="fas fa-save me-2"></i>
-                                        )}
-                                        Complete Entry
+                        {/* 3. Triage & Notes */}
+                        <FormSection 
+                            title="Triage & Observations" 
+                            icon="fas fa-clipboard-check"
+                            headerClassName="bg-light text-dark p-4 border-bottom"
+                        >
+                            <div className="mb-4">
+                                <label className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-3 d-block">Urgency Level</label>
+                                <div className="d-flex gap-3">
+                                    <button 
+                                        type="button" 
+                                        className={`btn rounded-pill px-5 py-3 fw-extrabold transition-all shadow-sm ${data.priority === 'normal' ? 'btn-primary border-0' : 'btn-light border text-muted'}`}
+                                        onClick={() => setData('priority', 'normal')}
+                                    >
+                                        <i className="fas fa-check-circle me-2"></i> Normal
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        className={`btn rounded-pill px-5 py-3 fw-extrabold transition-all shadow-sm ${data.priority === 'emergency' ? 'btn-danger border-0' : 'btn-light border text-muted'}`}
+                                        onClick={() => setData('priority', 'emergency')}
+                                    >
+                                        <i className="fas fa-bolt me-2"></i> Emergency
                                     </button>
                                 </div>
-                            </form>
+                            </div>
+
+                            <FormField label="Clinical Observations" error={errors.notes} className="col-12">
+                                <textarea 
+                                    className="form-control bg-light border-0 rounded-2xl p-4 fw-medium" 
+                                    rows="4"
+                                    value={data.notes}
+                                    onChange={e => setData('notes', e.target.value)}
+                                    placeholder="Enter any additional clinical observations or patient comments..."
+                                ></textarea>
+                            </FormField>
+                        </FormSection>
+
+                        {/* Submission */}
+                        <div className="d-flex justify-content-between align-items-center mt-5">
+                            <button type="button" onClick={() => router.visit(route('vitals.index'))} className="btn btn-link text-muted fw-bold text-decoration-none">
+                                <i className="fas fa-arrow-left me-2"></i> Back to Ledger
+                            </button>
+                            <button 
+                                type="submit" 
+                                className="btn btn-primary rounded-pill px-5 py-3 fw-extrabold shadow-lg transition-all hover-lift" 
+                                disabled={processing}
+                            >
+                                {processing ? (
+                                    <span className="spinner-border spinner-border-sm me-2"></span>
+                                ) : (
+                                    <i className="fas fa-save me-2"></i>
+                                )}
+                                SAVE CLINICAL RECORDS
+                            </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
 
@@ -162,12 +266,15 @@ export default function Record({ preselected_patient_id, preselected_patient_lab
                 onClose={() => setShowQuickModal(false)} 
                 onSuccess={handleQuickSuccess}
             />
-
+            
             <style>{`
-                .btn-pink-light { background-color: #fdf2f8; color: #ec4899; }
-                .btn-pink-light:hover { background-color: #fce7f3; color: #db2777; }
-                .rounded-end-xl { border-top-right-radius: 0.75rem; border-bottom-right-radius: 0.75rem; }
-                .hover-lift:hover { transform: translateY(-3px); }
+                .extra-small { font-size: 0.7rem; }
+                .fw-extrabold { font-weight: 800; }
+                .tracking-widest { letter-spacing: 0.1em; }
+                .bg-gradient-primary-to-secondary {
+                    background: linear-gradient(135deg, #e91e63 0%, #d81b60 100%);
+                }
+                .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important; }
             `}</style>
         </AuthenticatedLayout>
     );

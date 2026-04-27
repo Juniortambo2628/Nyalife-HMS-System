@@ -18,6 +18,7 @@ class PatientResource extends JsonResource
             'address' => $this->address ?? ($this->user?->address),
             'blood_group' => $this->blood_group ?? $this->blood_type,
             'emergency_contact' => $this->emergency_contact,
+            'age' => $this->age,
             'emergency_name' => $this->emergency_name ?? null,
             'created_at' => $this->created_at instanceof \DateTimeInterface ? $this->created_at->format(\DateTimeInterface::ATOM) : $this->created_at,
             'updated_at' => $this->updated_at instanceof \DateTimeInterface ? $this->updated_at->format(\DateTimeInterface::ATOM) : $this->updated_at,

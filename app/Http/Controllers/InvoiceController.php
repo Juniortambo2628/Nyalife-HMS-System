@@ -11,6 +11,7 @@ use App\Models\Patient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Services\ActivityLogger;
 
 class InvoiceController extends Controller
 {
@@ -26,6 +27,20 @@ class InvoiceController extends Controller
             }
         }
 
+        if ($request->has('quick_filter') && $request->quick_filter) {
+            switch ($request->quick_filter) {
+                case 'unpaid':
+                    $query->where('status', 'unpaid');
+                    break;
+                case 'paid':
+                    $query->where('status', 'paid');
+                    break;
+                case 'overdue':
+                    $query->where('status', 'unpaid')->whereDate('due_date', '<', today());
+                    break;
+            }
+        }
+
         $invoices = $query
             ->searchByPatientOrNumber($request->search)
             ->status($request->status)
@@ -34,15 +49,24 @@ class InvoiceController extends Controller
 
         return Inertia::render('Invoices/Index', [
             'invoices' => InvoiceResource::collection($invoices),
-            'filters' => $request->only(['search', 'status'])
+            'filters' => $request->only(['search', 'status', 'quick_filter'])
         ]);
     }
 
     public function show($id)
     {
         $invoice = Invoice::with(['patient.user', 'items', 'consultation'])->findOrFail($id);
+        
+        $settings = \App\Models\Setting::whereIn('key', [
+            'contact_address', 
+            'contact_email', 
+            'contact_phone',
+            'tax_rate'
+        ])->pluck('value', 'key');
+
         return Inertia::render('Invoices/Show', [
-            'invoice' => InvoiceResource::make($invoice)
+            'invoice' => InvoiceResource::make($invoice),
+            'clinic_settings' => $settings
         ]);
     }
     public function create(Request $request)
@@ -102,6 +126,15 @@ class InvoiceController extends Controller
 
             \Illuminate\Support\Facades\DB::commit();
 
+            ActivityLogger::log(
+                'billing',
+                "New invoice #{$invoice->invoice_number} created for " . ($invoice->patient->user->full_name ?? 'Patient'),
+                ['invoice_id' => $invoice->invoice_id, 'amount' => $totalAmount],
+                Auth::user(),
+                $invoice,
+                [$invoice->patient->user_id, 1]
+            );
+
             return redirect()->route('invoices.show', $invoice->invoice_id)
                 ->with('success', 'Invoice created successfully.');
 
@@ -121,6 +154,16 @@ class InvoiceController extends Controller
                 'status' => $validated['status'] ?? $invoice->status,
                 'payment_method' => $validated['payment_method'] ?? $invoice->payment_method,
             ]);
+
+            ActivityLogger::log(
+                'billing',
+                "Invoice #{$invoice->invoice_number} marked as {$invoice->status}",
+                ['invoice_id' => $invoice->invoice_id, 'status' => $invoice->status],
+                Auth::user(),
+                $invoice,
+                [$invoice->patient->user_id, 1]
+            );
+
             return back()->with('success', 'Invoice status updated.');
         }
 

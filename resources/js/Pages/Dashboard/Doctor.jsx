@@ -1,214 +1,171 @@
 import DashboardTable from '@/Components/DashboardTable';
+import DashboardHero from '@/Components/DashboardHero';
+import StatCard from '@/Components/StatCard';
+import QuickActionCard from '@/Components/QuickActionCard';
 import { useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Doctor({ auth, stats }) {
     const columns = useMemo(() => [
         {
             header: 'Time',
             accessorKey: 'appointment_time',
-            cell: ({ row }) => <span className="fw-bold">{row.original.appointment_time}</span>
+            cell: ({ row }) => <span className="fw-bold text-gray-900">{row.original.appointment_time}</span>
         },
         {
             header: 'Patient',
             accessorKey: 'patient',
             cell: ({ row }) => (
                 <div>
-                    <div className="fw-semibold">{row.original.patient.user.first_name} {row.original.patient.user.last_name}</div>
-                    <small className="text-muted">ID: {row.original.patient_id}</small>
+                    <div className="fw-bold text-gray-900">{row.original.patient.user.first_name} {row.original.patient.user.last_name}</div>
+                    <div className="extra-small text-muted fw-bold text-uppercase opacity-75">ID: PAT-{row.original.patient_id}</div>
                 </div>
             )
         },
         {
             header: 'Type',
             accessorKey: 'appointment_type',
-            cell: ({ row }) => <span className="badge bg-light text-dark border">{row.original.appointment_type}</span>
+            cell: ({ row }) => (
+                <span className="badge rounded-pill bg-light text-dark border px-3 py-1 fw-bold extra-small text-capitalize">
+                    {row.original.appointment_type}
+                </span>
+            )
         },
         {
             header: 'Action',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="text-end pe-2">
-                    <Link href={route('consultations.create', { appointment_id: row.original.appointment_id })} className="btn btn-sm btn-primary rounded-pill px-3 shadow-sm transition-all hover-scale">
-                        Start Consultation
+                <div className="text-end">
+                    <Link href={route('consultations.create', { appointment_id: row.original.appointment_id, patient_id: row.original.patient_id })} className="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm hover-scale">
+                        Start Assessment
                     </Link>
                 </div>
             )
         }
     ], []);
 
+    const statItems = [
+        { label: "Today's Visits", value: stats.today_appointments?.length || 0, icon: 'fa-calendar-check', color: 'info' },
+        { label: 'Pending Reviews', value: stats.pending_appointments || 0, icon: 'fa-clock', color: 'warning' },
+        { label: 'Completed (Week)', value: stats.completed_this_week || 0, icon: 'fa-check-double', color: 'success' }
+    ];
+
+    const quickActions = [
+        { label: 'Patient Registry', sub: 'Search and view records', icon: 'fa-users', color: 'primary', url: route('patients.index') },
+        { label: 'Lab Results', sub: 'Check processed reports', icon: 'fa-flask', color: 'success', url: route('lab.results') },
+        { label: 'Prescription Logs', sub: 'Previous patient meds', icon: 'fa-prescription', color: 'warning', url: route('prescriptions.index') }
+    ];
+
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-        >
+        <AuthenticatedLayout header="Clinician Dashboard">
             <Head title="Doctor Dashboard" />
 
             <PageHeader 
-                title={`Welcome, Dr. ${auth.user.first_name}!`}
+                title={`Medical Center - Dr. ${auth.user.first_name}`}
                 breadcrumbs={[{ label: 'Dashboard', active: true }]}
                 showBack={false}
             />
 
-            <div className="container-fluid dashboard-page px-0 h-auto">
-                <div className="row mb-4 h-auto">
-                    <div className="col-12">
-                        <div className="card shadow-sm border-0 bg-primary text-white overflow-hidden" style={{ borderRadius: '15px' }}>
-                            <div className="card-body p-4 p-md-5 d-flex align-items-center position-relative">
-                                <div style={{ zIndex: '1' }}>
-                                    <h2 className="fw-bold text-white mb-4 ">Pick up where you left off</h2>
-                                    <div className="d-flex flex-wrap gap-3 mt-3">
-                                        {(stats.pending_lab_consultations?.length > 0 || stats.released_labs?.length > 0 || stats.in_progress_consultations?.length > 0) ? (
-                                            <>
-                                                {stats.in_progress_consultations?.map((c, i) => (
-                                                    <Link key={`ip-${i}`} href={route('consultations.edit', c.consultation_id)} className="btn btn-sm btn-light text-primary fw-bold rounded-pill px-3 shadow-sm">
-                                                        <i className="fas fa-spinner fa-spin me-2 text-warning"></i>
-                                                        Resume: {c.patient.user.first_name}
-                                                    </Link>
-                                                ))}
-                                                {stats.released_labs?.map((l, i) => (
-                                                    <Link key={`rl-${i}`} href={route('consultations.show', l.consultation_id)} className="btn btn-sm btn-light text-success fw-bold rounded-pill px-3 shadow-sm">
-                                                        <i className="fas fa-flask me-2"></i>
-                                                        Review Labs: {l.patient.user.first_name}
-                                                    </Link>
-                                                ))}
-                                                {stats.pending_lab_consultations?.map((l, i) => (
-                                                    <Link key={`pl-${i}`} href={route('consultations.show', l.consultation_id)} className="btn btn-sm btn-light text-muted fw-bold rounded-pill px-3 shadow-sm opacity-75">
-                                                        <i className="fas fa-hourglass-half me-2"></i>
-                                                        Awaiting Labs: {l.patient.user.first_name}
-                                                    </Link>
-                                                ))}
-                                            </>
-                                        ) : (
-                                            <p className="mb-0 text-white">No pending tasks or lab results to review at the moment.</p>
+            <div className="px-0">
+                <DashboardHero 
+                    title="Clinician Command Center"
+                    subtitle={`Manage your patients and reviews. You have ${stats.today_appointments?.length || 0} consultations scheduled for today.`}
+                    icon="fa-user-md"
+                />
+
+                <UnifiedToolbar 
+                    actions={
+                        <div className="d-flex align-items-center gap-2">
+                            {(stats.in_progress_consultations?.length > 0 || stats.released_labs?.length > 0) && (
+                                <div className="dropdown">
+                                    <button 
+                                        className="btn btn-light rounded-pill px-4 py-2 fw-bold small d-flex align-items-center gap-2"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                    >
+                                        <i className="fas fa-history text-warning"></i>
+                                        Resume Tasks
+                                        <span className="badge bg-warning text-white rounded-circle ms-1 text-2xs">
+                                            {(stats.in_progress_consultations?.length || 0) + (stats.released_labs?.length || 0)}
+                                        </span>
+                                    </button>
+                                    <ul className="dropdown-menu dropdown-menu-end shadow-2xl border-0 rounded-2xl p-2 mb-3">
+                                        <div className="px-3 py-2 extra-small fw-bold text-muted text-uppercase tracking-widest opacity-50">Active Consultations</div>
+                                        {stats.in_progress_consultations?.map((c, i) => (
+                                            <li key={`ip-${i}`}>
+                                                <Link className="dropdown-item rounded-xl py-2 px-3 d-flex align-items-center gap-3 text-dark" href={route('consultations.edit', c.consultation_id)}>
+                                                    <div className="avatar-xs bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center">
+                                                        <i className="fas fa-spinner fa-spin extra-small"></i>
+                                                    </div>
+                                                    <span className="fw-semibold small">{c.patient.user.first_name}</span>
+                                                </Link>
+                                            </li>
+                                        ))}
+                                        {stats.released_labs?.length > 0 && (
+                                            <div className="px-3 py-2 extra-small fw-bold text-muted text-uppercase tracking-widest opacity-50 mt-2">Ready for Review</div>
                                         )}
-                                    </div>
+                                        {stats.released_labs?.map((l, i) => (
+                                            <li key={`rl-${i}`}>
+                                                <Link className="dropdown-item rounded-xl py-2 px-3 d-flex align-items-center gap-3 text-dark" href={route('consultations.show', l.consultation_id)}>
+                                                    <div className="avatar-xs bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center">
+                                                        <i className="fas fa-flask extra-small"></i>
+                                                    </div>
+                                                    <span className="fw-semibold small">{l.patient.user.first_name}</span>
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
-                                <i className="fas fa-user-md position-absolute" style={{ fontSize: '10rem', right: '2rem', opacity: '0.5', transform: 'rotate(10deg)', color: '#fff' }}></i>
-                            </div>
+                            )}
+                            <Link href={route('patients.index')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                                <i className="fas fa-search me-1"></i> Registry
+                            </Link>
                         </div>
-                    </div>
+                    }
+                />
+
+                <div className="row g-4 mb-4">
+                    {statItems.map((s, i) => (
+                        <div key={i} className="col-md-4">
+                            <StatCard {...s} />
+                        </div>
+                    ))}
                 </div>
 
-                <div className="row g-4 mb-4 text-dark">
-                    <div className="col-md-4">
-                        <div className="card shadow-sm border-0 h-100 p-4">
-                            <div className="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div className="text-muted small fw-bold text-uppercase mb-1">Today's Visits</div>
-                                    <h2 className="fw-bold mb-0">{stats.today_appointments?.length || 0}</h2>
-                                </div>
-                                <div className="bg-info-subtle p-3 rounded text-info">
-                                    <i className="fas fa-calendar-check fa-2x"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="card shadow-sm border-0 h-100 p-4">
-                            <div className="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div className="text-muted small fw-bold text-uppercase mb-1">Pending Reviews</div>
-                                    <h2 className="fw-bold mb-0">{stats.pending_appointments || 0}</h2>
-                                </div>
-                                <div className="bg-warning-subtle p-3 rounded text-warning">
-                                    <i className="fas fa-clock fa-2x"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="card shadow-sm border-0 h-100 p-4">
-                            <div className="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div className="text-muted small fw-bold text-uppercase mb-1">Completed (This Week)</div>
-                                    <h2 className="fw-bold mb-0">{stats.completed_this_week || 0}</h2>
-                                </div>
-                                <div className="bg-success-subtle p-3 rounded text-success">
-                                    <i className="fas fa-check-double fa-2x"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="row">
+                <div className="row g-4">
                     <div className="col-lg-8">
-                        <div className="card shadow-sm border-0 mb-4 h-100">
-                            <div className="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                                <h6 className="mb-0 fw-bold">Today's Appointment Schedule</h6>
-                                <Link href={route('appointments.index')} className="small text-decoration-none">View All</Link>
+                        <div className="card shadow-sm border-0 rounded-2xl mb-4 h-100 bg-white overflow-hidden shadow-hover">
+                            <div className="card-header bg-white py-4 px-4 border-bottom-0 d-flex justify-content-between align-items-center">
+                                <h6 className="mb-0 fw-extrabold text-gray-900"><i className="fas fa-calendar-alt text-pink-500 me-2"></i>Daily Schedule</h6>
+                                <Link href={route('appointments.index')} className="btn btn-light btn-sm rounded-pill px-3 fw-bold border text-muted">Full List</Link>
                             </div>
                             <div className="card-body p-0">
                                 <DashboardTable 
                                     columns={columns}
                                     data={stats.today_appointments || []}
-                                    emptyMessage="No appointments for today."
+                                    emptyMessage="No appointments scheduled for today."
                                 />
                             </div>
                         </div>
                     </div>
                     <div className="col-lg-4">
-                        <div className="card shadow-sm border-0 mb-4 bg-white overflow-hidden">
-                            <div className="card-header bg-white py-3 border-0">
-                                <h6 className="mb-0 fw-bold">Clinical Quick Actions</h6>
+                        <div className="card shadow-sm border-0 rounded-2xl mb-4 bg-white h-100 shadow-hover">
+                            <div className="card-header bg-white py-4 px-4 border-bottom-0">
+                                <h6 className="mb-0 fw-extrabold text-gray-900"><i className="fas fa-bolt text-warning me-2"></i>Quick Clinical Actions</h6>
                             </div>
-                            <div className="card-body p-4 pt-0 mt-3">
-                                <div className="d-grid gap-3">
-                                    <Link href={route('patients.index')} className="btn btn-light border text-start p-3 d-flex align-items-center rounded-3">
-                                        <div className="bg-primary-subtle text-primary p-2 rounded me-3">
-                                            <i className="fas fa-users"></i>
-                                        </div>
-                                        <div>
-                                            <div className="fw-bold small">Find Patient</div>
-                                            <div className="text-muted extra-small">Registry and records</div>
-                                        </div>
-                                    </Link>
-                                    <Link href={route('lab.results')} className="btn btn-light border text-start p-3 d-flex align-items-center rounded-3">
-                                        <div className="bg-success-subtle text-success p-2 rounded me-3">
-                                            <i className="fas fa-flask"></i>
-                                        </div>
-                                        <div>
-                                            <div className="fw-bold small">Lab Results</div>
-                                            <div className="text-muted extra-small">Check pending reports</div>
-                                        </div>
-                                    </Link>
-                                    <Link href={route('prescriptions.index')} className="btn btn-light border text-start p-3 d-flex align-items-center rounded-3">
-                                        <div className="bg-warning-subtle text-warning p-2 rounded me-3">
-                                            <i className="fas fa-prescription"></i>
-                                        </div>
-                                        <div>
-                                            <div className="fw-bold small">Prescriptions</div>
-                                            <div className="text-muted extra-small">Previous medications</div>
-                                        </div>
-                                    </Link>
-                                </div>
+                            <div className="card-body p-4 pt-0 d-grid gap-3">
+                                {quickActions.map((a, i) => (
+                                    <QuickActionCard key={i} {...a} />
+                                ))}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <style>{`
-                .extra-small {
-                    font-size: 0.75rem;
-                }
-
-                .card-body h2 {
-                    font-size: 1.7rem;
-                    letter-spacing: tight;
-                    font-weight: 600;
-                }
-
-                .card-body p {
-                    font-size: 1rem;
-                    letter-spacing: tight;
-                    font-weight: 600;
-                }
-
-
-            `}</style>
         </AuthenticatedLayout>
     );
 }

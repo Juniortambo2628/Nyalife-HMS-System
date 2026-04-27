@@ -60,13 +60,21 @@ export default function Form({ test = null }) {
 
                         <div className="col-md-4">
                             <InputLabel htmlFor="category" value="Category" />
-                            <TextInput
+                            <select
                                 id="category"
-                                className="mt-1 block w-100"
+                                className="form-select mt-1 block w-100 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                                 value={data.category}
                                 onChange={(e) => setData('category', e.target.value)}
                                 required
-                            />
+                            >
+                                <option value="">Select Category</option>
+                                {[
+                                    'Hematology', 'Chemistry', 'Reproductive', 'Serology', 
+                                    'Microbiology', 'Pathology', 'Parasitology', 'Biochemistry', 'Toxicology', 'General'
+                                ].map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
                             <InputError message={errors.category} className="mt-2" />
                         </div>
 

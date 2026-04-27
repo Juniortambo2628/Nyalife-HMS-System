@@ -1,10 +1,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
+import StatusBadge from '@/Components/StatusBadge';
 import DashboardTable from '@/Components/DashboardTable';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import ViewToggle from '@/Components/ViewToggle';
 import InfoModal from '@/Components/InfoModal';
 import PageHeader from '@/Components/PageHeader';
+import DashboardSelect from '@/Components/DashboardSelect';
 import { useState, useMemo } from 'react';
 import { formatDateTime } from '@/Utils/dateUtils';
 
@@ -12,6 +15,7 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
     const [view, setView] = useState(() => localStorage.getItem('consultations_view') || 'list');
     const [search, setSearch] = useState(filters.search || '');
     const [activeFilter, setActiveFilter] = useState(filters.status || '');
+    const [quickFilter, setQuickFilter] = useState(filters.quick_filter || '');
     
     const [modalConfig, setModalConfig] = useState({
         show: false,
@@ -24,15 +28,23 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
     };
 
     const handleSearch = (searchValue) => {
-        router.get(route('consultations.index'), { search: searchValue, status: activeFilter }, {
+        router.get(route('consultations.index'), { search: searchValue, status: activeFilter, quick_filter: quickFilter }, {
             preserveState: true,
             replace: true,
         });
     };
 
-    const handleFilterChange = (filterValue) => {
-        setActiveFilter(filterValue);
-        router.get(route('consultations.index'), { search, status: filterValue }, {
+    const handleFilterChange = (val) => {
+        setActiveFilter(val || '');
+        router.get(route('consultations.index'), { search, status: val || '', quick_filter: quickFilter }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleQuickFilterChange = (val) => {
+        setQuickFilter(val);
+        router.get(route('consultations.index'), { search, status: activeFilter, quick_filter: val }, {
             preserveState: true,
             replace: true,
         });
@@ -43,7 +55,7 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
             header: 'Date',
             accessorKey: 'consultation_date',
             cell: ({ row }) => (
-                <div className="fw-bold text-gray-900">{formatDateTime(row.original.consultation_date)}</div>
+                <div className="fw-bold text-gray-900 px-1">{formatDateTime(row.original.consultation_date)}</div>
             )
         },
         {
@@ -54,7 +66,7 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                     <Link href={route('patients.show', row.original.patient_id)} className="text-decoration-none fw-bold text-pink-500 hover:text-pink-700 transition-colors">
                         {row.original.patient.user.first_name} {row.original.patient.user.last_name}
                     </Link>
-                    <div className="extra-small text-muted font-bold text-uppercase opacity-75">ID: PAT-{row.original.patient_id}</div>
+                    <div className="extra-small text-muted font-bold text-uppercase tracking-widest opacity-75">ID: PAT-{row.original.patient_id}</div>
                 </div>
             )
         },
@@ -78,26 +90,84 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
             )
         },
         {
+            header: 'Status',
+            accessorKey: 'consultation_status',
+            cell: ({ row }) => (
+                <StatusBadge status={row.original.consultation_status || 'in_progress'} />
+            )
+        },
+        {
             header: 'Actions',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="d-flex justify-content-end gap-2">
+                <div className="dropdown">
                     <button 
-                        onClick={() => openModal(row.original)}
-                        className="btn btn-sm btn-outline-primary rounded-circle p-2" 
-                        title="Clinical View"
-                        style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        className="btn btn-light rounded-circle p-2 border border-light-subtle shadow-sm avatar-sm d-flex align-items-center justify-content-center" 
+                        type="button" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false"
                     >
-                        <i className="fas fa-stethoscope text-xs"></i>
+                        <i className="fas fa-ellipsis-v text-gray-400"></i>
                     </button>
-                    <Link 
-                        href={route('consultations.show', row.original.consultation_id)}
-                        className="btn btn-sm btn-outline-secondary rounded-circle p-2" 
-                        title="Full Record"
-                        style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                        <i className="fas fa-file-medical-alt text-xs"></i>
-                    </Link>
+                    <ul className="dropdown-menu dropdown-menu-end shadow-2xl border-0 rounded-2xl py-2 mt-2 animate-in fade-in zoom-in-95 duration-200">
+                        <li>
+                            <button onClick={() => openModal(row.original)} className="dropdown-item py-2 px-3 d-flex align-items-center gap-3">
+                                <div className="avatar-sm rounded-lg bg-primary-subtle d-flex align-items-center justify-content-center text-primary">
+                                    <i className="fas fa-stethoscope"></i>
+                                </div>
+                                <span className="fw-bold text-gray-700">Quick Clinical View</span>
+                            </button>
+                        </li>
+                        {auth.user.role !== 'patient' && (
+                            <>
+                                <li>
+                                    <Link href={route('consultations.edit', row.original.consultation_id)} className="dropdown-item py-2 px-3 d-flex align-items-center gap-3">
+                                        <div className="avatar-sm rounded-lg bg-warning-subtle d-flex align-items-center justify-content-center text-warning">
+                                            <i className="fas fa-edit"></i>
+                                        </div>
+                                        <span className="fw-bold text-gray-700">Edit Record</span>
+                                    </Link>
+                                </li>
+                                {row.original.consultation_status !== 'completed' && (
+                                    <li>
+                                        <button 
+                                            onClick={() => {
+                                                if (confirm('Are you sure you want to conclude this consultation?')) {
+                                                    router.put(route('consultations.update', row.original.consultation_id), {
+                                                        ...row.original,
+                                                        status: 'completed'
+                                                    });
+                                                }
+                                            }}
+                                            className="dropdown-item py-2 px-3 d-flex align-items-center gap-3 text-success"
+                                        >
+                                            <div className="avatar-sm rounded-lg bg-success-subtle d-flex align-items-center justify-content-center text-success">
+                                                <i className="fas fa-check-double"></i>
+                                            </div>
+                                            <span className="fw-bold">Conclude & Close</span>
+                                        </button>
+                                    </li>
+                                )}
+                            </>
+                        )}
+                        <li><hr className="dropdown-divider opacity-10 mx-3" /></li>
+                        <li>
+                            <Link href={route('lab.index', { consultation_id: row.original.consultation_id })} className="dropdown-item py-2 px-3 d-flex align-items-center gap-3">
+                                <div className="avatar-sm rounded-lg bg-info-subtle d-flex align-items-center justify-content-center text-info">
+                                    <i className="fas fa-microscope"></i>
+                                </div>
+                                <span className="fw-bold text-gray-700">See Related Labs</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href={route('prescriptions.index', { consultation_id: row.original.consultation_id })} className="dropdown-item py-2 px-3 d-flex align-items-center gap-3">
+                                <div className="avatar-sm rounded-lg bg-purple-subtle d-flex align-items-center justify-content-center text-purple">
+                                    <i className="fas fa-pills"></i>
+                                </div>
+                                <span className="fw-bold text-gray-700">See Prescriptions</span>
+                            </Link>
+                        </li>
+                    </ul>
                 </div>
             )
         }
@@ -129,7 +199,7 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="space-y-4">
                             <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">Chief Complaint</h4>
-                            <div className="bg-pink-50 p-6 rounded-2xl border border-pink-100 text-gray-800 font-medium leading-relaxed">
+                            <div className="bg-pink-50 p-6 rounded-2xl border border-pink-100 text-gray-800 font-medium leading-relaxed shadow-inner">
                                 {cons.chief_complaint}
                             </div>
                         </div>
@@ -162,7 +232,7 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                 content: (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">Management Strategy</h4>
-                        <div className="bg-blue-50/50 p-8 rounded-3xl border border-blue-100 shadow-inner">
+                        <div className="bg-blue-50 p-8 rounded-3xl border border-blue-100 shadow-inner">
                             <p className="text-gray-800 font-medium leading-loose mb-0">
                                 {cons.treatment_plan || 'No treatment plan recorded.'}
                             </p>
@@ -170,14 +240,14 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                         
                         <div className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm">
                             <h5 className="text-xs font-bold text-gray-400 uppercase mb-4">Recommendations</h5>
-                            <ul className="space-y-3 ps-0">
+                            <ul className="space-y-3 ps-0 mb-0">
                                 <li className="flex gap-3 text-gray-700">
                                     <i className="fas fa-check-circle text-blue-500 mt-1"></i>
-                                    <span>Follow-up scheduled as per facility policy.</span>
+                                    <span className="fw-medium">Follow-up scheduled as per facility policy.</span>
                                 </li>
                                 <li className="flex gap-3 text-gray-700">
                                     <i className="fas fa-check-circle text-blue-500 mt-1"></i>
-                                    <span>Patient advised on adherence to medication regimen.</span>
+                                    <span className="fw-medium">Patient advised on adherence to medication regimen.</span>
                                 </li>
                             </ul>
                         </div>
@@ -197,15 +267,20 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                                     {cons.lab_test_requests.map((l, i) => (
                                         <div key={i} className="p-4 rounded-xl border border-gray-100 bg-white flex justify-between items-center shadow-sm">
                                             <div className="flex items-center gap-3">
-                                                <i className="fas fa-vial text-pink-500"></i>
+                                                <div className="avatar-sm rounded-lg bg-pink-50 text-pink-500 d-flex align-items-center justify-center">
+                                                    <i className="fas fa-vial"></i>
+                                                </div>
                                                 <span className="font-bold text-gray-900">Request #{l.request_id}</span>
                                             </div>
-                                            <span className="badge bg-light text-dark">{l.status}</span>
+                                            <StatusBadge status={l.status} />
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="p-6 text-center bg-gray-50 rounded-2xl text-gray-400">No lab tests requested during this visit.</div>
+                                <div className="p-8 text-center bg-gray-50 rounded-3xl border border-dashed text-gray-400">
+                                    <i className="fas fa-vials text-3xl mb-3 opacity-20"></i>
+                                    <p className="mb-0 fw-medium">No lab tests requested during this visit.</p>
+                                </div>
                             )}
                         </div>
 
@@ -216,15 +291,20 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                                     {cons.prescriptions.map((p, i) => (
                                         <div key={i} className="p-4 rounded-xl border border-gray-100 bg-white flex justify-between items-center shadow-sm">
                                             <div className="flex items-center gap-3">
-                                                <i className="fas fa-pills text-blue-500"></i>
+                                                <div className="avatar-sm rounded-lg bg-blue-50 text-blue-500 d-flex align-items-center justify-center">
+                                                    <i className="fas fa-pills"></i>
+                                                </div>
                                                 <span className="font-bold text-gray-900">Prescription #{p.prescription_id}</span>
                                             </div>
-                                            <Link href={route('prescriptions.show', p.prescription_id)} className="btn btn-sm btn-outline-primary">View</Link>
+                                            <Link href={route('prescriptions.show', p.prescription_id)} className="btn btn-sm btn-light border fw-bold rounded-pill px-3">View</Link>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="p-6 text-center bg-gray-50 rounded-2xl text-gray-400">No medications prescribed.</div>
+                                <div className="p-8 text-center bg-gray-50 rounded-3xl border border-dashed text-gray-400">
+                                    <i className="fas fa-prescription text-3xl mb-3 opacity-20"></i>
+                                    <p className="mb-0 fw-medium">No medications prescribed.</p>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -234,71 +314,50 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
     };
 
     return (
-        <AuthenticatedLayout
-            header="Clinical Consultations"
-        >
+        <AuthenticatedLayout header="Clinical Consultations">
             <Head title="Consultations" />
 
             <PageHeader 
                 title="Clinical Registry"
                 breadcrumbs={[{ label: 'Consultations', active: true }]}
-                actions={
-                    <div className="d-flex align-items-center gap-3">
-                        <ViewToggle view={view} setView={handleViewChange} />
-                        <Link href={route('consultations.create')} className="btn btn-primary shadow-sm rounded-pill px-4 fw-bold">
-                            <i className="fas fa-plus me-2"></i>New Consultation
-                        </Link>
-                    </div>
-                }
             />
 
             <div className="px-0">
                 {/* Active Drafts Section */}
-                {drafts && drafts.data && drafts.data.length > 0 && (
+                {auth.user.role !== 'patient' && drafts && drafts.data && drafts.data.length > 0 && (
                     <div className="mb-5 animate-in fade-in slide-in-from-top-4 duration-700">
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h5 className="fw-extrabold text-gray-900 mb-0 d-flex align-items-center gap-2">
-                                <span className="bg-warning-subtle text-warning p-2 rounded-lg" style={{ borderRadius: '12px' }}>
-                                    <i className="fas fa-edit"></i>
-                                </span>
-                                Active Drafts
-                                <span className="badge bg-warning rounded-pill fs-xs px-2 py-1 ms-1 animate__animated animate__pulse animate__infinite">
-                                    {drafts.data.length}
-                                </span>
-                            </h5>
-                        </div>
-                        <div className="row g-3 flex-nowrap overflow-auto pb-3 custom-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                        <div className="row g-3 flex-nowrap overflow-auto pb-3 no-scrollbar">
                             {drafts.data.map((draft) => (
                                 <div key={draft.consultation_id} className="col-11 col-md-5 col-lg-4 flex-shrink-0">
-                                    <div className="card h-100 border-0 shadow-sm rounded-2xl bg-white border-start border-4 border-warning">
+                                    <div className="card h-100 border-0 shadow-sm rounded-2xl bg-white border-start border-4 border-warning shadow-hover transition-all">
                                         <div className="card-body p-4">
-                                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <div className="bg-light p-2 rounded-circle text-primary fw-bold" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <div className="d-flex justify-content-between align-items-center mb-4">
+                                                <div className="d-flex align-items-center gap-3">
+                                                    <div className="avatar-md bg-warning-subtle text-warning fw-extrabold border border-warning-subtle shadow-inner rounded-circle d-flex align-items-center justify-content-center">
                                                         {draft.patient.user.first_name.charAt(0)}
                                                     </div>
                                                     <div>
-                                                        <h6 className="fw-bold mb-0 text-truncate" style={{ maxWidth: '140px' }}>
+                                                        <h6 className="fw-extrabold mb-0 text-truncate text-gray-900" style={{ maxWidth: '140px' }}>
                                                             {draft.patient.user.first_name} {draft.patient.user.last_name}
                                                         </h6>
-                                                        <small className="text-muted extra-small">ID: PAT-{draft.patient_id}</small>
+                                                        <small className="text-muted extra-small font-bold text-uppercase tracking-widest opacity-50">ID: PAT-{draft.patient_id}</small>
                                                     </div>
                                                 </div>
                                                 <div className="text-end">
-                                                    <div className="text-muted extra-small font-bold text-uppercase">{formatDateTime(draft.updated_at || draft.consultation_date)}</div>
+                                                    <div className="text-muted extra-small font-bold text-uppercase opacity-30">{formatDateTime(draft.updated_at || draft.consultation_date)}</div>
                                                 </div>
                                             </div>
-                                            <div className="bg-warning-subtle p-2 rounded-xl mb-3">
-                                                <p className="extra-small text-warning-emphasis fw-medium mb-0 line-clamp-2 italic">
+                                            <div className="bg-gray-50 p-3 rounded-xl mb-4 border border-light">
+                                                <p className="extra-small text-gray-600 fw-bold mb-0 line-clamp-2 italic opacity-75">
                                                     "{draft.chief_complaint || 'No complaint notes...'}"
                                                 </p>
                                             </div>
                                             <Link 
                                                 href={route('consultations.edit', draft.consultation_id)} 
-                                                className="btn btn-warning w-100 rounded-xl fw-extrabold text-white shadow-sm py-2 d-flex align-items-center justify-content-center gap-2 transition-all hover-translate-up"
+                                                className="btn btn-warning w-100 rounded-pill fw-extrabold text-white shadow-sm py-2.5 d-flex align-items-center justify-content-center gap-2 transition-all hover-translate-up"
                                             >
                                                 <i className="fas fa-play-circle"></i>
-                                                Resume Assessment
+                                                RESUME ASSESSMENT
                                             </Link>
                                         </div>
                                     </div>
@@ -313,12 +372,11 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                     value={search}
                     onChange={setSearch}
                     onSubmit={handleSearch}
-                    onFilterChange={handleFilterChange}
+                    onFilterChange={handleQuickFilterChange}
                     filters={[
-                        { label: 'All Consultations', value: '' },
-                        { label: 'Recently Closed', value: 'closed' },
                         { label: 'In Progress', value: 'in_progress' },
-                        { label: 'Pending Assessment', value: 'pending' },
+                        { label: 'Completed', value: 'completed' },
+                        { label: 'Walk-ins', value: 'walk_in' },
                     ]}
                 />
 
@@ -333,108 +391,122 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                 ) : (
                     <div className="row g-4">
                         {consultations.data.length > 0 ? (
-                            consultations.data.map((cons) => (
-                                <div key={cons.consultation_id} className="col-md-6 col-lg-4">
-                                    <div className="card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-shadow-lg transition-all duration-300">
-                                        <div className="card-body p-4">
-                                            <div className="d-flex justify-content-between align-items-start mb-4">
-                                                <div className="d-flex gap-3">
-                                                    <div className="bg-pink-50 text-pink-500 rounded-2xl p-3 flex items-center justify-center" style={{ width: '56px', height: '56px' }}>
-                                                        <i className="fas fa-stethoscope fa-lg"></i>
+                            <>
+                                {consultations.data.map((cons) => (
+                                    <div key={cons.consultation_id} className="col-md-6 col-lg-4">
+                                        <div className="card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-shadow-lg transition-all duration-300 bg-white shadow-hover">
+                                            <div className="card-body p-4">
+                                                <div className="d-flex justify-content-between align-items-start mb-4">
+                                                    <div className="d-flex gap-3">
+                                                        <div className="avatar-lg bg-pink-50 text-pink-500 rounded-2xl d-flex align-items-center justify-content-center shadow-inner border border-pink-100">
+                                                            <i className="fas fa-stethoscope fa-lg"></i>
+                                                        </div>
+                                                        <div>
+                                                            <Link href={route('patients.show', cons.patient_id)} className="fw-extrabold text-gray-900 text-lg mb-0 text-decoration-none hover:text-pink-500 transition-colors tracking-tighter">
+                                                                {cons.patient.user.first_name} {cons.patient.user.last_name}
+                                                            </Link>
+                                                            <div className="extra-small text-muted font-bold text-uppercase tracking-widest opacity-50">ID: PAT-{cons.patient_id}</div>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <Link href={route('patients.show', cons.patient_id)} className="fw-bold text-gray-900 text-lg mb-0 text-decoration-none">
-                                                            {cons.patient.user.first_name} {cons.patient.user.last_name}
-                                                        </Link>
-                                                        <div className="extra-small text-muted font-bold text-uppercase tracking-widest">ID: PAT-{cons.patient_id}</div>
+                                                    <StatusBadge status={cons.consultation_status || 'in_progress'} />
+                                                </div>
+
+                                                <div className="space-y-3 mb-4">
+                                                    <div className="d-flex align-items-center gap-3 text-gray-600">
+                                                        <i className="fas fa-calendar-day text-muted w-5"></i>
+                                                        <span className="font-bold text-sm">{cons.consultation_date}</span>
+                                                    </div>
+                                                    <div className="d-flex align-items-center gap-3 text-gray-600">
+                                                        <i className="fas fa-user-md text-muted w-5"></i>
+                                                        <span className="font-bold text-sm">Dr. {cons.doctor.user.first_name} {cons.doctor.user.last_name}</span>
+                                                    </div>
+                                                    <div className="bg-gray-50 p-3 rounded-xl border border-light">
+                                                        <div className="extra-small text-gray-400 font-bold text-uppercase tracking-wider mb-1">Diagnosis</div>
+                                                        <p className="text-sm text-gray-800 fw-extrabold mb-1 line-clamp-1">{cons.diagnosis || 'General Assessment'}</p>
+                                                        <p className="extra-small text-gray-500 mb-0 line-clamp-2 italic opacity-75">"{cons.chief_complaint}"</p>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="space-y-3 mb-4">
-                                                <div className="flex items-center gap-3 text-gray-600">
-                                                    <i className="fas fa-calendar-day text-muted w-5"></i>
-                                                    <span className="font-medium text-sm">{cons.consultation_date}</span>
+                                                <div className="d-flex gap-2 border-top pt-4">
+                                                    <button 
+                                                        onClick={() => openModal(cons)}
+                                                        className="btn btn-light bg-gray-50 text-gray-700 rounded-xl flex-1 fw-extrabold border-0 py-2.5 hover-bg-gray-100 transition-all"
+                                                    >
+                                                        CLINICAL VIEW
+                                                    </button>
+                                                    <Link 
+                                                        href={route('consultations.show', cons.consultation_id)}
+                                                        className="btn btn-outline-primary rounded-xl px-4 border-2 d-flex align-items-center justify-content-center"
+                                                    >
+                                                        <i className="fas fa-file-medical-alt"></i>
+                                                    </Link>
                                                 </div>
-                                                <div className="flex items-center gap-3 text-gray-600">
-                                                    <i className="fas fa-user-md text-muted w-5"></i>
-                                                    <span className="font-medium text-sm">Dr. {cons.doctor.user.first_name} {cons.doctor.user.last_name}</span>
-                                                </div>
-                                                <div className="bg-gray-50 p-3 rounded-xl">
-                                                    <div className="text-xs text-gray-400 font-bold uppercase mb-1">Diagnosis</div>
-                                                    <p className="text-sm text-gray-800 fw-bold mb-1 line-clamp-1">{cons.diagnosis || 'General Assessment'}</p>
-                                                    <p className="extra-small text-gray-500 mb-0 line-clamp-2 italic">"{cons.chief_complaint}"</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="d-flex gap-2 border-top pt-4">
-                                                <button 
-                                                    onClick={() => openModal(cons)}
-                                                    className="btn btn-light bg-gray-50 text-gray-700 rounded-xl flex-1 fw-bold border-0 py-2.5"
-                                                >
-                                                    Clinical View
-                                                </button>
-                                                <Link 
-                                                    href={route('consultations.show', cons.consultation_id)}
-                                                    className="btn btn-outline-primary rounded-xl px-4 border-2"
-                                                >
-                                                    <i className="fas fa-file-medical-alt"></i>
-                                                </Link>
                                             </div>
                                         </div>
                                     </div>
+                                ))}
+                                
+                                {/* Pagination for Grid View */}
+                                <div className="col-12 mt-4">
+                                    <DashboardTable 
+                                        data={[]} 
+                                        columns={[]} 
+                                        pagination={consultations}
+                                        className="bg-transparent shadow-none"
+                                    />
                                 </div>
-                            ))
+                            </>
                         ) : (
                             <div className="col-12 py-16 text-center bg-white rounded-3xl shadow-sm border border-gray-100">
-                                <i className="fas fa-notes-medical text-gray-200 text-5xl mb-4"></i>
-                                <h4 className="text-gray-400 fw-bold">No consultations recorded</h4>
-                                <p className="text-gray-300">Try searching with different terms.</p>
+                                <i className="fas fa-notes-medical text-gray-200 text-5xl mb-4 opacity-20"></i>
+                                <h4 className="text-gray-400 fw-extrabold tracking-tighter">No consultations recorded</h4>
+                                <p className="text-gray-300 small fw-bold">Try searching with different terms.</p>
                             </div>
                         )}
                     </div>
                 )}
                 
-                {/* Pagination */}
-                {consultations.links.length > 3 && (
-                    <div className="card-footer bg-white border-top-0 py-3 mt-4">
-                        <nav aria-label="Page navigation">
-                            <ul className="pagination pagination-sm justify-content-center mb-0">
-                                {consultations.links.map((link, i) => (
-                                    <li key={i} className={`page-item ${link.active ? 'active' : ''} ${!link.url ? 'disabled' : ''}`}>
-                                        <Link
-                                            className="page-link rounded-circle mx-1"
-                                            href={link.url}
-                                            dangerouslySetInnerHTML={{ __html: link.alias || link.label }}
-                                        />
-                                    </li>
-                                ))}
-                            </ul>
-                        </nav>
-                    </div>
-                )}
+                {/* Unified Toolbar */}
+                <UnifiedToolbar 
+                    filters={
+                        <div className="d-flex align-items-center gap-2">
+                            <DashboardSelect 
+                                options={[
+                                    { label: 'All Status', value: '' },
+                                    { label: 'Pending', value: 'pending' },
+                                    { label: 'In Progress', value: 'in_progress' },
+                                    { label: 'Completed', value: 'completed' },
+                                ]}
+                                value={activeFilter}
+                                onChange={handleFilterChange}
+                                placeholder="Status..."
+                                theme="dark"
+                                dropup={true}
+                                style={{ width: '150px' }}
+                            />
+                        </div>
+                    }
+                    actions={
+                        <div className="d-flex align-items-center gap-2">
+                            <ViewToggle view={view} setView={handleViewChange} />
+                            {auth.user.role !== 'patient' && (
+                                <Link href={route('consultations.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
+                                    <i className="fas fa-plus-circle me-1"></i> NEW
+                                </Link>
+                            )}
+                        </div>
+                    }
+                />
             </div>
 
             {/* Quick Info Modal */}
             <InfoModal
                 show={modalConfig.show}
                 onClose={closeModal}
-                title={modalConfig.consultation ? `Clinical: ${modalConfig.consultation.patient?.user?.first_name || 'Patient'}` : ''}
-                subtitle="Assessment Details"
+                title={modalConfig.consultation ? `Clinical Record: ${modalConfig.consultation.patient.user.first_name}` : ''}
+                subtitle="Clinical Assessment View"
                 tabs={getConsultationTabs(modalConfig.consultation)}
             />
-
-            <style>{`
-                .rounded-xl { border-radius: 1rem; }
-                .rounded-2xl { border-radius: 1.5rem; }
-                .rounded-3xl { border-radius: 2rem; }
-                .text-pink-500 { color: #ed64a6; }
-                .extra-small { font-size: 0.7rem; }
-                .tracking-wider { letter-spacing: 0.05em; }
-                .bg-pink-50 { background-color: #fffafb; }
-                .border-pink-100 { border-color: #fed7e2; }
-                .shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
-            `}</style>
         </AuthenticatedLayout>
     );
 }

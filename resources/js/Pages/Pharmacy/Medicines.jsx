@@ -20,8 +20,12 @@ export default function Medicines({ medicines, filters, auth }) {
         description: '',
     });
 
-    const handleSearch = (searchValue) => {
-        router.get(route('pharmacy.medicines'), { search: searchValue }, { preserveState: true });
+    const handleSearch = (searchValue, quickFilterValue = filters?.quick_filter) => {
+        router.get(route('pharmacy.medicines'), { search: searchValue, quick_filter: quickFilterValue }, { preserveState: true });
+    };
+
+    const handleQuickFilterChange = (val) => {
+        handleSearch(search, val);
     };
 
     const openCreateModal = () => {
@@ -90,6 +94,13 @@ export default function Medicines({ medicines, filters, auth }) {
                 value={search}
                 onChange={setSearch}
                 onSubmit={handleSearch}
+                onFilterChange={handleQuickFilterChange}
+                filters={[
+                    { label: 'Tablets', value: 'Tablet' },
+                    { label: 'Capsules', value: 'Capsule' },
+                    { label: 'Syrups', value: 'Syrup' },
+                    { label: 'Injections', value: 'Injection' },
+                ]}
             />
 
             <div className="py-0">

@@ -22,6 +22,7 @@ class StoreVitalRequest extends FormRequest
             'weight' => 'nullable|numeric|between:0,500',
             'height' => 'nullable|numeric|between:0,300',
             'oxygen_saturation' => 'nullable|integer|between:0,100',
+            'priority' => 'nullable|string|in:normal,emergency',
             'notes' => 'nullable|string',
         ];
     }

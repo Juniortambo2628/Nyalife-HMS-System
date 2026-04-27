@@ -1,84 +1,73 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import PageHeader from '@/Components/PageHeader';
+import UserAvatar from '@/Components/UserAvatar';
+import StatusBadge from '@/Components/StatusBadge';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Show({ appointment, auth }) {
     const isReceptionist = auth.user.role === 'receptionist';
     const [activeTab, setActiveTab] = useState('summary');
-    const { patch, processing } = useForm({
-        status: appointment.status,
-    });
-
+    
     const updateStatus = (status) => {
         if (confirm(`Are you sure you want to change the status to ${status}?`)) {
-            patch(route('appointments.update', appointment.appointment_id), {
-                data: { status },
+            router.patch(route('appointments.update', appointment.appointment_id), { status }, {
                 preserveState: true,
             });
         }
     };
 
-    const getStatusBadgeClass = (status) => {
-        switch (status) {
-            case 'scheduled': return 'badge bg-info';
-            case 'confirmed': return 'badge bg-primary';
-            case 'completed': return 'badge bg-success';
-            case 'cancelled': return 'badge bg-danger';
-            case 'no_show': return 'badge bg-warning text-dark';
-            default: return 'badge bg-secondary';
-        }
-    };
-
     return (
-        <AuthenticatedLayout
-            header="Appointment Details"
-        >
+        <AuthenticatedLayout header="Appointment Detail">
             <Head title={`Appointment - ${appointment.patient?.user?.first_name || 'Patient'}`} />
 
             <PageHeader 
-                title={`Appointment #${appointment.appointment_id}`}
+                title={`Visit Management`}
                 breadcrumbs={[
                     { label: 'Appointments', url: route('appointments.index') },
-                    { label: 'Details', active: true }
+                    { label: `REF #${appointment.appointment_id}`, active: true }
                 ]}
-                actions={
-                    auth?.user?.role === 'nurse' ? (
-                        <Link href={route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id })} className="btn btn-primary rounded-pill px-4 font-bold shadow-sm">
-                            <i className="fas fa-heartbeat me-2"></i>Record Vitals
-                        </Link>
-                    ) : (
-                        <Link href={route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id })} className="btn btn-primary rounded-pill px-4 font-bold shadow-sm">
-                            <i className="fas fa-stethoscope me-2"></i>Start Consultation
-                        </Link>
-                    )
-                }
             />
 
-            <div className="px-0">
-
-                <div className="row">
+            <div className="px-0 pb-5">
+                <div className="row g-4">
                     <div className="col-lg-4">
                         {/* Quick Info Card */}
-                        <div className="card shadow-sm border-0 mb-4">
-                            <div className="card-body p-4 text-center">
-                                <div className="avatar-circle mx-auto mb-3" style={{ width: '80px', height: '80px', fontSize: '2rem', background: 'linear-gradient(45deg, #2196F3, #21CBF3)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    {appointment.patient?.user?.first_name?.charAt(0) || 'P'}
-                                </div>
-                                <h4 className="mb-1">{appointment.patient?.user?.first_name || 'Unknown'} {appointment.patient?.user?.last_name || 'Patient'}</h4>
-                                <p className="text-muted small mb-3">Patient ID: {appointment.patient_id}</p>
-                                <span className={getStatusBadgeClass(appointment.status)}>
-                                    {(appointment.status || 'pending').charAt(0).toUpperCase() + (appointment.status || 'pending').slice(1).replace('_', ' ')}
-                                </span>
-                                <hr className="my-4" />
-                                <div className="text-start">
-                                    <div className="mb-2"><i className="fas fa-calendar-alt text-primary me-2"></i><strong>Date:</strong> {appointment.appointment_date}</div>
-                                    <div className="mb-2"><i className="fas fa-clock text-primary me-2"></i><strong>Time:</strong> {appointment.appointment_time}</div>
-                                    <div className="mb-0"><i className="fas fa-user-md text-primary me-2"></i><strong>Doctor:</strong> Dr. {appointment.doctor?.user?.first_name || 'Staff'} {appointment.doctor?.user?.last_name || ''}</div>
+                        <div className="card shadow-sm border-0 mb-4 rounded-3xl overflow-hidden bg-white shadow-hover">
+                            <div className="card-header bg-gradient-primary-to-secondary p-5 border-0 text-center">
+                                <UserAvatar user={appointment.patient?.user} size="xl" className="mb-3 border border-4 border-white shadow-lg" />
+                                <h4 className="mb-1 text-white fw-extrabold tracking-tighter">{appointment.patient?.user?.first_name} {appointment.patient?.user?.last_name}</h4>
+                                <div className="extra-small font-bold text-white opacity-50 tracking-widest uppercase mb-3">PAT-ID: {appointment.patient_id}</div>
+                                <StatusBadge status={appointment.status} />
+                            </div>
+                            <div className="card-body p-4">
+                                <div className="space-y-4">
+                                    <div className="d-flex justify-content-between align-items-center border-bottom border-gray-50 pb-2">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <i className="fas fa-calendar-alt text-primary opacity-50"></i>
+                                            <span className="extra-small fw-bold text-muted text-uppercase">Scheduled Date</span>
+                                        </div>
+                                        <span className="fw-extrabold text-gray-900 small">{appointment.appointment_date}</span>
+                                    </div>
+                                    <div className="d-flex justify-content-between align-items-center border-bottom border-gray-50 pb-2">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <i className="fas fa-clock text-primary opacity-50"></i>
+                                            <span className="extra-small fw-bold text-muted text-uppercase">Allocated Time</span>
+                                        </div>
+                                        <span className="fw-extrabold text-gray-900 small">{appointment.appointment_time}</span>
+                                    </div>
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <i className="fas fa-user-md text-primary opacity-50"></i>
+                                            <span className="extra-small fw-bold text-muted text-uppercase">Assigned Doctor</span>
+                                        </div>
+                                        <span className="fw-extrabold text-gray-900 small">Dr. {appointment.doctor?.user?.last_name}</span>
+                                    </div>
                                 </div>
                                 
                                 {['admin', 'doctor', 'receptionist'].includes(auth.user.role) && (
-                                    <div className="mt-4 d-grid gap-2">
+                                    <div className="mt-5 space-y-2">
                                         {appointment.status === 'scheduled' && (
                                             (() => {
                                                 const aptDate = new Date(`${appointment.appointment_date}T${appointment.appointment_time}`);
@@ -87,26 +76,38 @@ export default function Show({ appointment, auth }) {
                                                 
                                                 if (isPast) {
                                                     return (
-                                                        <div className="alert alert-warning mb-0 text-center py-2 text-sm">
-                                                            <i className="fas fa-exclamation-triangle me-2"></i>
-                                                            Past Appointment
+                                                        <div className="alert alert-warning border-0 rounded-2xl p-3 mb-0 d-flex align-items-center gap-3">
+                                                            <i className="fas fa-exclamation-circle fs-4"></i>
+                                                            <div className="extra-small fw-bold text-uppercase tracking-wider">Historical Record Only</div>
                                                         </div>
                                                     );
                                                 }
                                                 
                                                 return (
-                                                    <button onClick={() => updateStatus('confirmed')} className="btn btn-primary btn-sm">Confirm Appointment</button>
+                                                    <button onClick={() => updateStatus('confirmed')} className="btn btn-primary w-100 rounded-pill py-2.5 fw-extrabold extra-small tracking-widest shadow-sm">
+                                                        CONFIRM ATTENDANCE
+                                                    </button>
                                                 );
                                             })()
                                         )}
                                         {['scheduled', 'confirmed'].includes(appointment.status) && (
-                                            <>
-                                                <button onClick={() => updateStatus('completed')} className="btn btn-success btn-sm">Mark as Completed</button>
-                                                <button onClick={() => updateStatus('cancelled')} className="btn btn-danger btn-sm">Cancel Appointment</button>
-                                            </>
+                                            <div className="row g-2">
+                                                <div className="col-6">
+                                                    <button onClick={() => updateStatus('completed')} className="btn btn-success w-100 rounded-pill py-2.5 fw-extrabold extra-small tracking-widest shadow-sm">
+                                                        COMPLETE
+                                                    </button>
+                                                </div>
+                                                <div className="col-6">
+                                                    <button onClick={() => updateStatus('cancelled')} className="btn btn-danger w-100 rounded-pill py-2.5 fw-extrabold extra-small tracking-widest shadow-sm">
+                                                        CANCEL
+                                                    </button>
+                                                </div>
+                                            </div>
                                         )}
                                         {appointment.status === 'scheduled' && new Date(`${appointment.appointment_date}T${appointment.appointment_time}`) < new Date() && (
-                                             <button onClick={() => updateStatus('no_show')} className="btn btn-dark btn-sm">Mark as No Show</button>
+                                             <button onClick={() => updateStatus('no_show')} className="btn btn-dark w-100 rounded-pill py-2.5 fw-extrabold extra-small tracking-widest shadow-sm">
+                                                MARK AS NO SHOW
+                                             </button>
                                         )}
                                     </div>
                                 )}
@@ -115,110 +116,123 @@ export default function Show({ appointment, auth }) {
                     </div>
 
                     <div className="col-lg-8">
-                        <div className="card shadow-sm border-0">
-                            <div className="card-header bg-white border-bottom pt-4 pb-0 px-4">
-                                <nav className="flex space-x-8" aria-label="Tabs">
+                        <div className="card shadow-sm border-0 rounded-3xl bg-white shadow-hover overflow-hidden">
+                            <div className="card-header bg-white border-bottom-0 pt-4 pb-0 px-5">
+                                <div className="d-flex gap-4 border-bottom border-gray-100">
                                     <button
                                         onClick={() => setActiveTab('summary')}
-                                        className={`${
-                                            activeTab === 'summary'
-                                                ? 'border-pink-500 text-pink-600'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                        } whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors`}
+                                        className={`pb-3 extra-small fw-extrabold tracking-widest transition-all border-bottom-2 ${
+                                            activeTab === 'summary' ? 'text-primary border-primary' : 'text-muted border-transparent opacity-50'
+                                        }`}
                                     >
-                                        General Info
+                                        GENERAL
                                     </button>
                                     {!isReceptionist && (
                                         <>
                                             <button
                                                 onClick={() => setActiveTab('history')}
-                                                className={`${
-                                                    activeTab === 'history'
-                                                        ? 'border-pink-500 text-pink-600'
-                                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                                } whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors`}
+                                                className={`pb-3 extra-small fw-extrabold tracking-widest transition-all border-bottom-2 ${
+                                                    activeTab === 'history' ? 'text-primary border-primary' : 'text-muted border-transparent opacity-50'
+                                                }`}
                                             >
-                                                Clinical History
+                                                CLINICAL
                                             </button>
                                             <button
                                                 onClick={() => setActiveTab('prescriptions')}
-                                                className={`${
-                                                    activeTab === 'prescriptions'
-                                                        ? 'border-pink-500 text-pink-600'
-                                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                                } whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors`}
+                                                className={`pb-3 extra-small fw-extrabold tracking-widest transition-all border-bottom-2 ${
+                                                    activeTab === 'prescriptions' ? 'text-primary border-primary' : 'text-muted border-transparent opacity-50'
+                                                }`}
                                             >
-                                                Prescriptions
+                                                PHARMACY
                                             </button>
                                         </>
                                     )}
-                                </nav>
+                                </div>
                             </div>
-                            <div className="card-body p-4 pt-0">
-                                <div className="tab-content py-4">
+                            <div className="card-body p-5 pt-0">
+                                <div className="tab-content py-5">
                                     {activeTab === 'summary' && (
-                                        <div>
-                                            <h5 className="mb-3 border-bottom pb-2">Reason for Visit</h5>
-                                            <p className="bg-light p-3 rounded">{appointment.reason || 'No reason provided.'}</p>
+                                        <div className="space-y-6">
+                                            <div>
+                                                <h6 className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-3">Primary Concern</h6>
+                                                <div className="p-4 bg-light rounded-2xl border-l-4 border-primary shadow-inner fw-bold text-gray-800 leading-relaxed">
+                                                    {appointment.reason || 'Routine medical check-up / No specific reason provided.'}
+                                                </div>
+                                            </div>
                                             
-                                            <h5 className="mb-3 border-bottom pb-2 mt-4">Internal Notes</h5>
-                                            <p className="bg-light p-3 rounded">{appointment.notes || 'No notes available.'}</p>
+                                            <div>
+                                                <h6 className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-3">Triage Notes</h6>
+                                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 text-muted small leading-relaxed font-medium">
+                                                    {appointment.notes || 'No triage or internal notes recorded for this visit.'}
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
 
                                     {activeTab === 'history' && (
-                                        <div>
-                                            <h5 className="mb-3">Consultations</h5>
+                                        <div className="space-y-4">
+                                            <h6 className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-4">Historical Consultations</h6>
                                             {appointment.consultations?.length > 0 ? (
-                                                appointment.consultations.map(c => (
-                                                    <div key={c.consultation_id} className="card border mb-3">
-                                                        <div className="card-body">
-                                                            <div className="d-flex justify-content-between">
-                                                                <h6>{c.diagnosis}</h6>
-                                                                <small className="text-muted">{c.created_at}</small>
+                                                <div className="space-y-3">
+                                                    {appointment.consultations.map(c => (
+                                                        <div key={c.consultation_id} className="p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover-lift transition-all">
+                                                            <div className="d-flex justify-content-between align-items-center mb-2">
+                                                                <h6 className="fw-extrabold text-gray-900 mb-0">{c.diagnosis}</h6>
+                                                                <span className="extra-small text-muted font-bold opacity-50">{c.created_at}</span>
                                                             </div>
-                                                            <p className="small mb-0 mt-2">{c.treatment_plan}</p>
+                                                            <p className="small text-muted mb-0">{c.treatment_plan}</p>
                                                         </div>
-                                                    </div>
-                                                ))
+                                                    ))}
+                                                </div>
                                             ) : (
-                                                <div className="alert alert-info">No consultation records for this appointment.</div>
+                                                <div className="p-5 text-center bg-light rounded-3xl border border-gray-50">
+                                                    <i className="fas fa-folder-open text-gray-300 fa-3x mb-3 opacity-20"></i>
+                                                    <p className="text-muted extra-small fw-bold text-uppercase tracking-widest mb-0">No active clinical records</p>
+                                                </div>
                                             )}
                                         </div>
                                     )}
 
                                     {activeTab === 'prescriptions' && (
-                                        <div>
-                                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                                <h5 className="mb-0">Prescriptions</h5>
+                                        <div className="space-y-4">
+                                            <div className="d-flex justify-content-between align-items-center mb-4">
+                                                <h6 className="mb-0 extra-small fw-extrabold text-muted text-uppercase tracking-widest">Active Prescriptions</h6>
                                                 {auth.user.role === 'doctor' && (
-                                                    <Link href="#" className="btn btn-sm btn-primary">Add New</Link>
+                                                    <Link href="#" className="btn btn-primary btn-sm rounded-pill px-3 fw-bold extra-small tracking-widest">NEW RX</Link>
                                                 )}
                                             </div>
-                                            <div className="table-responsive">
-                                                <table className="table">
-                                                    <thead>
+                                            <div className="table-responsive rounded-2xl border border-gray-100 overflow-hidden shadow-inner">
+                                                <table className="table table-hover align-middle mb-0">
+                                                    <thead className="bg-gray-50">
                                                         <tr>
-                                                            <th>Medicine</th>
-                                                            <th>Dosage</th>
-                                                            <th>Duration</th>
-                                                            <th>Status</th>
+                                                            <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0">MEDICINE</th>
+                                                            <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0">DOSAGE</th>
+                                                            <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0">DURATION</th>
+                                                            <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0 text-center">STATUS</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody>
+                                                    <tbody className="border-0">
                                                         {appointment.prescriptions?.length > 0 ? (
-                                                            appointment.prescriptions.map(p => (
+                                                            appointment.prescriptions.flatMap(p => (
                                                                 p.items?.map(item => (
-                                                                    <tr key={item.item_id}>
-                                                                        <td>{item.medicine_name}</td>
-                                                                        <td>{item.dosage}</td>
-                                                                        <td>{item.duration} {item.duration_unit}</td>
-                                                                        <td><span className="badge bg-light text-dark border">{p.status}</span></td>
+                                                                    <tr key={item.item_id} className="border-bottom border-gray-50">
+                                                                        <td className="px-4 py-3 fw-bold text-gray-800">{item.medicine_name}</td>
+                                                                        <td className="px-4 py-3 small text-muted font-medium">{item.dosage}</td>
+                                                                        <td className="px-4 py-3 small text-muted font-medium">{item.duration} {item.duration_unit}</td>
+                                                                        <td className="px-4 py-3 text-center">
+                                                                            <span className={`badge rounded-pill px-3 py-1.5 fw-extrabold extra-small text-uppercase ${p.status === 'dispensed' ? 'bg-success text-white' : 'bg-warning text-dark'}`}>
+                                                                                {p.status}
+                                                                            </span>
+                                                                        </td>
                                                                     </tr>
                                                                 ))
                                                             ))
                                                         ) : (
-                                                            <tr><td colSpan="4" className="text-center py-4 bg-light">No prescriptions issued.</td></tr>
+                                                            <tr>
+                                                                <td colSpan="4" className="text-center py-5 bg-gray-50">
+                                                                    <p className="text-muted extra-small fw-bold text-uppercase tracking-widest mb-0 opacity-50">No pharmacy entries found</p>
+                                                                </td>
+                                                            </tr>
                                                         )}
                                                     </tbody>
                                                 </table>
@@ -231,6 +245,25 @@ export default function Show({ appointment, auth }) {
                     </div>
                 </div>
             </div>
+
+            <UnifiedToolbar 
+                actions={
+                    <div className="d-flex align-items-center gap-2">
+                        {auth?.user?.role === 'nurse' ? (
+                            <Link href={route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id })} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
+                                <i className="fas fa-heartbeat me-1"></i> Record Vitals
+                            </Link>
+                        ) : auth?.user?.role === 'doctor' ? (
+                            <Link href={route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id })} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
+                                <i className="fas fa-stethoscope me-1"></i> Start Consultation
+                            </Link>
+                        ) : null}
+                        <Link href={route('appointments.index')} className="btn btn-light rounded-pill px-4 py-2 fw-extrabold small border shadow-sm">
+                            <i className="fas fa-list me-1"></i> Back to Registry
+                        </Link>
+                    </div>
+                }
+            />
         </AuthenticatedLayout>
     );
 }

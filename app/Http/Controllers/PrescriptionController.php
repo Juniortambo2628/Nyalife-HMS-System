@@ -14,13 +14,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use App\Services\ActivityLogger;
 
 class PrescriptionController extends Controller
 {
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Prescription::with(['patient.user', 'items']);
+        $query = Prescription::with(['patient.user', 'items.medication']);
         
         if ($user && $user->role === 'patient') {
             $patient = Patient::where('user_id', $user->user_id)->first();
@@ -31,6 +32,24 @@ class PrescriptionController extends Controller
              $query->where('prescribed_by', $user->user_id);
         }
 
+        if ($request->has('consultation_id')) {
+            $query->where('consultation_id', $request->consultation_id);
+        }
+
+        if ($request->has('quick_filter') && $request->quick_filter) {
+            switch ($request->quick_filter) {
+                case 'today':
+                    $query->whereDate('prescription_date', today());
+                    break;
+                case 'pending':
+                    $query->where('status', 'pending');
+                    break;
+                case 'dispensed':
+                    $query->where('status', 'dispensed');
+                    break;
+            }
+        }
+
         $prescriptions = $query
             ->searchByPatientName($request->search)
             ->status($request->status)
@@ -39,7 +58,7 @@ class PrescriptionController extends Controller
 
         return Inertia::render('Prescriptions/Index', [
             'prescriptions' => PrescriptionResource::collection($prescriptions),
-            'filters' => $request->only(['search', 'status'])
+            'filters' => $request->only(['search', 'status', 'quick_filter'])
         ]);
     }
 
@@ -135,6 +154,15 @@ class PrescriptionController extends Controller
             }
 
             DB::commit();
+
+            ActivityLogger::log(
+                'pharmacy',
+                "New prescription created for " . ($prescription->patient->user->full_name ?? 'Patient'),
+                ['prescription_id' => $prescription->prescription_id],
+                Auth::user(),
+                $prescription,
+                [$prescription->patient->user_id, 1]
+            );
 
             return redirect()->route('prescriptions.index')->with('success', 'Prescription created successfully. Invoice auto-generated.');
 

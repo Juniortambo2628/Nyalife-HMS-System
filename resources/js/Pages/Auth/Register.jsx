@@ -116,8 +116,8 @@ export default function Register() {
             <Head title="Create Account" />
 
             <div className="registration-form-container">
-                <h2 className="fw-bold text-dark mb-1">Create Account</h2>
-                <p className="text-muted mb-4">Step {step} of 2: {step === 1 ? 'Personal Details' : 'Account Setup'}</p>
+                <h2 className="fw-extrabold text-gray-900 mb-1 tracking-tighter">Create Account</h2>
+                <p className="text-muted mb-4 fw-medium">Step {step} of 2: {step === 1 ? 'Personal Details' : 'Account Setup'}</p>
                 
                 <div className="progress mb-4" style={{ height: '6px', borderRadius: '3px' }}>
                     <div 
@@ -129,37 +129,37 @@ export default function Register() {
 
                 <form onSubmit={submit}>
                     {step === 1 ? (
-                        <div className="step-1">
+                        <div className="step-1 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="row g-3 mb-3">
                                 <div className="col-md-6">
-                                    <label className="form-label small fw-bold text-muted mb-1">First Name</label>
-                                    <input type="text" className={`form-control bg-light border-0 ${errors.first_name ? 'is-invalid' : ''}`} name="first_name" value={data.first_name} onChange={onHandleChange} required />
-                                    {errors.first_name && <div className="invalid-feedback">{errors.first_name}</div>}
+                                    <label className="form-label extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-1">First Name</label>
+                                    <input type="text" className={`form-control form-control-premium ${errors.first_name ? 'is-invalid' : ''}`} name="first_name" value={data.first_name} onChange={onHandleChange} required />
+                                    {errors.first_name && <div className="invalid-feedback extra-small fw-bold">{errors.first_name}</div>}
                                 </div>
                                 <div className="col-md-6">
-                                    <label className="form-label small fw-bold text-muted mb-1">Last Name</label>
-                                    <input type="text" className={`form-control bg-light border-0 ${errors.last_name ? 'is-invalid' : ''}`} name="last_name" value={data.last_name} onChange={onHandleChange} required />
-                                    {errors.last_name && <div className="invalid-feedback">{errors.last_name}</div>}
+                                    <label className="form-label extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-1">Last Name</label>
+                                    <input type="text" className={`form-control form-control-premium ${errors.last_name ? 'is-invalid' : ''}`} name="last_name" value={data.last_name} onChange={onHandleChange} required />
+                                    {errors.last_name && <div className="invalid-feedback extra-small fw-bold">{errors.last_name}</div>}
                                 </div>
                             </div>
 
                             <div className="mb-3">
-                                <label className="form-label small fw-bold text-muted mb-1">Email</label>
+                                <label className="form-label extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-1">Email</label>
                                 <div className="position-relative">
-                                    <input type="email" className={`form-control bg-light border-0 ${errors.email ? 'is-invalid' : ''}`} name="email" value={data.email} onChange={onHandleChange} onBlur={handleEmailBlur} required />
+                                    <input type="email" className={`form-control form-control-premium ${errors.email ? 'is-invalid' : ''}`} name="email" value={data.email} onChange={onHandleChange} onBlur={handleEmailBlur} required />
                                     {checkingEmail && <div className="position-absolute end-0 top-50 translate-middle-y me-3 spinner-border spinner-border-sm text-primary"></div>}
                                 </div>
-                                {errors.email && <div className="invalid-feedback d-block">{errors.email}</div>}
+                                {errors.email && <div className="invalid-feedback d-block extra-small fw-bold">{errors.email}</div>}
                             </div>
 
                             <div className="row g-3 mb-3">
                                 <div className="col-md-6">
-                                    <label className="form-label small fw-bold text-muted mb-1">Phone</label>
-                                    <input type="text" className={`form-control bg-light border-0 ${errors.phone ? 'is-invalid' : ''}`} name="phone" value={data.phone} onChange={onHandleChange} required />
+                                    <label className="form-label extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-1">Phone</label>
+                                    <input type="text" className={`form-control form-control-premium ${errors.phone ? 'is-invalid' : ''}`} name="phone" value={data.phone} onChange={onHandleChange} required />
                                 </div>
                                 <div className="col-md-6">
-                                    <label className="form-label small fw-bold text-muted mb-1">Gender</label>
-                                    <select className={`form-select bg-light border-0 ${errors.gender ? 'is-invalid' : ''}`} name="gender" value={data.gender} onChange={onHandleChange}>
+                                    <label className="form-label extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-1">Gender</label>
+                                    <select className={`form-select form-control-premium ${errors.gender ? 'is-invalid' : ''}`} name="gender" value={data.gender} onChange={onHandleChange}>
                                         <option value="">Select</option>
                                         <option value="female">Female</option>
                                         <option value="male">Male</option>
@@ -168,40 +168,41 @@ export default function Register() {
                             </div>
 
                             <div className="d-grid mt-4">
-                                <button type="button" className="btn btn-primary btn-lg fw-bold shadow-sm" onClick={() => setStep(2)}>
-                                    Continue <i className="fas fa-arrow-right ms-2 small"></i>
+                                <button type="button" className="btn btn-primary btn-premium-lg fw-extrabold shadow-sm hover-lift" onClick={() => setStep(2)}>
+                                    CONTINUE TO NEXT STEP <i className="fas fa-arrow-right ms-2 small"></i>
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="step-2">
+                        <div className="step-2 animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="mb-3">
-                                <label className="form-label small fw-bold text-muted mb-1">Username</label>
-                                <input type="text" className={`form-control bg-light border-0 ${errors.username ? 'is-invalid' : ''}`} name="username" value={data.username} onChange={onHandleChange} required />
+                                <label className="form-label extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-1">Username</label>
+                                <input type="text" className={`form-control form-control-premium ${errors.username ? 'is-invalid' : ''}`} name="username" value={data.username} onChange={onHandleChange} required />
+                                {errors.username && <div className="invalid-feedback d-block extra-small fw-bold">{errors.username}</div>}
                             </div>
 
                             <div className="row g-3 mb-4">
                                 <div className="col-md-6">
-                                    <label className="form-label small fw-bold text-muted mb-1">Password</label>
-                                    <input type="password" className={`form-control bg-light border-0 ${errors.password ? 'is-invalid' : ''}`} name="password" value={data.password} onChange={onHandleChange} required />
+                                    <label className="form-label extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-1">Password</label>
+                                    <input type="password" className={`form-control form-control-premium ${errors.password ? 'is-invalid' : ''}`} name="password" value={data.password} onChange={onHandleChange} required />
                                 </div>
                                 <div className="col-md-6">
-                                    <label className="form-label small fw-bold text-muted mb-1">Confirm</label>
-                                    <input type="password" className={`form-control bg-light border-0 ${errors.password_confirmation ? 'is-invalid' : ''}`} name="password_confirmation" value={data.password_confirmation} onChange={onHandleChange} required />
+                                    <label className="form-label extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-1">Confirm</label>
+                                    <input type="password" className={`form-control form-control-premium ${errors.password_confirmation ? 'is-invalid' : ''}`} name="password_confirmation" value={data.password_confirmation} onChange={onHandleChange} required />
                                 </div>
                             </div>
 
-                            <div className="mb-4 form-check">
-                                <input type="checkbox" className="form-check-input" id="terms" name="terms" checked={data.terms} onChange={onHandleChange} required />
-                                <label className="form-check-label small text-muted" htmlFor="terms">
-                                    I agree to the <Link href={route('terms-of-service')} className="fw-bold text-primary">Terms</Link> & <Link href={route('privacy-policy')} className="fw-bold text-primary">Privacy</Link>
+                            <div className="mb-4 form-check d-flex align-items-center gap-2">
+                                <input type="checkbox" className="form-check-input mt-0" id="terms" name="terms" checked={data.terms} onChange={onHandleChange} required />
+                                <label className="form-check-label extra-small text-muted fw-bold mb-0" htmlFor="terms">
+                                    I AGREE TO THE <Link href={route('terms-of-service')} className="fw-extrabold text-primary text-decoration-none">TERMS</Link> & <Link href={route('privacy-policy')} className="fw-extrabold text-primary text-decoration-none">PRIVACY POLICY</Link>
                                 </label>
                             </div>
 
                             <div className="d-flex gap-2">
-                                <button type="button" className="btn btn-outline-secondary btn-lg flex-grow-1" onClick={() => setStep(1)}>Back</button>
-                                <button type="submit" className="btn btn-primary btn-lg flex-grow-1 fw-bold shadow-sm" disabled={processing}>
-                                    Register
+                                <button type="button" className="btn btn-outline-light border text-gray-600 btn-premium-lg flex-grow-1 fw-bold" onClick={() => setStep(1)}>BACK</button>
+                                <button type="submit" className="btn btn-primary btn-premium-lg flex-grow-1 fw-extrabold shadow-sm hover-lift" disabled={processing}>
+                                    COMPLETE REGISTRATION
                                 </button>
                             </div>
                         </div>
@@ -209,36 +210,31 @@ export default function Register() {
                 </form>
 
                 <div className="mt-5 text-center">
-                    <p className="text-muted small mb-0">
-                        Already have an account? <Link href={route('login.patient')} className="text-primary fw-bold text-decoration-none">Sign In</Link>
+                    <p className="text-muted extra-small fw-bold mb-0">
+                        ALREADY HAVE AN ACCOUNT? <Link href={route('login.patient')} className="text-primary fw-extrabold text-decoration-none">SIGN IN HERE</Link>
                     </p>
                 </div>
             </div>
 
             {showGuestModal && (
-                <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
                     <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content border-0 rounded-4 shadow">
-                            <div className="modal-body p-5 text-center">
-                                <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style={{ width: '60px', height: '60px' }}>
+                        <div className="modal-content border-0 rounded-2xl shadow-2xl overflow-hidden">
+                            <div className="modal-body p-5 text-center animate-in zoom-in duration-300">
+                                <div className="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4 shadow-inner" style={{ width: '64px', height: '64px' }}>
                                     <i className="fas fa-user-check fa-lg"></i>
                                 </div>
-                                <h4 className="fw-bold mb-3">Welcome Back!</h4>
-                                <p className="text-muted mb-4 small">We found an existing booking. Auto-fill details for {guestData?.first_name} {guestData?.last_name}?</p>
+                                <h3 className="fw-extrabold text-gray-900 mb-2 tracking-tighter">Welcome Back!</h3>
+                                <p className="text-muted mb-4 fw-medium">We found an existing record. Auto-fill details for <span className="text-dark fw-bold">{guestData?.first_name} {guestData?.last_name}</span>?</p>
                                 <div className="d-grid gap-2">
-                                    <button type="button" className="btn btn-primary rounded-3 fw-bold" onClick={applyGuestData}>Yes, please</button>
-                                    <button type="button" className="btn btn-light rounded-3 text-muted" onClick={() => setShowGuestModal(false)}>No, thanks</button>
+                                    <button type="button" className="btn btn-primary rounded-pill py-2.5 fw-extrabold shadow-sm hover-lift" onClick={applyGuestData}>Yes, please</button>
+                                    <button type="button" className="btn btn-light rounded-pill py-2.5 text-muted fw-bold" onClick={() => setShowGuestModal(false)}>No, thanks</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
-
-            <style>{`
-                .form-control, .form-select, .btn { border-radius: 12px; }
-                .bg-light { background-color: #f8f9fa !important; }
-            `}</style>
         </AuthLayout>
     );
 }

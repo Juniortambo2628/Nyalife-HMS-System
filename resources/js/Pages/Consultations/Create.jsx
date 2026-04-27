@@ -15,11 +15,39 @@ import { toLocalISO } from '@/Utils/dateUtils';
 const AUTOSAVE_KEY = 'nyalife_consultation_draft';
 const AUTOSAVE_INTERVAL = 15000; // 15 seconds
 
-export default function Create({ patients, doctors, medical_procedures = [], lab_test_types = [], procedure_services = [], appointment_id, preselected_patient_id, preselected_patient_label, preselected_patient_gender, priority = 'normal', auth, ...props }) {
+    export default function Create({ patients, doctors, medical_procedures = [], lab_test_types = [], procedure_services = [], appointment_id, preselected_patient_id, preselected_patient_label, preselected_patient_gender, preselected_doctor_id, preselected_doctor_label, latest_height, priority = 'normal', auth, latest_vitals, ...props }) {
     const consultationDrafts = props.drafts || { data: [] };
-    console.log('Consultation Create Props:', { consultationDrafts });
+    console.log('Consultation Create Props:', { 
+        appointment_id, 
+        preselected_patient_id, 
+        preselected_patient_label, 
+        preselected_doctor_id,
+        latest_vitals
+    });
+
+    // Try to restore draft from localStorage
+    const loadDraft = useCallback(() => {
+        try {
+            const saved = localStorage.getItem(AUTOSAVE_KEY);
+            if (saved) {
+                const draftData = JSON.parse(saved);
+                const isSameAppointment = appointment_id && draftData.appointment_id == appointment_id;
+                const isSamePatient = preselected_patient_id && draftData.patient_id == preselected_patient_id;
+                const isGeneralWalkInMatch = !appointment_id && !preselected_patient_id && !draftData.appointment_id;
+                
+                if (isSameAppointment || isSamePatient || isGeneralWalkInMatch) {
+                    return draftData;
+                }
+            }
+        } catch (e) { /* ignore corrupt data */ }
+        return null;
+    }, [appointment_id, preselected_patient_id]);
+
+    const initialDraft = useRef(loadDraft());
+
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [quickPatientLabel, setQuickPatientLabel] = useState(preselected_patient_label || "");
+    const [quickPatientLabel, setQuickPatientLabel] = useState(initialDraft.current?.patient_label || preselected_patient_label || "");
+    const [quickDoctorLabel, setQuickDoctorLabel] = useState(initialDraft.current?.doctor_label || preselected_doctor_label || "");
     const [showLabConfirmModal, setShowLabConfirmModal] = useState(false);
     const [toast, setToast] = useState(null);
     const [patientGender, setPatientGender] = useState(preselected_patient_gender || 'unknown');
@@ -30,23 +58,6 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
     
     const [showDraftAlert, setShowDraftAlert] = useState(false);
     const isDiscardingRef = useRef(false);
-    
-    // Try to restore draft from localStorage
-    const loadDraft = useCallback(() => {
-        try {
-            const saved = localStorage.getItem(AUTOSAVE_KEY);
-            if (saved) {
-                const draftData = JSON.parse(saved);
-                // Only restore if it's for the same appointment/patient context
-                if (draftData.appointment_id == (appointment_id || '') && draftData.patient_id == (preselected_patient_id || '')) {
-                    return draftData;
-                }
-            }
-        } catch (e) { /* ignore corrupt data */ }
-        return null;
-    }, [appointment_id, preselected_patient_id]);
-
-    const initialDraft = useRef(loadDraft());
 
     useEffect(() => {
         if (initialDraft.current) {
@@ -54,9 +65,11 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
         }
     }, []);
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors, reset, transform } = useForm({
         patient_id: initialDraft.current?.patient_id || preselected_patient_id || '',
-        doctor_id: initialDraft.current?.doctor_id || (auth.user.role === 'doctor' && auth.user.staff ? auth.user.staff.staff_id : ''),
+        patient_label: initialDraft.current?.patient_label || preselected_patient_label || '',
+        doctor_id: initialDraft.current?.doctor_id || preselected_doctor_id || '',
+        doctor_label: initialDraft.current?.doctor_label || preselected_doctor_label || '',
         appointment_id: appointment_id || '',
         consultation_date: initialDraft.current?.consultation_date || toLocalISO(),
         priority: initialDraft.current?.priority || priority || 'normal',
@@ -65,14 +78,14 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
         
         // Vitals
         vital_signs: initialDraft.current?.vital_signs || {
-            blood_pressure: '',
-            temperature: '',
-            heart_rate: '',
-            respiratory_rate: '',
-            oxygen_saturation: '',
-            weight: '',
-            height: '',
-            bmi: '',
+            blood_pressure: latest_vitals?.blood_pressure || '',
+            temperature: latest_vitals?.temperature || '',
+            heart_rate: latest_vitals?.heart_rate || '',
+            respiratory_rate: latest_vitals?.respiratory_rate || '',
+            oxygen_saturation: latest_vitals?.oxygen_saturation || '',
+            weight: latest_vitals?.weight || '',
+            height: latest_vitals?.height || latest_height || '',
+            bmi: latest_vitals?.bmi || '',
         },
 
         // Chief Complaint
@@ -142,15 +155,14 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
         return () => window.removeEventListener('beforeunload', handleUnload);
     }, [saveDraft]);
 
-    const clearDraft = () => {
-        isDiscardingRef.current = true;
-        localStorage.removeItem(AUTOSAVE_KEY);
-        setShowDraftAlert(false);
-        setAutosaveStatus('');
-        // We don't necessarily need to reload if we manually reset
-        reset();
-        // Give a small delay before allowing autosave again (optional, since the component might unmount/remount)
-        setTimeout(() => { isDiscardingRef.current = false; }, 1000);
+    const clearDraft = (force = false) => {
+        if (force || confirm('Are you sure you want to discard this draft? All unsaved progress for this session will be lost.')) {
+            isDiscardingRef.current = true;
+            localStorage.removeItem(AUTOSAVE_KEY);
+            setShowDraftAlert(false);
+            setAutosaveStatus('');
+            if (!force) window.location.reload();
+        }
     };
 
     // Helper for nested state updates
@@ -221,55 +233,59 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
     };
 
     // ====== SUBMIT ======
-    const submit = (e, targetStatus = 'completed') => {
+    const submit = (e, targetStatus = 'completed', moveLabs = false) => {
         if (e) e.preventDefault();
 
         // 1. If requesting labs and there are items in "Services" that might be labs
-        if (targetStatus === 'in_progress' && data.requested_service_items.length > 0 && !showLabConfirmModal) {
+        if (targetStatus === 'in_progress' && data.requested_service_items.length > 0 && !showLabConfirmModal && !moveLabs) {
             setShowLabConfirmModal(true);
             return;
         }
-
-        // Set the status first, then post with a callback
-        data.status = targetStatus;
         
+        // Use transform to prepare data for submission without mutating current state
+        transform((data) => ({
+            ...data,
+            status: targetStatus,
+            requested_labs: moveLabs 
+                ? [...data.requested_labs, ...data.requested_service_items] 
+                : data.requested_labs,
+            requested_service_items: moveLabs ? [] : data.requested_service_items
+        }));
+
         post(route('consultations.store'), {
             onSuccess: () => {
-                clearDraft();
-                if (targetStatus === 'in_progress') {
-                    setToast({ message: "Progress saved and Lab Request filed!", type: "success" });
-                    setTimeout(() => {
-                        router.visit(route('lab.index'));
-                    }, 1500);
-                } else {
-                    router.visit(route('consultations.index'));
+                clearDraft(true);
+                setToast({
+                    message: targetStatus === 'completed' ? 'Consultation concluded successfully!' : 'Progress saved and labs requested.',
+                    type: 'success'
+                });
+                
+                // Redirect logic based on action
+                if (moveLabs) {
+                    setTimeout(() => router.visit(route('lab.index')), 1500);
+                } else if (targetStatus === 'completed') {
+                    setTimeout(() => router.visit(route('dashboard')), 1500);
                 }
+            },
+            onError: (errs) => {
+                const errorMsg = Object.values(errs).flat().join(' | ');
+                setToast({
+                    message: `Save failed: ${errorMsg || 'Please check the form for errors.'}`,
+                    type: 'danger'
+                });
             },
             preserveScroll: true,
         });
     };
 
     const confirmMoveToLabs = () => {
-        // Move all items from requested_service_items to requested_labs
-        const newLabs = [...data.requested_labs, ...data.requested_service_items];
-        setData(d => ({
-            ...d,
-            requested_labs: newLabs,
-            requested_service_items: []
-        }));
         setShowLabConfirmModal(false);
-        
-        // Wait for state to settle then submit
-        setTimeout(() => {
-            submit(null, 'in_progress');
-        }, 100);
+        submit(null, 'in_progress', true);
     };
 
     const skipMoveToLabs = () => {
         setShowLabConfirmModal(false);
-        setTimeout(() => {
-            submit(null, 'in_progress');
-        }, 100);
+        submit(null, 'in_progress');
     };
 
     // Group lab tests by category for better dropdown UX
@@ -338,13 +354,17 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
                                 asyncUrl="/patients/search"
                                 value={data.patient_id}
                                 onChange={(val, opt) => {
-                                    setData('patient_id', val);
+                                    setData(d => ({
+                                        ...d,
+                                        patient_id: val,
+                                        patient_label: opt ? opt.label : ''
+                                    }));
                                     if (opt) {
                                         setQuickPatientLabel(opt.label);
                                         if (opt.gender) setPatientGender(opt.gender.toLowerCase());
                                     }
                                 }}
-                                initialLabel={quickPatientLabel || preselected_patient_label}
+                                initialLabel={data.patient_label || quickPatientLabel || preselected_patient_label}
                                 disabled={!!preselected_patient_id}
                                 placeholder="Select Patient..."
                                 onAddNew={() => setIsModalOpen(true)}
@@ -661,20 +681,14 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
                             {/* Lab Tests Column */}
                             <div className="col-lg-4 border-end">
                                 <h6 className="fw-bold mb-3 text-secondary small text-uppercase">Laboratory Tests</h6>
-                                <select 
-                                    className="form-select bg-light border-0 mb-3"
-                                    onChange={(e) => { addLab(e.target.value); e.target.value = ""; }}
-                                    defaultValue=""
-                                >
-                                    <option value="" disabled>Add a Lab Test...</option>
-                                    {Object.entries(labsByCategory).map(([cat, labs]) => (
-                                        <optgroup key={cat} label={cat}>
-                                            {labs.map(l => (
-                                                <option key={l.test_type_id} value={l.test_type_id}>{l.test_name}</option>
-                                            ))}
-                                        </optgroup>
-                                    ))}
-                                </select>
+                                <DashboardSelect 
+                                    options={lab_test_types.map(l => ({ value: l.test_type_id, label: l.test_name, sublabel: l.category }))}
+                                    placeholder="Search lab tests..."
+                                    value=""
+                                    onChange={(val) => {
+                                        if (val) addLab(val);
+                                    }}
+                                />
                                 <ul className="list-group list-group-flush mb-0">
                                     {data.requested_labs.map(l => (
                                         <li key={l.test_type_id} className="list-group-item d-flex justify-content-between align-items-center bg-light mb-2 rounded border-0 py-2">
@@ -784,7 +798,7 @@ export default function Create({ patients, doctors, medical_procedures = [], lab
 
                 {/* Actions */}
                 <div className="col-12 text-end">
-                    <button type="button" onClick={() => { reset(); clearDraft(); }} className="btn btn-light rounded-pill px-4 me-2">Clear</button>
+                    <button type="button" onClick={() => { reset(); clearDraft(false); }} className="btn btn-light rounded-pill px-4 me-2">Clear</button>
                     {auth?.user?.role === 'nurse' ? (
                         <button type="submit" onClick={(e) => submit(e, 'in_progress')} disabled={processing} className="btn btn-primary rounded-pill px-5 btn-lg shadow fw-bold">
                             <i className="fas fa-heartbeat me-2"></i>Save Vitals

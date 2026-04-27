@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Index({ appointments }) {
     return (
@@ -12,11 +13,6 @@ export default function Index({ appointments }) {
             <PageHeader 
                 title="Daily Triage Queue"
                 breadcrumbs={[{ label: 'Clinical', active: false }, { label: 'Vitals', active: true }]}
-                actions={
-                    <Link href={route('vitals.create')} className="btn btn-primary rounded-pill px-4 font-bold shadow-sm">
-                        <i className="fas fa-plus me-2"></i>Ad Hoc Vitals
-                    </Link>
-                }
             />
 
             <div className="card shadow-sm border-0 rounded-2xl bg-white overflow-hidden">
@@ -70,6 +66,16 @@ export default function Index({ appointments }) {
                     </table>
                 </div>
             </div>
+
+            <UnifiedToolbar 
+                actions={
+                    <div className="d-flex align-items-center gap-2">
+                        <Link href={route('vitals.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
+                            <i className="fas fa-plus me-1"></i> Ad Hoc Vitals
+                        </Link>
+                    </div>
+                }
+            />
         </AuthenticatedLayout>
     );
 }

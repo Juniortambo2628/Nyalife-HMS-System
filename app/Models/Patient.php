@@ -4,10 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Patient extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $primaryKey = 'patient_id';
 
@@ -29,6 +39,21 @@ class Patient extends Model
         'insurance_provider',
         'insurance_id',
     ];
+    protected $casts = [
+        'date_of_birth' => 'date',
+    ];
+
+    public function getAgeAttribute()
+    {
+        $dob = $this->date_of_birth ?? $this->user?->date_of_birth;
+        if (!$dob) return null;
+        
+        try {
+            return \Carbon\Carbon::parse($dob)->age;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
 
     public function user()
     {

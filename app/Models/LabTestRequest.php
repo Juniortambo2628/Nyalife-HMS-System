@@ -4,10 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class LabTestRequest extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
     
     protected $table = 'lab_test_requests';
     protected $primaryKey = 'request_id';
@@ -54,6 +64,16 @@ class LabTestRequest extends Model
     public function testType()
     {
         return $this->belongsTo(LabTestType::class, 'test_type_id', 'test_type_id');
+    }
+
+    public function assignedTo()
+    {
+        return $this->belongsTo(User::class, 'assigned_to', 'user_id');
+    }
+
+    public function consultation()
+    {
+        return $this->belongsTo(Consultation::class, 'consultation_id', 'consultation_id');
     }
 
     public function scopeSearchByPatientName($query, $search)

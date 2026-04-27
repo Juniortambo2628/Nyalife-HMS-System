@@ -4,10 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Consultation extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $table = 'consultations';
     protected $primaryKey = 'consultation_id';
@@ -89,6 +99,11 @@ class Consultation extends Model
     public function labTestRequests()
     {
         return $this->hasMany(LabTestRequest::class, 'consultation_id', 'consultation_id');
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class, 'consultation_id', 'consultation_id');
     }
 
     public function scopeSearchByPatientOrDiagnosis($query, $search)

@@ -2,12 +2,16 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import PageHeader from '@/Components/PageHeader';
+import StatusBadge from '@/Components/StatusBadge';
+import UserAvatar from '@/Components/UserAvatar';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Show({ patient, auth }) {
-    const isReceptionist = auth.user.role_name === 'receptionist';
+    const isReceptionist = auth.user.role === 'receptionist';
     const [activeTab, setActiveTab] = useState(patient.consultations && !isReceptionist ? 'consultations' : 'appointments');
 
     const calculateAge = (dob) => {
+        if (!dob) return 'N/A';
         const birthDate = new Date(dob);
         const difference = Date.now() - birthDate.getTime();
         const ageDate = new Date(difference);
@@ -15,207 +19,211 @@ export default function Show({ patient, auth }) {
     };
 
     return (
-        <AuthenticatedLayout
-            header="Patient Profile"
-        >
-            <Head title={`Patient - ${patient.user?.first_name || 'Profile'} ${patient.user?.last_name || ''}`} />
+        <AuthenticatedLayout header="Patient Detail">
+            <Head title={`Patient - ${patient.user?.first_name || 'Profile'}`} />
 
             <PageHeader 
-                title={`${patient.user?.first_name || 'Patient'} ${patient.user?.last_name || 'Profile'}`}
+                title={`Clinical Subject Record`}
                 breadcrumbs={[
-                    { label: 'Patients', url: route('patients.index') },
-                    { label: 'Profile', active: true }
+                    { label: 'Registry', url: route('patients.index') },
+                    { label: `PAT-${patient.patient_id}`, active: true }
                 ]}
-                actions={
-                    <div className="d-flex gap-2">
-                        {patient.consultations && (
-                            <Link href={route('consultations.create', { patient_id: patient.patient_id })} className="btn btn-primary rounded-pill px-4 font-bold shadow-sm">
-                                <i className="fas fa-stethoscope me-2"></i>New Consultation
-                            </Link>
-                        )}
-                    </div>
-                }
             />
 
-            <div className="px-0">
-
-                <div className="row">
+            <div className="px-0 pb-5">
+                <div className="row g-4">
                     {/* Left Column: Personal Info */}
                     <div className="col-lg-4">
-                        <div className="card shadow-sm border-0 mb-4">
-                            <div className="card-body p-4 text-center">
-                                <div className="avatar-circle mx-auto mb-3" style={{ width: '100px', height: '100px', fontSize: '2.5rem', background: 'linear-gradient(45deg, #4CAF50, #81C784)', color: 'white', border: '5px solid #fff', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' }}>
-                                    {patient.user?.first_name?.charAt(0) || 'P'}{patient.user?.last_name?.charAt(0) || ''}
+                        <div className="card shadow-sm border-0 rounded-3xl mb-4 bg-white shadow-hover overflow-hidden">
+                            <div className="card-header bg-gradient-primary-to-secondary p-5 border-0 text-center">
+                                <UserAvatar user={patient.user} size="2xl" className="mb-3 border border-4 border-white shadow-lg" />
+                                <h3 className="fw-extrabold text-white mb-1 tracking-tighter">{patient.user?.first_name} {patient.user?.last_name}</h3>
+                                <div className="extra-small font-bold text-white opacity-50 tracking-widest uppercase mb-4">
+                                    ID: PAT-{patient.patient_id} | REF: {patient.patient_number}
                                 </div>
-                                <h4 className="mb-1">{patient.user?.first_name} {patient.user?.last_name}</h4>
-                                <p className="text-muted small mb-3">ID: {patient.patient_id} | No: {patient.patient_number}</p>
                                 
-                                <div className="d-flex justify-content-center gap-2 mb-4">
-                                    <span className="badge bg-light text-dark border px-3 py-2">
-                                        {(patient.gender || 'unknown').charAt(0).toUpperCase() + (patient.gender || 'unknown').slice(1).toLowerCase()}
+                                <div className="d-flex justify-content-center gap-2">
+                                    <span className="badge bg-white bg-opacity-20 text-white rounded-pill px-3 py-2 fw-extrabold extra-small border border-white border-opacity-10">
+                                        <i className={`fas fa-${patient.gender === 'male' ? 'mars' : 'venus'} me-1`}></i>
+                                        {(patient.gender || 'unknown').toUpperCase()}
                                     </span>
-                                    <span className="badge bg-light text-dark border px-3 py-2">
-                                        {calculateAge(patient.date_of_birth || patient.user?.date_of_birth)} Years
+                                    <span className="badge bg-white bg-opacity-20 text-white rounded-pill px-3 py-2 fw-extrabold extra-small border border-white border-opacity-10">
+                                        {calculateAge(patient.date_of_birth || patient.user?.date_of_birth)} YEARS
                                     </span>
-                                    {patient.blood_group && <span className="badge bg-danger px-3 py-2">{patient.blood_group}</span>}
+                                    {patient.blood_group && (
+                                        <span className="badge bg-white text-primary rounded-pill px-3 py-2 fw-extrabold extra-small shadow-sm">
+                                            {patient.blood_group}
+                                        </span>
+                                    )}
                                 </div>
-
-                                <div className="text-start space-y-3">
-                                    <div className="d-flex align-items-center mb-2">
-                                        <div className="bg-light p-2 rounded text-primary me-3 flex-shrink-0" style={{ width: '35px', textAlign: 'center' }}>
-                                            <i className="fas fa-phone-alt"></i>
+                            </div>
+                            <div className="card-body p-4 pt-5">
+                                <div className="space-y-4 px-2">
+                                    <div className="d-flex align-items-center">
+                                        <div className="avatar-sm bg-gray-50 text-primary rounded-xl d-flex align-items-center justify-content-center me-3 flex-shrink-0 border">
+                                            <i className="fas fa-phone-alt text-xs opacity-50"></i>
                                         </div>
                                         <div>
-                                            <div className="small text-muted">Phone Number</div>
-                                            <div className="fw-semibold">{patient.user.phone || 'N/A'}</div>
-                                        </div>
-                                    </div>
-                                    <div className="d-flex align-items-center mb-2">
-                                        <div className="bg-light p-2 rounded text-primary me-3 flex-shrink-0" style={{ width: '35px', textAlign: 'center' }}>
-                                            <i className="fas fa-envelope"></i>
-                                        </div>
-                                        <div>
-                                            <div className="small text-muted">Email Address</div>
-                                            <div className="fw-semibold text-truncate" style={{ maxWidth: '200px' }}>{patient.user.email}</div>
-                                        </div>
-                                    </div>
-                                    <div className="d-flex align-items-center mb-2">
-                                        <div className="bg-light p-2 rounded text-primary me-3 flex-shrink-0" style={{ width: '35px', textAlign: 'center' }}>
-                                            <i className="fas fa-map-marker-alt"></i>
-                                        </div>
-                                        <div>
-                                            <div className="small text-muted">Residential Address</div>
-                                            <div className="fw-semibold">{patient.user.address || 'N/A'}</div>
+                                            <div className="extra-small text-muted fw-bold text-uppercase tracking-wider opacity-50">Primary Contact</div>
+                                            <div className="fw-extrabold text-gray-800">{patient.user.phone || 'N/A'}</div>
                                         </div>
                                     </div>
                                     <div className="d-flex align-items-center">
-                                        <div className="bg-light p-2 rounded text-danger me-3 flex-shrink-0" style={{ width: '35px', textAlign: 'center' }}>
-                                            <i className="fas fa-heartbeat"></i>
+                                        <div className="avatar-sm bg-gray-50 text-primary rounded-xl d-flex align-items-center justify-content-center me-3 flex-shrink-0 border">
+                                            <i className="fas fa-envelope text-xs opacity-50"></i>
+                                        </div>
+                                        <div className="overflow-hidden">
+                                            <div className="extra-small text-muted fw-bold text-uppercase tracking-wider opacity-50">Electronic Mail</div>
+                                            <div className="fw-extrabold text-gray-800 text-truncate">{patient.user.email}</div>
+                                        </div>
+                                    </div>
+                                    <div className="d-flex align-items-center">
+                                        <div className="avatar-sm bg-gray-50 text-primary rounded-xl d-flex align-items-center justify-content-center me-3 flex-shrink-0 border">
+                                            <i className="fas fa-map-marker-alt text-xs opacity-50"></i>
                                         </div>
                                         <div>
-                                            <div className="small text-muted">Next of Kin (NOK)</div>
-                                            <div className="fw-semibold">
-                                                {patient.emergency_name ? `${patient.emergency_name}` : ''}
-                                                {patient.emergency_name && patient.emergency_contact ? ' - ' : ''}
-                                                {patient.emergency_contact || (patient.emergency_name ? '' : 'N/A')}
+                                            <div className="extra-small text-muted fw-bold text-uppercase tracking-wider opacity-50">Physical Address</div>
+                                            <div className="fw-extrabold text-gray-800">{patient.user.address || 'Sabaki / Unknown'}</div>
+                                        </div>
+                                    </div>
+                                    <div className="d-flex align-items-center pt-3 border-top border-gray-50">
+                                        <div className="avatar-sm bg-pink-50 text-pink-500 rounded-xl d-flex align-items-center justify-content-center me-3 flex-shrink-0 border border-pink-100">
+                                            <i className="fas fa-heartbeat text-xs opacity-50"></i>
+                                        </div>
+                                        <div>
+                                            <div className="extra-small text-muted fw-bold text-uppercase tracking-wider opacity-50">Emergency Contact</div>
+                                            <div className="fw-extrabold text-gray-900 small">
+                                                {patient.emergency_name || 'NOT SPECIFIED'}
+                                                {patient.emergency_contact ? ` - ${patient.emergency_contact}` : ''}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <hr className="my-4" />
-                                <div className="d-grid gap-2">
-                                    <Link href={route('patients.edit', patient.patient_id)} className="btn btn-outline-primary btn-sm">
-                                        <i className="fas fa-edit me-2"></i>Edit Profile
-                                    </Link>
-                                    <Link href={route('appointments.create', { patient_id: patient.patient_id })} className="btn btn-primary btn-sm">
-                                        <i className="fas fa-calendar-plus me-2"></i>Schedule Visit
+                                <div className="d-grid mt-5">
+                                    <Link href={route('appointments.create', { patient_id: patient.patient_id })} className="btn btn-primary rounded-pill py-3 fw-extrabold extra-small tracking-widest shadow-sm">
+                                        <i className="fas fa-calendar-plus me-2"></i>SCHEDULE NEW VISIT
                                     </Link>
                                 </div>
                             </div>
                         </div>
 
                         {/* Recent Vitals Card */}
-                        <div className="card shadow-sm border-0">
-                            <div className="card-header bg-white py-3">
-                                <h6 className="mb-0 fw-bold">Recent Vitals</h6>
+                        <div className="card shadow-sm border-0 rounded-3xl bg-white shadow-hover overflow-hidden">
+                            <div className="card-header bg-white py-4 px-5 border-bottom-0">
+                                <h6 className="mb-0 fw-extrabold text-primary extra-small text-uppercase tracking-widest">
+                                    <i className="fas fa-vial me-2 opacity-50"></i>Physical Monitoring
+                                </h6>
                             </div>
                             <div className="card-body p-0">
                                 {patient.vitals.length > 0 ? (
-                                    <ul className="list-group list-group-flush">
-                                        {patient.vitals.slice(0, 3).map(v => (
-                                            <li key={v.vital_id} className="list-group-item py-3">
-                                                <div className="d-flex justify-content-between mb-2">
-                                                    <small className="text-muted fw-bold">{v.measured_at}</small>
-                                                    <span className="badge bg-primary-subtle text-primary border-primary-subtle border">Latest</span>
+                                    <div className="list-group list-group-flush">
+                                        {patient.vitals.slice(0, 3).map((v, i) => (
+                                            <div key={v.vital_id} className="list-group-item py-4 px-5 border-gray-50">
+                                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                                    <span className="extra-small fw-extrabold text-muted text-uppercase tracking-widest">{v.measured_at}</span>
+                                                    {i === 0 && <span className="badge bg-success-subtle text-success border border-success-subtle rounded-pill extra-small px-2 fw-bold">LATEST</span>}
                                                 </div>
-                                                <div className="row g-2">
+                                                <div className="row g-3">
                                                     <div className="col-6">
-                                                        <div className="small text-muted">BP: <span className="text-dark fw-bold">{v.blood_pressure}</span></div>
-                                                        <div className="small text-muted">Temp: <span className="text-dark fw-bold">{v.temperature}°C</span></div>
+                                                        <div className="extra-small text-muted fw-bold mb-1 uppercase opacity-50">BP</div>
+                                                        <div className="fw-extrabold text-gray-900">{v.blood_pressure}</div>
                                                     </div>
                                                     <div className="col-6">
-                                                        <div className="small text-muted">Pulse: <span className="text-dark fw-bold">{v.heart_rate}</span></div>
-                                                        <div className="small text-muted">SpO2: <span className="text-dark fw-bold">{v.oxygen_saturation}%</span></div>
+                                                        <div className="extra-small text-muted fw-bold mb-1 uppercase opacity-50">Temp</div>
+                                                        <div className="fw-extrabold text-gray-900">{v.temperature}°C</div>
+                                                    </div>
+                                                    <div className="col-6">
+                                                        <div className="extra-small text-muted fw-bold mb-1 uppercase opacity-50">Pulse</div>
+                                                        <div className="fw-extrabold text-gray-900">{v.heart_rate} <span className="extra-small opacity-50">bpm</span></div>
+                                                    </div>
+                                                    <div className="col-6">
+                                                        <div className="extra-small text-muted fw-bold mb-1 uppercase opacity-50">SpO2</div>
+                                                        <div className="fw-extrabold text-gray-900">{v.oxygen_saturation}%</div>
                                                     </div>
                                                 </div>
-                                            </li>
+                                            </div>
                                         ))}
-                                    </ul>
+                                    </div>
                                 ) : (
-                                    <div className="p-4 text-center text-muted small">No vitals recorded yet.</div>
+                                    <div className="p-12 text-center">
+                                        <div className="bg-gray-50 text-gray-200 p-5 rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style={{ width: '80px', height: '80px' }}>
+                                            <i className="fas fa-heartbeat fa-2x opacity-20"></i>
+                                        </div>
+                                        <p className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-0 opacity-50">No clinical monitoring data</p>
+                                    </div>
                                 )}
-                            </div>
-                            <div className="card-footer bg-white text-center">
-                                <Link href="#" className="small text-decoration-none">View All Vitals</Link>
                             </div>
                         </div>
                     </div>
 
                     {/* Right Column: Tabs and Records */}
                     <div className="col-lg-8">
-                        <div className="card shadow-sm border-0 mb-4">
-                            <div className="card-header bg-white border-bottom-0 pt-3">
-                                <ul className="nav nav-tabs card-header-tabs border-bottom-0 gap-3">
+                        <div className="card shadow-sm border-0 rounded-3xl bg-white h-100 overflow-hidden shadow-hover">
+                            <div className="card-header bg-white border-0 p-5 pb-0">
+                                <div className="d-flex gap-4 border-bottom border-gray-100">
                                     {patient.consultations && !isReceptionist && (
-                                    <li className="nav-item">
                                         <button 
-                                            className={`nav-link border-0 bg-transparent rounded-0 px-1 ${activeTab === 'consultations' ? 'fw-bold text-primary border-bottom border-primary border-3' : 'text-muted'}`} 
+                                            className={`pb-3 extra-small fw-extrabold tracking-widest transition-all border-bottom-2 ${
+                                                activeTab === 'consultations' ? 'text-primary border-primary' : 'text-muted border-transparent opacity-50'
+                                            }`} 
                                             onClick={() => setActiveTab('consultations')}
                                         >
-                                            Consultations
+                                            CLINICAL NARRATIVES
                                         </button>
-                                    </li>
                                     )}
-                                    <li className="nav-item">
-                                        <button 
-                                            className={`nav-link border-0 bg-transparent rounded-0 px-1 ${activeTab === 'appointments' ? 'fw-bold text-primary border-bottom border-primary border-3' : 'text-muted'}`} 
-                                            onClick={() => setActiveTab('appointments')}
-                                        >
-                                            Appointments
-                                        </button>
-                                    </li>
+                                    <button 
+                                        className={`pb-3 extra-small fw-extrabold tracking-widest transition-all border-bottom-2 ${
+                                            activeTab === 'appointments' ? 'text-primary border-primary' : 'text-muted border-transparent opacity-50'
+                                        }`} 
+                                        onClick={() => setActiveTab('appointments')}
+                                    >
+                                        SCHEDULED VISITS
+                                    </button>
                                     {patient.prescriptions && !isReceptionist && (
-                                    <li className="nav-item">
                                         <button 
-                                            className={`nav-link border-0 bg-transparent rounded-0 px-1 ${activeTab === 'prescriptions' ? 'fw-bold text-primary border-bottom border-primary border-3' : 'text-muted'}`} 
+                                            className={`pb-3 extra-small fw-extrabold tracking-widest transition-all border-bottom-2 ${
+                                                activeTab === 'prescriptions' ? 'text-primary border-primary' : 'text-muted border-transparent opacity-50'
+                                            }`} 
                                             onClick={() => setActiveTab('prescriptions')}
                                         >
-                                            Prescriptions
+                                            PHARMACY REGISTRY
                                         </button>
-                                    </li>
                                     )}
-                                </ul>
+                                </div>
                             </div>
+                            
                             <div className="card-body p-0">
                                 <div className="tab-content">
                                     {activeTab === 'consultations' && patient.consultations && (
                                         <div className="table-responsive">
                                             <table className="table table-hover align-middle mb-0">
-                                                <thead className="bg-light">
+                                                <thead className="bg-gray-50">
                                                     <tr>
-                                                        <th className="ps-4">Date</th>
-                                                        <th>Doctor</th>
-                                                        <th>Diagnosis</th>
-                                                        <th className="pe-4 text-end">Action</th>
+                                                        <th className="px-5 py-3 extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Timestamp</th>
+                                                        <th className="px-5 py-3 extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Attending Physician</th>
+                                                        <th className="px-5 py-3 extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Diagnosis</th>
+                                                        <th className="px-5 py-3 text-end extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Record</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
+                                                <tbody className="border-0">
                                                     {patient.consultations.length > 0 ? (
                                                         patient.consultations.map(c => (
-                                                            <tr key={c.consultation_id}>
-                                                                <td className="ps-4">{c.consultation_date}</td>
-                                                                <td>Dr. {c.doctor?.user?.first_name || 'Staff'} {c.doctor?.user?.last_name || ''}</td>
-                                                                <td className="text-truncate" style={{ maxWidth: '200px' }}>{c.diagnosis}</td>
-                                                                <td className="pe-4 text-end">
-                                                                    <Link href={route('consultations.show', c.consultation_id)} className="btn btn-sm btn-light border">
-                                                                        <i className="fas fa-eye"></i>
+                                                            <tr key={c.consultation_id} className="border-bottom border-gray-50">
+                                                                <td className="px-5 py-3 fw-extrabold text-gray-900 small">{c.consultation_date}</td>
+                                                                <td className="px-5 py-3 fw-bold text-gray-700 small">Dr. {c.doctor?.user?.last_name || 'Staff'}</td>
+                                                                <td className="px-5 py-3">
+                                                                    <div className="text-truncate extra-small fw-extrabold text-primary text-uppercase" style={{ maxWidth: '200px' }}>{c.diagnosis}</div>
+                                                                </td>
+                                                                <td className="px-5 py-3 text-end">
+                                                                    <Link href={route('consultations.show', c.consultation_id)} className="btn btn-sm btn-light border text-primary rounded-circle p-2 shadow-sm">
+                                                                        <i className="fas fa-chevron-right text-xs"></i>
                                                                     </Link>
                                                                 </td>
                                                             </tr>
                                                         ))
                                                     ) : (
-                                                        <tr><td colSpan="4" className="text-center py-5 text-muted">No consultations found.</td></tr>
+                                                        <tr><td colSpan="4" className="text-center py-20 text-muted extra-small fw-extrabold text-uppercase opacity-20">No clinical narratives found</td></tr>
                                                     )}
                                                 </tbody>
                                             </table>
@@ -225,33 +233,33 @@ export default function Show({ patient, auth }) {
                                     {activeTab === 'appointments' && (
                                         <div className="table-responsive">
                                             <table className="table table-hover align-middle mb-0">
-                                                <thead className="bg-light">
+                                                <thead className="bg-gray-50">
                                                     <tr>
-                                                        <th className="ps-4">Date & Time</th>
-                                                        <th>Doctor</th>
-                                                        <th>Status</th>
-                                                        <th className="pe-4 text-end">Action</th>
+                                                        <th className="px-5 py-3 extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Allocation</th>
+                                                        <th className="px-5 py-3 extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Practitioner</th>
+                                                        <th className="px-5 py-3 extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Status</th>
+                                                        <th className="px-5 py-3 text-end extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Record</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
+                                                <tbody className="border-0">
                                                     {patient.appointments.length > 0 ? (
                                                         patient.appointments.map(a => (
-                                                            <tr key={a.appointment_id}>
-                                                                <td className="ps-4">
-                                                                    <div className="fw-bold">{a.appointment_date}</div>
-                                                                    <small className="text-muted">{a.appointment_time}</small>
+                                                            <tr key={a.appointment_id} className="border-bottom border-gray-50">
+                                                                <td className="px-5 py-3">
+                                                                    <div className="fw-extrabold text-gray-900 small">{a.appointment_date}</div>
+                                                                    <div className="extra-small text-muted font-bold opacity-50">{a.appointment_time}</div>
                                                                 </td>
-                                                                <td>Dr. {a.doctor?.user?.first_name || 'Staff'} {a.doctor?.user?.last_name || ''}</td>
-                                                                <td><span className={`badge ${a.status === 'completed' ? 'bg-success' : 'bg-primary'}`}>{a.status}</span></td>
-                                                                <td className="pe-4 text-end">
-                                                                    <Link href={route('appointments.show', a.appointment_id)} className="btn btn-sm btn-light border">
-                                                                        <i className="fas fa-eye"></i>
+                                                                <td className="px-5 py-3 fw-bold text-gray-700 small">Dr. {a.doctor?.user?.last_name || 'Staff'}</td>
+                                                                <td className="px-5 py-3"><StatusBadge status={a.status} /></td>
+                                                                <td className="px-5 py-3 text-end">
+                                                                    <Link href={route('appointments.show', a.appointment_id)} className="btn btn-sm btn-light border text-primary rounded-circle p-2 shadow-sm">
+                                                                        <i className="fas fa-chevron-right text-xs"></i>
                                                                     </Link>
                                                                 </td>
                                                             </tr>
                                                         ))
                                                     ) : (
-                                                        <tr><td colSpan="4" className="text-center py-5 text-muted">No appointments found.</td></tr>
+                                                        <tr><td colSpan="4" className="text-center py-20 text-muted extra-small fw-extrabold text-uppercase opacity-20">No scheduled visits recorded</td></tr>
                                                     )}
                                                 </tbody>
                                             </table>
@@ -259,43 +267,47 @@ export default function Show({ patient, auth }) {
                                     )}
 
                                     {activeTab === 'prescriptions' && patient.prescriptions && (
-                                        <div className="p-4">
-                                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                                <h6 className="fw-bold mb-0 text-primary">Medicine History</h6>
-                                                <Link href={route('prescriptions.create', { patient_id: patient.patient_id })} className="btn btn-primary btn-sm rounded-pill px-3">
-                                                    <i className="fas fa-plus me-1"></i>New Prescription
+                                        <div className="p-0">
+                                            <div className="d-flex justify-content-between align-items-center px-5 py-4 border-bottom border-gray-50">
+                                                <h6 className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-0">Active Medications</h6>
+                                                <Link href={route('prescriptions.create', { patient_id: patient.patient_id })} className="btn btn-primary btn-sm rounded-pill px-4 fw-extrabold extra-small tracking-widest shadow-sm">
+                                                    NEW PRESCRIPTION
                                                 </Link>
                                             </div>
                                             <div className="table-responsive">
                                                 <table className="table table-hover align-middle mb-0">
-                                                    <thead className="bg-light">
+                                                    <thead className="bg-gray-50">
                                                         <tr>
-                                                            <th className="ps-4">Date</th>
-                                                            <th>Medicines</th>
-                                                            <th>Status</th>
-                                                            <th className="pe-4 text-end">Action</th>
+                                                            <th className="px-5 py-3 extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Date Issued</th>
+                                                            <th className="px-5 py-3 extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Itemization</th>
+                                                            <th className="px-5 py-3 extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Dispensing</th>
+                                                            <th className="px-5 py-3 text-end extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Record</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody>
+                                                    <tbody className="border-0">
                                                         {patient.prescriptions.length > 0 ? (
                                                             patient.prescriptions.map(p => (
-                                                                <tr key={p.prescription_id}>
-                                                                    <td className="ps-4">{p.prescription_date}</td>
-                                                                    <td style={{ maxWidth: '250px' }}>
-                                                                        <div className="text-truncate">
-                                                                            {p.items.map(i => i.medicine_name).join(', ')}
+                                                                <tr key={p.prescription_id} className="border-bottom border-gray-50">
+                                                                    <td className="px-5 py-3 fw-extrabold text-gray-900 small">{p.prescription_date}</td>
+                                                                    <td className="px-5 py-3" style={{ maxWidth: '250px' }}>
+                                                                        <div className="text-truncate extra-small fw-bold text-gray-500 uppercase tracking-tighter">
+                                                                            {p.items.map(i => i.medicine_name).join(' • ')}
                                                                         </div>
                                                                     </td>
-                                                                    <td><span className="badge bg-info">{p.status}</span></td>
-                                                                    <td className="pe-4 text-end">
-                                                                        <Link href={route('prescriptions.show', p.prescription_id)} className="btn btn-sm btn-light border">
-                                                                            <i className="fas fa-eye"></i>
+                                                                    <td className="px-5 py-3">
+                                                                        <span className={`badge rounded-pill px-3 py-1.5 fw-extrabold extra-small text-uppercase ${p.status === 'dispensed' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning-emphasis'}`}>
+                                                                            {p.status}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="px-5 py-3 text-end">
+                                                                        <Link href={route('prescriptions.show', p.prescription_id)} className="btn btn-sm btn-light border text-primary rounded-circle p-2 shadow-sm">
+                                                                            <i className="fas fa-chevron-right text-xs"></i>
                                                                         </Link>
                                                                     </td>
                                                                 </tr>
                                                             ))
                                                         ) : (
-                                                            <tr><td colSpan="4" className="text-center py-5 text-muted">No prescriptions found.</td></tr>
+                                                            <tr><td colSpan="4" className="text-center py-20 text-muted extra-small fw-extrabold text-uppercase opacity-20">No pharmacy entries recorded</td></tr>
                                                         )}
                                                     </tbody>
                                                 </table>
@@ -308,19 +320,21 @@ export default function Show({ patient, auth }) {
                     </div>
                 </div>
             </div>
-            
-            <style>{`
-                .avatar-circle {
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: bold;
+
+            <UnifiedToolbar 
+                actions={
+                    <div className="d-flex align-items-center gap-2">
+                        {['doctor', 'nurse', 'admin', 'lab_technician'].includes(auth.user.role) && (
+                            <Link href={route('consultations.create', { patient_id: patient.patient_id })} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
+                                <i className="fas fa-stethoscope me-1"></i> New Consultation
+                            </Link>
+                        )}
+                        <Link href={route('patients.edit', patient.patient_id)} className="btn btn-light rounded-pill px-4 py-2 fw-extrabold small border shadow-sm">
+                            <i className="fas fa-user-edit me-1"></i> Edit Profile
+                        </Link>
+                    </div>
                 }
-                .space-y-3 > * + * {
-                    margin-top: 1rem;
-                }
-            `}</style>
+            />
         </AuthenticatedLayout>
     );
 }

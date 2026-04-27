@@ -3,30 +3,36 @@ import { Head, Link, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
 import PageHeader from '@/Components/PageHeader';
+import StatusBadge from '@/Components/StatusBadge';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import DashboardSelect from '@/Components/DashboardSelect';
 import { useState, useMemo } from 'react';
 
 export default function Index({ prescriptions, filters, auth }) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
 
-    const applyFilters = (searchValue, statusValue = status) => {
-        router.get(route('prescriptions.index'), { search: searchValue, status: statusValue }, {
+    const applyFilters = (searchValue, statusValue = status, quickFilterValue = filters?.quick_filter) => {
+        router.get(route('prescriptions.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {
             preserveState: true,
             replace: true,
         });
     };
 
-    const handleStatusChange = (e) => {
-        const newStatus = e.target.value;
-        setStatus(newStatus);
-        applyFilters(search, newStatus);
+    const handleQuickFilterChange = (val) => {
+        applyFilters(search, status, val);
+    };
+
+    const handleStatusChange = (val) => {
+        setStatus(val || '');
+        applyFilters(search, val || '');
     };
 
     const columns = useMemo(() => [
         {
-            header: 'RX Number',
-            accessorKey: 'prescription_number',
-            cell: ({ row }) => <span className="fw-bold text-primary">{row.original.prescription_number}</span>
+            header: 'RX ID',
+            accessorKey: 'prescription_id',
+            cell: ({ row }) => <span className="fw-bold text-primary">RX-{String(row.original.prescription_id).padStart(5, '0')}</span>
         },
         {
             header: 'Date',
@@ -51,7 +57,7 @@ export default function Index({ prescriptions, filters, auth }) {
             cell: ({ row }) => (
                 <div>
                     <div className="text-truncate" style={{ maxWidth: '300px' }}>
-                        {row.original.items?.map(i => i.medicine_name).join(', ') || 'No items'}
+                        {row.original.items?.map(i => i.medication?.medication_name || 'Unknown').join(', ') || 'No items'}
                     </div>
                     <small className="text-muted">{row.original.items?.length || 0} items</small>
                 </div>
@@ -60,15 +66,9 @@ export default function Index({ prescriptions, filters, auth }) {
         {
             header: 'Status',
             accessorKey: 'status',
-            cell: ({ row }) => {
-                const s = row.original.status;
-                const badgeClass = s === 'dispensed' ? 'bg-success' : (s === 'cancelled' ? 'bg-danger' : 'bg-warning text-dark');
-                return (
-                    <span className={`badge ${badgeClass}`}>
-                        {s.toUpperCase()}
-                    </span>
-                );
-            }
+            cell: ({ row }) => (
+                <StatusBadge status={row.original.status} />
+            )
         },
         {
             header: 'Actions',
@@ -90,28 +90,13 @@ export default function Index({ prescriptions, filters, auth }) {
 
     return (
         <AuthenticatedLayout
-            header="Pharmacy - Prescriptions"
+            header={auth.user.role === 'patient' ? 'My Prescriptions' : 'Pharmacy - Prescriptions'}
         >
-            <Head title="Pharmacy" />
+            <Head title={auth.user.role === 'patient' ? 'My Prescriptions' : 'Pharmacy'} />
 
             <PageHeader 
-                title="Prescription Registry"
-                breadcrumbs={[{ label: 'Pharmacy', active: true }, { label: 'Prescriptions', active: true }]}
-                actions={
-                    <div className="d-flex align-items-center gap-2">
-                        <select 
-                            className="form-select rounded-pill shadow-sm" 
-                            style={{width: 'auto'}}
-                            value={status} 
-                            onChange={handleStatusChange}
-                        >
-                            <option value="">All Statuses</option>
-                            <option value="pending">Pending</option>
-                            <option value="dispensed">Dispensed</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
-                    </div>
-                }
+                title={auth.user.role === 'patient' ? 'Prescription History' : 'Prescription Registry'}
+                breadcrumbs={[{ label: 'Pharmacy', url: route('pharmacy.inventory') }, { label: 'Prescriptions', active: true }]}
             />
 
             <div className="px-0 py-0">
@@ -120,6 +105,32 @@ export default function Index({ prescriptions, filters, auth }) {
                     value={search}
                     onChange={setSearch}
                     onSubmit={applyFilters}
+                    onFilterChange={handleQuickFilterChange}
+                    filters={[
+                        { label: 'Today', value: 'today' },
+                        { label: 'Pending', value: 'pending' },
+                        { label: 'Dispensed', value: 'dispensed' },
+                    ]}
+                />
+
+                <UnifiedToolbar 
+                    filters={
+                        <div className="d-flex align-items-center gap-2">
+                            <DashboardSelect 
+                                options={[
+                                    { label: 'Pending', value: 'pending' },
+                                    { label: 'Dispensed', value: 'dispensed' },
+                                    { label: 'Cancelled', value: 'cancelled' },
+                                ]}
+                                value={status}
+                                onChange={handleStatusChange}
+                                placeholder="All Status"
+                                theme="dark"
+                                dropup={true}
+                                style={{ width: '150px' }}
+                            />
+                        </div>
+                    }
                 />
 
                 {/* Table */}

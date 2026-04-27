@@ -21,6 +21,20 @@ class UserController extends Controller
         $query = User::with('roleRelation')
             ->search($request->search)
             ->when($request->role, fn ($q) => $q->whereHas('roleRelation', fn ($r) => $r->where('role_name', $request->role)))
+            ->when($request->quick_filter, function ($q, $filter) {
+                switch ($filter) {
+                    case 'active':
+                        return $q->where('is_active', true);
+                    case 'inactive':
+                        return $q->where('is_active', false);
+                    case 'admin':
+                        return $q->whereHas('roleRelation', fn ($r) => $r->where('role_name', 'admin'));
+                    case 'doctor':
+                        return $q->whereHas('roleRelation', fn ($r) => $r->where('role_name', 'doctor'));
+                    case 'nurse':
+                        return $q->whereHas('roleRelation', fn ($r) => $r->where('role_name', 'nurse'));
+                }
+            })
             ->orderBy($sort, $direction);
 
         $users = $query->paginate(12)->withQueryString();
@@ -28,7 +42,7 @@ class UserController extends Controller
 
         return Inertia::render('Users/Index', [
             'users' => $users,
-            'filters' => (object) $request->only(['search', 'role', 'sort', 'direction']),
+            'filters' => (object) $request->only(['search', 'role', 'sort', 'direction', 'quick_filter']),
             'roles' => Role::all()
         ]);
     }

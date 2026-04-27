@@ -1,0 +1,15 @@
+import{r as n,j as e}from"./app-DapartxJ.js";const h=({actions:i,filters:s,bulkActions:d,selectionCount:r=0,children:l})=>{const[a,o]=n.useState(!1),[c,m]=n.useState(!1);if(n.useEffect(()=>{const x=setTimeout(()=>m(!0),100);return()=>clearTimeout(x)},[]),!c)return null;const t=r>0;return e.jsxs("div",{className:`fixed-bottom d-flex justify-content-center pb-4 transition-all duration-500 unified-toolbar-wrapper ${a?"opacity-50 hover-opacity-100":"opacity-95"}`,style:{zIndex:1050},children:[e.jsxs("div",{className:`nyl-toolbar-pill shadow-2xl rounded-pill border border-gray-800 d-flex align-items-center gap-3 px-4 py-2.5 transition-all duration-500 ${a?"translate-y-12 scale-90":""} ${t?"bg-gradient-primary-to-secondary":""}`,children:[t&&!a&&e.jsxs("div",{className:"d-flex align-items-center gap-2 me-2 animate-in slide-in-from-left-2",children:[e.jsx("div",{className:"bg-white text-primary rounded-circle fw-extrabold d-flex align-items-center justify-content-center shadow-sm",style:{width:"32px",height:"32px",fontSize:"0.8rem"},children:r}),e.jsx("span",{className:"text-white fw-extrabold extra-small text-uppercase tracking-widest d-none d-md-block",children:"Selected"}),e.jsx("div",{className:"vr opacity-30 bg-white ms-2",style:{height:"24px"}})]}),e.jsx("button",{onClick:()=>o(!a),className:"btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center shadow-none border-0 flex-shrink-0 nyl-toolbar-toggle",children:e.jsx("i",{className:`fas ${a?"fa-chevron-up":"fa-chevron-down"} ${t?"text-white":"text-gray-400"} extra-small`})}),!a&&e.jsxs(e.Fragment,{children:[e.jsx("div",{className:"vr opacity-30 mx-1 bg-white nyl-toolbar-divider"}),t?e.jsx("div",{className:"d-flex align-items-center gap-2 animate-in fade-in zoom-in-95",children:d}):e.jsxs(e.Fragment,{children:[s&&e.jsx("div",{className:"d-flex align-items-center gap-2 toolbar-dark-theme",children:s}),s&&i&&e.jsx("div",{className:"vr opacity-30 mx-1 bg-white nyl-toolbar-divider"}),i&&e.jsx("div",{className:"d-flex align-items-center gap-2 toolbar-dark-theme",children:i})]}),l&&e.jsx("div",{className:"toolbar-dark-theme",children:l})]}),a&&e.jsxs("div",{className:`small fw-extrabold px-2 cursor-pointer ${t?"text-white":"text-gray-300"}`,onClick:()=>o(!1),children:[e.jsx("i",{className:`fas ${t?"fa-check-double":"fa-tools"} me-2 ${t?"text-white":"text-primary"}`}),t?`${r} READY`:"TOOLBAR"]})]}),e.jsx("style",{children:`
+                .extra-small { font-size: 0.7rem; }
+                .bg-gradient-primary-to-secondary {
+                    background: linear-gradient(135deg, #e91e63 0%, #d81b60 100%);
+                }
+                .animate-in {
+                    animation-duration: 0.3s;
+                    animation-fill-mode: both;
+                }
+                @keyframes slideInFromLeft {
+                    from { transform: translateX(-10px); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                .slide-in-from-left-2 { animation-name: slideInFromLeft; }
+            `})]})};export{h as U};

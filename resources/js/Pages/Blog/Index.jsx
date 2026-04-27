@@ -3,6 +3,8 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import PageHeader from '@/Components/PageHeader';
 import DashboardTable from '@/Components/DashboardTable';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import ViewToggle from '@/Components/ViewToggle';
 
 export default function Index({ blogs }) {
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
@@ -28,27 +30,6 @@ export default function Index({ blogs }) {
             <PageHeader 
                 title="Hospital Blog Posts"
                 breadcrumbs={[{ label: 'Admin', url: '/dashboard' }, { label: 'Blogs', active: true }]}
-                actions={
-                    <div className="d-flex gap-2">
-                        <div className="btn-group bg-white rounded-pill shadow-sm p-1">
-                            <button 
-                                onClick={() => setViewMode('grid')}
-                                className={`btn btn-sm rounded-pill px-3 ${viewMode === 'grid' ? 'btn-primary' : 'btn-light border-0'}`}
-                            >
-                                <i className="fas fa-th-large"></i>
-                            </button>
-                            <button 
-                                onClick={() => setViewMode('list')}
-                                className={`btn btn-sm rounded-pill px-3 ${viewMode === 'list' ? 'btn-primary' : 'btn-light border-0'}`}
-                            >
-                                <i className="fas fa-list"></i>
-                            </button>
-                        </div>
-                        <Link href={route('blog.create')} className="btn btn-primary rounded-pill px-4 font-bold shadow-sm">
-                            <i className="fas fa-plus me-2"></i>New Post
-                        </Link>
-                    </div>
-                }
             />
 
             <div className="py-0">
@@ -181,6 +162,17 @@ export default function Index({ blogs }) {
                         )}
                     </div>
                 )}
+
+                <UnifiedToolbar 
+                    actions={
+                        <div className="d-flex align-items-center gap-2">
+                            <ViewToggle view={viewMode} setView={setViewMode} />
+                            <Link href={route('blog.create')} className="btn btn-primary rounded-pill px-3 py-2 fw-bold small">
+                                <i className="fas fa-plus me-1"></i> New Post
+                            </Link>
+                        </div>
+                    }
+                />
             </div>
 
             <style>{`
@@ -199,4 +191,3 @@ export default function Index({ blogs }) {
         </AuthenticatedLayout>
     );
 }
-

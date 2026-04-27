@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import DashboardTable from '@/Components/DashboardTable';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { useState } from 'react';
 
 export default function Index({ messages, auth }) {
@@ -126,6 +127,17 @@ export default function Index({ messages, auth }) {
                         }
                     ]}
                     emptyMessage="No messages yet"
+                />
+
+                <UnifiedToolbar 
+                    actions={
+                        <button 
+                            onClick={() => router.reload({ preserveScroll: true })}
+                            className="btn btn-primary rounded-pill px-3 py-2 fw-bold small"
+                        >
+                            <i className="fas fa-sync-alt me-1"></i> Refresh Messages
+                        </button>
+                    }
                 />
             </div>
 

@@ -3,8 +3,11 @@ import { Head, Link, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
 import PageHeader from '@/Components/PageHeader';
-import ViewToggleComp from '@/Components/ViewToggle';
-import InfoModalComp from '@/Components/InfoModal';
+import ViewToggle from '@/Components/ViewToggle';
+import InfoModal from '@/Components/InfoModal';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import DashboardSelect from '@/Components/DashboardSelect';
+import UserAvatar from '@/Components/UserAvatar';
 import { useState, useMemo } from 'react';
 
 export default function Index({ patients, filters, auth }) {
@@ -37,53 +40,38 @@ export default function Index({ patients, filters, auth }) {
         });
     };
 
-    const resetFilters = () => {
-        setSearch('');
-        setActiveFilter('');
-        router.get(route('patients.index'));
-    };
-
     const calculateAge = (dob) => {
         if (!dob) return 'N/A';
         const birthDate = new Date(dob);
         if (isNaN(birthDate.getTime())) return 'N/A';
-        
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
         const m = today.getMonth() - birthDate.getMonth();
-        
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-        
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
         return age;
     };
 
     const columns = useMemo(() => [
         {
-            header: 'Patient ID',
+            header: 'Patient Registry',
             accessorKey: 'patient_id',
             cell: ({ row }) => (
-                <span className="badge bg-light text-primary fw-bold p-2">PAT-{row.original.patient_id}</span>
-            )
-        },
-        {
-            header: 'Name',
-            accessorKey: 'user.first_name',
-            cell: ({ row }) => (
-                <div>
-                    <button 
-                        onClick={() => openModal(row.original)}
-                        className="text-decoration-none fw-bold text-gray-900 border-0 bg-transparent p-0 hover:text-pink-500 transition-colors"
-                    >
-                        {row.original.user.first_name} {row.original.user.last_name}
-                    </button>
-                    <div className="small text-muted">{row.original.user.email}</div>
+                <div className="d-flex align-items-center gap-3 py-1">
+                    <UserAvatar user={row.original.user} size="md" className="shadow-sm" />
+                    <div>
+                        <button 
+                            onClick={() => openModal(row.original)}
+                            className="text-decoration-none fw-extrabold text-gray-900 border-0 bg-transparent p-0 hover:text-primary transition-all tracking-tight"
+                        >
+                            {row.original.user.first_name} {row.original.user.last_name}
+                        </button>
+                        <div className="extra-small text-muted font-bold opacity-50 text-uppercase tracking-widest mt-1">PAT-{row.original.patient_id}</div>
+                    </div>
                 </div>
             )
         },
         {
-            header: 'Gender',
+            header: 'Vital Profile',
             accessorKey: 'gender',
             cell: ({ row }) => {
                 const gender = (row.original.gender || 'unknown').toLowerCase();
@@ -91,26 +79,42 @@ export default function Index({ patients, filters, auth }) {
                 const isFemale = gender === 'female' || gender === 'f';
                 
                 return (
-                    <span className={`badge rounded-pill px-3 py-2 ${isMale ? 'bg-blue-100 text-blue-700' : (isFemale ? 'bg-pink-100 text-pink-700' : 'bg-gray-100 text-gray-700')}`}>
-                        {gender.charAt(0).toUpperCase() + gender.slice(1)}
-                    </span>
+                    <div className="d-flex align-items-center gap-2">
+                        <span className={`badge rounded-pill px-3 py-1.5 fw-extrabold extra-small border ${isMale ? 'bg-blue-50 text-blue-600 border-blue-100' : (isFemale ? 'bg-pink-50 text-pink-600 border-pink-100' : 'bg-gray-50 text-gray-600 border-gray-100')}`}>
+                            <i className={`fas fa-${isMale ? 'mars' : (isFemale ? 'venus' : 'user')} me-1`}></i>
+                            {gender.toUpperCase()}
+                        </span>
+                        <span className="badge bg-gray-50 text-gray-500 border rounded-pill px-3 py-1.5 fw-extrabold extra-small">
+                            {calculateAge(row.original.date_of_birth)}Y
+                        </span>
+                    </div>
                 );
             }
         },
         {
-            header: 'Age',
-            accessorKey: 'date_of_birth',
+            header: 'Communication',
+            accessorKey: 'user.phone',
             cell: ({ row }) => (
-                <div className="fw-semibold text-center">
-                    {calculateAge(row.original.date_of_birth)}
+                <div className="space-y-1">
+                    <div className="small fw-extrabold text-gray-800">{row.original.user.phone || 'N/A'}</div>
+                    <div className="extra-small text-muted font-medium text-truncate" style={{maxWidth: '150px'}}>{row.original.user.email}</div>
                 </div>
             )
         },
         {
-            header: 'Phone',
-            accessorKey: 'user.phone',
+            header: 'Clinical Activity',
+            id: 'activity',
             cell: ({ row }) => (
-                <div className="text-gray-600">{row.original.user.phone || 'N/A'}</div>
+                <div className="d-flex align-items-center gap-3">
+                    <div className="text-center border-end pe-3 border-gray-100">
+                        <div className="fw-extrabold text-gray-900 small">{row.original.consultations_count || 0}</div>
+                        <div className="extra-small text-muted font-bold uppercase opacity-50 tracking-tighter">Visits</div>
+                    </div>
+                    <div className="text-center">
+                        <div className="fw-extrabold text-gray-900 small">{row.original.appointments_count || 0}</div>
+                        <div className="extra-small text-muted font-bold uppercase opacity-50 tracking-tighter">Slots</div>
+                    </div>
+                </div>
             )
         },
         {
@@ -118,21 +122,26 @@ export default function Index({ patients, filters, auth }) {
             id: 'actions',
             cell: ({ row }) => (
                 <div className="d-flex justify-content-end gap-2">
+                    <Link
+                        href={route('vitals.create', { patient_id: row.original.patient_id })}
+                        className="btn btn-sm btn-light border text-success rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center hover-lift transition-all"
+                        title="Record Vitals"
+                    >
+                        <i className="fas fa-heartbeat text-xs"></i>
+                    </Link>
                     <button 
                         onClick={() => openModal(row.original)}
-                        className="btn btn-sm btn-outline-primary rounded-circle p-2" 
+                        className="btn btn-sm btn-light border text-primary rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center hover-lift transition-all" 
                         title="Quick View"
-                        style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
                         <i className="fas fa-eye text-xs"></i>
                     </button>
                     <Link 
                         href={route('patients.show', row.original.patient_id)}
-                        className="btn btn-sm btn-outline-secondary rounded-circle p-2" 
+                        className="btn btn-sm btn-light border text-secondary rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center hover-lift transition-all" 
                         title="Full Profile"
-                        style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
-                        <i className="fas fa-user-edit text-xs"></i>
+                        <i className="fas fa-user-circle text-xs"></i>
                     </Link>
                 </div>
             )
@@ -159,56 +168,56 @@ export default function Index({ patients, filters, auth }) {
         return [
             {
                 id: 'info',
-                label: 'Patient Info',
-                icon: 'fa-user-circle',
+                label: 'Personal Data',
+                icon: 'fa-id-card',
                 content: (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-4">
-                                <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">Demographics</h4>
-                                <div className="space-y-3">
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-gray-500">Full Name</span>
-                                        <span className="font-semibold">{patient.user.first_name} {patient.user.last_name}</span>
+                        <div className="row g-5">
+                            <div className="col-md-6 border-end border-gray-100">
+                                <h6 className="extra-small fw-extrabold text-primary text-uppercase tracking-widest mb-4 opacity-50">Demographics Registry</h6>
+                                <div className="space-y-4">
+                                    <div className="d-flex justify-content-between align-items-center border-bottom border-gray-50 pb-2">
+                                        <span className="extra-small fw-bold text-muted text-uppercase">Full Identity</span>
+                                        <span className="fw-extrabold text-gray-900 small">{patient.user.first_name} {patient.user.last_name}</span>
                                     </div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-gray-500">Gender</span>
-                                        <span className="font-semibold text-capitalize">{patient.gender}</span>
+                                    <div className="d-flex justify-content-between align-items-center border-bottom border-gray-50 pb-2">
+                                        <span className="extra-small fw-bold text-muted text-uppercase">Biological Gender</span>
+                                        <span className="fw-extrabold text-gray-900 small text-uppercase">{patient.gender}</span>
                                     </div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-gray-500">Age</span>
-                                        <span className="font-semibold">{calculateAge(patient.date_of_birth)} years</span>
+                                    <div className="d-flex justify-content-between align-items-center border-bottom border-gray-50 pb-2">
+                                        <span className="extra-small fw-bold text-muted text-uppercase">Current Age</span>
+                                        <span className="fw-extrabold text-gray-900 small">{calculateAge(patient.date_of_birth)} Years</span>
                                     </div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-gray-500">Blood Group</span>
-                                        <span className="font-semibold">{patient.blood_group || 'Not Specified'}</span>
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <span className="extra-small fw-bold text-muted text-uppercase">Blood Profile</span>
+                                        <span className="badge bg-danger rounded-pill px-3 py-1 fw-extrabold extra-small">{patient.blood_group || 'N/A'}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="space-y-4">
-                                <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">Contact Details</h4>
-                                <div className="space-y-3">
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-gray-500">Phone</span>
-                                        <span className="font-semibold">{patient.user.phone}</span>
+                            <div className="col-md-6">
+                                <h6 className="extra-small fw-extrabold text-primary text-uppercase tracking-widest mb-4 opacity-50">Communication Matrix</h6>
+                                <div className="space-y-4">
+                                    <div className="d-flex justify-content-between align-items-center border-bottom border-gray-50 pb-2">
+                                        <span className="extra-small fw-bold text-muted text-uppercase">Direct Phone</span>
+                                        <span className="fw-extrabold text-gray-900 small font-mono">{patient.user.phone}</span>
                                     </div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-gray-500">Email</span>
-                                        <span className="font-semibold">{patient.user.email}</span>
+                                    <div className="d-flex justify-content-between align-items-center border-bottom border-gray-50 pb-2">
+                                        <span className="extra-small fw-bold text-muted text-uppercase">Email Reach</span>
+                                        <span className="fw-extrabold text-gray-900 small text-truncate" style={{maxWidth: '180px'}}>{patient.user.email}</span>
                                     </div>
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-gray-500">Address</span>
-                                        <span className="font-semibold">{patient.address || 'No address recorded'}</span>
+                                    <div className="pt-2">
+                                        <span className="extra-small fw-bold text-muted text-uppercase d-block mb-1">Residential Address</span>
+                                        <span className="small fw-bold text-gray-700 leading-relaxed">{patient.address || 'Address not recorded in system'}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-pink-50 rounded-2xl p-6 border border-pink-100">
-                            <h4 className="text-pink-600 text-xs font-bold uppercase tracking-widest mb-3">Next of Kin (NOK)</h4>
-                            <div className="font-semibold text-gray-800">
-                                {patient.emergency_name ? `${patient.emergency_name}` : ''}
-                                {patient.emergency_name && patient.emergency_contact ? ' - ' : ''}
-                                {patient.emergency_contact || (patient.emergency_name ? '' : 'None registered')}
+                        <div className="p-4 bg-pink-50 rounded-2xl border border-pink-100 shadow-inner">
+                            <h6 className="extra-small fw-extrabold text-pink-500 text-uppercase tracking-widest mb-3">Emergency Response (NOK)</h6>
+                            <div className="fw-extrabold text-gray-800 d-flex align-items-center gap-3">
+                                <i className="fas fa-user-shield text-pink-300"></i>
+                                {patient.emergency_name ? `${patient.emergency_name.toUpperCase()}` : 'NOT REGISTERED'}
+                                {patient.emergency_contact && <span className="opacity-50 font-mono small">— {patient.emergency_contact}</span>}
                             </div>
                         </div>
                     </div>
@@ -216,63 +225,32 @@ export default function Index({ patients, filters, auth }) {
             },
             {
                 id: 'history',
-                label: 'Recent Visits',
+                label: 'Visit Timeline',
                 icon: 'fa-history',
                 content: (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">Recent Activity</h4>
+                        <h6 className="extra-small fw-extrabold text-primary text-uppercase tracking-widest opacity-50 mb-4">Historical Encounters</h6>
                         {patient.consultations?.length > 0 ? (
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 {patient.consultations.map((c, i) => (
-                                    <div key={i} className="flex gap-4 p-4 rounded-xl border border-gray-100 hover:border-pink-200 transition-colors bg-white shadow-sm">
-                                        <div className="w-12 h-12 rounded-lg bg-pink-50 flex items-center justify-center text-pink-500 flex-shrink-0">
+                                    <div key={i} className="p-4 rounded-2xl border border-gray-100 hover-lift transition-all bg-white shadow-sm d-flex gap-4 align-items-center">
+                                        <div className="avatar-md bg-pink-50 text-pink-500 rounded-xl d-flex align-items-center justify-content-center flex-shrink-0 border border-pink-100">
                                             <i className="fas fa-stethoscope"></i>
                                         </div>
-                                        <div className="flex-1">
-                                            <div className="flex justify-between mb-1">
-                                                <div className="font-bold text-gray-900">{c.diagnosis || 'Clinical Assessment'}</div>
-                                                <div className="text-xs text-gray-400">{c.consultation_date}</div>
+                                        <div className="flex-1 overflow-hidden">
+                                            <div className="d-flex justify-content-between align-items-center mb-1">
+                                                <div className="fw-extrabold text-gray-900 text-truncate">{c.diagnosis || 'General Consultation'}</div>
+                                                <div className="extra-small text-muted font-bold opacity-50">{c.consultation_date}</div>
                                             </div>
-                                            <p className="text-sm text-gray-500 line-clamp-1">{c.chief_complaint}</p>
+                                            <p className="extra-small text-muted font-medium mb-0 text-truncate opacity-75">{c.chief_complaint}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-12 bg-gray-50 rounded-3xl">
-                                <i className="fas fa-folder-open text-gray-200 text-4xl mb-4"></i>
-                                <p className="text-gray-400">No recent consultations found.</p>
-                            </div>
-                        )}
-                    </div>
-                )
-            },
-            {
-                id: 'appointments',
-                label: 'Schedule',
-                icon: 'fa-calendar-alt',
-                content: (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">Upcoming Appointments</h4>
-                        {patient.appointments?.length > 0 ? (
-                            <div className="space-y-4">
-                                {patient.appointments.map((a, i) => (
-                                    <div key={i} className="flex gap-4 p-4 rounded-xl border border-gray-100 bg-white shadow-sm">
-                                        <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 flex-shrink-0">
-                                            <i className="fas fa-calendar-check"></i>
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="font-bold text-gray-900">{a.appointment_date} @ {a.appointment_time}</div>
-                                            <div className="text-xs text-gray-500">Status: <span className="text-capitalize">{a.status}</span></div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-12 bg-gray-50 rounded-3xl">
-                                <i className="fas fa-calendar-times text-gray-200 text-4xl mb-4"></i>
-                                <p className="text-gray-400">No upcoming appointments.</p>
-                                <Link href={route('appointments.create', { patient_id: patient.patient_id })} className="btn btn-primary btn-sm mt-4">Book Now</Link>
+                            <div className="text-center py-16 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                                <i className="fas fa-folder-open text-gray-200 display-6 mb-4 opacity-20"></i>
+                                <p className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-0 opacity-50">No historical encounters detected</p>
                             </div>
                         )}
                     </div>
@@ -282,36 +260,26 @@ export default function Index({ patients, filters, auth }) {
     };
 
     return (
-        <AuthenticatedLayout
-            header="Patients"
-        >
+        <AuthenticatedLayout header="Patient Registry">
             <Head title="Patients" />
 
             <PageHeader 
                 title="Patients Registry"
                 breadcrumbs={[{ label: 'Patients', active: true }]}
-                actions={
-                    <div className="d-flex align-items-center gap-3">
-                        <ViewToggleComp view={view} setView={handleViewChange} />
-                        <Link href={route('patients.create')} className="btn btn-primary shadow-sm rounded-pill px-4 py-2 fw-bold">
-                            <i className="fas fa-plus me-2"></i>Register Patient
-                        </Link>
-                    </div>
-                }
             />
 
-            <div className="px-0">
+            <div className="px-0 pb-20">
                 <DashboardSearch 
-                    placeholder="Search by Name, Phone, Email, or Patient ID..." 
+                    placeholder="Search by ID, Name, Phone or Email..." 
                     value={search}
                     onChange={setSearch}
                     onSubmit={applyFilters}
                     onFilterChange={handleFilterChange}
                     filters={[
-                        { label: 'All Patients', value: '' },
+                        { label: 'All Subjects', value: '' },
                         { label: 'Recently Registered', value: 'recent' },
-                        { label: 'Male Only', value: 'male' },
-                        { label: 'Female Only', value: 'female' },
+                        { label: 'Biological Male', value: 'male' },
+                        { label: 'Biological Female', value: 'female' },
                     ]}
                 />
 
@@ -321,116 +289,124 @@ export default function Index({ patients, filters, auth }) {
                         columns={columns}
                         data={patients.data}
                         pagination={patients}
-                        emptyMessage="No patients found matching your search."
+                        emptyMessage="No medical subjects found matching your criteria."
                     />
                 ) : (
                     <div className="row g-4">
                         {patients.data.length > 0 ? (
-                            patients.data.map((p) => (
-                                <div key={p.patient_id} className="col-md-6 col-lg-4">
-                                    <div className="card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-shadow-lg transition-all duration-300">
-                                        <div className="card-body p-4">
-                                            <div className="d-flex justify-content-between align-items-start mb-4">
-                                                <div className="d-flex gap-3">
-                                                    <div className="bg-pink-50 text-pink-500 rounded-2xl p-3 flex items-center justify-center font-bold text-xl shadow-inner" style={{ width: '56px', height: '56px' }}>
-                                                        {p.user?.first_name?.charAt(0) || 'P'}{p.user?.last_name?.charAt(0) || ''}
+                            <>
+                                {patients.data.map((p) => (
+                                    <div key={p.patient_id} className="col-md-6 col-lg-4">
+                                        <div className="card h-100 shadow-sm border-0 rounded-3xl overflow-hidden hover-lift shadow-hover transition-all duration-300 bg-white">
+                                            <div className="card-body p-4">
+                                                <div className="d-flex justify-content-between align-items-start mb-5">
+                                                    <div className="d-flex gap-3">
+                                                        <UserAvatar user={p.user} size="lg" className="rounded-2xl shadow-sm border border-white" />
+                                                        <div>
+                                                            <h5 className="fw-extrabold text-gray-900 mb-0 tracking-tightest">{p.user?.first_name} {p.user?.last_name}</h5>
+                                                            <div className="extra-small text-muted font-bold text-uppercase tracking-widest opacity-50">PAT-{p.patient_id}</div>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <h5 className="fw-bold text-gray-900 mb-0">{p.user?.first_name} {p.user?.last_name}</h5>
-                                                        <span className="extra-small text-muted font-bold text-uppercase tracking-widest">ID: PAT-{p.patient_id}</span>
+                                                    <span className="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 fw-extrabold extra-small border border-primary-subtle">
+                                                        {calculateAge(p.date_of_birth)}Y / {(p.gender || 'U').charAt(0).toUpperCase()}
+                                                    </span>
+                                                </div>
+
+                                                <div className="space-y-4 mb-5 px-1">
+                                                    <div className="d-flex align-items-center gap-3">
+                                                        <div className="avatar-xs bg-gray-50 text-gray-400 rounded-lg d-flex align-items-center justify-content-center border"><i className="fas fa-phone-alt extra-small"></i></div>
+                                                        <span className="fw-bold text-gray-700 small font-mono">{p.user.phone || 'N/A'}</span>
+                                                    </div>
+                                                    <div className="d-flex align-items-center gap-3">
+                                                        <div className="avatar-xs bg-gray-50 text-gray-400 rounded-lg d-flex align-items-center justify-content-center border"><i className="fas fa-history extra-small"></i></div>
+                                                        <span className="fw-extrabold text-gray-900 small">{p.consultations_count || 0} Clinical Encounters</span>
                                                     </div>
                                                 </div>
-                                                <span className="badge bg-light text-pink-500 rounded-pill px-3 py-1 font-bold">
-                                                    {calculateAge(p.date_of_birth)}Y / {(p.gender || 'U').charAt(0).toUpperCase()}
-                                                </span>
-                                            </div>
 
-                                            <div className="space-y-3 mb-4">
-                                                <div className="flex items-center gap-3 text-gray-600">
-                                                    <i className="fas fa-phone-alt text-muted w-5"></i>
-                                                    <span className="font-medium text-sm">{p.user.phone || 'No phone'}</span>
+                                                <div className="d-flex gap-2 pt-4 border-top border-gray-50">
+                                                    <button 
+                                                        onClick={() => openModal(p)}
+                                                        className="btn btn-light bg-gray-50 text-gray-700 rounded-pill flex-1 fw-extrabold extra-small tracking-widest border-0 py-2.5 shadow-sm"
+                                                    >
+                                                        QUICK VIEW
+                                                    </button>
+                                                    <Link
+                                                        href={route('vitals.create', { patient_id: p.patient_id })}
+                                                        className="btn btn-outline-success rounded-circle p-2 avatar-sm d-flex align-items-center justify-content-center shadow-sm border-2"
+                                                        title="Record Vitals"
+                                                    >
+                                                        <i className="fas fa-heartbeat text-xs"></i>
+                                                    </Link>
+                                                    <Link 
+                                                        href={route('patients.show', p.patient_id)}
+                                                        className="btn btn-primary rounded-circle p-2 avatar-sm d-flex align-items-center justify-content-center shadow-sm"
+                                                    >
+                                                        <i className="fas fa-chevron-right text-xs"></i>
+                                                    </Link>
                                                 </div>
-                                                <div className="flex items-center gap-3 text-gray-600">
-                                                    <i className="fas fa-envelope text-muted w-5"></i>
-                                                    <span className="font-medium text-sm text-truncate">{p.user.email}</span>
-                                                </div>
-                                                <div className="flex items-center gap-3 text-gray-600">
-                                                    <i className="fas fa-history text-muted w-5"></i>
-                                                    <span className="font-medium text-sm">{p.consultations_count || 0} Consultations</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="d-flex gap-2 border-top pt-4">
-                                                <button 
-                                                    onClick={() => openModal(p)}
-                                                    className="btn btn-light bg-gray-50 text-gray-700 rounded-xl flex-1 fw-bold border-0 py-2.5"
-                                                >
-                                                    Quick View
-                                                </button>
-                                                <Link 
-                                                    href={route('patients.show', p.patient_id)}
-                                                    className="btn btn-outline-primary rounded-xl px-4 border-2"
-                                                >
-                                                    <i className="fas fa-user-circle"></i>
-                                                </Link>
                                             </div>
                                         </div>
                                     </div>
+                                ))}
+
+                                {/* Pagination for Grid View */}
+                                <div className="col-12 mt-5">
+                                    <DashboardTable 
+                                        data={[]} 
+                                        columns={[]} 
+                                        pagination={patients}
+                                        className="bg-transparent shadow-none"
+                                    />
                                 </div>
-                            ))
+                            </>
                         ) : (
-                            <div className="col-12 py-16 text-center bg-white rounded-3xl shadow-sm border border-gray-100">
-                                <i className="fas fa-users-slash text-gray-200 text-5xl mb-4"></i>
-                                <h4 className="text-gray-400 fw-bold">No patients found</h4>
-                                <p className="text-gray-300">Try adjusting your filters or register a new patient.</p>
+                            <div className="col-12 py-24 text-center bg-white rounded-4 shadow-sm border border-gray-100">
+                                <i className="fas fa-users-slash text-gray-100 display-4 mb-4"></i>
+                                <h4 className="text-gray-400 fw-extrabold tracking-tightest">NO SUBJECTS DETECTED</h4>
+                                <p className="text-muted extra-small fw-bold text-uppercase tracking-widest opacity-50">Adjust your search parameters or initiate a new registration.</p>
                             </div>
                         )}
                     </div>
                 )}
 
-                {/* Pagination */}
-                {patients.links.length > 3 && (
-                    <div className="card-footer bg-white border-top-0 py-3 mt-4">
-                        <nav aria-label="Page navigation">
-                            <ul className="pagination pagination-sm justify-content-center mb-0">
-                                {patients.links.map((link, i) => (
-                                    <li key={i} className={`page-item ${link.active ? 'active' : ''} ${!link.url ? 'disabled' : ''}`}>
-                                        <Link
-                                            className="page-link rounded-circle mx-1"
-                                            href={link.url}
-                                            dangerouslySetInnerHTML={{ __html: link.alias || link.label }}
-                                        />
-                                    </li>
-                                ))}
-                            </ul>
-                        </nav>
-                    </div>
-                )}
+                <UnifiedToolbar 
+                    filters={
+                        <div className="d-flex align-items-center gap-2">
+                             <DashboardSelect 
+                                options={[
+                                    { label: 'All Subjects', value: '' },
+                                    { label: 'Recently Registered', value: 'recent' },
+                                    { label: 'Biological Male', value: 'male' },
+                                    { label: 'Biological Female', value: 'female' },
+                                ]}
+                                value={activeFilter} 
+                                onChange={handleFilterChange}
+                                theme="dark"
+                                dropup={true}
+                                placeholder="Status..."
+                            />
+                        </div>
+                    }
+                    actions={
+                        <div className="d-flex align-items-center gap-2">
+                            <ViewToggle view={view} setView={handleViewChange} />
+                            <Link href={route('patients.create')} className="btn btn-primary rounded-pill px-5 py-2 fw-extrabold extra-small tracking-widest shadow-lg">
+                                <i className="fas fa-user-plus me-2"></i> REGISTER NEW
+                            </Link>
+                        </div>
+                    }
+                />
             </div>
 
             {/* Quick Info Modal */}
-            <InfoModalComp
+            <InfoModal
                 show={modalConfig.show}
                 onClose={closeModal}
                 title={modalConfig.patient ? `${modalConfig.patient.user.first_name} ${modalConfig.patient.user.last_name}` : ''}
-                subtitle="Patient Details"
+                subtitle="Diagnostic Overview"
                 tabs={getPatientTabs(modalConfig.patient)}
+                icon="fa-user-nurse"
             />
-
-            <style>{`
-                .bg-blue-100 { background-color: #ebf8ff; }
-                .text-blue-700 { color: #2b6cb0; }
-                .bg-pink-100 { background-color: #fff5f7; }
-                .text-pink-700 { color: #b83280; }
-                .bg-pink-50 { background-color: #fffafb; }
-                .text-pink-500 { color: #ed64a6; }
-                .border-pink-100 { border-color: #fed7e2; }
-                .rounded-xl { border-radius: 1rem; }
-                .rounded-2xl { border-radius: 1.5rem; }
-                .rounded-3xl { border-radius: 2rem; }
-                .text-xs { font-size: 0.75rem; }
-                .tracking-widest { letter-spacing: 0.1em; }
-            `}</style>
         </AuthenticatedLayout>
     );
 }

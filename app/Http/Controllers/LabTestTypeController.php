@@ -10,10 +10,29 @@ use Inertia\Inertia;
 
 class LabTestTypeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = LabTestType::query();
+
+        if ($request->has('search') && $request->search) {
+            $query->where('test_name', 'like', '%' . $request->search . '%')
+                  ->orWhere('category', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('quick_filter') && $request->quick_filter) {
+            switch ($request->quick_filter) {
+                case 'active':
+                    $query->where('is_active', true);
+                    break;
+                case 'inactive':
+                    $query->where('is_active', false);
+                    break;
+            }
+        }
+
         return Inertia::render('Lab/Tests/Index', [
-            'tests' => LabTestType::latest()->get()
+            'tests' => $query->latest()->get(),
+            'filters' => $request->only(['search', 'quick_filter'])
         ]);
     }
 

@@ -13,27 +13,44 @@ class PharmacyController extends Controller
 {
     public function inventory(Request $request)
     {
-        $inventory = Medication::query()
-            ->searchByNameOrType($request->query('search'))
-            ->latest()
+        $query = Medication::query()
+            ->searchByNameOrType($request->query('search'));
+
+        if ($request->has('quick_filter') && $request->quick_filter) {
+            switch ($request->quick_filter) {
+                case 'low_stock':
+                    $query->where('stock_quantity', '>', 0)->where('stock_quantity', '<=', 20);
+                    break;
+                case 'out_of_stock':
+                    $query->where('stock_quantity', 0);
+                    break;
+            }
+        }
+
+        $inventory = $query->latest()
             ->paginate(15);
 
         return Inertia::render('Pharmacy/Inventory', [
             'inventory' => $inventory,
-            'filters' => $request->only('search')
+            'filters' => $request->only(['search', 'quick_filter'])
         ]);
     }
 
     public function medicines(Request $request)
     {
-        $medicines = Medication::query()
-            ->searchByNameOrType($request->query('search'))
-            ->latest()
+        $query = Medication::query()
+            ->searchByNameOrType($request->query('search'));
+
+        if ($request->has('quick_filter') && $request->quick_filter) {
+            $query->where('medication_type', $request->quick_filter);
+        }
+
+        $medicines = $query->latest()
             ->paginate(20);
 
         return Inertia::render('Pharmacy/Medicines', [
             'medicines' => $medicines,
-            'filters' => $request->only('search')
+            'filters' => $request->only(['search', 'quick_filter'])
         ]);
     }
 

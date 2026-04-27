@@ -34,6 +34,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
                 'unread_notifications_count' => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
+                'module_notifications' => $request->user() ? $request->user()->unreadNotifications->groupBy(function($n) {
+                    return $n->data['module'] ?? 'general';
+                })->map->count() : [],
                 'unread_messages_count' => $request->user() ? \App\Models\Message::where('receiver_id', $request->user()->user_id)->whereNull('read_at')->count() : 0,
             ],
         ];

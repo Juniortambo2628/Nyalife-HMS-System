@@ -17,6 +17,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Models\Role;
+use App\Services\ActivityLogger;
+
 class AppointmentController extends Controller
 {
     /**
@@ -109,7 +111,7 @@ class AppointmentController extends Controller
                 });
             })->first();
 
-        Appointment::create([
+        $appointment = Appointment::create([
             'patient_id' => $patient->patient_id,
             'doctor_id' => $doctor ? $doctor->staff_id : 1, // Fallback to 1 if no doctor found (risky but needed)
             'appointment_date' => $validated['date'],
@@ -119,6 +121,15 @@ class AppointmentController extends Controller
             'status' => 'pending', // Guest appointments start as pending
             'created_by' => $user->user_id, // Self-created
         ]);
+
+        ActivityLogger::log(
+            'appointments',
+            "Guest appointment request from {$validated['name']}",
+            ['appointment_id' => $appointment->appointment_id],
+            $user,
+            $appointment,
+            [1]
+        );
 
         return redirect()->back()->with('success', 'Appointment request received! We will contact you shortly to confirm.');
     }
@@ -151,13 +162,48 @@ class AppointmentController extends Controller
         if ($request->has('date') && $request->date) {
             $query->whereDate('appointment_date', $request->date);
         }
+
+        // Quick Filters
+        if ($request->has('quick_filter') && $request->quick_filter) {
+            switch ($request->quick_filter) {
+                case 'today':
+                    $query->whereDate('appointment_date', today());
+                    break;
+                case 'upcoming':
+                    $query->whereDate('appointment_date', '>', today());
+                    break;
+                case 'overdue':
+                    $query->where('status', 'scheduled')
+                          ->where(function($q) {
+                              $q->whereDate('appointment_date', '<', today())
+                                ->orWhere(function($sq) {
+                                    $sq->whereDate('appointment_date', today())
+                                       ->whereTime('appointment_time', '<', now());
+                                });
+                          });
+                    break;
+            }
+        }
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('patient.user', function($pq) use ($search) {
+                    $pq->where('first_name', 'like', "%{$search}%")
+                       ->orWhere('last_name', 'like', "%{$search}%");
+                })->orWhereHas('doctor.user', function($dq) use ($search) {
+                    $dq->where('first_name', 'like', "%{$search}%")
+                       ->orWhere('last_name', 'like', "%{$search}%");
+                });
+            });
+        }
         
         $appointments = $query->orderBy('appointment_date', 'desc')
-                              ->paginate(15);
+                              ->paginate(15)
+                              ->withQueryString();
         
         return Inertia::render('Appointments/Index', [
             'appointments' => AppointmentResource::collection($appointments),
-            'filters' => $request->only(['status', 'date', 'doctor_id', 'patient_id']),
+            'filters' => $request->only(['status', 'date', 'doctor_id', 'patient_id', 'quick_filter', 'search']),
             // Note: doctors and patients lists removed from here; 
             // the frontend should use searchable select or handle filtering differently
         ]);
@@ -191,7 +237,16 @@ class AppointmentController extends Controller
         $validated['status'] = 'scheduled';
         $validated['created_by'] = Auth::id();
         
-        Appointment::create($validated);
+        $appointment = Appointment::create($validated);
+
+        ActivityLogger::log(
+            'appointments',
+            "New appointment scheduled for " . ($appointment->patient->user->full_name ?? 'Patient'),
+            ['appointment_id' => $appointment->appointment_id],
+            Auth::user(),
+            $appointment,
+            [1] // Notify Admin (assuming ID 1 is admin)
+        );
         
         return redirect()->route('appointments.index')
                          ->with('success', 'Appointment scheduled successfully.');
@@ -223,6 +278,15 @@ class AppointmentController extends Controller
         $appointment = Appointment::findOrFail($id);
         $validated = $request->validated();
         $appointment->update($validated);
+
+        ActivityLogger::log(
+            'appointments',
+            "Appointment #{$appointment->appointment_id} updated",
+            ['changes' => $validated],
+            Auth::user(),
+            $appointment,
+            [1]
+        );
         
         return redirect()->back()->with('success', 'Appointment updated successfully.');
     }
@@ -246,6 +310,15 @@ class AppointmentController extends Controller
     {
         $appointment = Appointment::findOrFail($id);
         $appointment->update(['status' => 'arrived']);
+
+        ActivityLogger::log(
+            'appointments',
+            "Patient " . ($appointment->patient->user->full_name ?? 'Patient') . " checked in",
+            ['appointment_id' => $appointment->appointment_id],
+            Auth::user(),
+            $appointment,
+            [$appointment->doctor->user_id, 1] // Notify Doctor and Admin
+        );
         
         return redirect()->back()->with('success', 'Patient checked in successfully! You can now start the consultation.');
     }

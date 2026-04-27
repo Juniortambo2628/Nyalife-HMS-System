@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use App\Services\ActivityLogger;
 
 class ConsultationController extends Controller
 {
@@ -34,6 +35,20 @@ class ConsultationController extends Controller
             $staff = Staff::where('user_id', $user->user_id)->first();
             if ($staff) {
                 $query->where('doctor_id', $staff->staff_id);
+            }
+        }
+
+        if ($request->has('quick_filter') && $request->quick_filter) {
+            switch ($request->quick_filter) {
+                case 'in_progress':
+                    $query->where('consultation_status', 'in_progress');
+                    break;
+                case 'completed':
+                    $query->where('consultation_status', 'completed');
+                    break;
+                case 'walk_in':
+                    $query->where('is_walk_in', true);
+                    break;
             }
         }
 
@@ -60,7 +75,7 @@ class ConsultationController extends Controller
         return Inertia::render('Consultations/Index', [
             'consultations' => ConsultationResource::collection($consultations),
             'drafts' => ConsultationResource::collection($this->getActiveDrafts()),
-            'filters' => $request->only(['search', 'doctor_id', 'patient_id']),
+            'filters' => $request->only(['search', 'doctor_id', 'patient_id', 'quick_filter']),
         ]);
     }
 
@@ -72,14 +87,48 @@ class ConsultationController extends Controller
         $appointmentId = $request->query('appointment_id');
         $patientId = $request->query('patient_id');
         
+        \Illuminate\Support\Facades\Log::info('Consultation Create Request', [
+            'appointment_id' => $appointmentId,
+            'patient_id' => $patientId,
+            'url' => $request->fullUrl()
+        ]);
+        
         $appointment = null;
         $patient = null;
+        $doctorId = null;
+
         if ($appointmentId) {
             $appointment = Appointment::with('patient.user')->find($appointmentId);
-            $patient = $appointment->patient;
-            $patientId = $appointment->patient_id;
+            if ($appointment) {
+                $patient = $appointment->patient;
+                $patientId = $appointment->patient_id;
+                $doctorId = $appointment->doctor_id;
+            }
         } elseif ($patientId) {
             $patient = Patient::with('user')->find($patientId);
+        }
+
+        // If no doctor from appointment, and current user is a doctor, prefill with current user
+        if (!$doctorId && Auth::user()->role === 'doctor') {
+            $staff = Staff::where('user_id', Auth::id())->first();
+            if ($staff) {
+                $doctorId = $staff->staff_id;
+            }
+        }
+
+        $latestVitals = null;
+        $latestHeight = null;
+        if ($patientId) {
+            $latestVitals = \App\Models\Vital::where('patient_id', $patientId)
+                ->whereDate('measured_at', today())
+                ->latest('measured_at')
+                ->first();
+            
+            // For returning patients, get height from the most recent record ever
+            $latestHeight = \App\Models\Vital::where('patient_id', $patientId)
+                ->whereNotNull('height')
+                ->latest('measured_at')
+                ->value('height');
         }
 
         return Inertia::render('Consultations/Create', [
@@ -87,6 +136,8 @@ class ConsultationController extends Controller
             'preselected_patient_id' => $patientId,
             'preselected_patient_label' => $patient ? ($patient->user->first_name . ' ' . $patient->user->last_name) : null,
             'preselected_patient_gender' => $patient ? $patient->user->gender : null,
+            'preselected_doctor_id' => $doctorId,
+            'latest_height' => $latestHeight,
             'priority' => $request->query('priority', 'normal'),
               // Link doctors to users for the dropdown
             'doctors' => Staff::whereHas('user.roleRelation', function($query) {
@@ -108,6 +159,7 @@ class ConsultationController extends Controller
                 'Procedure', 'Imaging', 'General Services', 'Delivery',
                 'Consultation', 'Antenatal', 'Family Planning', 'Immunization'
             ])->where('is_active', true)->orderBy('category')->orderBy('test_name')->get(),
+            'latest_vitals' => $latestVitals,
         ]);
     }
 
@@ -116,11 +168,22 @@ class ConsultationController extends Controller
      */
     public function store(StoreConsultationRequest $request)
     {
+        \Illuminate\Support\Facades\Log::info('Consultation Store Attempt', [
+            'data' => $request->all(),
+            'user' => Auth::id()
+        ]);
+        
         $validated = $request->validated();
 
         DB::beginTransaction();
         try {
             $data = $request->all();
+            
+            // Ensure non-null values for text fields that might be NOT NULL in DB
+            $data['diagnosis'] = $data['diagnosis'] ?? '';
+            $data['treatment_plan'] = $data['treatment_plan'] ?? '';
+            $data['follow_up_instructions'] = $data['follow_up_instructions'] ?? '';
+            $data['notes'] = $data['notes'] ?? '';
             
             // Map 'status' to 'consultation_status' if specific name used in legacy
             $data['consultation_status'] = $data['status'];
@@ -140,6 +203,7 @@ class ConsultationController extends Controller
                 'consultation_id' => $consultation->consultation_id,
                 'invoice_number' => 'INV-' . strtoupper(substr(uniqid(), -6)),
                 'invoice_date' => now(),
+                'due_date' => now()->addDays(7), // Default 7-day due date
                 'status' => 'unpaid',
                 'total_amount' => 0, 
                 'created_by' => Auth::id()
@@ -153,7 +217,7 @@ class ConsultationController extends Controller
                  \App\Models\InvoiceItem::create([
                      'invoice_id' => $invoice->invoice_id,
                      'item_type' => 'consultation',
-                     'item_id' => $baseFee->procedure_id,
+                     'item_id_ref' => $baseFee->procedure_id,
                      'description' => 'Doctor Consultation: ' . $baseFee->name,
                      'quantity' => 1,
                      'unit_price' => $baseFee->standard_fee,
@@ -169,7 +233,7 @@ class ConsultationController extends Controller
                     \App\Models\InvoiceItem::create([
                         'invoice_id' => $invoice->invoice_id,
                         'item_type' => 'procedure',
-                        'item_id' => $proc['procedure_id'] ?? null,
+                        'item_id_ref' => $proc['procedure_id'] ?? null,
                         'description' => $proc['name'] ?? 'Procedure',
                         'quantity' => 1,
                         'unit_price' => $fee,
@@ -189,7 +253,7 @@ class ConsultationController extends Controller
                     \App\Models\InvoiceItem::create([
                         'invoice_id' => $invoice->invoice_id,
                         'item_type' => 'lab_test',
-                        'item_id' => $labTypeId,
+                        'item_id_ref' => $labTypeId,
                         'description' => 'Lab: ' . ($labType->test_name ?? $lab['test_name'] ?? 'Diagnostics'),
                         'quantity' => 1,
                         'unit_price' => $fee,
@@ -198,10 +262,11 @@ class ConsultationController extends Controller
                     $totalAmount += $fee;
                     
                     \App\Models\LabTestRequest::create([
+                        'request_number' => 'LAB-' . strtoupper(substr(uniqid(), -6)),
                         'consultation_id' => $consultation->consultation_id,
                         'patient_id' => $data['patient_id'],
                         'requested_by' => Auth::id(),
-                        'test_id' => $labTypeId,
+                        'test_type_id' => $labTypeId,
                         'status' => 'pending',
                         'request_date' => now(),
                         'notes' => 'Auto-requested via consultation',
@@ -220,7 +285,7 @@ class ConsultationController extends Controller
                     \App\Models\InvoiceItem::create([
                         'invoice_id' => $invoice->invoice_id,
                         'item_type' => 'service',
-                        'item_id' => $svcTypeId,
+                        'item_id_ref' => $svcTypeId,
                         'description' => ($svcType->test_name ?? $svc['test_name'] ?? 'Service'),
                         'quantity' => 1,
                         'unit_price' => $fee,
@@ -239,6 +304,15 @@ class ConsultationController extends Controller
             }
 
             DB::commit();
+
+            ActivityLogger::log(
+                'consultations',
+                "Consultation " . ($data['consultation_status'] === 'in_progress' ? 'started' : 'concluded') . " for " . ($consultation->patient->user->full_name ?? 'Patient'),
+                ['consultation_id' => $consultation->consultation_id, 'status' => $data['consultation_status']],
+                Auth::user(),
+                $consultation,
+                [$consultation->patient->user_id, 1]
+            );
 
             if ($data['consultation_status'] === 'in_progress') {
                 return redirect()->route('consultations.edit', $consultation->consultation_id)
@@ -264,8 +338,15 @@ class ConsultationController extends Controller
             abort(403, 'Unauthorized access to clinical details.');
         }
 
-        $consultation = Consultation::with(['patient.user', 'doctor.user', 'appointment'])
-            ->findOrFail($id);
+        $consultation = Consultation::with([
+            'patient.user', 
+            'doctor.user', 
+            'appointment',
+            'prescriptions.items.medication',
+            'labTestRequests.testType',
+            'labTestRequests.assignedTo',
+            'invoices.items' // Used to infer services and procedures
+        ])->findOrFail($id);
 
         // Ownership check for patients
         if ($user && $user->role === 'patient') {
@@ -290,10 +371,16 @@ class ConsultationController extends Controller
             abort(403, 'Unauthorized editing of consultation records.');
         }
 
-        $consultation = Consultation::findOrFail($id);
+        $consultation = Consultation::with([
+            'patient.user', 
+            'labTestRequests.testType', 
+            'labTestRequests.assignedTo',
+            'prescriptions.items.medication',
+            'invoices.items'
+        ])->findOrFail($id);
         
-        return Inertia::render('Consultation/Edit', [
-            'consultation' => $consultation,
+        return Inertia::render('Consultations/Edit', [
+            'consultation' => ConsultationResource::make($consultation),
              'patients' => Patient::with('user')->get()->map(function($p) {
                 return [
                     'value' => $p->patient_id,
@@ -309,6 +396,16 @@ class ConsultationController extends Controller
                  ];
             }),
             'drafts' => ConsultationResource::collection($this->getActiveDrafts()),
+            'medical_procedures' => \App\Models\MedicalProcedure::where('is_active', true)->orderBy('name')->get(),
+            'medications' => \App\Models\Medication::orderBy('medication_name')->get(),
+            'lab_test_types' => \App\Models\LabTestType::whereIn('category', [
+                'Hematology', 'Chemistry', 'Biochemistry', 'Microbiology', 
+                'Parasitology', 'Pathology', 'Reproductive', 'Serology', 'Laboratory'
+            ])->where('is_active', true)->orderBy('category')->orderBy('test_name')->get(),
+            'procedure_services' => \App\Models\LabTestType::whereIn('category', [
+                'Procedure', 'Imaging', 'General Services', 'Delivery',
+                'Consultation', 'Antenatal', 'Family Planning', 'Immunization'
+            ])->where('is_active', true)->orderBy('category')->orderBy('test_name')->get(),
         ]);
     }
 
@@ -323,10 +420,151 @@ class ConsultationController extends Controller
         }
 
         $consultation = Consultation::findOrFail($id);
-        $validated = $request->validated();
-        $consultation->update($validated);
+        $data = $request->all();
 
-        $status = $validated['status'] ?? $validated['consultation_status'] ?? $request->status;
+        // Ensure non-null values for text fields that might be NOT NULL in DB
+        $data['diagnosis'] = $data['diagnosis'] ?? '';
+        $data['treatment_plan'] = $data['treatment_plan'] ?? '';
+        $data['follow_up_instructions'] = $data['follow_up_instructions'] ?? '';
+        $data['notes'] = $data['notes'] ?? '';
+        
+        if (isset($data['status'])) {
+            $data['consultation_status'] = $data['status'];
+        }
+
+        $consultation->update($data);
+
+        // Process any NEW items added during this edit session
+        $patient_id = $consultation->patient_id;
+        $invoice = \App\Models\Invoice::where('consultation_id', $consultation->consultation_id)->first();
+
+        // Create new lab requests
+        if (!empty($data['requested_labs'])) {
+            foreach ($data['requested_labs'] as $lab) {
+                $labTypeId = $lab['test_type_id'] ?? null;
+                $labType = $labTypeId ? \App\Models\LabTestType::find($labTypeId) : null;
+                
+                \App\Models\LabTestRequest::create([
+                    'request_number' => 'LAB-' . strtoupper(substr(uniqid(), -6)),
+                    'consultation_id' => $consultation->consultation_id,
+                    'patient_id' => $patient_id,
+                    'requested_by' => Auth::id(),
+                    'test_type_id' => $labTypeId,
+                    'status' => 'pending',
+                    'request_date' => now(),
+                    'notes' => 'Requested during consultation edit',
+                    'priority' => $data['priority'] ?? 'routine'
+                ]);
+
+                if ($invoice && $labType) {
+                    \App\Models\InvoiceItem::create([
+                        'invoice_id' => $invoice->invoice_id,
+                        'item_type' => 'lab_test',
+                        'item_id_ref' => $labTypeId,
+                        'description' => 'Lab: ' . $labType->test_name,
+                        'quantity' => 1,
+                        'unit_price' => $labType->price ?? 0,
+                        'total_price' => $labType->price ?? 0,
+                    ]);
+                    $invoice->increment('total_amount', $labType->price ?? 0);
+                }
+            }
+        }
+
+        // Create new service item requests
+        if (!empty($data['requested_service_items'])) {
+            foreach ($data['requested_service_items'] as $svc) {
+                $svcTypeId = $svc['test_type_id'] ?? null;
+                $svcType = $svcTypeId ? \App\Models\LabTestType::find($svcTypeId) : null;
+                
+                if ($invoice && $svcType) {
+                    \App\Models\InvoiceItem::create([
+                        'invoice_id' => $invoice->invoice_id,
+                        'item_type' => 'service',
+                        'item_id_ref' => $svcTypeId,
+                        'description' => $svcType->test_name ?? 'Service',
+                        'quantity' => 1,
+                        'unit_price' => $svcType->price ?? 0,
+                        'total_price' => $svcType->price ?? 0,
+                    ]);
+                    $invoice->increment('total_amount', $svcType->price ?? 0);
+                }
+            }
+        }
+
+        // Create new procedure requests
+        if (!empty($data['requested_procedures'])) {
+            foreach ($data['requested_procedures'] as $proc) {
+                $procId = $proc['procedure_id'] ?? null;
+                $procedure = $procId ? \App\Models\MedicalProcedure::find($procId) : null;
+                
+                if ($invoice && $procedure) {
+                    \App\Models\InvoiceItem::create([
+                        'invoice_id' => $invoice->invoice_id,
+                        'item_type' => 'procedure',
+                        'item_id_ref' => $procId,
+                        'description' => 'Surgery: ' . $procedure->name,
+                        'quantity' => 1,
+                        'unit_price' => $procedure->price ?? 0,
+                        'total_price' => $procedure->price ?? 0,
+                    ]);
+                    $invoice->increment('total_amount', $procedure->price ?? 0);
+                }
+            }
+        }
+
+        // Create new prescriptions
+        if (!empty($data['requested_prescriptions'])) {
+            // Create a single prescription record for this batch
+            $prescription = \App\Models\Prescription::create([
+                'consultation_id' => $consultation->consultation_id,
+                'patient_id' => $patient_id,
+                'prescribed_by' => Auth::id(),
+                'prescription_date' => now(),
+                'status' => 'pending',
+                'notes' => 'Prescribed during consultation edit',
+            ]);
+
+            foreach ($data['requested_prescriptions'] as $rx) {
+                $medId = $rx['medication_id'] ?? null;
+                $medication = $medId ? \App\Models\Medication::find($medId) : null;
+                
+                \App\Models\PrescriptionItem::create([
+                    'prescription_id' => $prescription->prescription_id,
+                    'medication_id' => $medId,
+                    'dosage' => $rx['dosage'] ?? '',
+                    'frequency' => $rx['frequency'] ?? '',
+                    'quantity' => 1,
+                    'duration' => $rx['duration'] ?? '',
+                    'instructions' => $rx['instructions'] ?? '',
+                ]);
+
+                if ($invoice && $medication) {
+                    \App\Models\InvoiceItem::create([
+                        'invoice_id' => $invoice->invoice_id,
+                        'item_type' => 'medication',
+                        'item_id_ref' => $medId,
+                        'description' => 'Rx: ' . $medication->medication_name . ' ' . ($medication->strength ?? ''),
+                        'quantity' => 1,
+                        'unit_price' => $medication->price_per_unit ?? 0,
+                        'total_price' => $medication->price_per_unit ?? 0,
+                    ]);
+                    $invoice->increment('total_amount', $medication->price_per_unit ?? 0);
+                }
+            }
+        }
+
+        $status = $data['consultation_status'] ?? $consultation->consultation_status;
+        
+        ActivityLogger::log(
+            'consultations',
+            "Consultation " . ($status === 'in_progress' ? 'updated' : 'concluded') . " for " . ($consultation->patient->user->full_name ?? 'Patient'),
+            ['consultation_id' => $consultation->consultation_id, 'status' => $status],
+            Auth::user(),
+            $consultation,
+            [$consultation->patient->user_id, 1]
+        );
+
         if ($status === 'in_progress') {
             return redirect()->back()->with('success', 'Progress saved successfully.');
         }

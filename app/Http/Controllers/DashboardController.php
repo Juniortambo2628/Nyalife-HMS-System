@@ -49,36 +49,39 @@ class DashboardController extends Controller
             'today_appointments' => Appointment::whereDate('appointment_date', today())->count()
         ];
         
-        $recent_patients = User::where('role_id', 7)
+        $recent_activity = \Spatie\Activitylog\Models\Activity::with(['causer', 'subject'])
             ->latest()
-            ->limit(2)
+            ->limit(10)
             ->get()
-            ->map(fn($u) => [
-                'type' => 'patient',
-                'title' => "New Patient: {$u->first_name} {$u->last_name}",
-                'time' => $u->created_at->diffForHumans(),
-                'icon' => 'fa-user-plus',
-                'color' => 'primary'
-            ]);
+            ->map(function($activity) {
+                $module = $activity->getExtraProperty('module') ?? 'general';
+                $icons = [
+                    'appointments' => 'fa-calendar-check',
+                    'consultations' => 'fa-stethoscope',
+                    'lab' => 'fa-vials',
+                    'pharmacy' => 'fa-pills',
+                    'billing' => 'fa-file-invoice-dollar',
+                    'general' => 'fa-bell'
+                ];
+                $colors = [
+                    'appointments' => 'primary',
+                    'consultations' => 'info',
+                    'lab' => 'warning',
+                    'pharmacy' => 'danger',
+                    'billing' => 'success',
+                    'general' => 'secondary'
+                ];
 
-        $recent_invoices = Invoice::with('patient.user')
-            ->latest()
-            ->limit(2)
-            ->get()
-            ->map(fn($i) => [
-                'type' => 'invoice',
-                'title' => "Invoice #INV-{$i->invoice_id} for " . ($i->patient->user->last_name ?? 'Patient'),
-                'time' => $i->created_at->diffForHumans(),
-                'icon' => 'fa-file-invoice-dollar',
-                'color' => 'success'
-            ]);
-
-        $recent_activity = collect($recent_patients)
-            ->merge($recent_invoices)
-            ->filter()
-            ->sortByDesc('time')
-            ->values()
-            ->all();
+                return [
+                    'id' => $activity->id,
+                    'type' => $module,
+                    'title' => $activity->description,
+                    'user' => $activity->causer ? ($activity->causer->first_name . ' ' . $activity->causer->last_name) : 'System',
+                    'time' => $activity->created_at->diffForHumans(),
+                    'icon' => $icons[$module] ?? 'fa-bell',
+                    'color' => $colors[$module] ?? 'primary'
+                ];
+            });
 
         $performance = [];
         $labels = [];
@@ -107,10 +110,33 @@ class DashboardController extends Controller
         $staff = Staff::where('user_id', $user->user_id)->first();
         
         if ($staff) {
-            $stats['today_appointments'] = Appointment::where('doctor_id', $staff->staff_id)
+            $todayAppointments = Appointment::where('doctor_id', $staff->staff_id)
                 ->whereDate('appointment_date', today())
                 ->with('patient.user')
                 ->get();
+
+            $walkInVitals = \App\Models\Vital::whereDate('measured_at', today())
+                ->whereDoesntHave('patient.appointments', function($q) use ($staff) {
+                    $q->whereDate('appointment_date', today())
+                      ->where('doctor_id', $staff->staff_id);
+                })
+                ->with('patient.user')
+                ->latest('measured_at')
+                ->get()
+                ->unique('patient_id');
+
+            $walkIns = $walkInVitals->map(function($vital) {
+                return [
+                    'appointment_id' => null,
+                    'patient_id' => $vital->patient_id,
+                    'patient' => $vital->patient,
+                    'appointment_time' => Carbon::parse($vital->measured_at)->format('H:i:s'),
+                    'appointment_type' => 'walk-in',
+                    'status' => 'arrived'
+                ];
+            });
+
+            $stats['today_appointments'] = collect($todayAppointments)->concat($walkIns)->sortBy('appointment_time')->values();
                 
             $stats['pending_appointments'] = Appointment::where('doctor_id', $staff->staff_id)
                 ->where('status', 'pending')
@@ -162,27 +188,53 @@ class DashboardController extends Controller
 
     private function nurseDashboard($user)
     {
+        $walkinVitalsCount = \App\Models\Vital::whereDate('measured_at', today())
+            ->whereDoesntHave('patient.appointments', function($q) {
+                $q->whereDate('appointment_date', today());
+            })->distinct('patient_id')->count('patient_id');
+
+        $appointmentsTodayCount = Appointment::whereDate('appointment_date', today())
+            ->whereIn('status', ['scheduled', 'pending', 'confirmed', 'arrived'])
+            ->count();
+
         $stats = [
-            'triage_queue' => Appointment::whereDate('appointment_date', today())
-                ->where('status', 'arrived')
-                ->whereDoesntHave('consultations')
-                ->count() + 
-                Consultation::whereDate('consultation_date', today())
-                ->where('consultation_status', 'pending')
-                ->where('is_walk_in', true)
-                ->count(),
+            'triage_queue' => $appointmentsTodayCount + $walkinVitalsCount,
             
             'checked_in_patients' => Appointment::whereDate('appointment_date', today())
                 ->whereIn('status', ['confirmed', 'arrived'])
-                ->count(),
+                ->count() + $walkinVitalsCount,
                 
-            'upcoming_appointments' => Appointment::whereDate('appointment_date', '>=', today())
-                ->whereIn('status', ['pending', 'confirmed', 'arrived'])
+            'upcoming_appointments' => collect(Appointment::whereDate('appointment_date', today())
+                ->whereIn('status', ['scheduled', 'pending', 'confirmed', 'arrived'])
                 ->orderBy('appointment_date')
                 ->orderBy('appointment_time')
                 ->limit(10)
                 ->with(['patient.user', 'doctor.user'])
-                ->get()
+                ->get())
+                ->concat(
+                    \App\Models\Vital::whereDate('measured_at', today())
+                        ->whereDoesntHave('patient.appointments', function($q) {
+                            $q->whereDate('appointment_date', today());
+                        })
+                        ->with('patient.user')
+                        ->latest('measured_at')
+                        ->get()
+                        ->unique('patient_id')
+                        ->map(function($vital) {
+                            return [
+                                'appointment_id' => null,
+                                'patient_id' => $vital->patient_id,
+                                'patient' => $vital->patient,
+                                'appointment_time' => Carbon::parse($vital->measured_at)->format('H:i:s'),
+                                'appointment_type' => 'walk-in',
+                                'status' => 'vitals_recorded',
+                                'doctor' => ['user' => ['last_name' => 'Pending Assignment']]
+                            ];
+                        })
+                )
+                ->sortBy('appointment_time')
+                ->values()
+                ->take(10)
         ];
 
         return Inertia::render('Dashboard/Nurse', [
@@ -196,12 +248,13 @@ class DashboardController extends Controller
     private function labTechnicianDashboard($user)
     {
         $stats = [
-            'pending_requests' => LabTestRequest::where('status', 'pending')->count(),
+            'pending_requests' => LabTestRequest::whereIn('status', ['pending', 'processing'])->count(),
             'completed_today' => LabTestRequest::where('status', 'completed')
                 ->whereDate('completed_at', today())
                 ->count(),
             'recent_requests' => LabTestRequest::with(['patient.user', 'testType'])
-                ->where('status', 'pending')
+                ->whereIn('status', ['pending', 'processing'])
+                ->orderByRaw("FIELD(status, 'processing', 'pending')")
                 ->orderBy('created_at', 'desc')
                 ->limit(10)
                 ->get()
@@ -237,26 +290,117 @@ class DashboardController extends Controller
     private function patientDashboard($user)
     {
         $stats = [];
+        $recentActivity = collect();
         $patient = Patient::where('user_id', $user->user_id)->first();
         
         if ($patient) {
+            // 1. Appointments
             $stats['my_appointments'] = Appointment::where('patient_id', $patient->patient_id)
                 ->where('appointment_date', '>=', today())
                 ->orderBy('appointment_date')
                 ->with('doctor.user')
                 ->get();
                 
+            // 2. Prescriptions
             $stats['my_prescriptions'] = Prescription::where('patient_id', $patient->patient_id)
                 ->orderBy('created_at', 'desc')
-                ->limit(5)
+                ->with(['doctor', 'items.medication'])
                 ->get();
+
+            // 3. Historical Consultations
+            $stats['my_consultations'] = Consultation::where('patient_id', $patient->patient_id)
+                ->whereIn('consultation_status', ['closed', 'completed'])
+                ->with(['doctor.user'])
+                ->orderBy('consultation_date', 'desc')
+                ->get();
+
+            // 4. Historical Labs
+            $stats['my_labs'] = LabTestRequest::where('patient_id', $patient->patient_id)
+                ->where('status', 'completed')
+                ->with(['testType', 'assignedTo'])
+                ->orderBy('completed_at', 'desc')
+                ->get();
+
+            // 5. Dynamic Invoice Cost (only computing completed/procured items)
+            $invoices = Invoice::where('patient_id', $patient->patient_id)
+                ->where('status', '!=', 'paid')
+                ->with('items')
+                ->get();
+
+            $actualCost = 0;
+            $recommendedCost = 0;
+
+            foreach ($invoices as $invoice) {
+                $recommendedCost += $invoice->total_amount;
+                foreach ($invoice->items as $item) {
+                    if ($item->item_type === 'lab_test') {
+                        $isCompleted = LabTestRequest::where('consultation_id', $invoice->consultation_id)
+                            ->where('test_type_id', $item->item_id_ref)
+                            ->where('status', 'completed')
+                            ->exists();
+                        if ($isCompleted) $actualCost += $item->total_price;
+                    } elseif ($item->item_type === 'medication') {
+                        $isDispensed = \App\Models\PrescriptionItem::whereHas('prescription', function($q) use ($invoice) {
+                                $q->where('consultation_id', $invoice->consultation_id)
+                                  ->where('status', 'dispensed');
+                            })
+                            ->where('medication_id', $item->item_id_ref)
+                            ->exists();
+                        if ($isDispensed) $actualCost += $item->total_price;
+                    } else {
+                        // Services, Procedures, Consultations are generally considered done if billed
+                        $actualCost += $item->total_price;
+                    }
+                }
+            }
+            $stats['dynamic_billing'] = [
+                'actual_cost' => $actualCost,
+                'recommended_cost' => $recommendedCost,
+                'pending_invoices_count' => $invoices->count()
+            ];
+
+            // 6. Recent Activity Feed (Developments)
+            // Get newest labs
+            $recentLabs = $stats['my_labs']->take(2)->map(function($lab) {
+                return [
+                    'type' => 'lab',
+                    'title' => 'Laboratory Result Ready',
+                    'subtitle' => ($lab->testType->test_name ?? 'Test'),
+                    'time' => $lab->completed_at ? Carbon::parse($lab->completed_at)->diffForHumans() : 'Recently',
+                    'icon' => 'fa-flask',
+                    'color' => 'success',
+                    'url' => route('lab.show', $lab->request_id),
+                    'btnText' => 'View Report',
+                    'date' => $lab->completed_at
+                ];
+            });
+            
+            // Get newest consultations
+            $recentConsultations = $stats['my_consultations']->take(2)->map(function($c) {
+                return [
+                    'type' => 'consultation',
+                    'title' => 'Consultation Concluded',
+                    'subtitle' => 'Dr. ' . ($c->doctor->user->last_name ?? ''),
+                    'time' => $c->updated_at ? $c->updated_at->diffForHumans() : 'Recently',
+                    'icon' => 'fa-stethoscope',
+                    'color' => 'primary',
+                    'url' => route('consultations.show', $c->consultation_id),
+                    'btnText' => 'Review Record',
+                    'date' => $c->updated_at
+                ];
+            });
+
+            $recentActivity = $recentLabs->concat($recentConsultations)
+                ->sortByDesc('date')
+                ->values()
+                ->take(4);
         }
 
         return Inertia::render('Dashboard/Patient', [
             'user' => $user,
             'role' => 'patient',
             'stats' => $stats,
-            'recentActivity' => []
+            'recentActivity' => $recentActivity
         ]);
     }
 }

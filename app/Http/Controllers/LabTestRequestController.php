@@ -9,6 +9,7 @@ use App\Models\Patient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Services\ActivityLogger;
 
 class LabTestRequestController extends Controller
 {
@@ -61,7 +62,7 @@ class LabTestRequestController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        LabTestRequest::create([
+        $labRequest = LabTestRequest::create([
             'patient_id' => $validated['patient_id'],
             'consultation_id' => $validated['consultation_id'] ?? null,
             'test_type_id' => $validated['test_type_id'],
@@ -72,6 +73,15 @@ class LabTestRequestController extends Controller
             'notes' => $validated['notes']
         ]);
 
+        ActivityLogger::log(
+            'lab',
+            "New lab test requested: " . ($labRequest->testType->test_name ?? 'Test'),
+            ['request_id' => $labRequest->request_id],
+            Auth::user(),
+            $labRequest,
+            [1] // Notify Admin and maybe add Lab Tech group later
+        );
+
         return redirect()->route('lab.index')->with('success', 'Lab test request created successfully.');
     }
 
@@ -81,5 +91,27 @@ class LabTestRequestController extends Controller
         return Inertia::render('Lab/Show', [
             'request' => LabTestRequestResource::make($request)
         ]);
+    }
+
+    public function destroy($id)
+    {
+        $labRequest = LabTestRequest::findOrFail($id);
+        
+        if ($labRequest->status !== 'pending') {
+            return back()->with('error', 'Only pending lab requests can be removed.');
+        }
+
+        $labRequest->delete();
+
+        ActivityLogger::log(
+            'lab',
+            "Lab test request removed: " . ($labRequest->testType->test_name ?? 'Test'),
+            ['request_id' => $labRequest->request_id],
+            Auth::user(),
+            null,
+            [1]
+        );
+
+        return back()->with('success', 'Lab test request removed successfully.');
     }
 }

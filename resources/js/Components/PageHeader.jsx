@@ -42,8 +42,7 @@ export default function PageHeader({ title, breadcrumbs = [], actions, showBack 
                                 {showBack && (
                                     <button 
                                         onClick={handleBack}
-                                        className="btn btn-sm btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center"
-                                        style={{ width: '40px', height: '40px' }}
+                                        className="btn btn-sm btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center avatar-md"
                                         title="Go Back"
                                     >
                                         <i className="fas fa-chevron-left text-pink-500"></i>

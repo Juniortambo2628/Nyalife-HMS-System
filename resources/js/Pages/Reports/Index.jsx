@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Index({ stats }) {
     return (
@@ -12,11 +13,6 @@ export default function Index({ stats }) {
             <PageHeader 
                 title="Management Reports"
                 breadcrumbs={[{ label: 'Reports', active: true }]}
-                actions={
-                    <button className="btn btn-outline-primary rounded-pill px-4 font-bold shadow-sm">
-                        <i className="fas fa-download me-2"></i>Export Summary
-                    </button>
-                }
             />
 
             <div className="py-0">
@@ -81,6 +77,14 @@ export default function Index({ stats }) {
                         </div>
                     </div>
                 </div>
+
+                <UnifiedToolbar 
+                    actions={
+                        <button className="btn btn-primary rounded-pill px-3 py-2 fw-bold small">
+                            <i className="fas fa-download me-1"></i> Export Summary
+                        </button>
+                    }
+                />
             </div>
         </AuthenticatedLayout>
     );

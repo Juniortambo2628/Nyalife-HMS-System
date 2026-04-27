@@ -18,8 +18,12 @@ export default function Inventory({ inventory, filters, auth }) {
         notes: '',
     });
 
-    const handleSearch = (searchValue) => {
-        router.get(route('pharmacy.inventory'), { search: searchValue }, { preserveState: true });
+    const handleSearch = (searchValue, quickFilterValue = filters?.quick_filter) => {
+        router.get(route('pharmacy.inventory'), { search: searchValue, quick_filter: quickFilterValue }, { preserveState: true });
+    };
+
+    const handleQuickFilterChange = (val) => {
+        handleSearch(search, val);
     };
 
     const openUpdateModal = (item) => {
@@ -97,6 +101,11 @@ export default function Inventory({ inventory, filters, auth }) {
                 value={search}
                 onChange={setSearch}
                 onSubmit={handleSearch}
+                onFilterChange={handleQuickFilterChange}
+                filters={[
+                    { label: 'Low Stock', value: 'low_stock' },
+                    { label: 'Out of Stock', value: 'out_of_stock' },
+                ]}
             />
 
             <div className="py-0">

@@ -1,5 +1,6 @@
 import '../css/app.css';
 import '../css/nyalife-sidebar.css';
+import '../css/nyalife-components.css';
 import './bootstrap';
 import './echo';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Ensure Bootstrap JS is loaded for togglers/modals

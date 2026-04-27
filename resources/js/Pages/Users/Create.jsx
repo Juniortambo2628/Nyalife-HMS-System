@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Create({ roles }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -30,11 +31,6 @@ export default function Create({ roles }) {
                     { label: 'Users', url: route('users.index') },
                     { label: 'Create User', active: true }
                 ]}
-                actions={
-                    <Link href={route('users.index')} className="btn btn-light rounded-pill px-4 py-2 shadow-sm">
-                        <i className="fas fa-list me-2"></i>Back to list
-                    </Link>
-                }
             />
 
             <div className="py-4 max-w-2xl mx-auto">
@@ -121,6 +117,16 @@ export default function Create({ roles }) {
                     </div>
                 </div>
             </div>
+
+            <UnifiedToolbar 
+                actions={
+                    <div className="d-flex align-items-center gap-2">
+                        <Link href={route('users.index')} className="btn btn-light rounded-pill px-4 py-2 fw-extrabold small border shadow-sm">
+                            <i className="fas fa-list me-1"></i> Back to Registry
+                        </Link>
+                    </div>
+                }
+            />
         </AuthenticatedLayout>
     );
 }

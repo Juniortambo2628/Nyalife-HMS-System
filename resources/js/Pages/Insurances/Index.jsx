@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { useCallback } from 'react';
 
 export default function Index({ auth, insurances }) {
@@ -30,14 +31,6 @@ export default function Index({ auth, insurances }) {
                     { label: 'Dashboard', url: '/dashboard' },
                     { label: 'Insurances', active: true }
                 ]}
-                actions={userRole === 'admin' && (
-                    <Link 
-                        href={route('insurances.create')} 
-                        className="btn btn-primary fw-bold shadow-sm rounded-pill px-4"
-                    >
-                        <i className="fas fa-plus-circle me-2"></i>Add Insurance
-                    </Link>
-                )}
             />
 
             <div className="container-fluid pb-5">
@@ -55,7 +48,7 @@ export default function Index({ auth, insurances }) {
                 ) : (
                     <div className="row g-4">
                         {insurances.map((insurance) => (
-                            <div key={insurance.insurance_id} className="col-xl-3 col-lg-4 col-md-6 text-dark">
+                            <div key={insurance.insurance_id} className="col-xl-3 col-lg-4 col-md-6 text-dark h-auto">
                                 <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden insurance-card transition-all">
                                     {/* Action Header */}
                                     <div className="p-3 d-flex justify-content-between align-items-center bg-light-subtle border-bottom">
@@ -68,7 +61,7 @@ export default function Index({ auth, insurances }) {
                                             {insurance.is_active ? 'Active' : 'Hidden'}
                                         </button>
                                         <div className="dropdown">
-                                            <button className="btn btn-link link-secondary p-0 border-0" data-bs-toggle="dropdown">
+                                            <button className="btn btn-link link-secondary p-0 border-0 shadow-none" data-bs-toggle="dropdown">
                                                 <i className="fas fa-ellipsis-v"></i>
                                             </button>
                                             <ul className="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
@@ -126,6 +119,17 @@ export default function Index({ auth, insurances }) {
                         ))}
                     </div>
                 )}
+
+                <UnifiedToolbar 
+                    actions={userRole === 'admin' ? (
+                        <Link 
+                            href={route('insurances.create')} 
+                            className="btn btn-primary rounded-pill px-4 py-2 fw-bold small"
+                        >
+                            <i className="fas fa-plus-circle me-1"></i> Add Provider
+                        </Link>
+                    ) : null}
+                />
             </div>
 
             <style>{`
@@ -140,6 +144,7 @@ export default function Index({ auth, insurances }) {
                 }
                 .text-pink-500 { color: #e91e63; }
                 .text-pink-700 { color: #c2185b; }
+                .fw-extrabold { font-weight: 850; }
             `}</style>
         </AuthenticatedLayout>
     );

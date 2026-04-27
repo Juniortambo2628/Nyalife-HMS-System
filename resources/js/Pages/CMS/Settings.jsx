@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
 import TextInput from '@/Components/TextInput';
@@ -151,12 +152,19 @@ export default function Settings({ settings, serviceTabs }) {
                         </div>
                     ))}
 
-                    <div className="d-flex justify-content-end mb-10">
-                        <button className="btn btn-primary rounded-pill px-10 py-3 font-bold shadow-lg transition-transform hover-lift" disabled={processing}>
-                            <i className="fas fa-save me-2"></i>Save CMS Configuration
-                        </button>
-                    </div>
                 </form>
+                
+                <UnifiedToolbar 
+                    actions={
+                        <button 
+                            onClick={handleSubmit}
+                            className="btn btn-primary rounded-pill px-4 py-2 fw-bold small" 
+                            disabled={processing}
+                        >
+                            <i className="fas fa-save me-1"></i> Save CMS Configuration
+                        </button>
+                    }
+                />
             </div>
         </AuthenticatedLayout>
     );

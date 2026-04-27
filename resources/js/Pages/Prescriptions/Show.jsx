@@ -1,25 +1,21 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Show({ prescription, auth }) {
     return (
         <AuthenticatedLayout
             header="Prescription Details"
         >
-            <Head title={`Prescription - ${prescription.prescription_number}`} />
+            <Head title={`Prescription - RX-${String(prescription.prescription_id).padStart(5, '0')}`} />
 
             <PageHeader 
-                title={`RX #${prescription.prescription_number}`}
+                title={`RX-${String(prescription.prescription_id).padStart(5, '0')}`}
                 breadcrumbs={[
                     { label: 'Pharmacy', url: route('prescriptions.index') },
                     { label: 'Prescription Details', active: true }
                 ]}
-                actions={
-                    <button className="btn btn-outline-primary rounded-pill px-4 font-bold shadow-sm">
-                        <i className="fas fa-print me-2"></i>Print RX
-                    </button>
-                }
             />
 
             <div className="px-0 py-0">
@@ -39,6 +35,20 @@ export default function Show({ prescription, auth }) {
                                 <div className="mb-2"><i className="fas fa-calendar text-primary me-2"></i><strong>Prescribed On:</strong> {prescription.prescription_date}</div>
                                 <div className="mb-0"><i className="fas fa-user-md text-primary me-2"></i><strong>Doctor:</strong> Dr. {prescription.doctor?.first_name || prescription.doctor?.user?.first_name || 'Staff'} {prescription.doctor?.last_name || prescription.doctor?.user?.last_name || ''}</div>
                             </div>
+                            
+                            {prescription.consultation_id && (
+                                <div className="text-start p-3 bg-light rounded mb-4">
+                                    <h6 className="fw-bold small text-muted text-uppercase mb-2">Associated Consultation</h6>
+                                    <div className="mb-2"><strong>ID:</strong> #{prescription.consultation_id}</div>
+                                    <div className="mb-3 small text-truncate" title={prescription.consultation?.diagnosis || prescription.consultation?.notes || 'No summary available'}>
+                                        <strong>Summary:</strong> {prescription.consultation?.diagnosis || prescription.consultation?.notes || 'No summary available'}
+                                    </div>
+                                    <Link href={route('consultations.show', prescription.consultation_id)} className="btn btn-outline-primary btn-sm w-100">
+                                        <i className="fas fa-external-link-alt me-1"></i> View Consultation
+                                    </Link>
+                                </div>
+                            )}
+
                             {auth.user.role === 'pharmacist' && prescription.status === 'pending' && (
                                 <button className="btn btn-success w-100 shadow-sm">
                                     <i className="fas fa-check-circle me-2"></i>Mark as Dispensed
@@ -86,6 +96,16 @@ export default function Show({ prescription, auth }) {
                     </div>
                 </div>
             </div>
+
+            <UnifiedToolbar 
+                actions={
+                    <div className="d-flex align-items-center gap-2">
+                        <button onClick={() => window.print()} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
+                            <i className="fas fa-print me-1"></i> Print RX
+                        </button>
+                    </div>
+                }
+            />
         </AuthenticatedLayout>
     );
 }

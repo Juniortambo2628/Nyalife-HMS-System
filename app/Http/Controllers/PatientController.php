@@ -36,12 +36,19 @@ class PatientController extends Controller
         }
 
         $patients = $query->searchByUserName($request->search)
+            ->when($request->status, function($q, $status) {
+                if ($status === 'male') return $q->where('gender', 'male');
+                if ($status === 'female') return $q->where('gender', 'female');
+                if ($status === 'recent') return $q->where('created_at', '>=', now()->subDays(7));
+                return $q;
+            })
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
         
         return Inertia::render('Patients/Index', [
             'patients' => PatientResource::collection($patients),
-            'filters' => $request->only(['search']),
+            'filters' => $request->only(['search', 'status']),
         ]);
     }
 

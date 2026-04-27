@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, Link } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdatePersonalInformationForm from './Partials/UpdatePersonalInformationForm';
 import UpdateProfessionalProfileForm from './Partials/UpdateProfessionalProfileForm';
 import UpdateProfileImageForm from './Partials/UpdateProfileImageForm';
 import PageHeader from '@/Components/PageHeader';
-import { User, Lock, Briefcase, ShieldX, Camera } from 'lucide-react';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import { User, Lock, Briefcase, ShieldX } from 'lucide-react';
 
 export default function Edit({ mustVerifyEmail, status, staff }) {
     const { auth } = usePage().props;
@@ -60,8 +61,6 @@ export default function Edit({ mustVerifyEmail, status, staff }) {
                                 );
                             })}
                         </nav>
-
-
                     </aside>
 
                     {/* Content Area */}
@@ -95,8 +94,23 @@ export default function Edit({ mustVerifyEmail, status, staff }) {
                         )}
                     </main>
                 </div>
+
+                <UnifiedToolbar 
+                    actions={
+                        <div className="d-flex align-items-center gap-2">
+                            <Link href={route('dashboard')} className="btn btn-light rounded-pill px-4 py-2 fw-bold small">
+                                <i className="fas fa-home me-1"></i> Dashboard
+                            </Link>
+                            <button 
+                                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                                className="btn btn-primary rounded-pill px-4 py-2 fw-bold small"
+                            >
+                                <i className="fas fa-arrow-up me-1"></i> Back to Top
+                            </button>
+                        </div>
+                    }
+                />
             </div>
         </AuthenticatedLayout>
     );
 }
-

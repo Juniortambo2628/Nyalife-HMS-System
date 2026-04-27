@@ -58,6 +58,8 @@ class ConsultationResource extends JsonResource
             'doctor' => $this->whenLoaded('doctor', fn () => new StaffResource($this->doctor)),
             'appointment' => $this->whenLoaded('appointment', fn () => new AppointmentResource($this->appointment)),
             'prescriptions' => $this->whenLoaded('prescriptions', fn () => PrescriptionResource::collection($this->prescriptions)),
+            'lab_test_requests' => $this->whenLoaded('labTestRequests', fn () => LabTestRequestResource::collection($this->labTestRequests)),
+            'invoices' => $this->whenLoaded('invoices', fn () => $this->invoices), // Using array/object directly is fine for this context
         ];
     }
 }

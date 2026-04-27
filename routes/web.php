@@ -93,6 +93,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/admin/messages/{contactMessage}', [\App\Http\Controllers\ContactMessageController::class, 'destroy'])->name('admin.messages.destroy');
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/api/context-switching', [\App\Http\Controllers\ContextSwitcherController::class, 'getOptions']);
     Route::get('/dashboard/{role}', [DashboardController::class, 'index'])->name('dashboard.role');
     
     // Appointments
@@ -101,7 +102,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/appointments', [\App\Http\Controllers\AppointmentController::class, 'store'])->name('appointments.store');
     Route::get('/appointments/calendar', [\App\Http\Controllers\AppointmentController::class, 'calendar'])->name('appointments.calendar');
     Route::get('/appointments/{id}', [\App\Http\Controllers\AppointmentController::class, 'show'])->name('appointments.show');
-    Route::put('/appointments/{id}', [\App\Http\Controllers\AppointmentController::class, 'update'])->name('appointments.update');
+    Route::match(['put', 'patch'], '/appointments/{id}', [\App\Http\Controllers\AppointmentController::class, 'update'])->name('appointments.update');
     Route::delete('/appointments/{id}', [\App\Http\Controllers\AppointmentController::class, 'destroy'])->name('appointments.destroy');
     Route::post('/appointments/{id}/check-in', [\App\Http\Controllers\AppointmentController::class, 'checkIn'])->name('appointments.check-in');
     
@@ -124,6 +125,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/vitals', [\App\Http\Controllers\VitalController::class, 'index'])->name('vitals.index');
     Route::get('/vitals/record', [\App\Http\Controllers\VitalController::class, 'create'])->name('vitals.create');
     Route::post('/vitals', [\App\Http\Controllers\VitalController::class, 'store'])->name('vitals.store');
+    Route::get('/patients/{id}/latest-vitals', [\App\Http\Controllers\VitalController::class, 'latest'])->name('patients.latest-vitals');
+    Route::get('/add-pregnancy-test', function () {
+        \App\Models\LabTestType::updateOrCreate(
+            ['test_name' => 'Pregnancy test (blood)'],
+            ['category' => 'Laboratory', 'price' => 1500, 'is_active' => true, 'description' => 'Blood pregnancy test (hCG)']
+        );
+        return 'Added';
+    });
     
     // Prescriptions
     Route::get('/prescriptions', [\App\Http\Controllers\PrescriptionController::class, 'index'])->name('prescriptions.index');
@@ -135,8 +144,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/lab/requests', [\App\Http\Controllers\LabController::class, 'requests'])->name('lab.index');
     Route::get('/lab/requests/create', [\App\Http\Controllers\LabTestRequestController::class, 'create'])->name('lab.create');
     Route::post('/lab/requests', [\App\Http\Controllers\LabTestRequestController::class, 'store'])->name('lab.store');
+    Route::delete('/lab/requests/{id}', [\App\Http\Controllers\LabTestRequestController::class, 'destroy'])->name('lab.requests.destroy');
     Route::get('/lab/requests/{id}', [\App\Http\Controllers\LabController::class, 'show'])->name('lab.show');
     Route::post('/lab/requests/{id}/status', [\App\Http\Controllers\LabController::class, 'updateStatus'])->name('lab.update-status');
+    Route::get('/lab/requests/{id}/print', [\App\Http\Controllers\LabController::class, 'print'])->name('lab.print');
     Route::get('/lab/tests', [\App\Http\Controllers\LabController::class, 'tests'])->name('lab.tests'); // Legacy catalog
     
     // Lab Admin (CRUD)
@@ -232,6 +243,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/image', [ProfileController::class, 'updateImage'])->name('profile.image.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Mail Templates
+    Route::get('/admin/mail-templates', [\App\Http\Controllers\MailTemplateController::class, 'index'])->name('mail-templates.index');
+    Route::get('/admin/mail-templates/{id}/edit', [\App\Http\Controllers\MailTemplateController::class, 'edit'])->name('mail-templates.edit');
+    Route::post('/admin/mail-templates/{id}', [\App\Http\Controllers\MailTemplateController::class, 'update'])->name('mail-templates.update');
 });
 
 require __DIR__.'/auth.php';

@@ -24,6 +24,7 @@ class Vital extends Model
         'bmi',
         'pain_level',
         'oxygen_saturation',
+        'priority',
         'notes',
         'measured_at',
         'recorded_by'

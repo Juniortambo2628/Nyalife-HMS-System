@@ -181,6 +181,13 @@ class CMSSettingsSeeder extends Seeder
                 'group' => 'general',
                 'label' => 'Landing Page Section Order'
             ],
+            [
+                'key' => 'tax_rate',
+                'value' => '16',
+                'type' => 'text',
+                'group' => 'general',
+                'label' => 'Standard Tax Rate (%)'
+            ],
         ];
 
         foreach ($settings as $setting) {

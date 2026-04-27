@@ -7,15 +7,19 @@ import ViewToggle from '@/Components/ViewToggle';
 import DashboardSelect from '@/Components/DashboardSelect';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
+import StatusBadge from '@/Components/StatusBadge';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Index({ appointments, filters, auth }) {
     const [view, setView] = useState(() => localStorage.getItem('appointments_view') || 'list');
     const [search, setSearch] = useState(filters.search || '');
+    const [selectedIds, setSelectedIds] = useState([]);
     const [filterData, setFilterData] = useState({
         status: filters.status || '',
         date: filters.date || '',
         doctor_id: filters.doctor_id || '',
         patient_id: filters.patient_id || '',
+        quick_filter: filters.quick_filter || '',
     });
 
     const [modalConfig, setModalConfig] = useState({
@@ -28,14 +32,14 @@ export default function Index({ appointments, filters, auth }) {
         localStorage.setItem('appointments_view', newView);
     };
 
-    const handleFilterChange = (e) => {
-        const newData = { ...filterData, [e.target.name]: e.target.value };
+    const handleAsyncChange = (name, val) => {
+        const newData = { ...filterData, [name]: val };
         setFilterData(newData);
         applyFilters(search, newData);
     };
-    
-    const handleAsyncChange = (name, val) => {
-        const newData = { ...filterData, [name]: val };
+
+    const handleQuickFilterChange = (val) => {
+        const newData = { ...filterData, quick_filter: val || '' };
         setFilterData(newData);
         applyFilters(search, newData);
     };
@@ -47,36 +51,51 @@ export default function Index({ appointments, filters, auth }) {
         });
     };
 
-    const resetFilters = () => {
-        setSearch('');
-        setFilterData({
-            status: '',
-            date: '',
-            doctor_id: '',
-            patient_id: '',
-        });
-        router.get(route('appointments.index'));
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedIds(appointments.data.map(a => a.appointment_id));
+        } else {
+            setSelectedIds([]);
+        }
     };
 
-    const getStatusBadgeClass = (status) => {
-        const classes = {
-            scheduled: 'bg-primary-subtle text-primary border border-primary-subtle',
-            confirmed: 'bg-success-subtle text-success border border-success-subtle',
-            completed: 'bg-success text-white',
-            cancelled: 'bg-danger-subtle text-danger border border-danger-subtle',
-            no_show: 'bg-secondary-subtle text-secondary border border-secondary-subtle',
-        };
-        return classes[status] || 'bg-light text-muted';
+    const toggleSelection = (id) => {
+        setSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
     };
 
     const columns = useMemo(() => [
+        {
+            id: 'selection',
+            header: () => (
+                <div className="form-check ms-1">
+                    <input 
+                        type="checkbox" 
+                        className="form-check-input shadow-none cursor-pointer" 
+                        onChange={handleSelectAll}
+                        checked={selectedIds.length === appointments.data.length && appointments.data.length > 0}
+                    />
+                </div>
+            ),
+            cell: ({ row }) => (
+                <div className="form-check ms-1">
+                    <input 
+                        type="checkbox" 
+                        className="form-check-input shadow-none cursor-pointer" 
+                        checked={selectedIds.includes(row.original.appointment_id)}
+                        onChange={() => toggleSelection(row.original.appointment_id)}
+                    />
+                </div>
+            )
+        },
         {
             header: 'Date & Time',
             accessorKey: 'appointment_date',
             cell: ({ row }) => (
                 <div className="px-1">
                     <div className="fw-bold text-gray-900">{row.original.appointment_date}</div>
-                    <small className="text-muted font-semibold">{row.original.appointment_time || 'N/A'}</small>
+                    <small className="text-muted font-bold extra-small text-uppercase opacity-75">{row.original.appointment_time || 'N/A'}</small>
                 </div>
             )
         },
@@ -100,10 +119,10 @@ export default function Index({ appointments, filters, auth }) {
             accessorKey: 'doctor_id',
             cell: ({ row }) => (
                 <div>
-                    <div className="fw-semibold text-gray-800">
+                    <div className="fw-bold text-gray-800 small">
                         Dr. {row.original.doctor?.user?.first_name || 'Unknown'} {row.original.doctor?.user?.last_name || 'Doctor'}
                     </div>
-                    <div className="extra-small text-muted">{row.original.doctor?.specialization || 'Clinical'}</div>
+                    <div className="extra-small text-muted font-bold text-uppercase opacity-50 tracking-tight">{row.original.doctor?.specialization || 'Clinical'}</div>
                 </div>
             )
         },
@@ -113,18 +132,7 @@ export default function Index({ appointments, filters, auth }) {
             cell: ({ row }) => {
                 const apt = row.original;
                 const isPast = apt.status === 'scheduled' && new Date(`${apt.appointment_date}T${apt.appointment_time}`) < new Date();
-                if (isPast) {
-                    return (
-                        <span className="badge bg-warning text-dark rounded-pill px-3 py-1 font-bold text-xs uppercase tracking-tighter shadow-sm border border-warning">
-                            Overdue
-                        </span>
-                    );
-                }
-                return (
-                    <span className={`${getStatusBadgeClass(apt.status)} rounded-pill px-3 py-1 font-bold text-xs uppercase tracking-tighter shadow-sm`}>
-                        {(apt.status || 'pending').replace('_', ' ')}
-                    </span>
-                );
+                return <StatusBadge status={isPast ? 'overdue' : apt.status} />;
             }
         },
         {
@@ -134,24 +142,22 @@ export default function Index({ appointments, filters, auth }) {
                 <div className="d-flex justify-content-end gap-2">
                     <button 
                         onClick={() => openModal(row.original)}
-                        className="btn btn-sm btn-outline-primary rounded-circle p-2" 
+                        className="btn btn-sm btn-light border-0 rounded-circle shadow-none p-2 avatar-xs d-flex align-items-center justify-content-center" 
                         title="Quick View"
-                        style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
-                        <i className="fas fa-eye text-xs"></i>
+                        <i className="fas fa-eye text-xs text-muted"></i>
                     </button>
                     <Link 
                         href={route('appointments.show', row.original.appointment_id)}
-                        className="btn btn-sm btn-outline-secondary rounded-circle p-2" 
+                        className="btn btn-sm btn-light border-0 rounded-circle shadow-none p-2 avatar-xs d-flex align-items-center justify-content-center" 
                         title="Detailed View"
-                        style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
-                        <i className="fas fa-clipboard-list text-xs"></i>
+                        <i className="fas fa-clipboard-list text-xs text-muted"></i>
                     </Link>
                 </div>
             )
         }
-    ], []);
+    ], [selectedIds, appointments.data]);
 
     const openModal = (apt) => {
         setModalConfig({
@@ -191,9 +197,7 @@ export default function Index({ appointments, filters, auth }) {
                                     </div>
                                     <div className="flex justify-between border-b border-gray-100 pb-2">
                                         <span className="text-gray-500">Status</span>
-                                        <span className={getStatusBadgeClass(apt.status)}>
-                                            {apt.status.charAt(0).toUpperCase() + apt.status.slice(1).replace('_', ' ')}
-                                        </span>
+                                        <StatusBadge status={apt.status} />
                                     </div>
                                 </div>
                             </div>
@@ -236,7 +240,7 @@ export default function Index({ appointments, filters, auth }) {
             }
         ];
 
-        if (auth.user.role_name !== 'receptionist') {
+        if (auth.user.role !== 'receptionist') {
             tabs.push({
                 id: 'clinical',
                 label: 'Clinical Notes',
@@ -323,82 +327,30 @@ export default function Index({ appointments, filters, auth }) {
             <Head title="Appointments" />
 
             <PageHeader 
-                title="Appointments List"
+                title="Appointments Ledger"
                 breadcrumbs={[{ label: 'Appointments', active: true }]}
-                actions={
-                    <div className="d-flex align-items-center gap-3">
-                        <ViewToggle view={view} setView={handleViewChange} />
-                        <Link href={route('appointments.calendar')} className="btn btn-outline-primary border-0 bg-light shadow-sm rounded-pill px-4">
-                            <i className="fas fa-calendar-alt me-2"></i>Calendar
-                        </Link>
-                        <Link href={route('appointments.create')} className="btn btn-primary shadow-sm rounded-pill px-4 fw-bold">
-                            <i className="fas fa-plus me-2"></i>New Appointment
+                actions={auth.user.role !== 'patient' && (
+                    <div className="d-flex gap-2">
+                        <Link href={route('appointments.calendar')} className="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                            <i className="fas fa-calendar-alt me-2"></i> Calendar
                         </Link>
                     </div>
-                }
+                )}
             />
 
             <div className="px-0">
                 <DashboardSearch 
-                    placeholder="Search by patient name, doctor, or reason..." 
+                    placeholder="Search ledger by name, doctor, or visit reason..." 
                     value={search}
                     onChange={setSearch}
                     onSubmit={applyFilters}
+                    onFilterChange={handleQuickFilterChange}
+                    filters={[
+                        { label: 'Today\'s Visits', value: 'today' },
+                        { label: 'Upcoming', value: 'upcoming' },
+                        { label: 'Past Due', value: 'overdue' }
+                    ]}
                 />
-
-                <div className="card shadow-sm border-0 mb-4 rounded-xl" style={{ overflow: 'visible', position: 'relative', zIndex: 20 }}>
-                    <div className="card-body p-3">
-                        <div className="row g-3">
-                            <div className="col-md-3">
-                                <DashboardSelect 
-                                    asyncUrl="/doctors/search"
-                                    value={filterData.doctor_id} 
-                                    onChange={val => handleAsyncChange('doctor_id', val)}
-                                    placeholder="Select Doctor..."
-                                    initialLabel={filters.doctor_name}
-                                />
-                            </div>
-                            <div className="col-md-3">
-                                <DashboardSelect 
-                                    asyncUrl="/patients/search"
-                                    value={filterData.patient_id} 
-                                    onChange={val => handleAsyncChange('patient_id', val)}
-                                    placeholder="Select Patient..."
-                                    initialLabel={filters.patient_name}
-                                />
-                            </div>
-                            <div className="col-md-2">
-                                <select 
-                                    name="status" 
-                                    className="form-select border-0 bg-light rounded-pill font-medium" 
-                                    value={filterData.status} 
-                                    onChange={handleFilterChange}
-                                >
-                                    <option value="">All Statuses</option>
-                                    <option value="scheduled">Scheduled</option>
-                                    <option value="confirmed">Confirmed</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="cancelled">Cancelled</option>
-                                    <option value="no_show">No Show</option>
-                                </select>
-                            </div>
-                            <div className="col-md-3">
-                                <input 
-                                    type="date" 
-                                    name="date" 
-                                    className="form-control border-0 bg-light rounded-pill font-medium" 
-                                    value={filterData.date} 
-                                    onChange={handleFilterChange} 
-                                />
-                            </div>
-                            <div className="col-md-1 d-flex justify-content-end">
-                                <button type="button" onClick={resetFilters} className="btn btn-outline-secondary rounded-circle p-0" style={{width: '38px', height: '38px'}} title="Reset Filters">
-                                    <i className="fas fa-undo-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 {/* View Content */}
                 {view === 'list' ? (
@@ -406,79 +358,88 @@ export default function Index({ appointments, filters, auth }) {
                         columns={columns}
                         data={appointments.data}
                         pagination={appointments}
-                        emptyMessage="No appointments found."
+                        emptyMessage="No matching appointments detected in the ledger."
                     />
                 ) : (
-                    <div className="row g-4">
+                    <div className="row g-4 mb-5">
                         {appointments.data.length > 0 ? (
-                            appointments.data.map((apt) => (
-                                <div key={apt.appointment_id} className="col-md-6 col-lg-4">
-                                    <div className="card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-shadow-lg transition-all duration-300">
-                                        <div className="card-body p-4">
-                                            <div className="d-flex justify-content-between align-items-start mb-4">
-                                                <div className="d-flex gap-3">
-                                                    <div className="bg-pink-50 text-pink-500 rounded-2xl p-3 flex items-center justify-center font-bold text-xl shadow-inner" style={{ width: '56px', height: '56px' }}>
-                                                        <i className="fas fa-calendar-check fa-lg"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h5 className="fw-bold text-gray-900 mb-0 text-truncate" style={{ maxWidth: '160px' }}>
-                                                            {apt.patient?.user?.first_name} {apt.patient?.user?.last_name}
-                                                        </h5>
-                                                        <span className="extra-small text-muted font-bold text-uppercase tracking-widest">ID: PAT-{apt.patient_id}</span>
-                                                    </div>
+                            <>
+                                {appointments.data.map((apt) => (
+                                    <div key={apt.appointment_id} className="col-md-6 col-lg-4">
+                                        <div className={`card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-shadow-lg transition-all duration-300 bg-white ${selectedIds.includes(apt.appointment_id) ? 'ring-2 ring-primary ring-opacity-50' : ''}`}>
+                                            <div className="card-body p-4 position-relative">
+                                                <div className="form-check position-absolute top-0 end-0 m-4">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        className="form-check-input shadow-none cursor-pointer" 
+                                                        checked={selectedIds.includes(apt.appointment_id)}
+                                                        onChange={() => toggleSelection(apt.appointment_id)}
+                                                    />
                                                 </div>
-                                                {(() => {
-                                                    const isPast = apt.status === 'scheduled' && new Date(`${apt.appointment_date}T${apt.appointment_time}`) < new Date();
-                                                    if (isPast) {
-                                                        return (
-                                                            <span className="badge bg-warning text-dark rounded-pill px-3 py-1 font-bold text-xs uppercase tracking-tighter shadow-sm border border-warning">
-                                                                Overdue
-                                                            </span>
-                                                        );
-                                                    }
-                                                    return (
-                                                        <span className={`${getStatusBadgeClass(apt.status)} rounded-pill px-3 py-1 font-bold text-xs uppercase tracking-tighter`}>
-                                                            {(apt.status || 'pending').replace('_', ' ')}
-                                                        </span>
-                                                    );
-                                                })()}
-                                            </div>
+                                                <div className="d-flex justify-content-between align-items-start mb-4">
+                                                    <div className="d-flex gap-3">
+                                                        <div className="bg-pink-50 text-pink-500 rounded-2xl p-3 d-flex align-items-center justify-content-center font-bold text-xl shadow-inner avatar-lg">
+                                                            <i className="fas fa-calendar-check fa-lg"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h5 className="fw-extrabold text-gray-900 mb-0 text-truncate" style={{ maxWidth: '140px' }}>
+                                                                {apt.patient?.user?.first_name} {apt.patient?.user?.last_name}
+                                                            </h5>
+                                                            <span className="extra-small text-muted font-bold text-uppercase tracking-widest">PAT-{apt.patient_id}</span>
+                                                        </div>
+                                                    </div>
+                                                    {(() => {
+                                                        const isPast = apt.status === 'scheduled' && new Date(`${apt.appointment_date}T${apt.appointment_time}`) < new Date();
+                                                        return <StatusBadge status={isPast ? 'overdue' : apt.status} />;
+                                                    })()}
+                                                </div>
 
-                                            <div className="space-y-3 mb-4">
-                                                <div className="flex items-center gap-3 text-gray-600">
-                                                    <i className="fas fa-clock text-muted w-5"></i>
-                                                    <span className="font-medium text-sm">{apt.appointment_date} @ {apt.appointment_time || 'N/A'}</span>
-                                                </div>
-                                                <div className="flex items-center gap-3 text-gray-600">
-                                                    <i className="fas fa-user-md text-muted w-5"></i>
-                                                    <span className="font-medium text-sm">Dr. {apt.doctor?.user?.first_name} {apt.doctor?.user?.last_name}</span>
-                                                </div>
-                                                {apt.reason && (
-                                                    <div className="bg-gray-50 p-3 rounded-xl">
-                                                        <div className="text-xs text-gray-400 font-bold uppercase mb-1">Reason</div>
-                                                        <p className="text-sm text-gray-800 fw-bold mb-0 line-clamp-2">{apt.reason}</p>
+                                                <div className="space-y-3 mb-4">
+                                                    <div className="flex items-center gap-3 text-gray-600">
+                                                        <i className="fas fa-clock text-muted w-5"></i>
+                                                        <span className="font-bold extra-small text-uppercase tracking-tight">{apt.appointment_date} @ {apt.appointment_time || 'N/A'}</span>
                                                     </div>
-                                                )}
-                                            </div>
+                                                    <div className="flex items-center gap-3 text-gray-600">
+                                                        <i className="fas fa-user-md text-muted w-5"></i>
+                                                        <span className="font-bold extra-small text-uppercase tracking-tight text-primary">Dr. {apt.doctor?.user?.first_name} {apt.doctor?.user?.last_name}</span>
+                                                    </div>
+                                                    {apt.reason && (
+                                                        <div className="bg-gray-50 p-3 rounded-xl border border-light">
+                                                            <div className="extra-small text-muted font-bold text-uppercase mb-1 tracking-widest">Reason</div>
+                                                            <p className="extra-small text-gray-800 fw-bold mb-0 line-clamp-2">{apt.reason}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
 
-                                            <div className="d-flex gap-2 border-top pt-4">
-                                                <button 
-                                                    onClick={() => openModal(apt)}
-                                                    className="btn btn-light bg-gray-50 text-gray-700 rounded-xl flex-1 fw-bold border-0 py-2.5"
-                                                >
-                                                    Quick View
-                                                </button>
-                                                <Link 
-                                                    href={route('appointments.show', apt.appointment_id)}
-                                                    className="btn btn-outline-primary rounded-xl px-4 border-2"
-                                                >
-                                                    <i className="fas fa-external-link-alt"></i>
-                                                </Link>
+                                                <div className="d-flex gap-2 border-top pt-4">
+                                                    <button 
+                                                        onClick={() => openModal(apt)}
+                                                        className="btn btn-light bg-gray-50 text-gray-700 rounded-xl flex-1 fw-extrabold extra-small border-0 py-2.5"
+                                                    >
+                                                        QUICK VIEW
+                                                    </button>
+                                                    <Link 
+                                                        href={route('appointments.show', apt.appointment_id)}
+                                                        className="btn btn-outline-primary rounded-xl px-4 border-2"
+                                                    >
+                                                        <i className="fas fa-external-link-alt"></i>
+                                                    </Link>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+                                ))}
+                                
+                                {/* Unified Pagination for Grid View */}
+                                <div className="col-12 mt-4">
+                                    <DashboardTable 
+                                        data={[]} 
+                                        columns={[]} 
+                                        pagination={appointments}
+                                        className="bg-transparent shadow-none"
+                                    />
                                 </div>
-                            ))
+                            </>
                         ) : (
                             <div className="col-12 py-16 text-center bg-white rounded-3xl shadow-sm border border-gray-100">
                                 <i className="fas fa-calendar-times text-gray-200 text-5xl mb-4"></i>
@@ -488,25 +449,73 @@ export default function Index({ appointments, filters, auth }) {
                         )}
                     </div>
                 )}
-                
-                {/* Pagination */}
-                {appointments.links.length > 3 && (
-                    <div className="card-footer bg-white border-top-0 py-3 mt-4">
-                        <nav aria-label="Page navigation">
-                            <ul className="pagination pagination-sm justify-content-center mb-0">
-                                {appointments.links.map((link, i) => (
-                                    <li key={i} className={`page-item ${link.active ? 'active' : ''} ${!link.url ? 'disabled' : ''}`}>
-                                        <Link
-                                            className="page-link rounded-circle mx-1"
-                                            href={link.url}
-                                            dangerouslySetInnerHTML={{ __html: link.alias || link.label }}
-                                        />
-                                    </li>
-                                ))}
-                            </ul>
-                        </nav>
-                    </div>
-                )}
+
+                <UnifiedToolbar 
+                    selectionCount={selectedIds.length}
+                    bulkActions={
+                        <div className="d-flex align-items-center gap-2">
+                            <button className="btn btn-white btn-sm rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm">
+                                <i className="fas fa-check-circle me-2"></i> CONFIRM BATCH
+                            </button>
+                            <button className="btn btn-white btn-sm rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm">
+                                <i className="fas fa-print me-2"></i> PRINT CARDS
+                            </button>
+                            <button className="btn btn-danger btn-sm rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm border border-white border-opacity-20">
+                                <i className="fas fa-trash-alt me-2"></i> CANCEL
+                            </button>
+                        </div>
+                    }
+                    filters={
+                        <div className="d-flex align-items-center gap-2">
+                            <DashboardSelect 
+                                asyncUrl="/doctors/search"
+                                value={filterData.doctor_id} 
+                                onChange={val => handleAsyncChange('doctor_id', val)}
+                                placeholder="Doctor..."
+                                initialLabel={filters.doctor_name}
+                                theme="dark"
+                                dropup={true}
+                                style={{ width: '150px' }}
+                            />
+                            <DashboardSelect 
+                                asyncUrl="/patients/search"
+                                value={filterData.patient_id} 
+                                onChange={val => handleAsyncChange('patient_id', val)}
+                                placeholder="Patient..."
+                                initialLabel={filters.patient_name}
+                                theme="dark"
+                                dropup={true}
+                                style={{ width: '150px' }}
+                            />
+                            <DashboardSelect 
+                                options={[
+                                    { label: 'Scheduled', value: 'scheduled' },
+                                    { label: 'Confirmed', value: 'confirmed' },
+                                    { label: 'Arrived', value: 'arrived' },
+                                    { label: 'Completed', value: 'completed' },
+                                    { label: 'Cancelled', value: 'cancelled' },
+                                    { label: 'No Show', value: 'no_show' }
+                                ]}
+                                value={filterData.status} 
+                                onChange={val => handleAsyncChange('status', val)}
+                                placeholder="Status..."
+                                theme="dark"
+                                dropup={true}
+                                style={{ width: '150px' }}
+                            />
+                        </div>
+                    }
+                    actions={
+                        <div className="d-flex align-items-center gap-2">
+                            <ViewToggle view={view} setView={handleViewChange} />
+                            {auth.user.role !== 'patient' && (
+                                <Link href={route('appointments.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm">
+                                    <i className="fas fa-plus me-1"></i> BOOK VISIT
+                                </Link>
+                            )}
+                        </div>
+                    }
+                />
             </div>
 
             {/* Quick Info Modal */}
@@ -517,16 +526,26 @@ export default function Index({ appointments, filters, auth }) {
                 subtitle="Appointment Info"
                 tabs={getAppointmentTabs(modalConfig.appointment)}
             />
-
+            
             <style>{`
-                .rounded-xl { border-radius: 1rem; }
-                .rounded-2xl { border-radius: 1.5rem; }
-                .rounded-3xl { border-radius: 2rem; }
-                .text-pink-500 { color: #ed64a6; }
-                .text-xs { font-size: 0.75rem; }
                 .extra-small { font-size: 0.7rem; }
-                .tracking-tighter { letter-spacing: -0.025em; }
-                .tracking-wider { letter-spacing: 0.05em; }
+                .fw-extrabold { font-weight: 800; }
+                .tracking-tight { letter-spacing: -0.025em; }
+                .line-clamp-2 {
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                }
+                .btn-white {
+                    background: white;
+                    color: #e91e63;
+                    border: none;
+                }
+                .btn-white:hover {
+                    background: #f8f9fa;
+                    color: #d81b60;
+                }
             `}</style>
         </AuthenticatedLayout>
     );

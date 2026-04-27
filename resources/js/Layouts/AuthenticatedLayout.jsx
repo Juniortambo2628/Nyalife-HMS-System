@@ -1,7 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import CookieBanner from '@/Components/CookieBanner';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
+import ContextSwitcher from '@/Components/ContextSwitcher';
+import UserAvatar from '@/Components/UserAvatar';
 
 // Role-based sidebar menu items matching legacy system
 const sidebarMenus = {
@@ -14,11 +16,12 @@ const sidebarMenus = {
         { id: 'prescriptions', text: 'Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription' },
         { id: 'invoices', text: 'Invoices', url: '/invoices', icon: 'fas fa-file-invoice' },
         { id: 'users', text: 'Users', url: '/users', icon: 'fas fa-user-cog' },
-        { id: 'lab-tests-manage', text: 'Lab Test Management', url: route('lab-tests.index'), icon: 'fas fa-vials' },
+        { id: 'lab-catalog', text: 'Lab Catalog', url: route('lab.tests'), icon: 'fas fa-vials' },
         { id: 'reports', text: 'Reports', url: '/reports', icon: 'fas fa-chart-bar' },
         { id: 'blog-manage', text: 'Manage Blogs', url: route('blog.manage'), icon: 'fas fa-blog' },
         { id: 'cms-manage', text: 'Landing CMS', url: route('cms.index'), icon: 'fas fa-laptop-code' },
         { id: 'insurance-manage', text: 'Accepted Insurances', url: route('insurances.index'), icon: 'fas fa-shield-alt' },
+        { id: 'mail-templates', text: 'Email Templates', url: route('mail-templates.index'), icon: 'fas fa-envelope-open-text' },
         { id: 'contact-messages', text: 'Website Messages', url: route('admin.messages.index'), icon: 'fas fa-envelope-open-text' },
     ],
     doctor: [
@@ -40,8 +43,7 @@ const sidebarMenus = {
     lab_technician: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
         { id: 'lab-requests', text: 'Lab Requests', url: route('lab.index'), icon: 'fas fa-flask' },
-        { id: 'lab-tests', text: 'Lab Tests', url: '/lab-tests/manage', icon: 'fas fa-vial' },
-        { id: 'samples', text: 'Samples', url: '/lab/tests', icon: 'fas fa-test-tube' },
+        { id: 'lab-catalog', text: 'Test Catalog', url: route('lab.tests'), icon: 'fas fa-vial' },
     ],
     pharmacist: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
@@ -59,8 +61,10 @@ const sidebarMenus = {
     patient: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
         { id: 'appointments', text: 'My Appointments', url: '/appointments', icon: 'fas fa-calendar-alt' },
-        { id: 'lab-results', text: 'Lab Results', url: '/lab-results', icon: 'fas fa-flask' },
+        { id: 'consultations', text: 'My Consultations', url: '/consultations', icon: 'fas fa-stethoscope' },
+        { id: 'lab-results', text: 'My Lab Results', url: '/lab/requests', icon: 'fas fa-flask' },
         { id: 'prescriptions', text: 'My Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription' },
+        { id: 'billing', text: 'Billing & Invoices', url: '/invoices', icon: 'fas fa-file-invoice-dollar' },
         { id: 'profile', text: 'My Profile', url: '/profile', icon: 'fas fa-user' },
     ],
 };
@@ -80,6 +84,20 @@ export default function AuthenticatedLayout({ header, children }) {
         return saved === 'true';
     });
     const [sidebarOpen, setSidebarOpen] = useState(false); // For mobile
+    const [autosaveStatus, setAutosaveStatus] = useState(null); // { status: 'saving' | 'saved', timestamp: number }
+
+    useEffect(() => {
+        const handleAutosave = (e) => {
+            setAutosaveStatus(e.detail);
+            if (e.detail.status === 'saved') {
+                setTimeout(() => {
+                    setAutosaveStatus(prev => prev?.status === 'saved' ? null : prev);
+                }, 3000);
+            }
+        };
+        window.addEventListener('autosave', handleAutosave);
+        return () => window.removeEventListener('autosave', handleAutosave);
+    }, []);
 
     const toggleSidebar = () => {
         setSidebarCollapsed(prev => {
@@ -104,6 +122,15 @@ export default function AuthenticatedLayout({ header, children }) {
             document.body.classList.remove('sidebar-collapsed');
         };
     }, []);
+
+    useEffect(() => {
+        if (page.props.flash?.success) {
+            toast.success(page.props.flash.success);
+        }
+        if (page.props.flash?.error) {
+            toast.error(page.props.flash.error);
+        }
+    }, [page.props.flash]);
 
     useEffect(() => {
         if (sidebarCollapsed) {
@@ -143,7 +170,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 {/* Sidebar Header with Logo */}
                 <div className="sidebar-header h-auto">
                     <div className="sidebar-logo h-auto">
-                        <img src="/assets/img/logo/Logo2-transparent.png" alt="Nyalife HMS" className="logo-img me-2 bg-white rounded-2 p-1" 
+                        <img src="/assets/logo/Logo2-transparent.png" alt="Nyalife HMS" className="logo-img me-2 bg-white rounded-2 p-1" 
                              onError={(e) => { 
                                  if (e.target) e.target.style.display = 'none'; 
                                  if (e.target?.nextElementSibling) e.target.nextElementSibling.style.display = 'flex'; 
@@ -165,15 +192,34 @@ export default function AuthenticatedLayout({ header, children }) {
                                          currentUrl.startsWith(itemPath + '?') ||
                                          (itemPath !== '/' && currentUrl.startsWith(itemPath));
 
+                            const moduleName = {
+                                'appointments': 'appointments',
+                                'consultations': 'consultations',
+                                'lab-requests': 'lab',
+                                'lab-results': 'lab',
+                                'prescriptions': 'pharmacy',
+                                'invoices': 'billing',
+                                'billing': 'billing'
+                            }[item.id];
+                            
+                            const badgeCount = moduleName ? (auth.module_notifications?.[moduleName] || 0) : 0;
+
                             return (
                                 <li key={item.id} className="sidebar-menu-item h-auto">
                                     <Link 
                                         href={item.url} 
-                                        className={`sidebar-link ${active ? 'active' : ''}`}
+                                        className={`sidebar-link ${active ? 'active' : ''} d-flex align-items-center justify-content-between`}
                                         data-menu-id={item.id}
                                     >
-                                        <i className={`${item.icon} sidebar-icon`}></i>
-                                        <span className="sidebar-text">{item.text}</span>
+                                        <div className="d-flex align-items-center">
+                                            <i className={`${item.icon} sidebar-icon`}></i>
+                                            <span className="sidebar-text">{item.text}</span>
+                                        </div>
+                                        {badgeCount > 0 && (
+                                            <span className="badge rounded-pill bg-pink-500 text-white ms-auto" style={{ fontSize: '0.65rem', minWidth: '1.2rem', height: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                {badgeCount}
+                                            </span>
+                                        )}
                                     </Link>
                                 </li>
                             );
@@ -193,28 +239,38 @@ export default function AuthenticatedLayout({ header, children }) {
                 </button>
 
                 {/* Top Header Bar */}
-                <div className="dashboard-header mb-4" style={{ paddingTop: '10px' }}>
+                <div className="dashboard-header sticky-header px-4 py-2 mb-4">
                     <div className="d-flex flex-wrap justify-content-between align-items-center gap-2">
                         <div className="d-none d-md-block">
-                            {header && <div className="page-title mb-0">{header}</div>}
+                            {header && <div className="page-title mb-0 fs-5 fw-bold text-gray-800">{header}</div>}
                         </div>
                         <div className="d-flex align-items-center gap-2 gap-md-3 ms-auto">
+                            {/* Autosave Status Indicator */}
+                            {autosaveStatus && (
+                                <div className={`autosave-indicator animate-in fade-in slide-in-from-right-4 d-flex align-items-center gap-2 px-3 py-1.5 rounded-pill small fw-bold ${autosaveStatus.status === 'saving' ? 'bg-primary-subtle text-primary' : 'bg-success-subtle text-success'}`}>
+                                    {autosaveStatus.status === 'saving' ? (
+                                        <><i className="fas fa-sync fa-spin"></i> Saving...</>
+                                    ) : (
+                                        <><i className="fas fa-check-circle"></i> Draft Saved</>
+                                    )}
+                                </div>
+                            )}
                             {/* Messages Toggle */}
                             <div className="dropdown">
                                 <button 
-                                    className="btn btn-link position-relative p-1 text-gray-500 hover:text-pink-500 transition-colors dropdown-toggle"
+                                    className="btn btn-link position-relative p-1 text-gray-500 hover:text-pink-500 transition-colors dropdown-toggle border-0 shadow-none"
                                     type="button"
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false"
                                 >
                                     <i className="fas fa-comment-dots fa-lg"></i>
                                     {auth.unread_messages_count > 0 && (
-                                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6rem' }}>
+                                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style={{ fontSize: '0.6rem' }}>
                                             {auth.unread_messages_count}
                                         </span>
                                     )}
                                 </button>
-                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-lg border-0 rounded-2xl overflow-hidden mt-3" style={{ width: '280px', maxWidth: '90vw' }}>
+                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-2xl border-0 rounded-2xl overflow-hidden mt-3 animate-in fade-in zoom-in-95 duration-200" style={{ width: '280px', maxWidth: '90vw' }}>
                                     <li className="px-4 py-3 bg-white border-b border-gray-100 d-flex justify-content-between align-items-center">
                                         <span className="fw-bold text-gray-900">Recent Messages</span>
                                         <Link href="/messages" className="text-xs text-pink-500 hover:underline">View All</Link>
@@ -229,19 +285,19 @@ export default function AuthenticatedLayout({ header, children }) {
                             {/* Notifications Toggle */}
                             <div className="dropdown">
                                 <button 
-                                    className="btn btn-link position-relative p-1 text-gray-500 hover:text-pink-500 transition-colors dropdown-toggle"
+                                    className="btn btn-link position-relative p-1 text-gray-500 hover:text-pink-500 transition-colors dropdown-toggle border-0 shadow-none"
                                     type="button"
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false"
                                 >
                                     <i className="fas fa-bell fa-lg"></i>
                                     {auth.unread_notifications_count > 0 && (
-                                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6rem' }}>
+                                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style={{ fontSize: '0.6rem' }}>
                                             {auth.unread_notifications_count}
                                         </span>
                                     )}
                                 </button>
-                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-lg border-0 rounded-2xl overflow-hidden mt-3" style={{ width: '280px', maxWidth: '90vw' }}>
+                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-2xl border-0 rounded-2xl overflow-hidden mt-3 animate-in fade-in zoom-in-95 duration-200" style={{ width: '280px', maxWidth: '90vw' }}>
                                     <li className="px-4 py-3 bg-white border-b border-gray-100 d-flex justify-content-between align-items-center">
                                         <span className="fw-bold text-gray-900">Notifications</span>
                                         <Link href="/notifications" className="text-xs text-pink-500 hover:underline">View All</Link>
@@ -257,42 +313,39 @@ export default function AuthenticatedLayout({ header, children }) {
                             {/* User Info */}
                             <div className="dropdown">
                                 <button 
-                                    className="btn btn-link text-decoration-none d-flex align-items-center gap-2 dropdown-toggle" 
+                                    className="btn btn-link text-decoration-none d-flex align-items-center gap-2 dropdown-toggle border-0 shadow-none p-1" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
                                     aria-expanded="false"
                                 >
-                                    <div className="avatar-circle" style={{
-                                        width: '36px', 
-                                        height: '36px', 
-                                        borderRadius: '50%', 
-                                        background: 'linear-gradient(135deg, #e91e63, #c2185b)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'white',
-                                        fontWeight: 'bold',
-                                        fontSize: '0.85rem',
-                                        flexShrink: 0
-                                    }}>
-                                        {displayName.charAt(0).toUpperCase()}
-                                    </div>
+                                    <UserAvatar user={user} size="sm" showStatus={true} />
                                     <div className="d-none d-md-block text-start">
-                                        <div className="fw-semibold text-dark" style={{ fontSize: '0.9rem' }}>{displayName}</div>
-                                        <small className="text-muted text-capitalize">{userRole.replace('_', ' ')}</small>
+                                        <div className="fw-bold text-gray-900" style={{ fontSize: '0.9rem' }}>{displayName}</div>
+                                        <div className="text-muted text-capitalize font-bold extra-small opacity-75">{userRole.replace('_', ' ')}</div>
                                     </div>
+                                    <i className="fas fa-chevron-down text-gray-400 ms-1 d-none d-md-block" style={{ fontSize: '0.7rem' }}></i>
                                 </button>
-                                <ul className="dropdown-menu dropdown-menu-end">
-                                    <li><Link className="dropdown-item" href="/profile"><i className="fas fa-user me-2"></i>Profile</Link></li>
-                                    <li><hr className="dropdown-divider" /></li>
+                                <ul className="dropdown-menu dropdown-menu-end p-2 shadow-2xl border-0 rounded-2xl mt-3 animate-in fade-in zoom-in-95 duration-200">
+                                    <li>
+                                        <Link className="dropdown-item py-2 rounded-xl d-flex align-items-center gap-3" href="/profile">
+                                            <div className="bg-primary-subtle text-primary rounded-lg p-2 d-flex align-items-center justify-content-center" style={{width: '32px', height: '32px'}}>
+                                                <i className="fas fa-user text-xs"></i>
+                                            </div>
+                                            <span className="fw-bold text-gray-700">My Profile</span>
+                                        </Link>
+                                    </li>
+                                    <li><hr className="dropdown-divider opacity-10 mx-2" /></li>
                                     <li>
                                         <Link 
-                                            className="dropdown-item text-danger" 
+                                            className="dropdown-item py-2 rounded-xl d-flex align-items-center gap-3 text-danger" 
                                             href={route('logout')} 
                                             method="post" 
                                             as="button"
                                         >
-                                            <i className="fas fa-sign-out-alt me-2"></i>Logout
+                                            <div className="bg-danger-subtle text-danger rounded-lg p-2 d-flex align-items-center justify-content-center" style={{width: '32px', height: '32px'}}>
+                                                <i className="fas fa-sign-out-alt text-xs"></i>
+                                            </div>
+                                            <span className="fw-bold">Logout System</span>
                                         </Link>
                                     </li>
                                 </ul>
@@ -302,9 +355,13 @@ export default function AuthenticatedLayout({ header, children }) {
                 </div>
 
                 {/* Page Content */}
-                {children}
+                <div className="content-container">
+                    {children}
+                </div>
             </main>
+            {/* Styles moved to nyalife-components.css */}
             <CookieBanner />
+            <ContextSwitcher />
         </div>
     );
 }

@@ -1,12 +1,18 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Index({ appointments }) {
     return (
         <AuthenticatedLayout
             header="Vital Signs History"
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    <Link href={route('vitals.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
+                        <i className="fas fa-plus me-1"></i> Ad Hoc Vitals
+                    </Link>
+                </div>
+            }
         >
             <Head title="Vitals & Triage" />
 
@@ -67,15 +73,6 @@ export default function Index({ appointments }) {
                 </div>
             </div>
 
-            <UnifiedToolbar 
-                actions={
-                    <div className="d-flex align-items-center gap-2">
-                        <Link href={route('vitals.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
-                            <i className="fas fa-plus me-1"></i> Ad Hoc Vitals
-                        </Link>
-                    </div>
-                }
-            />
         </AuthenticatedLayout>
     );
 }

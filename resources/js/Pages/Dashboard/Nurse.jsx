@@ -8,7 +8,6 @@ import { Head, Link, router } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import DashboardSelect from '@/Components/DashboardSelect';
 import DashboardHero from '@/Components/DashboardHero';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Nurse({ auth, stats }) {
     const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
@@ -91,7 +90,22 @@ export default function Nurse({ auth, stats }) {
     ];
 
     return (
-        <AuthenticatedLayout header="Nurse Station">
+        <AuthenticatedLayout 
+            header="Nurse Station"
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    <button 
+                        onClick={() => setIsEmergencyModalOpen(true)}
+                        className="btn btn-danger rounded-pill px-4 py-2 fw-bold small shadow-sm animate-pulse-custom"
+                    >
+                        <i className="fas fa-notes-medical me-1"></i> Emergency Triage
+                    </button>
+                    <Link href={route('patients.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                        <i className="fas fa-user-plus me-1"></i> Register Walk-in
+                    </Link>
+                </div>
+            }
+        >
             <Head title="Nurse Dashboard" />
 
             <PageHeader 
@@ -107,21 +121,6 @@ export default function Nurse({ auth, stats }) {
                     icon="fa-heartbeat"
                 />
 
-                <UnifiedToolbar 
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            <button 
-                                onClick={() => setIsEmergencyModalOpen(true)}
-                                className="btn btn-danger rounded-pill px-4 py-2 fw-bold small shadow-sm animate-pulse-custom"
-                            >
-                                <i className="fas fa-notes-medical me-1"></i> Emergency Triage
-                            </button>
-                            <Link href={route('patients.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                                <i className="fas fa-user-plus me-1"></i> Register Walk-in
-                            </Link>
-                        </div>
-                    }
-                />
 
                 <div className="row g-4 mb-4">
                     {statItems.map((s, i) => (

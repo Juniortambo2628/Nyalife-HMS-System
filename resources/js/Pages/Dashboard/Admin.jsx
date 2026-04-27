@@ -2,7 +2,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import DashboardHero from '@/Components/DashboardHero';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import StatCard from '@/Components/StatCard';
 
 export default function Admin({ auth, stats, recentActivity }) {
@@ -14,7 +13,19 @@ export default function Admin({ auth, stats, recentActivity }) {
     ];
 
     return (
-        <AuthenticatedLayout header="Administrator Dashboard">
+        <AuthenticatedLayout 
+            header="Administrator Dashboard"
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    <Link href={route('users.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                        <i className="fas fa-user-plus me-1"></i> New Staff
+                    </Link>
+                    <Link href={route('reports.index')} className="btn btn-outline-light rounded-pill px-4 py-2 fw-bold small">
+                        <i className="fas fa-chart-line me-1"></i> Analytics
+                    </Link>
+                </div>
+            }
+        >
             <Head title="Admin Dashboard" />
 
             <PageHeader 
@@ -30,18 +41,6 @@ export default function Admin({ auth, stats, recentActivity }) {
                     icon="fa-shield-alt"
                 />
 
-                <UnifiedToolbar 
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            <Link href={route('users.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                                <i className="fas fa-user-plus me-1"></i> New Staff
-                            </Link>
-                            <Link href={route('reports.index')} className="btn btn-outline-light rounded-pill px-4 py-2 fw-bold small">
-                                <i className="fas fa-chart-line me-1"></i> Analytics
-                            </Link>
-                        </div>
-                    }
-                />
 
                 <div className="row g-4 mb-4">
                     {statItems.map((s, i) => (

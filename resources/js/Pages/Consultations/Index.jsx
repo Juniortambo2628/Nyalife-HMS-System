@@ -3,7 +3,6 @@ import { Head, Link, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
 import StatusBadge from '@/Components/StatusBadge';
 import DashboardTable from '@/Components/DashboardTable';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import ViewToggle from '@/Components/ViewToggle';
 import InfoModal from '@/Components/InfoModal';
 import PageHeader from '@/Components/PageHeader';
@@ -314,7 +313,37 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
     };
 
     return (
-        <AuthenticatedLayout header="Clinical Consultations">
+        <AuthenticatedLayout 
+            header="Clinical Consultations"
+            toolbarFilters={
+                <div className="d-flex align-items-center gap-2">
+                    <DashboardSelect 
+                        options={[
+                            { label: 'All Status', value: '' },
+                            { label: 'Pending', value: 'pending' },
+                            { label: 'In Progress', value: 'in_progress' },
+                            { label: 'Completed', value: 'completed' },
+                        ]}
+                        value={activeFilter}
+                        onChange={handleFilterChange}
+                        placeholder="Status..."
+                        theme="dark"
+                        dropup={true}
+                        style={{ width: '150px' }}
+                    />
+                </div>
+            }
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    <ViewToggle view={view} setView={handleViewChange} />
+                    {auth.user.role !== 'patient' && (
+                        <Link href={route('consultations.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
+                            <i className="fas fa-plus-circle me-1"></i> NEW
+                        </Link>
+                    )}
+                </div>
+            }
+        >
             <Head title="Consultations" />
 
             <PageHeader 
@@ -465,38 +494,6 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                         )}
                     </div>
                 )}
-                
-                {/* Unified Toolbar */}
-                <UnifiedToolbar 
-                    filters={
-                        <div className="d-flex align-items-center gap-2">
-                            <DashboardSelect 
-                                options={[
-                                    { label: 'All Status', value: '' },
-                                    { label: 'Pending', value: 'pending' },
-                                    { label: 'In Progress', value: 'in_progress' },
-                                    { label: 'Completed', value: 'completed' },
-                                ]}
-                                value={activeFilter}
-                                onChange={handleFilterChange}
-                                placeholder="Status..."
-                                theme="dark"
-                                dropup={true}
-                                style={{ width: '150px' }}
-                            />
-                        </div>
-                    }
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            <ViewToggle view={view} setView={handleViewChange} />
-                            {auth.user.role !== 'patient' && (
-                                <Link href={route('consultations.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
-                                    <i className="fas fa-plus-circle me-1"></i> NEW
-                                </Link>
-                            )}
-                        </div>
-                    }
-                />
             </div>
 
             {/* Quick Info Modal */}

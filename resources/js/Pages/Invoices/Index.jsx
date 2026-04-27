@@ -5,7 +5,6 @@ import PageHeader from '@/Components/PageHeader';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
 import StatusBadge from '@/Components/StatusBadge';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import DashboardSelect from '@/Components/DashboardSelect';
 
 export default function Index({ invoices, filters, auth }) {
@@ -90,7 +89,33 @@ export default function Index({ invoices, filters, auth }) {
     ], []);
 
     return (
-        <AuthenticatedLayout header="Billing & Invoices">
+        <AuthenticatedLayout 
+            header="Billing & Invoices"
+            toolbarFilters={
+                <div className="d-flex align-items-center gap-2">
+                    <DashboardSelect 
+                        options={[
+                            { label: 'Pending', value: 'pending' },
+                            { label: 'Paid', value: 'paid' },
+                            { label: 'Overdue', value: 'overdue' },
+                            { label: 'Cancelled', value: 'cancelled' },
+                        ]}
+                        value={status}
+                        onChange={handleStatusChange}
+                        placeholder="Status..."
+                        theme="dark"
+                        dropup={true}
+                    />
+                </div>
+            }
+            toolbarActions={
+                (auth.user.role === 'admin' || auth.user.role === 'receptionist') && (
+                    <Link href={route('invoices.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                        <i className="fas fa-file-medical me-1"></i> New Invoice
+                    </Link>
+                )
+            }
+        >
             <Head title="Billing" />
 
             <PageHeader 
@@ -119,32 +144,6 @@ export default function Index({ invoices, filters, auth }) {
                     emptyMessage="No financial records found matching your search."
                 />
 
-                <UnifiedToolbar 
-                    filters={
-                        <div className="d-flex align-items-center gap-2">
-                            <DashboardSelect 
-                                options={[
-                                    { label: 'Pending', value: 'pending' },
-                                    { label: 'Paid', value: 'paid' },
-                                    { label: 'Overdue', value: 'overdue' },
-                                    { label: 'Cancelled', value: 'cancelled' },
-                                ]}
-                                value={status}
-                                onChange={handleStatusChange}
-                                placeholder="Status..."
-                                theme="dark"
-                                dropup={true}
-                            />
-                        </div>
-                    }
-                    actions={
-                        (auth.user.role === 'admin' || auth.user.role === 'receptionist') && (
-                            <Link href={route('invoices.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                                <i className="fas fa-file-medical me-1"></i> New Invoice
-                            </Link>
-                        )
-                    }
-                />
             </div>
         </AuthenticatedLayout>
     );

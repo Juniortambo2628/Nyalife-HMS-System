@@ -6,7 +6,6 @@ import { useState, useMemo } from 'react';
 import DashboardTable from '@/Components/DashboardTable';
 import DashboardHero from '@/Components/DashboardHero';
 import StatusBadge from '@/Components/StatusBadge';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Patient({ auth, stats, recentActivity }) {
     const appointmentColumns = useMemo(() => [
@@ -51,7 +50,48 @@ export default function Patient({ auth, stats, recentActivity }) {
     ], []);
 
     return (
-        <AuthenticatedLayout header="My Health Portal">
+        <AuthenticatedLayout 
+            header="My Health Portal"
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    {recentActivity && recentActivity.length > 0 && (
+                        <div className="dropdown report-dropdown-wrapper">
+                            <button 
+                                className="btn btn-light rounded-pill px-4 py-2 fw-bold small d-flex align-items-center gap-3 border shadow-sm"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                            >
+                                <div className="avatar-xs bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm">
+                                    <i className="fas fa-file-medical text-2xs"></i>
+                                </div>
+                                View Medical Reports
+                                <i className="fas fa-chevron-up extra-small opacity-30"></i>
+                            </button>
+                            <ul className="dropdown-menu dropdown-menu-end shadow-2xl border-0 rounded-2xl p-2 mb-3 bg-white">
+                                <div className="px-3 py-2 extra-small fw-extrabold text-muted text-uppercase tracking-widest opacity-50">Latest Test Reports</div>
+                                {recentActivity.map((activity, i) => (
+                                    <li key={i}>
+                                        <Link className="dropdown-item rounded-xl py-2 px-3 d-flex align-items-center gap-3 text-dark hover-translate-right transition-all" href={activity.url}>
+                                            <div className={`avatar-sm bg-${activity.color || 'primary'}-subtle text-${activity.color || 'primary'} rounded-lg d-flex align-items-center justify-content-center shadow-inner`}>
+                                                <i className={`fas ${activity.icon || 'fa-flask'} extra-small`}></i>
+                                            </div>
+                                            <div>
+                                                <div className="fw-bold small">{activity.subtitle || activity.btnText}</div>
+                                                <div className="extra-small text-muted fw-medium opacity-75">Click to open</div>
+                                            </div>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                    <Link href={route('appointments.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                        <i className="fas fa-calendar-plus me-1"></i> Book Visit
+                    </Link>
+                </div>
+            }
+        >
             <Head title="Patient Dashboard" />
 
             <PageHeader 
@@ -67,47 +107,6 @@ export default function Patient({ auth, stats, recentActivity }) {
                     icon="fa-heartbeat"
                 />
 
-                <UnifiedToolbar 
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            {recentActivity && recentActivity.length > 0 && (
-                                <div className="dropdown report-dropdown-wrapper">
-                                    <button 
-                                        className="btn btn-light rounded-pill px-4 py-2 fw-bold small d-flex align-items-center gap-3 border shadow-sm"
-                                        type="button"
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false"
-                                    >
-                                        <div className="avatar-xs bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm">
-                                            <i className="fas fa-file-medical text-2xs"></i>
-                                        </div>
-                                        View Medical Reports
-                                        <i className="fas fa-chevron-up extra-small opacity-30"></i>
-                                    </button>
-                                    <ul className="dropdown-menu dropdown-menu-end shadow-2xl border-0 rounded-2xl p-2 mb-3 bg-white">
-                                        <div className="px-3 py-2 extra-small fw-extrabold text-muted text-uppercase tracking-widest opacity-50">Latest Test Reports</div>
-                                        {recentActivity.map((activity, i) => (
-                                            <li key={i}>
-                                                <Link className="dropdown-item rounded-xl py-2 px-3 d-flex align-items-center gap-3 text-dark hover-translate-right transition-all" href={activity.url}>
-                                                    <div className={`avatar-sm bg-${activity.color || 'primary'}-subtle text-${activity.color || 'primary'} rounded-lg d-flex align-items-center justify-content-center shadow-inner`}>
-                                                        <i className={`fas ${activity.icon || 'fa-flask'} extra-small`}></i>
-                                                    </div>
-                                                    <div>
-                                                        <div className="fw-bold small">{activity.subtitle || activity.btnText}</div>
-                                                        <div className="extra-small text-muted fw-medium opacity-75">Click to open</div>
-                                                    </div>
-                                                </Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                            <Link href={route('appointments.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                                <i className="fas fa-calendar-plus me-1"></i> Book Visit
-                            </Link>
-                        </div>
-                    }
-                />
 
                 <div className="row g-4 mb-4">
                     {/* Billing Summary Widget */}

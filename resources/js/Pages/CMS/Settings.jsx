@@ -1,7 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
 import TextInput from '@/Components/TextInput';
@@ -49,7 +48,17 @@ export default function Settings({ settings, serviceTabs }) {
     };
 
     return (
-        <AuthenticatedLayout>
+        <AuthenticatedLayout
+            toolbarActions={
+                <button 
+                    onClick={handleSubmit}
+                    className="btn btn-primary rounded-pill px-4 py-2 fw-bold small" 
+                    disabled={processing}
+                >
+                    <i className="fas fa-save me-1"></i> Save CMS Configuration
+                </button>
+            }
+        >
             <Head title="CMS Settings" />
 
             <PageHeader 
@@ -154,17 +163,6 @@ export default function Settings({ settings, serviceTabs }) {
 
                 </form>
                 
-                <UnifiedToolbar 
-                    actions={
-                        <button 
-                            onClick={handleSubmit}
-                            className="btn btn-primary rounded-pill px-4 py-2 fw-bold small" 
-                            disabled={processing}
-                        >
-                            <i className="fas fa-save me-1"></i> Save CMS Configuration
-                        </button>
-                    }
-                />
             </div>
         </AuthenticatedLayout>
     );

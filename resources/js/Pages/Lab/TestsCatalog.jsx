@@ -3,7 +3,6 @@ import { Head, Link, router } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import ViewToggle from '@/Components/ViewToggle';
 import DashboardSelect from '@/Components/DashboardSelect';
 import { useState, useMemo } from 'react';
@@ -180,6 +179,29 @@ export default function TestsCatalog({ tests, auth, filters, categories }) {
     return (
         <AuthenticatedLayout
             header="Laboratory Tests"
+            toolbarFilters={
+                <div className="d-flex align-items-center gap-2">
+                    <DashboardSelect 
+                        options={categories.map(c => ({ label: c, value: c }))}
+                        value={quickFilter}
+                        onChange={handleCategoryChange}
+                        placeholder="Category..."
+                        theme="dark"
+                        dropup={true}
+                        style={{ width: '180px' }}
+                    />
+                </div>
+            }
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    <ViewToggle view={viewMode} setView={handleViewChange} />
+                    {isAdmin && (
+                        <Link href={route('lab-tests.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                            <i className="fas fa-plus me-1"></i> New Protocol
+                        </Link>
+                    )}
+                </div>
+            }
         >
             <Head title="Lab Tests" />
 
@@ -293,31 +315,6 @@ export default function TestsCatalog({ tests, auth, filters, categories }) {
                     </div>
                 )}
 
-                <UnifiedToolbar 
-                    filters={
-                        <div className="d-flex align-items-center gap-2">
-                            <DashboardSelect 
-                                options={categories.map(c => ({ label: c, value: c }))}
-                                value={quickFilter}
-                                onChange={handleCategoryChange}
-                                placeholder="Category..."
-                                theme="dark"
-                                dropup={true}
-                                style={{ width: '180px' }}
-                            />
-                        </div>
-                    }
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            <ViewToggle view={viewMode} setView={handleViewChange} />
-                            {isAdmin && (
-                                <Link href={route('lab-tests.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                                    <i className="fas fa-plus me-1"></i> New Protocol
-                                </Link>
-                            )}
-                        </div>
-                    }
-                />
             </div>
             
             <style>{`

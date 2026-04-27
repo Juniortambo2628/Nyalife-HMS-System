@@ -5,7 +5,6 @@ import DashboardTable from '@/Components/DashboardTable';
 import PageHeader from '@/Components/PageHeader';
 import ViewToggle from '@/Components/ViewToggle';
 import InfoModal from '@/Components/InfoModal';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import DashboardSelect from '@/Components/DashboardSelect';
 import UserAvatar from '@/Components/UserAvatar';
 import { useState, useMemo } from 'react';
@@ -260,7 +259,34 @@ export default function Index({ patients, filters, auth }) {
     };
 
     return (
-        <AuthenticatedLayout header="Patient Registry">
+        <AuthenticatedLayout 
+            header="Patient Registry"
+            toolbarFilters={
+                <div className="d-flex align-items-center gap-2">
+                     <DashboardSelect 
+                        options={[
+                            { label: 'All Subjects', value: '' },
+                            { label: 'Recently Registered', value: 'recent' },
+                            { label: 'Biological Male', value: 'male' },
+                            { label: 'Biological Female', value: 'female' },
+                        ]}
+                        value={activeFilter} 
+                        onChange={handleFilterChange}
+                        theme="dark"
+                        dropup={true}
+                        placeholder="Status..."
+                    />
+                </div>
+            }
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    <ViewToggle view={view} setView={handleViewChange} />
+                    <Link href={route('patients.create')} className="btn btn-primary rounded-pill px-5 py-2 fw-extrabold extra-small tracking-widest shadow-lg">
+                        <i className="fas fa-user-plus me-2"></i> REGISTER NEW
+                    </Link>
+                </div>
+            }
+        >
             <Head title="Patients" />
 
             <PageHeader 
@@ -368,34 +394,6 @@ export default function Index({ patients, filters, auth }) {
                         )}
                     </div>
                 )}
-
-                <UnifiedToolbar 
-                    filters={
-                        <div className="d-flex align-items-center gap-2">
-                             <DashboardSelect 
-                                options={[
-                                    { label: 'All Subjects', value: '' },
-                                    { label: 'Recently Registered', value: 'recent' },
-                                    { label: 'Biological Male', value: 'male' },
-                                    { label: 'Biological Female', value: 'female' },
-                                ]}
-                                value={activeFilter} 
-                                onChange={handleFilterChange}
-                                theme="dark"
-                                dropup={true}
-                                placeholder="Status..."
-                            />
-                        </div>
-                    }
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            <ViewToggle view={view} setView={handleViewChange} />
-                            <Link href={route('patients.create')} className="btn btn-primary rounded-pill px-5 py-2 fw-extrabold extra-small tracking-widest shadow-lg">
-                                <i className="fas fa-user-plus me-2"></i> REGISTER NEW
-                            </Link>
-                        </div>
-                    }
-                />
             </div>
 
             {/* Quick Info Modal */}

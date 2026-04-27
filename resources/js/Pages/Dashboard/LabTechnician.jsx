@@ -5,7 +5,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import DashboardHero from '@/Components/DashboardHero';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function LabTechnician({ auth, stats }) {
     const handleProcess = (id) => {
@@ -97,7 +96,19 @@ export default function LabTechnician({ auth, stats }) {
     ];
 
     return (
-        <AuthenticatedLayout header="Laboratory Dashboard">
+        <AuthenticatedLayout 
+            header="Laboratory Dashboard"
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    <Link href={route('lab.index')} className="btn btn-light border rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                        <i className="fas fa-list-ul me-1"></i> Request Registry
+                    </Link>
+                    <Link href={route('lab.tests')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                        <i className="fas fa-vials me-1"></i> Test Catalog
+                    </Link>
+                </div>
+            }
+        >
             <Head title="Lab Dashboard" />
 
             <PageHeader 
@@ -113,18 +124,6 @@ export default function LabTechnician({ auth, stats }) {
                     icon="fa-flask"
                 />
 
-                <UnifiedToolbar 
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            <Link href={route('lab.index')} className="btn btn-light border rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                                <i className="fas fa-list-ul me-1"></i> Request Registry
-                            </Link>
-                            <Link href={route('lab.tests')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                                <i className="fas fa-vials me-1"></i> Test Catalog
-                            </Link>
-                        </div>
-                    }
-                />
 
                 <div className="row g-4 mb-4">
                     {statItems.map((s, i) => (

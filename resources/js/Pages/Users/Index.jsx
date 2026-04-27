@@ -5,7 +5,6 @@ import { useState, useEffect, useMemo } from 'react';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
 import ViewToggle from '@/Components/ViewToggle';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import UserAvatar from '@/Components/UserAvatar';
 import DashboardSelect from '@/Components/DashboardSelect';
 
@@ -101,6 +100,27 @@ export default function Index({ users, filters, roles, auth }) {
     return (
         <AuthenticatedLayout
             header="Users Management"
+            toolbarFilters={
+                <div className="d-flex align-items-center gap-2">
+                    <DashboardSelect 
+                        options={roles.map(r => ({ label: r.role_name.replace('_', ' '), value: r.role_name }))}
+                        value={roleFilter}
+                        onChange={val => setRoleFilter(val || '')}
+                        placeholder="All Roles"
+                        theme="dark"
+                        dropup={true}
+                        style={{ width: '160px' }}
+                    />
+                </div>
+            }
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    <ViewToggle view={viewMode} setView={setViewMode} />
+                    <Link href={route('users.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                        <i className="fas fa-user-plus me-1"></i> Create User
+                    </Link>
+                </div>
+            }
         >
             <Head title="Users" />
 
@@ -187,30 +207,6 @@ export default function Index({ users, filters, roles, auth }) {
                         )}
                     </div>
                 )}
-
-                <UnifiedToolbar 
-                    filters={
-                        <div className="d-flex align-items-center gap-2">
-                            <DashboardSelect 
-                                options={roles.map(r => ({ label: r.role_name.replace('_', ' '), value: r.role_name }))}
-                                value={roleFilter}
-                                onChange={val => setRoleFilter(val || '')}
-                                placeholder="All Roles"
-                                theme="dark"
-                                dropup={true}
-                                style={{ width: '160px' }}
-                            />
-                        </div>
-                    }
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            <ViewToggle view={viewMode} setView={setViewMode} />
-                            <Link href={route('users.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                                <i className="fas fa-user-plus me-1"></i> Create User
-                            </Link>
-                        </div>
-                    }
-                />
             </div>
 
         </AuthenticatedLayout>

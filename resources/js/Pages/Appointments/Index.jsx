@@ -8,7 +8,6 @@ import DashboardSelect from '@/Components/DashboardSelect';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
 import StatusBadge from '@/Components/StatusBadge';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Index({ appointments, filters, auth }) {
     const [view, setView] = useState(() => localStorage.getItem('appointments_view') || 'list');
@@ -323,6 +322,70 @@ export default function Index({ appointments, filters, auth }) {
     return (
         <AuthenticatedLayout
             header="Appointments"
+            selectionCount={selectedIds.length}
+            toolbarBulkActions={
+                <div className="d-flex align-items-center gap-2">
+                    <button className="btn btn-white btn-sm rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm">
+                        <i className="fas fa-check-circle me-2"></i> CONFIRM BATCH
+                    </button>
+                    <button className="btn btn-white btn-sm rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm">
+                        <i className="fas fa-print me-2"></i> PRINT CARDS
+                    </button>
+                    <button className="btn btn-danger btn-sm rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm border border-white border-opacity-20">
+                        <i className="fas fa-trash-alt me-2"></i> CANCEL
+                    </button>
+                </div>
+            }
+            toolbarFilters={
+                <div className="d-flex align-items-center gap-2">
+                    <DashboardSelect 
+                        asyncUrl="/doctors/search"
+                        value={filterData.doctor_id} 
+                        onChange={val => handleAsyncChange('doctor_id', val)}
+                        placeholder="Doctor..."
+                        initialLabel={filters.doctor_name}
+                        theme="dark"
+                        dropup={true}
+                        style={{ width: '150px' }}
+                    />
+                    <DashboardSelect 
+                        asyncUrl="/patients/search"
+                        value={filterData.patient_id} 
+                        onChange={val => handleAsyncChange('patient_id', val)}
+                        placeholder="Patient..."
+                        initialLabel={filters.patient_name}
+                        theme="dark"
+                        dropup={true}
+                        style={{ width: '150px' }}
+                    />
+                    <DashboardSelect 
+                        options={[
+                            { label: 'Scheduled', value: 'scheduled' },
+                            { label: 'Confirmed', value: 'confirmed' },
+                            { label: 'Arrived', value: 'arrived' },
+                            { label: 'Completed', value: 'completed' },
+                            { label: 'Cancelled', value: 'cancelled' },
+                            { label: 'No Show', value: 'no_show' }
+                        ]}
+                        value={filterData.status} 
+                        onChange={val => handleAsyncChange('status', val)}
+                        placeholder="Status..."
+                        theme="dark"
+                        dropup={true}
+                        style={{ width: '150px' }}
+                    />
+                </div>
+            }
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    <ViewToggle view={view} setView={handleViewChange} />
+                    {auth.user.role !== 'patient' && (
+                        <Link href={route('appointments.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm">
+                            <i className="fas fa-plus me-1"></i> BOOK VISIT
+                        </Link>
+                    )}
+                </div>
+            }
         >
             <Head title="Appointments" />
 
@@ -449,73 +512,6 @@ export default function Index({ appointments, filters, auth }) {
                         )}
                     </div>
                 )}
-
-                <UnifiedToolbar 
-                    selectionCount={selectedIds.length}
-                    bulkActions={
-                        <div className="d-flex align-items-center gap-2">
-                            <button className="btn btn-white btn-sm rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm">
-                                <i className="fas fa-check-circle me-2"></i> CONFIRM BATCH
-                            </button>
-                            <button className="btn btn-white btn-sm rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm">
-                                <i className="fas fa-print me-2"></i> PRINT CARDS
-                            </button>
-                            <button className="btn btn-danger btn-sm rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm border border-white border-opacity-20">
-                                <i className="fas fa-trash-alt me-2"></i> CANCEL
-                            </button>
-                        </div>
-                    }
-                    filters={
-                        <div className="d-flex align-items-center gap-2">
-                            <DashboardSelect 
-                                asyncUrl="/doctors/search"
-                                value={filterData.doctor_id} 
-                                onChange={val => handleAsyncChange('doctor_id', val)}
-                                placeholder="Doctor..."
-                                initialLabel={filters.doctor_name}
-                                theme="dark"
-                                dropup={true}
-                                style={{ width: '150px' }}
-                            />
-                            <DashboardSelect 
-                                asyncUrl="/patients/search"
-                                value={filterData.patient_id} 
-                                onChange={val => handleAsyncChange('patient_id', val)}
-                                placeholder="Patient..."
-                                initialLabel={filters.patient_name}
-                                theme="dark"
-                                dropup={true}
-                                style={{ width: '150px' }}
-                            />
-                            <DashboardSelect 
-                                options={[
-                                    { label: 'Scheduled', value: 'scheduled' },
-                                    { label: 'Confirmed', value: 'confirmed' },
-                                    { label: 'Arrived', value: 'arrived' },
-                                    { label: 'Completed', value: 'completed' },
-                                    { label: 'Cancelled', value: 'cancelled' },
-                                    { label: 'No Show', value: 'no_show' }
-                                ]}
-                                value={filterData.status} 
-                                onChange={val => handleAsyncChange('status', val)}
-                                placeholder="Status..."
-                                theme="dark"
-                                dropup={true}
-                                style={{ width: '150px' }}
-                            />
-                        </div>
-                    }
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            <ViewToggle view={view} setView={handleViewChange} />
-                            {auth.user.role !== 'patient' && (
-                                <Link href={route('appointments.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm">
-                                    <i className="fas fa-plus me-1"></i> BOOK VISIT
-                                </Link>
-                            )}
-                        </div>
-                    }
-                />
             </div>
 
             {/* Quick Info Modal */}

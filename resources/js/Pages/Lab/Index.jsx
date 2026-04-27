@@ -4,7 +4,6 @@ import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
 import PageHeaderComp from '@/Components/PageHeader';
 import StatusBadge from '@/Components/StatusBadge';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import DashboardSelect from '@/Components/DashboardSelect';
 import { useState, useMemo } from 'react';
 
@@ -121,7 +120,33 @@ export default function LabRequestsIndex({ requests, filters, auth }) {
     ], []);
 
     return (
-        <AuthenticatedLayout header={auth.user.role === 'patient' ? 'My Lab Results' : 'Laboratory'}>
+        <AuthenticatedLayout 
+            header={auth.user.role === 'patient' ? 'My Lab Results' : 'Laboratory'}
+            toolbarFilters={
+                <div className="d-flex align-items-center gap-2">
+                    <DashboardSelect 
+                        options={[
+                            { label: 'Pending', value: 'pending' },
+                            { label: 'Processing', value: 'processing' },
+                            { label: 'Completed', value: 'completed' },
+                            { label: 'Cancelled', value: 'cancelled' },
+                        ]}
+                        value={status}
+                        onChange={handleStatusChange}
+                        placeholder="Status..."
+                        theme="dark"
+                        dropup={true}
+                    />
+                </div>
+            }
+            toolbarActions={
+                auth.user.role === 'lab_technician' && (
+                    <Link href={route('lab.tests')} className="btn btn-outline-light rounded-pill px-3 py-2 fw-bold small">
+                        <i className="fas fa-vials me-1"></i> Test Catalog
+                    </Link>
+                )
+            }
+        >
             <Head title={auth.user.role === 'patient' ? 'My Labs' : 'Laboratory'} />
 
             <PageHeaderComp 
@@ -154,32 +179,6 @@ export default function LabRequestsIndex({ requests, filters, auth }) {
                     emptyMessage="No lab requests found matching your search."
                 />
 
-                <UnifiedToolbar 
-                    filters={
-                        <div className="d-flex align-items-center gap-2">
-                            <DashboardSelect 
-                                options={[
-                                    { label: 'Pending', value: 'pending' },
-                                    { label: 'Processing', value: 'processing' },
-                                    { label: 'Completed', value: 'completed' },
-                                    { label: 'Cancelled', value: 'cancelled' },
-                                ]}
-                                value={status}
-                                onChange={handleStatusChange}
-                                placeholder="Status..."
-                                theme="dark"
-                                dropup={true}
-                            />
-                        </div>
-                    }
-                    actions={
-                        auth.user.role === 'lab_technician' && (
-                            <Link href={route('lab.tests')} className="btn btn-outline-light rounded-pill px-3 py-2 fw-bold small">
-                                <i className="fas fa-vials me-1"></i> Test Catalog
-                            </Link>
-                        )
-                    }
-                />
             </div>
         </AuthenticatedLayout>
     );

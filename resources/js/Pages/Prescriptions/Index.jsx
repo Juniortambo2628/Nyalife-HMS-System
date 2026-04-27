@@ -4,7 +4,6 @@ import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
 import PageHeader from '@/Components/PageHeader';
 import StatusBadge from '@/Components/StatusBadge';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import DashboardSelect from '@/Components/DashboardSelect';
 import { useState, useMemo } from 'react';
 
@@ -91,6 +90,23 @@ export default function Index({ prescriptions, filters, auth }) {
     return (
         <AuthenticatedLayout
             header={auth.user.role === 'patient' ? 'My Prescriptions' : 'Pharmacy - Prescriptions'}
+            toolbarFilters={
+                <div className="d-flex align-items-center gap-2">
+                    <DashboardSelect 
+                        options={[
+                            { label: 'Pending', value: 'pending' },
+                            { label: 'Dispensed', value: 'dispensed' },
+                            { label: 'Cancelled', value: 'cancelled' },
+                        ]}
+                        value={status}
+                        onChange={handleStatusChange}
+                        placeholder="All Status"
+                        theme="dark"
+                        dropup={true}
+                        style={{ width: '150px' }}
+                    />
+                </div>
+            }
         >
             <Head title={auth.user.role === 'patient' ? 'My Prescriptions' : 'Pharmacy'} />
 
@@ -111,26 +127,6 @@ export default function Index({ prescriptions, filters, auth }) {
                         { label: 'Pending', value: 'pending' },
                         { label: 'Dispensed', value: 'dispensed' },
                     ]}
-                />
-
-                <UnifiedToolbar 
-                    filters={
-                        <div className="d-flex align-items-center gap-2">
-                            <DashboardSelect 
-                                options={[
-                                    { label: 'Pending', value: 'pending' },
-                                    { label: 'Dispensed', value: 'dispensed' },
-                                    { label: 'Cancelled', value: 'cancelled' },
-                                ]}
-                                value={status}
-                                onChange={handleStatusChange}
-                                placeholder="All Status"
-                                theme="dark"
-                                dropup={true}
-                                style={{ width: '150px' }}
-                            />
-                        </div>
-                    }
                 />
 
                 {/* Table */}

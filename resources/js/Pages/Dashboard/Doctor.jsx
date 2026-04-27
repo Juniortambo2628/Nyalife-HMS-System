@@ -6,7 +6,6 @@ import { useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Doctor({ auth, stats }) {
     const columns = useMemo(() => [
@@ -60,7 +59,58 @@ export default function Doctor({ auth, stats }) {
     ];
 
     return (
-        <AuthenticatedLayout header="Clinician Dashboard">
+        <AuthenticatedLayout 
+            header="Clinician Dashboard"
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    {(stats.in_progress_consultations?.length > 0 || stats.released_labs?.length > 0) && (
+                        <div className="dropdown">
+                            <button 
+                                className="btn btn-light rounded-pill px-4 py-2 fw-bold small d-flex align-items-center gap-2"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                            >
+                                <i className="fas fa-history text-warning"></i>
+                                Resume Tasks
+                                <span className="badge bg-warning text-white rounded-circle ms-1 text-2xs">
+                                    {(stats.in_progress_consultations?.length || 0) + (stats.released_labs?.length || 0)}
+                                </span>
+                            </button>
+                            <ul className="dropdown-menu dropdown-menu-end shadow-2xl border-0 rounded-2xl p-2 mb-3">
+                                <div className="px-3 py-2 extra-small fw-bold text-muted text-uppercase tracking-widest opacity-50">Active Consultations</div>
+                                {stats.in_progress_consultations?.map((c, i) => (
+                                    <li key={`ip-${i}`}>
+                                        <Link className="dropdown-item rounded-xl py-2 px-3 d-flex align-items-center gap-3 text-dark" href={route('consultations.edit', c.consultation_id)}>
+                                            <div className="avatar-xs bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center">
+                                                <i className="fas fa-spinner fa-spin extra-small"></i>
+                                            </div>
+                                            <span className="fw-semibold small">{c.patient.user.first_name}</span>
+                                        </Link>
+                                    </li>
+                                ))}
+                                {stats.released_labs?.length > 0 && (
+                                    <div className="px-3 py-2 extra-small fw-bold text-muted text-uppercase tracking-widest opacity-50 mt-2">Ready for Review</div>
+                                )}
+                                {stats.released_labs?.map((l, i) => (
+                                    <li key={`rl-${i}`}>
+                                        <Link className="dropdown-item rounded-xl py-2 px-3 d-flex align-items-center gap-3 text-dark" href={route('consultations.show', l.consultation_id)}>
+                                            <div className="avatar-xs bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center">
+                                                <i className="fas fa-flask extra-small"></i>
+                                            </div>
+                                            <span className="fw-semibold small">{l.patient.user.first_name}</span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                    <Link href={route('patients.index')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                        <i className="fas fa-search me-1"></i> Registry
+                    </Link>
+                </div>
+            }
+        >
             <Head title="Doctor Dashboard" />
 
             <PageHeader 
@@ -76,57 +126,6 @@ export default function Doctor({ auth, stats }) {
                     icon="fa-user-md"
                 />
 
-                <UnifiedToolbar 
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            {(stats.in_progress_consultations?.length > 0 || stats.released_labs?.length > 0) && (
-                                <div className="dropdown">
-                                    <button 
-                                        className="btn btn-light rounded-pill px-4 py-2 fw-bold small d-flex align-items-center gap-2"
-                                        type="button"
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false"
-                                    >
-                                        <i className="fas fa-history text-warning"></i>
-                                        Resume Tasks
-                                        <span className="badge bg-warning text-white rounded-circle ms-1 text-2xs">
-                                            {(stats.in_progress_consultations?.length || 0) + (stats.released_labs?.length || 0)}
-                                        </span>
-                                    </button>
-                                    <ul className="dropdown-menu dropdown-menu-end shadow-2xl border-0 rounded-2xl p-2 mb-3">
-                                        <div className="px-3 py-2 extra-small fw-bold text-muted text-uppercase tracking-widest opacity-50">Active Consultations</div>
-                                        {stats.in_progress_consultations?.map((c, i) => (
-                                            <li key={`ip-${i}`}>
-                                                <Link className="dropdown-item rounded-xl py-2 px-3 d-flex align-items-center gap-3 text-dark" href={route('consultations.edit', c.consultation_id)}>
-                                                    <div className="avatar-xs bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center">
-                                                        <i className="fas fa-spinner fa-spin extra-small"></i>
-                                                    </div>
-                                                    <span className="fw-semibold small">{c.patient.user.first_name}</span>
-                                                </Link>
-                                            </li>
-                                        ))}
-                                        {stats.released_labs?.length > 0 && (
-                                            <div className="px-3 py-2 extra-small fw-bold text-muted text-uppercase tracking-widest opacity-50 mt-2">Ready for Review</div>
-                                        )}
-                                        {stats.released_labs?.map((l, i) => (
-                                            <li key={`rl-${i}`}>
-                                                <Link className="dropdown-item rounded-xl py-2 px-3 d-flex align-items-center gap-3 text-dark" href={route('consultations.show', l.consultation_id)}>
-                                                    <div className="avatar-xs bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center">
-                                                        <i className="fas fa-flask extra-small"></i>
-                                                    </div>
-                                                    <span className="fw-semibold small">{l.patient.user.first_name}</span>
-                                                </Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                            <Link href={route('patients.index')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                                <i className="fas fa-search me-1"></i> Registry
-                            </Link>
-                        </div>
-                    }
-                />
 
                 <div className="row g-4 mb-4">
                     {statItems.map((s, i) => (

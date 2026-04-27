@@ -1,7 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { useCallback } from 'react';
 
 export default function Index({ auth, insurances }) {
@@ -22,7 +21,16 @@ export default function Index({ auth, insurances }) {
     }, []);
 
     return (
-        <AuthenticatedLayout>
+        <AuthenticatedLayout
+            toolbarActions={userRole === 'admin' ? (
+                <Link 
+                    href={route('insurances.create')} 
+                    className="btn btn-primary rounded-pill px-4 py-2 fw-bold small"
+                >
+                    <i className="fas fa-plus-circle me-1"></i> Add Provider
+                </Link>
+            ) : null}
+        >
             <Head title="Health Insurances" />
             
             <PageHeader 
@@ -120,16 +128,6 @@ export default function Index({ auth, insurances }) {
                     </div>
                 )}
 
-                <UnifiedToolbar 
-                    actions={userRole === 'admin' ? (
-                        <Link 
-                            href={route('insurances.create')} 
-                            className="btn btn-primary rounded-pill px-4 py-2 fw-bold small"
-                        >
-                            <i className="fas fa-plus-circle me-1"></i> Add Provider
-                        </Link>
-                    ) : null}
-                />
             </div>
 
             <style>{`

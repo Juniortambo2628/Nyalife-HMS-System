@@ -6,7 +6,6 @@ import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import { formatDateTime } from '@/Utils/dateUtils';
 import DashboardHero from '@/Components/DashboardHero';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Pharmacist({ auth, stats }) {
     const columns = useMemo(() => [
@@ -54,7 +53,19 @@ export default function Pharmacist({ auth, stats }) {
     ];
 
     return (
-        <AuthenticatedLayout header="Pharmacy Dashboard">
+        <AuthenticatedLayout 
+            header="Pharmacy Dashboard"
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    <Link href={route('pharmacy.inventory')} className="btn btn-light border rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                        <i className="fas fa-boxes me-1"></i> Inventory
+                    </Link>
+                    <Link href={route('pharmacy.medicines')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                        <i className="fas fa-pills me-1"></i> Medicine Registry
+                    </Link>
+                </div>
+            }
+        >
             <Head title="Pharmacy Dashboard" />
 
             <PageHeader 
@@ -70,18 +81,6 @@ export default function Pharmacist({ auth, stats }) {
                     icon="fa-pills"
                 />
 
-                <UnifiedToolbar 
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            <Link href={route('pharmacy.inventory')} className="btn btn-light border rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                                <i className="fas fa-boxes me-1"></i> Inventory
-                            </Link>
-                            <Link href={route('pharmacy.medicines')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                                <i className="fas fa-pills me-1"></i> Medicine Registry
-                            </Link>
-                        </div>
-                    }
-                />
 
                 <div className="row g-4 mb-4">
                     {statItems.map((s, i) => (

@@ -4,6 +4,7 @@ import CookieBanner from '@/Components/CookieBanner';
 import { Toaster, toast } from 'react-hot-toast';
 import ContextSwitcher from '@/Components/ContextSwitcher';
 import UserAvatar from '@/Components/UserAvatar';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 // Role-based sidebar menu items matching legacy system
 const sidebarMenus = {
@@ -69,7 +70,14 @@ const sidebarMenus = {
     ],
 };
 
-export default function AuthenticatedLayout({ header, children }) {
+export default function AuthenticatedLayout({ 
+    header, 
+    children, 
+    toolbarActions, 
+    toolbarFilters, 
+    toolbarBulkActions, 
+    selectionCount 
+}) {
     const page = usePage();
     const { auth } = page.props;
     const currentUrl = page.url;
@@ -359,7 +367,17 @@ export default function AuthenticatedLayout({ header, children }) {
                     {children}
                 </div>
             </main>
-            {/* Styles moved to nyalife-components.css */}
+
+            {/* Shared Page Actions Toolbar */}
+            {(toolbarActions || toolbarFilters || toolbarBulkActions) && (
+                <UnifiedToolbar 
+                    actions={toolbarActions}
+                    filters={toolbarFilters}
+                    bulkActions={toolbarBulkActions}
+                    selectionCount={selectionCount}
+                />
+            )}
+
             <CookieBanner />
             <ContextSwitcher />
         </div>

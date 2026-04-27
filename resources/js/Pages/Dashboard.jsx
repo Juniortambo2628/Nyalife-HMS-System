@@ -2,13 +2,24 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import DashboardHero from '@/Components/DashboardHero';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Dashboard({ auth }) {
     const user = auth?.user || {};
     
     return (
-        <AuthenticatedLayout header="HMS Dashboard">
+        <AuthenticatedLayout 
+            header="HMS Dashboard"
+            toolbarActions={
+                <div className="d-flex align-items-center gap-2">
+                    <Link href="/appointments" className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                        <i className="fas fa-calendar-alt me-1"></i> View Schedule
+                    </Link>
+                    <Link href="/patients" className="btn btn-outline-light rounded-pill px-4 py-2 fw-bold small">
+                        <i className="fas fa-users me-1"></i> Patient Registry
+                    </Link>
+                </div>
+            }
+        >
             <Head title="Dashboard" />
 
             <PageHeader 
@@ -24,18 +35,6 @@ export default function Dashboard({ auth }) {
                     icon="fa-hospital"
                 />
 
-                <UnifiedToolbar 
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            <Link href="/appointments" className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                                <i className="fas fa-calendar-alt me-1"></i> View Schedule
-                            </Link>
-                            <Link href="/patients" className="btn btn-outline-light rounded-pill px-4 py-2 fw-bold small">
-                                <i className="fas fa-users me-1"></i> Patient Registry
-                            </Link>
-                        </div>
-                    }
-                />
 
                 <div className="card shadow-sm border-0 rounded-2xl bg-white p-5 shadow-hover">
                     <div className="d-flex align-items-center gap-4 mb-5">

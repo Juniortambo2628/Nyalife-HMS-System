@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
-        Vite::prefetch(concurrency: 3);
+        Vite::prefetch(event: 'hover');
         // So Inertia receives the same shape as raw models (no top-level "data" wrapper)
         JsonResource::withoutWrapping();
     }

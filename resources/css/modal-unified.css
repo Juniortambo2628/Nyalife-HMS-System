@@ -1,0 +1,306 @@
+/**
+ * Nyalife HMS - Unified Modal Styles
+ * Standardized styles for all modals and backdrops
+ */
+.modal-backdrop.show {
+    opacity: 0.5 !important;
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Hidden state for backdrops */
+.modal-backdrop.fade:not(.show) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+}
+
+/* Modal Container */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%; /* use 100% instead of 100vh to include address-bar height variations */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    z-index: 2000 !important;
+    opacity: 0 !important;
+    transition: opacity 0.15s linear !important;
+    display: none !important;
+    overflow: hidden !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    pointer-events: auto !important;
+}
+
+.modal.show {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Hidden state for modals */
+.modal:not(.show),
+.modal.fade:not(.show) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+}
+
+/* Modal Dialog */
+.modal-dialog {
+    position: relative !important;
+    width: auto !important;
+    margin: 30px auto !important;
+    pointer-events: auto !important;
+    z-index: 2010 !important;
+    max-width: 500px !important;
+    transform: translate(0, 0) !important;
+    height: auto !important;
+}
+
+.modal-dialog-centered {
+    display: flex !important;
+    align-items: center !important;
+    min-height: calc(100% - 60px) !important;
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+}
+
+/* Modal Content */
+.modal-content {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    background-color: #fff !important;
+    background-clip: padding-box !important;
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    border-radius: 0.3rem !important;
+    outline: 0 !important;
+    z-index: 2020 !important;
+    pointer-events: auto !important;
+    max-height: calc(100vh - 60px) !important;
+    overflow-y: auto !important;
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    padding: 1rem !important;
+    border-bottom: 1px solid #e9ecef !important;
+    border-top-left-radius: 0.3rem !important;
+    border-top-right-radius: 0.3rem !important;
+    pointer-events: auto !important;
+    z-index: 2025 !important;
+    flex-shrink: 0 !important;
+}
+
+.modal-header .close,
+.modal-header .btn-close {
+    padding: 1rem !important;
+    margin: -1rem -1rem -1rem auto !important;
+    z-index: 2030 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+/* Modal Body */
+.modal-body {
+    position: relative !important;
+    flex: 1 1 auto !important;
+    padding: 1rem !important;
+    pointer-events: auto !important;
+    z-index: 2025 !important;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 170px) !important;
+}
+
+/* Form elements inside modals */
+.modal-body input,
+.modal-body select,
+.modal-body textarea,
+.modal-body button {
+    position: relative !important;
+    z-index: 2030 !important;
+    pointer-events: auto !important;
+}
+
+/* Modal Footer */
+.modal-footer {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    padding: 1rem !important;
+    border-top: 1px solid #e9ecef !important;
+    pointer-events: auto !important;
+    z-index: 2025 !important;
+    flex-shrink: 0 !important;
+}
+
+/* Specific Modal Fixes */
+#guestAppointmentModal:not(.show) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+}
+
+/* Guest Appointment Modal - Wider with better positioning */
+#guestAppointmentModal.show {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 2000 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    pointer-events: auto !important;
+}
+
+#guestAppointmentModal .modal-dialog {
+    max-width: 800px !important;
+    margin: 30px auto !important;
+    width: 90% !important;
+    position: relative !important;
+    transform: translate(0, 0) !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 2010 !important;
+    pointer-events: auto !important;
+    height: auto !important;
+}
+
+#guestAppointmentModal .modal-content {
+    border-radius: 10px !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+    border: none !important;
+    overflow: hidden !important;
+    position: relative !important;
+    width: 100% !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 2020 !important;
+    pointer-events: auto !important;
+    max-height: calc(100vh - 60px) !important;
+    overflow-y: auto !important;
+}
+
+#guestAppointmentModal .modal-header {
+    padding: 1.25rem 1.5rem !important;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark)) !important;
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+    color: white !important;
+    position: relative !important;
+    z-index: 2025 !important;
+    pointer-events: auto !important;
+    flex-shrink: 0 !important;
+}
+
+#guestAppointmentModal .modal-body {
+    padding: 1.5rem !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 2025 !important;
+    pointer-events: auto !important;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 170px) !important;
+}
+
+#guestAppointmentModal .modal-title {
+    font-weight: 600 !important;
+    font-size: 1.25rem !important;
+}
+
+#guestAppointmentModal .btn-close {
+    color: white !important;
+    filter: brightness(0) invert(1) !important;
+    opacity: 0.8 !important;
+    z-index: 2030 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+#guestAppointmentModal .btn-close:hover {
+    opacity: 1 !important;
+}
+
+/* Ensure form elements are clickable */
+#guestAppointmentModal input,
+#guestAppointmentModal select,
+#guestAppointmentModal textarea,
+#guestAppointmentModal button {
+    position: relative !important;
+    z-index: 2030 !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure proper spacing in the three-column layout */
+#guestAppointmentModal .form-label {
+    margin-bottom: 0.5rem !important;
+    font-weight: 500 !important;
+}
+
+#guestAppointmentModal .form-control,
+#guestAppointmentModal .form-select {
+    padding: 0.65rem 0.85rem !important;
+    font-size: 0.9rem !important;
+    border-radius: 0.375rem !important;
+    position: relative !important;
+    z-index: 2030 !important;
+    pointer-events: auto !important;
+}
+
+/* Body state when modal is open */
+body.modal-open {
+    overflow: hidden !important;
+    padding-right: 0 !important;
+}
+
+/* Responsive adjustments */
+@media (min-width: 576px) {
+    .modal-dialog {
+        max-width: 500px !important;
+        margin: 1.75rem auto !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .modal-footer {
+        flex-direction: column !important;
+    }
+    
+    .modal-footer .btn {
+        margin-bottom: 0.5rem !important;
+        width: 100% !important;
+    }
+    
+    #guestAppointmentModal .modal-dialog {
+        margin: 10px auto !important;
+        width: 95% !important;
+    }
+    
+    #guestAppointmentModal .modal-content {
+        max-height: calc(100vh - 20px) !important;
+    }
+    
+    #guestAppointmentModal .modal-body {
+        max-height: calc(100vh - 130px) !important;
+        padding: 1rem !important;
+    }
+} 

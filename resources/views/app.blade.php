@@ -16,21 +16,6 @@
         @viteReactRefresh
         @vite(['resources/js/app.jsx', "resources/js/Pages/{$page['component']}.jsx"])
         
-        <!-- Vendor CSS Files (Local) -->
-        <link rel="stylesheet" href="/assets/css/bootstrap-local.min.css">
-        <link rel="stylesheet" href="/assets/css/fontawesome-local.min.css">
-
-        <!-- Custom CSS -->
-        <link href="/assets/css/z-index.css" rel="stylesheet">
-        <link href="/assets/css/nyalife-loader-unified.css" rel="stylesheet">
-        <link href="/assets/css/footer.css" rel="stylesheet">
-        <link href="/assets/css/modal-unified.css" rel="stylesheet">
-        <link href="/assets/css/nyalife-theme.css" rel="stylesheet">
-        <link href="/assets/css/style.css" rel="stylesheet">
-        <link href="/assets/css/custom.css" rel="stylesheet">
-        <link href="/assets/css/sidebar.css" rel="stylesheet">
-        <link href="/assets/css/layout-system.css" rel="stylesheet">
-        <link href="/assets/css/dashboard-fresh.css" rel="stylesheet">
         @inertiaHead
     </head>
     <body class="font-sans antialiased">

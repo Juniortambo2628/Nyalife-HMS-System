@@ -67,8 +67,10 @@ class PatientController extends Controller
     {
         $validated = $request->validated();
 
-        // Handle optional email
-        $email = $validated['email'] ?? strtolower($validated['first_name'] . '.' . $validated['last_name'] . '.' . rand(1000, 9999) . '@nyalife-hms.com');
+        // Handle optional email - remove spaces to comply with RFC 2822
+        $safeFirstName = str_replace(' ', '', $validated['first_name']);
+        $safeLastName = str_replace(' ', '', $validated['last_name']);
+        $email = $validated['email'] ?? strtolower($safeFirstName . '.' . $safeLastName . '.' . rand(1000, 9999) . '@nyalife-hms.com');
 
         // Create user account
         $user = User::create([
@@ -76,7 +78,7 @@ class PatientController extends Controller
             'last_name' => $validated['last_name'],
             'email' => $email,
             'phone' => $validated['phone'],
-            'username' => strtolower($validated['first_name'] . '.' . $validated['last_name'] . '.' . rand(1000, 9999)),
+            'username' => strtolower($safeFirstName . '.' . $safeLastName . '.' . rand(1000, 9999)),
             'password' => Hash::make('password123'), // Default password
             'role_id' => \App\Models\Role::where('role_name', 'patient')->first()->role_id ?? 7,
             'is_active' => true,
@@ -178,14 +180,17 @@ class PatientController extends Controller
     {
         $validated = $request->validated();
 
-        $email = $validated['email'] ?? strtolower($validated['first_name'] . '.' . $validated['last_name'] . '.' . time() . '@nyalife.com');
+        // Remove spaces to comply with RFC 2822
+        $safeFirstName = str_replace(' ', '', $validated['first_name']);
+        $safeLastName = str_replace(' ', '', $validated['last_name']);
+        $email = $validated['email'] ?? strtolower($safeFirstName . '.' . $safeLastName . '.' . time() . '@nyalife.com');
 
         $user = User::create([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
             'email' => $email,
             'phone' => $validated['phone'],
-            'username' => strtolower($validated['first_name'] . '.' . $validated['last_name'] . '.' . time()),
+            'username' => strtolower($safeFirstName . '.' . $safeLastName . '.' . time()),
             'password' => Hash::make('password123'),
             'role_id' => \App\Models\Role::where('role_name', 'patient')->first()->role_id ?? 7,
             'is_active' => true,

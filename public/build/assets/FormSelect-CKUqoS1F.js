@@ -1,1 +1,0 @@
-import{j as l}from"./app-DrONO9rG.js";function i({options:r=[],className:t="form-select",...n}){return l.jsxs("select",{className:t,...n,children:[l.jsx("option",{value:"",children:"Select Option"}),r.map((e,o)=>l.jsx("option",{value:e.value,children:e.label},e.value||o))]})}export{i as F};

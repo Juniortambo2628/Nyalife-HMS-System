@@ -57,63 +57,6 @@ class CMSSettingsSeeder extends Seeder
                 'label' => 'Hero Slide 4 (Background)'
             ],
 
-            // Hero Cards
-            [
-                'key' => 'hero_card_1_title',
-                'value' => 'Obstetrics Care',
-                'type' => 'text',
-                'group' => 'hero_cards',
-                'label' => 'Card 1 Title'
-            ],
-            [
-                'key' => 'hero_card_1_text',
-                'value' => 'Comprehensive prenatal, delivery, and postnatal care for expectant mothers.',
-                'type' => 'textarea',
-                'group' => 'hero_cards',
-                'label' => 'Card 1 Description'
-            ],
-            [
-                'key' => 'hero_card_2_title',
-                'value' => 'Gynecology Services',
-                'type' => 'text',
-                'group' => 'hero_cards',
-                'label' => 'Card 2 Title'
-            ],
-            [
-                'key' => 'hero_card_2_text',
-                'value' => 'Expert care for women\'s reproductive health and wellness.',
-                'type' => 'textarea',
-                'group' => 'hero_cards',
-                'label' => 'Card 2 Description'
-            ],
-            [
-                'key' => 'hero_card_3_title',
-                'value' => 'Lab Services',
-                'type' => 'text',
-                'group' => 'hero_cards',
-                'label' => 'Card 3 Title'
-            ],
-            [
-                'key' => 'hero_card_3_text',
-                'value' => 'State-of-the-art diagnostic and testing facilities for accurate results.',
-                'type' => 'textarea',
-                'group' => 'hero_cards',
-                'label' => 'Card 3 Description'
-            ],
-            [
-                'key' => 'hero_card_4_title',
-                'value' => 'Pharmacy',
-                'type' => 'text',
-                'group' => 'hero_cards',
-                'label' => 'Card 4 Title'
-            ],
-            [
-                'key' => 'hero_card_4_text',
-                'value' => 'Full-service pharmacy with prescription and over-the-counter medications.',
-                'type' => 'textarea',
-                'group' => 'hero_cards',
-                'label' => 'Card 4 Description'
-            ],
 
             // About Section
             [

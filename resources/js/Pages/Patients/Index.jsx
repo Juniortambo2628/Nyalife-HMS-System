@@ -2,17 +2,25 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
-import PageHeader from '@/Components/PageHeader';
 import ViewToggle from '@/Components/ViewToggle';
 import InfoModal from '@/Components/InfoModal';
 import DashboardSelect from '@/Components/DashboardSelect';
 import UserAvatar from '@/Components/UserAvatar';
-import { useState, useMemo } from 'react';
+import TableActions from '@/Components/TableActions';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import { useState, useMemo, useEffect } from 'react';
 
 export default function Index({ patients, filters, auth }) {
     const [view, setView] = useState(() => localStorage.getItem('patients_view') || 'list');
     const [search, setSearch] = useState(filters.search || '');
     const [activeFilter, setActiveFilter] = useState(filters.status || '');
+    const [selectedIds, setSelectedIds] = useState([]);
+
+    useEffect(() => {
+        const handleClear = () => setSelectedIds([]);
+        window.addEventListener('toolbar-clear-selection', handleClear);
+        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
+    }, []);
 
     const [modalConfig, setModalConfig] = useState({
         show: false,
@@ -120,29 +128,11 @@ export default function Index({ patients, filters, auth }) {
             header: 'Actions',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="d-flex justify-content-end gap-2">
-                    <Link
-                        href={route('vitals.create', { patient_id: row.original.patient_id })}
-                        className="btn btn-sm btn-light border text-success rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center hover-lift transition-all"
-                        title="Record Vitals"
-                    >
-                        <i className="fas fa-heartbeat text-xs"></i>
-                    </Link>
-                    <button 
-                        onClick={() => openModal(row.original)}
-                        className="btn btn-sm btn-light border text-primary rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center hover-lift transition-all" 
-                        title="Quick View"
-                    >
-                        <i className="fas fa-eye text-xs"></i>
-                    </button>
-                    <Link 
-                        href={route('patients.show', row.original.patient_id)}
-                        className="btn btn-sm btn-light border text-secondary rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center hover-lift transition-all" 
-                        title="Full Profile"
-                    >
-                        <i className="fas fa-user-circle text-xs"></i>
-                    </Link>
-                </div>
+                <TableActions actions={[
+                    { icon: 'fa-heartbeat', label: 'Record Vitals', href: route('vitals.create', { patient_id: row.original.patient_id }) },
+                    { icon: 'fa-eye', label: 'Quick View', onClick: () => openModal(row.original) },
+                    { icon: 'fa-user-circle', label: 'Full Profile', href: route('patients.show', row.original.patient_id) },
+                ]} />
             )
         }
     ], []);
@@ -260,10 +250,18 @@ export default function Index({ patients, filters, auth }) {
 
     return (
         <AuthenticatedLayout 
-            header="Patient Registry"
-            toolbarFilters={
-                <div className="d-flex align-items-center gap-2">
-                     <DashboardSelect 
+            headerTitle="Patients Registry"
+            breadcrumbs={[{ label: 'Patients', active: true }]}
+        >
+            <Head title="Patients" />
+
+            <UnifiedToolbar 
+                viewOptions={[
+                    { label: 'LIST VIEW', icon: 'fa-list-ul', onClick: () => handleViewChange('list'), color: view === 'list' ? 'pink-500' : 'gray-400' },
+                    { label: 'GRID VIEW', icon: 'fa-th-large', onClick: () => handleViewChange('grid'), color: view === 'grid' ? 'pink-500' : 'gray-400' }
+                ]}
+                filters={
+                    <DashboardSelect 
                         options={[
                             { label: 'All Subjects', value: '' },
                             { label: 'Recently Registered', value: 'recent' },
@@ -274,24 +272,17 @@ export default function Index({ patients, filters, auth }) {
                         onChange={handleFilterChange}
                         theme="dark"
                         dropup={true}
-                        placeholder="Status..."
+                        placeholder="Filter..."
                     />
-                </div>
-            }
-            toolbarActions={
-                <div className="d-flex align-items-center gap-2">
-                    <ViewToggle view={view} setView={handleViewChange} />
-                    <Link href={route('patients.create')} className="btn btn-primary rounded-pill px-5 py-2 fw-extrabold extra-small tracking-widest shadow-lg">
-                        <i className="fas fa-user-plus me-2"></i> REGISTER NEW
-                    </Link>
-                </div>
-            }
-        >
-            <Head title="Patients" />
-
-            <PageHeader 
-                title="Patients Registry"
-                breadcrumbs={[{ label: 'Patients', active: true }]}
+                }
+                actions={[
+                    { label: 'REGISTER NEW', icon: 'fa-user-plus', href: route('patients.create') }
+                ]}
+                bulkActions={[
+                    { label: 'EXPORT RECORDS', icon: 'fa-file-export', onClick: () => console.log('Export', selectedIds) },
+                    { label: 'PRINT CARDS', icon: 'fa-id-card', onClick: () => console.log('Print cards', selectedIds) }
+                ]}
+                selectionCount={selectedIds.length}
             />
 
             <div className="px-0 pb-20">
@@ -316,6 +307,10 @@ export default function Index({ patients, filters, auth }) {
                         data={patients.data}
                         pagination={patients}
                         emptyMessage="No medical subjects found matching your criteria."
+                        selectable={true}
+                        selectedIds={selectedIds}
+                        onSelectionChange={setSelectedIds}
+                        idField="patient_id"
                     />
                 ) : (
                     <div className="row g-4">

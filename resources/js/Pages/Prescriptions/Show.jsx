@@ -22,18 +22,27 @@ export default function Show({ prescription, auth }) {
 
                 <div className="row">
                     <div className="col-lg-4">
-                        <div className="card shadow-sm border-0 mb-4 text-center p-4">
-                            <div className="mb-3">
-                                <span className={`badge px-3 py-2 ${prescription.status === 'dispensed' ? 'bg-success' : 'bg-warning text-dark'}`}>
+                        <div className="card shadow-sm border-0 mb-4 text-center p-5 rounded-4 bg-white shadow-hover">
+                            <div className="mb-4">
+                                <span className={`badge rounded-pill px-3 py-2 fw-extrabold extra-small tracking-widest ${prescription.status === 'dispensed' ? 'bg-success text-white' : 'bg-warning text-dark'}`}>
                                     {prescription.status.toUpperCase()}
                                 </span>
                             </div>
-                            <h5 className="mb-1">{prescription.patient?.user?.first_name || 'Unknown'} {prescription.patient?.user?.last_name || 'Patient'}</h5>
-                            <p className="text-muted small mb-0">Patient ID: {prescription.patient_id}</p>
-                            <hr className="my-4" />
-                            <div className="text-start mb-4">
-                                <div className="mb-2"><i className="fas fa-calendar text-primary me-2"></i><strong>Prescribed On:</strong> {prescription.prescription_date}</div>
-                                <div className="mb-0"><i className="fas fa-user-md text-primary me-2"></i><strong>Doctor:</strong> Dr. {prescription.doctor?.first_name || prescription.doctor?.user?.first_name || 'Staff'} {prescription.doctor?.last_name || prescription.doctor?.user?.last_name || ''}</div>
+                            <div className="avatar-xl mx-auto mb-3 bg-pink-50 text-pink-500 fw-extrabold shadow-inner rounded-circle d-flex align-items-center justify-content-center tracking-tightest fs-2">
+                                {prescription.patient?.user?.first_name?.charAt(0) || 'P'}
+                            </div>
+                            <h5 className="mb-1 fw-extrabold text-gray-900 tracking-tighter">{prescription.patient?.user?.first_name || 'Unknown'} {prescription.patient?.user?.last_name || 'Patient'}</h5>
+                            <div className="extra-small font-bold text-muted opacity-50 tracking-widest uppercase mb-4">PAT-ID: {prescription.patient_id}</div>
+                            
+                            <div className="space-y-3 pt-4 border-top border-gray-50 text-start">
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <span className="extra-small fw-bold text-muted text-uppercase tracking-widest">Prescribed</span>
+                                    <span className="fw-extrabold text-gray-800 small">{prescription.prescription_date}</span>
+                                </div>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <span className="extra-small fw-bold text-muted text-uppercase tracking-widest">Doctor</span>
+                                    <span className="fw-extrabold text-gray-800 small">Dr. {prescription.doctor?.last_name || prescription.doctor?.user?.last_name || 'Staff'}</span>
+                                </div>
                             </div>
                             
                             {prescription.consultation_id && (
@@ -58,53 +67,61 @@ export default function Show({ prescription, auth }) {
                     </div>
 
                     <div className="col-lg-8">
-                        <div className="card shadow-sm border-0">
-                            <div className="card-header bg-white py-3 border-bottom-0">
-                                <h6 className="mb-0 fw-bold"><i className="fas fa-pills me-2 text-primary"></i>Medications List</h6>
+                        <div className="card shadow-sm border-0 rounded-4 overflow-hidden bg-white shadow-hover">
+                            <div className="card-header bg-white py-4 px-4 border-bottom-0">
+                                <h6 className="mb-0 fw-extrabold text-pink-500 extra-small text-uppercase tracking-widest">
+                                    <i className="fas fa-pills me-2"></i>Medication Schedule
+                                </h6>
                             </div>
                             <div className="card-body p-0">
                                 <div className="table-responsive">
                                     <table className="table table-hover align-middle mb-0">
-                                        <thead className="bg-light">
+                                        <thead className="bg-pink-500">
                                             <tr>
-                                                <th className="ps-4">Medicine</th>
-                                                <th>Dosage</th>
-                                                <th>Frequency</th>
-                                                <th className="pe-4">Duration</th>
+                                                <th className="ps-4 py-3 text-white extra-small fw-extrabold text-uppercase border-0">Medicine</th>
+                                                <th className="py-3 text-white extra-small fw-extrabold text-uppercase border-0 text-center">Dosage</th>
+                                                <th className="py-3 text-white extra-small fw-extrabold text-uppercase border-0 text-center">Frequency</th>
+                                                <th className="pe-4 py-3 text-white extra-small fw-extrabold text-uppercase border-0 text-end">Duration</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {prescription.items.map((item, idx) => (
-                                                <tr key={idx}>
-                                                    <td className="ps-4 fw-bold">{item.medication?.medication_name || item.medicine_name || 'N/A'}</td>
-                                                    <td>{item.dosage}</td>
-                                                    <td>{item.frequency}</td>
-                                                    <td className="pe-4">{item.duration}</td>
+                                                <tr key={idx} className="border-bottom border-gray-50">
+                                                    <td className="ps-4 py-3 fw-extrabold text-gray-900">{item.medication?.medication_name || item.medicine_name || 'N/A'}</td>
+                                                    <td className="py-3 text-center text-gray-700 fw-bold small">{item.dosage}</td>
+                                                    <td className="py-3 text-center text-gray-700 fw-bold small">{item.frequency}</td>
+                                                    <td className="pe-4 py-3 text-end text-muted fw-bold extra-small text-uppercase">{item.duration}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
-                            {prescription.notes && (
-                                <div className="card-footer bg-light border-0 p-4">
-                                    <h6 className="fw-bold small text-uppercase text-muted mb-2">Instructions / Notes</h6>
-                                    <p className="mb-0 small">{prescription.notes}</p>
-                                </div>
-                            )}
+                                {prescription.notes && (
+                                    <div className="p-4 bg-gray-50 rounded-xl m-4 mt-0 border border-gray-100 shadow-inner">
+                                        <h6 className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-2 opacity-50">Clinical Notes / Instructions</h6>
+                                        <p className="mb-0 text-gray-700 font-medium small italic">"{prescription.notes}"</p>
+                                    </div>
+                                )}
                         </div>
                     </div>
                 </div>
             </div>
 
             <UnifiedToolbar 
-                actions={
-                    <div className="d-flex align-items-center gap-2">
-                        <button onClick={() => window.print()} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
-                            <i className="fas fa-print me-1"></i> Print RX
-                        </button>
-                    </div>
-                }
+                actions={[
+                    { 
+                        label: 'PRINT RX', 
+                        icon: 'fa-print', 
+                        onClick: () => window.print() 
+                    },
+                    { 
+                        label: 'BACK TO REGISTRY', 
+                        icon: 'fa-layer-group', 
+                        href: route('prescriptions.index'),
+                        color: 'gray'
+                    }
+                ]}
             />
         </AuthenticatedLayout>
     );

@@ -1,84 +1,130 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
+import PageHeader from '@/Components/PageHeader';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Show({ medication, auth }) {
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header="Medication Details"
-        >
+        <AuthenticatedLayout header="Medication Details">
             <Head title={`Inventory - ${medication.medication_name}`} />
 
-            <div className="container-fluid inventory-page px-0">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2 className="mb-0">{medication.medication_name}</h2>
-                    <Link href={route('inventory.index')} className="btn btn-outline-secondary">
-                        <i className="fas fa-arrow-left me-2"></i>Back to Inventory
-                    </Link>
-                </div>
+            <PageHeader 
+                title="Stock Detail"
+                breadcrumbs={[
+                    { label: 'Pharmacy', url: route('inventory.index') },
+                    { label: 'Inventory Stock', url: route('inventory.index') },
+                    { label: medication.medication_name, active: true }
+                ]}
+            />
+
+            <UnifiedToolbar 
+                actions={[
+                    { 
+                        label: 'ADD STOCK', 
+                        icon: 'fa-plus-circle', 
+                        onClick: () => console.log('Add stock'),
+                        color: 'primary'
+                    },
+                    { 
+                        label: 'EDIT DETAILS', 
+                        icon: 'fa-edit', 
+                        onClick: () => console.log('Edit'),
+                        color: 'gray'
+                    },
+                    { 
+                        label: 'STOCK REGISTRY', 
+                        icon: 'fa-arrow-left', 
+                        href: route('inventory.index'),
+                        color: 'gray'
+                    }
+                ]}
+            />
+
+            <div className="px-0 pb-5">
 
                 <div className="row">
                     <div className="col-lg-4">
-                        <div className="card shadow-sm border-0 mb-4 h-100 p-4 text-center">
-                            <div className="mb-3">
-                                <i className="fas fa-pills text-primary" style={{ fontSize: '4rem' }}></i>
+                        <div className="card shadow-sm border-0 mb-4 h-100 rounded-3xl overflow-hidden bg-white shadow-hover">
+                            <div className="card-header bg-gradient-primary-to-secondary p-5 border-0 text-center">
+                                <div className="mb-4 bg-white bg-opacity-20 rounded-circle w-20 h-20 d-flex align-items-center justify-content-center mx-auto shadow-sm">
+                                    <i className="fas fa-pills text-white fa-3x"></i>
+                                </div>
+                                <h4 className="mb-1 text-white fw-extrabold tracking-tighter">{medication.medication_name}</h4>
+                                <div className="extra-small font-bold text-white opacity-50 tracking-widest uppercase mb-3">{medication.medication_type}</div>
                             </div>
-                            <h4 className="mb-1">{medication.medication_name}</h4>
-                            <p className="text-muted fw-semibold mb-3">{medication.medication_type}</p>
-                            
-                            <div className={`p-3 rounded mb-4 ${medication.stock_quantity > 0 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}>
-                                <div className="small text-uppercase fw-bold">Current Stock</div>
-                                <div className="h2 mb-0 fw-bold">{medication.stock_quantity} <small className="h6">{medication.unit}</small></div>
-                            </div>
+                            <div className="card-body p-4 pt-5">
+                                <div className={`p-4 rounded-2xl mb-4 text-center border-2 ${medication.stock_quantity > 0 ? 'bg-success-subtle border-success border-opacity-10 text-success' : 'bg-danger-subtle border-danger border-opacity-10 text-danger'}`}>
+                                    <div className="extra-small text-uppercase fw-extrabold tracking-widest mb-1">Current Stock</div>
+                                    <div className="h2 mb-0 fw-extrabold">{medication.stock_quantity} <span className="h6 opacity-50 fw-bold">{medication.unit}</span></div>
+                                </div>
 
-                            <div className="text-start mb-4">
-                                <div className="mb-2"><i className="fas fa-tag text-muted me-2"></i><strong>Strength:</strong> {medication.strength} {medication.unit}</div>
-                                <div className="mb-2"><i className="fas fa-box text-muted me-2"></i><strong>Category:</strong> {medication.category || 'N/A'}</div>
-                            </div>
-                            
-                            <div className="d-grid gap-2">
-                                <button className="btn btn-primary shadow-sm"><i className="fas fa-plus-circle me-1"></i> Add Stock</button>
-                                <button className="btn btn-outline-secondary btn-sm">Edit Details</button>
+                                <div className="space-y-4 pt-4 border-top border-gray-100 mt-4">
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <i className="fas fa-tag text-primary opacity-30"></i>
+                                            <span className="extra-small fw-bold text-muted text-uppercase tracking-widest">Strength</span>
+                                        </div>
+                                        <span className="fw-extrabold text-gray-900 small">{medication.strength} {medication.unit}</span>
+                                    </div>
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div className="d-flex align-items-center gap-2">
+                                            <i className="fas fa-box text-primary opacity-30"></i>
+                                            <span className="extra-small fw-bold text-muted text-uppercase tracking-widest">Category</span>
+                                        </div>
+                                        <span className="fw-extrabold text-gray-900 small text-uppercase">{medication.category || 'N/A'}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="col-lg-8">
-                        <div className="card shadow-sm border-0 mb-4 h-100">
-                            <div className="card-header bg-white py-3">
-                                <h6 className="mb-0 fw-bold">Clinical Information & Batches</h6>
+                        <div className="card shadow-sm border-0 mb-4 rounded-3xl bg-white shadow-hover overflow-hidden">
+                            <div className="card-header bg-white border-bottom-0 pt-4 pb-0 px-5">
+                                <h6 className="mb-0 extra-small fw-extrabold text-muted text-uppercase tracking-widest opacity-50">Clinical Information & Batches</h6>
                             </div>
-                            <div className="card-body p-4">
-                                <h6 className="text-primary fw-bold small text-uppercase mb-2">Description</h6>
-                                <p className="text-muted mb-4">{medication.description || 'No description provided.'}</p>
+                            <div className="card-body p-5">
+                                <div className="space-y-6 mb-5">
+                                    <div>
+                                        <h6 className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-3">Pharmacology Description</h6>
+                                        <div className="p-4 bg-light rounded-2xl border-l-4 border-primary shadow-inner fw-bold text-gray-800 leading-relaxed">
+                                            {medication.description || 'No detailed pharmacology description provided.'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-3">Usage Instructions</h6>
+                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 text-muted small leading-relaxed font-medium">
+                                            {medication.usage_instructions || 'N/A'}
+                                        </div>
+                                    </div>
+                                </div>
 
-                                <h6 className="text-primary fw-bold small text-uppercase mb-2">Usage Instructions</h6>
-                                <p className="text-muted mb-4">{medication.usage_instructions || 'N/A'}</p>
-
-                                <hr className="my-4" />
-
-                                <h6 className="fw-bold mb-3">Stock Batches</h6>
-                                <div className="table-responsive">
-                                    <table className="table table-hover align-middle border">
-                                        <thead className="bg-light">
-                                            <tr>
-                                                <th>Batch #</th>
-                                                <th>Mfg Date</th>
-                                                <th>Expiry Date</th>
-                                                <th className="text-center">Qty</th>
-                                                <th className="text-center">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td className="fw-bold">B-99812</td>
-                                                <td>2024-01-15</td>
-                                                <td className="text-danger">2026-01-15</td>
-                                                <td className="text-center">{medication.stock_quantity}</td>
-                                                <td className="text-center"><span className="badge bg-success">Active</span></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                <div className="pt-4 border-top border-gray-50">
+                                    <h6 className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-4">Active Batches</h6>
+                                    <div className="table-responsive rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                                        <table className="table table-hover align-middle mb-0">
+                                            <thead className="bg-pink-500 border-0">
+                                                <tr>
+                                                    <th className="px-4 py-3 extra-small fw-extrabold text-white text-uppercase tracking-widest border-0">Batch Reference</th>
+                                                    <th className="px-4 py-3 extra-small fw-extrabold text-white text-uppercase tracking-widest border-0">Manufacturing</th>
+                                                    <th className="px-4 py-3 extra-small fw-extrabold text-white text-uppercase tracking-widest border-0">Expiry</th>
+                                                    <th className="px-4 py-3 text-center extra-small fw-extrabold text-white text-uppercase tracking-widest border-0">Quantity</th>
+                                                    <th className="px-4 py-3 text-center extra-small fw-extrabold text-white text-uppercase tracking-widest border-0">State</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="border-0">
+                                                <tr className="border-bottom border-gray-50">
+                                                    <td className="px-4 py-3 fw-extrabold text-gray-900 small">B-99812</td>
+                                                    <td className="px-4 py-3 text-muted extra-small fw-bold">2024-01-15</td>
+                                                    <td className="px-4 py-3 text-danger extra-small fw-bold">2026-01-15</td>
+                                                    <td className="px-4 py-3 text-center fw-extrabold text-gray-900 small">{medication.stock_quantity}</td>
+                                                    <td className="px-4 py-3 text-center">
+                                                        <span className="badge rounded-pill bg-success px-3 py-1.5 extra-small fw-extrabold text-uppercase">Active</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>

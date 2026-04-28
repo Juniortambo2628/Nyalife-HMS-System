@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/react';
 
 export default function BlogSection({ blogs }) {
     return (
-        <section className="py-20 bg-white" id="blog">
+        <section className="py-24 bg-white" id="blog">
             <div className="container">
                 <div className="text-center mb-16">
                     <span className="badge bg-pink-100 text-pink-600 px-3 py-2 rounded-pill mb-3 font-bold text-uppercase tracking-wider">Journal</span>
@@ -15,7 +15,7 @@ export default function BlogSection({ blogs }) {
                     {blogs.length > 0 ? blogs.map(blog => (
                         <div key={blog.id} className="col-lg-4 col-md-6 h-auto">
                             <div className="card h-100 border-0 shadow-sm rounded-2xl overflow-hidden transition-all hover-lift">
-                                <div className="position-relative bg-light" style={{ height: '220px' }}>
+                                <div className="position-relative bg-light h-[220px]">
                                     <img 
                                         src={blog.image_path ? (blog.image_path.includes('/assets/img/') || blog.image_path.startsWith('http') ? blog.image_path : `/storage/${blog.image_path.replace(/^\//, '')}`) : '/assets/img/logo/Logo2-transparent.png'} 
                                         className={`w-100 h-100 ${blog.image_path ? 'object-fit-cover' : 'object-fit-contain p-5'}`}
@@ -53,7 +53,7 @@ export default function BlogSection({ blogs }) {
                 </div>
 
                 <div className="text-center">
-                    <Link href={route('blogs.public.index')} className="btn btn-primary rounded-pill px-8 py-3 font-bold shadow-lg">
+                    <Link href={route('blogs.public.index')} className="btn btn-primary rounded-pill px-10 py-3.5 font-bold shadow-lg mt-10">
                         View All Articles <i className="fas fa-external-link-alt ms-2"></i>
                     </Link>
                 </div>

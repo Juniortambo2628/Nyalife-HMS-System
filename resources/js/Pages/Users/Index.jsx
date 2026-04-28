@@ -1,12 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
+
 import { useState, useEffect, useMemo } from 'react';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
 import ViewToggle from '@/Components/ViewToggle';
 import UserAvatar from '@/Components/UserAvatar';
 import DashboardSelect from '@/Components/DashboardSelect';
+import TableActions from '@/Components/TableActions';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Index({ users, filters, roles, auth }) {
     const [viewMode, setViewMode] = useState('list');
@@ -14,6 +16,13 @@ export default function Index({ users, filters, roles, auth }) {
     const [roleFilter, setRoleFilter] = useState(filters?.role || '');
     const [sortBy, setSortBy] = useState(typeof filters?.sort === 'string' ? filters.sort : 'created_at');
     const [direction, setDirection] = useState(filters?.direction || 'desc');
+    const [selectedIds, setSelectedIds] = useState([]);
+
+    useEffect(() => {
+        const handleClear = () => setSelectedIds([]);
+        window.addEventListener('toolbar-clear-selection', handleClear);
+        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
+    }, []);
 
     const handleSearch = (searchValue, quickFilterValue = filters?.quick_filter) => {
         const query = { search: searchValue };
@@ -87,46 +96,49 @@ export default function Index({ users, filters, roles, auth }) {
         {
             header: 'Actions',
             id: 'actions',
+            headerClassName: 'pe-5 text-end',
             cell: info => (
-                <div className="text-end">
-                    <Link href={route('users.show', info.row.original.user_id)} className="btn btn-sm btn-light border text-gray-700 rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center">
-                        <i className="fas fa-eye text-xs"></i>
-                    </Link>
+                <div className="pe-4">
+                    <TableActions actions={[
+                        { icon: 'fa-eye', label: 'View Profile', href: route('users.show', info.row.original.user_id) },
+                        { icon: 'fa-edit', label: 'Edit Permissions', href: route('users.edit', info.row.original.user_id) },
+                    ]} />
                 </div>
             )
         }
     ], [sortBy, direction]);
 
     return (
-        <AuthenticatedLayout
-            header="Users Management"
-            toolbarFilters={
-                <div className="d-flex align-items-center gap-2">
+        <AuthenticatedLayout 
+            headerTitle="Staff & Access"
+            breadcrumbs={[{ label: 'Users Registry', active: true }]}
+        >
+            <Head title="Users Registry" />
+
+            <UnifiedToolbar 
+                viewOptions={[
+                    { label: 'LIST VIEW', icon: 'fa-list-ul', onClick: () => setViewMode('list'), color: viewMode === 'list' ? 'pink-500' : 'gray-400' },
+                    { label: 'GRID VIEW', icon: 'fa-th-large', onClick: () => setViewMode('grid'), color: viewMode === 'grid' ? 'pink-500' : 'gray-400' }
+                ]}
+                filters={
                     <DashboardSelect 
-                        options={roles.map(r => ({ label: r.role_name.replace('_', ' '), value: r.role_name }))}
+                        options={roles.map(r => ({ label: r.role_name.replace('_', ' ').toUpperCase(), value: r.role_name }))}
                         value={roleFilter}
                         onChange={val => setRoleFilter(val || '')}
-                        placeholder="All Roles"
+                        placeholder="Role..."
                         theme="dark"
                         dropup={true}
-                        style={{ width: '160px' }}
                     />
-                </div>
-            }
-            toolbarActions={
-                <div className="d-flex align-items-center gap-2">
-                    <ViewToggle view={viewMode} setView={setViewMode} />
-                    <Link href={route('users.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                        <i className="fas fa-user-plus me-1"></i> Create User
-                    </Link>
-                </div>
-            }
-        >
-            <Head title="Users" />
-
-            <PageHeader 
-                title="Staff & Users"
-                breadcrumbs={[{ label: 'Users', active: true }]}
+                }
+                actions={[
+                    { label: 'CREATE USER', icon: 'fa-user-plus', href: route('users.create') }
+                ]}
+                bulkActions={[
+                    { label: 'ACTIVATE', icon: 'fa-check-circle', onClick: () => console.log('Activate', selectedIds) },
+                    { label: 'DEACTIVATE', icon: 'fa-user-slash', onClick: () => console.log('Deactivate', selectedIds), color: 'warning' },
+                    { label: 'DELETE', icon: 'fa-trash-alt', onClick: () => console.log('Delete', selectedIds), color: 'danger' }
+                ]}
+                selectionCount={selectedIds.length}
             />
 
             <div className="py-0">
@@ -163,6 +175,10 @@ export default function Index({ users, filters, roles, auth }) {
                         sortColumn={sortBy}
                         sortDirection={direction}
                         emptyMessage="No users found."
+                        selectable={true}
+                        selectedIds={selectedIds}
+                        onSelectionChange={setSelectedIds}
+                        idField="user_id"
                     />
                 ) : (
                     <div className="row g-4">

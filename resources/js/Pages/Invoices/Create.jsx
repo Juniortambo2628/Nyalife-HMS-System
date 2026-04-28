@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react'; // Import Link
 import PageHeader from '@/Components/PageHeader';
 import FormSection from '@/Components/FormSection';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import FormField from '@/Components/FormField';
 import TextInput from '@/Components/TextInput';
 import DashboardSelect from '@/Components/DashboardSelect'; // Import DashboardSelect
@@ -72,7 +73,7 @@ export default function Create({ patient_id, consultation_id, consultation, cons
                             <FormSection 
                                 title="Invoice Items" 
                                 icon="fas fa-file-invoice-dollar"
-                                headerClassName="bg-primary text-white p-3"
+                                headerClassName="bg-pink-500 text-white p-3"
                             >
                                 <div className="table-responsive mb-4">
                                     <table className="table table-borderless">
@@ -142,13 +143,13 @@ export default function Create({ patient_id, consultation_id, consultation, cons
                                 <button 
                                     type="button" 
                                     onClick={addItem}
-                                    className="btn btn-outline-primary btn-sm rounded-pill fw-bold"
+                                    className="btn btn-outline-pink-500 btn-sm rounded-pill fw-extrabold extra-small tracking-widest px-4 py-2"
                                 >
-                                    <i className="fas fa-plus me-1"></i> Add Another Item
+                                    <i className="fas fa-plus me-2"></i> ADD ANOTHER ITEM
                                 </button>
                             </FormSection>
 
-                            <FormSection title="Notes / Terms" icon="fas fa-sticky-note" className="mt-4">
+                            <FormSection title="Notes / Terms" icon="fas fa-sticky-note" className="mt-4" headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
                                 <textarea
                                     className="form-control bg-light border-0 rounded-3 p-3"
                                     rows="3"
@@ -162,8 +163,10 @@ export default function Create({ patient_id, consultation_id, consultation, cons
                         {/* 2. Sidebar: Patient & Summary */}
                         <div className="col-lg-4">
                             <div className="card border-0 shadow-sm rounded-4 mb-4">
-                                <div className="card-header bg-white p-3 fw-bold border-bottom">
-                                    <i className="fas fa-user-circle me-2 text-primary"></i>Bill To
+                                <div className="card-header bg-white p-4 border-bottom-0">
+                                    <h6 className="mb-0 fw-extrabold text-pink-500 extra-small text-uppercase tracking-widest">
+                                        <i className="fas fa-user-circle me-2"></i>Bill To
+                                    </h6>
                                 </div>
                                 <div className="card-body p-4">
                                     <FormField label="Select Patient" required error={errors.patient_id}>
@@ -200,36 +203,34 @@ export default function Create({ patient_id, consultation_id, consultation, cons
                                 </div>
                             </div>
 
-                            <div className="card border-0 shadow-sm rounded-4 bg-primary text-white">
-                                <div className="card-body p-4">
-                                    <h6 className="text-white-50 text-uppercase small fw-bold mb-3">Total Payable</h6>
-                                    <div className="display-4 fw-bold mb-0">
-                                        Ksh {totalAmount.toLocaleString()}
-                                    </div>
-                                    <div className="mt-4 d-grid gap-2">
-                                        <button 
-                                            type="button" 
-                                            onClick={submit} 
-                                            disabled={processing}
-                                            className="btn btn-light text-primary fw-bold shadow-sm rounded-pill py-3"
-                                        >
-                                            {processing ? (
-                                                <><i className="fas fa-spinner fa-spin me-2"></i>Generating Invoice...</>
-                                            ) : (
-                                                <><i className="fas fa-check-circle me-2"></i>Save Final Invoice</>
-                                            )}
-                                        </button>
-                                        <Link 
-                                            href={route('invoices.index')} 
-                                            className="btn btn-outline-light rounded-pill"
-                                        >
-                                            Cancel
-                                        </Link>
+                            <div className="card border-0 shadow-sm rounded-4 bg-pink-500 text-white shadow-premium">
+                                <div className="card-body p-5">
+                                    <h6 className="text-white-50 text-uppercase extra-small fw-extrabold tracking-widest mb-1">Total Payable</h6>
+                                    <div className="display-4 fw-extrabold mb-0 tracking-tightest">
+                                        <span className="small opacity-50 me-2" style={{ fontSize: '0.4em' }}>Ksh</span>
+                                        {totalAmount.toLocaleString()}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <UnifiedToolbar 
+                        actions={[
+                            { 
+                                label: 'GENERATE INVOICE', 
+                                icon: 'fa-check-circle', 
+                                onClick: submit,
+                                color: 'success'
+                            },
+                            { 
+                                label: 'DISCARD', 
+                                icon: 'fa-times', 
+                                href: route('invoices.index'),
+                                color: 'gray'
+                            }
+                        ]}
+                    />
                 </form>
             </div>
         </AuthenticatedLayout>

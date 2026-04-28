@@ -4,7 +4,7 @@ export default function ServicesSection({ serviceTabs }) {
     const [activeTab, setActiveTab] = useState(serviceTabs[0]?.id || null);
 
     return (
-        <section className="py-20 bg-gray-50" id="services">
+        <section className="section-rhythm-md bg-gray-50" id="services">
             <div className="container">
                 <div className="text-center mb-16">
                     <span className="badge bg-pink-100 text-pink-600 px-3 py-2 rounded-pill mb-3 font-bold text-uppercase tracking-wider">Specialties</span>
@@ -23,14 +23,14 @@ export default function ServicesSection({ serviceTabs }) {
                                             type="button"
                                         >
                                             <i className={`fas ${tab.icon || 'fa-check-circle'} me-3`}></i>
-                                            <span className="fw-bold">{tab.title}</span>
+                                            <span className="fw-extrabold fs-5 text-uppercase tracking-wider">{tab.title}</span>
                                         </button>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                         <div className="col-lg-8">
-                            <div className="tab-content p-6 p-md-10" id="v-pills-tabContent">
+                            <div className="tab-content p-4 p-md-5" id="v-pills-tabContent">
                                 {serviceTabs.map((tab) => (
                                     <div 
                                         key={tab.id}

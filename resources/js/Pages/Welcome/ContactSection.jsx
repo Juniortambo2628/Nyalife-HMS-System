@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 
 export default function ContactSection({ cms }) {
     const [formData, setFormData] = useState({
@@ -7,7 +8,6 @@ export default function ContactSection({ cms }) {
         email: '',
         message: ''
     });
-    const [status, setStatus] = useState({ type: '', message: '' });
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
@@ -17,17 +17,13 @@ export default function ContactSection({ cms }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setStatus({ type: '', message: '' });
 
         try {
             const response = await axios.post(route('contact.store'), formData);
-            setStatus({ type: 'success', message: response.data.message });
+            toast.success(response.data.message || 'Message sent successfully!');
             setFormData({ name: '', email: '', message: '' });
         } catch (error) {
-            setStatus({ 
-                type: 'danger', 
-                message: error.response?.data?.message || 'Something went wrong. Please try again.' 
-            });
+            toast.error(error.response?.data?.message || 'Something went wrong. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -47,26 +43,20 @@ export default function ContactSection({ cms }) {
 
     return (
         <section 
-            className="py-20 position-relative border-top border-bottom" 
+            className="section-rhythm-md position-relative border-top border-bottom bg-cover bg-center bg-fixed" 
             id="contact"
-            style={{ 
-                backgroundImage: `url(${bgImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundAttachment: 'fixed'
-            }}
+            style={{ backgroundImage: `url(${bgImage})` }}
         >
             {/* Custom Pink Overlay */}
             <div 
-                className="position-absolute top-0 start-0 w-100 h-100" 
+                className="position-absolute top-0 start-0 w-100 h-100 z-1" 
                 style={{ 
                     backgroundColor: '#ec4899', 
-                    opacity: overlayOpacity,
-                    zIndex: 1
+                    opacity: overlayOpacity
                 }}
             ></div>
 
-            <div className="container position-relative" style={{ zIndex: 2 }}>
+            <div className="container position-relative z-10">
                 <div className="row g-10 align-items-center h-auto">
                     <div className="col-lg-6 text-dark h-auto">
                         <span className="badge bg-white text-pink-600 px-3 py-2 rounded-pill mb-3 font-bold text-uppercase tracking-wider shadow-sm">Connect</span>
@@ -110,16 +100,9 @@ export default function ContactSection({ cms }) {
                             <a href="#" className="btn btn-white btn-icon rounded-circle shadow-sm"><i className="fab fa-twitter text-pink-500"></i></a>
                         </div>
                     </div>
+                    
                     <div className="col-lg-6 h-auto">
-                        <div className="card border-0 rounded-3xl bg-white p-8 shadow-2xl">
-                            <h3 className="fw-bold mb-6 text-gray-900 text-center">Fast Contact</h3>
-                            
-                            {status.message && (
-                                <div className={`alert alert-${status.type} rounded-pill px-4 mb-4`}>
-                                    {status.message}
-                                </div>
-                            )}
-
+                        <div className="contact-form-container">
                             <form className="row g-4 h-auto" onSubmit={handleSubmit}>
                                 <div className="col-12 text-dark h-auto">
                                     <input 
@@ -128,7 +111,7 @@ export default function ContactSection({ cms }) {
                                         value={formData.name}
                                         onChange={handleChange}
                                         required
-                                        className="form-control bg-light border-0 rounded-pill py-3 px-4 text-gray-900 shadow-sm" 
+                                        className="form-control bg-white bg-opacity-10 border-white border-opacity-20 rounded-pill py-4 px-5 text-white placeholder-white-50 shadow-none focus-ring-pink" 
                                         placeholder="FullName" 
                                     />
                                 </div>
@@ -139,7 +122,7 @@ export default function ContactSection({ cms }) {
                                         value={formData.email}
                                         onChange={handleChange}
                                         required
-                                        className="form-control bg-light border-0 rounded-pill py-3 px-4 text-gray-900 shadow-sm" 
+                                        className="form-control bg-white bg-opacity-10 border-white border-opacity-20 rounded-pill py-4 px-5 text-white placeholder-white-50 shadow-none focus-ring-pink" 
                                         placeholder="Your Email" 
                                     />
                                 </div>
@@ -149,7 +132,7 @@ export default function ContactSection({ cms }) {
                                         value={formData.message}
                                         onChange={handleChange}
                                         required
-                                        className="form-control bg-light border-0 rounded-3xl py-3 px-4 text-gray-900 shadow-sm" 
+                                        className="form-control bg-white bg-opacity-10 border-white border-opacity-20 rounded-3xl py-4 px-5 text-white placeholder-white-50 shadow-none focus-ring-pink" 
                                         rows="5" 
                                         placeholder="Your Message"
                                     ></textarea>
@@ -164,7 +147,7 @@ export default function ContactSection({ cms }) {
                                         ) : (
                                             <i className="fas fa-paper-plane me-2"></i>
                                         )}
-                                        {loading ? 'Sending...' : 'Send Message'}
+                                        {loading ? 'Transmitting...' : 'Send Message'}
                                     </button>
                                 </div>
                             </form>
@@ -177,6 +160,8 @@ export default function ContactSection({ cms }) {
                 .btn-icon { width: 44px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; background: white; }
                 .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
                 .btn-white:hover { background: #fdf2f8; }
+                .placeholder-white-50::placeholder { color: rgba(255, 255, 255, 0.6); }
+                .focus-ring-pink:focus { background-color: rgba(255, 255, 255, 0.15) !important; border-color: #f472b6 !important; box-shadow: 0 0 0 0.25rem rgba(244, 114, 182, 0.25) !important; outline: 0; color: white !important; }
             `}</style>
         </section>
     );

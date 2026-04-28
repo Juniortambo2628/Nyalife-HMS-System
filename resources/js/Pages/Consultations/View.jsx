@@ -138,7 +138,7 @@ export default function View({ consultation, auth }) {
             <Head title={`Consultation - ${consultation.patient.user.first_name}`} />
 
             <PageHeader 
-                title={`Clinical Narrative`}
+                title="Clinical Narrative"
                 breadcrumbs={[
                     { label: 'Consultations', url: route('consultations.index') },
                     { label: `Record #${consultation.consultation_id}`, active: true }
@@ -229,16 +229,16 @@ export default function View({ consultation, auth }) {
                                 {/* 1. Complaints */}
                                 <div className="card border-0 shadow-sm rounded-3xl bg-white shadow-hover">
                                     <div className="card-header bg-white py-4 px-5 d-flex justify-content-between align-items-center border-bottom-0">
-                                        <h6 className="mb-0 fw-extrabold text-primary extra-small text-uppercase tracking-widest">Initial Assessment</h6>
+                                        <h6 className="mb-0 fw-extrabold text-pink-500 extra-small text-uppercase tracking-widest">Initial Assessment</h6>
                                         {auth.user.role === 'doctor' && consultation.consultation_status === 'open' && (
-                                            <Link href={route('consultations.edit', consultation.consultation_id)} className="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold extra-small">
-                                                <i className="fas fa-edit me-1"></i>EDIT
+                                            <Link href={route('consultations.edit', consultation.consultation_id)} className="btn btn-sm btn-outline-pink rounded-pill px-3 fw-bold extra-small">
+                                                <i className="fas fa-edit me-1"></i>EDIT RECORD
                                             </Link>
                                         )}
                                     </div>
                                     <div className="card-body p-5 pt-0">
-                                        <div className="p-4 bg-light rounded-2xl border-l-4 border-primary mb-5 shadow-inner">
-                                            <div className="extra-small fw-extrabold text-primary text-uppercase tracking-widest mb-3 opacity-50">Chief Complaint</div>
+                                        <div className="p-4 bg-light rounded-2xl border-l-4 border-pink-500 mb-5 shadow-inner">
+                                            <div className="extra-small fw-extrabold text-pink-500 text-uppercase tracking-widest mb-3 opacity-50">Chief Complaint</div>
                                             <p className="lead fw-extrabold text-gray-900 mb-0 tracking-tight">{consultation.chief_complaint}</p>
                                         </div>
                                         
@@ -526,31 +526,40 @@ export default function View({ consultation, auth }) {
             />
 
             <UnifiedToolbar 
-                actions={
-                    <div className="d-flex align-items-center gap-2">
-                        <Link 
-                            href={route('prescriptions.create', { 
-                                patient_id: consultation.patient_id,
-                                consultation_id: consultation.consultation_id 
-                            })} 
-                            className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm"
-                        >
-                            <i className="fas fa-prescription me-1"></i> Add Prescription
-                        </Link>
-                         <Link 
-                            href={route('invoices.create', { 
-                                patient_id: consultation.patient_id, 
-                                consultation_id: consultation.consultation_id 
-                            })} 
-                            className="btn btn-success rounded-pill px-4 py-2 fw-extrabold small shadow-sm"
-                        >
-                            <i className="fas fa-file-invoice-dollar me-1"></i> Generate Invoice
-                        </Link>
-                        <Link href={route('consultations.index')} className="btn btn-light rounded-pill px-4 py-2 fw-extrabold small border shadow-sm">
-                            <i className="fas fa-arrow-left me-1"></i> Back to Registry
-                        </Link>
-                    </div>
-                }
+                actions={[
+                    { 
+                        label: 'ADD PRESCRIPTION', 
+                        icon: 'fa-prescription', 
+                        href: route('prescriptions.create', { 
+                            patient_id: consultation.patient_id,
+                            consultation_id: consultation.consultation_id 
+                        })
+                    },
+                    { 
+                        label: 'GENERATE INVOICE', 
+                        icon: 'fa-file-invoice-dollar', 
+                        href: route('invoices.create', { 
+                            patient_id: consultation.patient_id, 
+                            consultation_id: consultation.consultation_id 
+                        }),
+                        color: 'success'
+                    },
+                    { 
+                        label: 'ADD LAB REQUEST', 
+                        icon: 'fa-flask', 
+                        href: route('lab.create', { 
+                            patient_id: consultation.patient_id, 
+                            consultation_id: consultation.consultation_id 
+                        }),
+                        color: 'warning'
+                    },
+                    { 
+                        label: 'BACK TO REGISTRY', 
+                        icon: 'fa-layer-group', 
+                        href: route('consultations.index'),
+                        color: 'gray'
+                    }
+                ]}
             />
         </AuthenticatedLayout>
     );

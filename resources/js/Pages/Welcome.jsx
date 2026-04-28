@@ -7,6 +7,7 @@ import ServicesSection from './Welcome/ServicesSection';
 import BlogSection from './Welcome/BlogSection';
 import ContactSection from './Welcome/ContactSection';
 import InsuranceCarousel from '@/Components/InsuranceCarousel';
+import { Toaster } from 'react-hot-toast';
 
 export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], cms = {}, serviceTabs = [] }) {
     const sectionOrder = (cms.landing_page_order || 'hero,appointment,about,services,blog,contact').split(',');
@@ -43,16 +44,41 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
 
     return (
         <div className="landing-wrapper">
+            <Toaster 
+                position="top-right" 
+                reverseOrder={false} 
+                toastOptions={{
+                    className: 'premium-toast',
+                    style: {
+                        borderRadius: '16px',
+                        background: '#333',
+                        color: '#fff',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        padding: '16px 24px',
+                        fontWeight: '600',
+                        fontSize: '14px',
+                        letterSpacing: '0.025em',
+                    },
+                    success: {
+                        style: { background: '#10b981' },
+                        iconTheme: { primary: '#fff', secondary: '#10b981' },
+                    },
+                    error: {
+                        style: { background: '#ef4444' },
+                        iconTheme: { primary: '#fff', secondary: '#ef4444' },
+                    },
+                }}
+            />
             <Head title="Nyalife Women's Clinic - Specialized O&G Care" />
             
             {/* Elegant Navbar */}
             <nav className="navbar navbar-expand-lg sticky-top landing-navbar">
                 <div className="container d-flex align-items-center justify-content-between">
                     <Link className="navbar-brand d-flex align-items-center m-0" href="/">
-                        <div className="bg-white rounded-xl p-1 shadow-sm me-3">
-                            <img src="/assets/img/logo/Logo2-transparent.png" alt="Nyalife" height="38" />
+                        <div className="bg-white rounded-xl p-1 shadow-sm me-3 border border-pink-100">
+                            <img src="/assets/img/logo/Logo2-transparent.png" alt="Nyalife" height="42" />
                         </div>
-                        <span className="fw-extrabold fs-4 text-white tracking-tightest">NYALIFE <span className="fw-light opacity-75">CLINIC</span></span>
+                        <span className="fw-extrabold fs-3 text-white tracking-tightest">NYALIFE <span className="fw-light opacity-75">HMS</span></span>
                     </Link>
                     
                     <button className="navbar-toggler border-0 shadow-none text-white ms-auto me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -70,15 +96,15 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
                             <li className="nav-item d-lg-none mt-4 border-top border-white border-opacity-10 pt-4 w-100">
                                 <div className="d-flex flex-column gap-3 px-2 pb-3">
                                     {auth.user ? (
-                                        <Link href={route('dashboard')} className="btn btn-white text-primary rounded-pill px-4 py-3 fw-medium w-100 shadow-sm">
+                                        <Link href={route('dashboard')} className="btn btn-outline-light rounded-pill px-4 py-3 fw-medium w-100 shadow-sm">
                                             <i className="fas fa-tachometer-alt me-2"></i>Dashboard
                                         </Link>
                                     ) : (
                                         <>
-                                            <Link href={route('login.patient')} className="btn btn-white text-primary rounded-pill px-4 py-3 fw-medium w-100 shadow-sm">
+                                            <Link href={route('login.patient')} className="btn btn-outline-light rounded-pill px-4 py-3 fw-medium w-100 shadow-sm">
                                                 <i className="fas fa-sign-in-alt me-2"></i>Patient Login
                                             </Link>
-                                            <Link href={route('login.staff')} className="btn btn-white text-primary rounded-pill px-4 py-3 fw-medium w-100 shadow-sm">
+                                            <Link href={route('login.staff')} className="btn btn-outline-light rounded-pill px-4 py-3 fw-medium w-100 shadow-sm">
                                                 <i className="fas fa-user-md me-2"></i>Staff Portal
                                             </Link>
                                         </>
@@ -90,15 +116,15 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
 
                     <div className="d-none d-lg-flex gap-3 align-items-center">
                         {auth.user ? (
-                            <Link href={route('dashboard')} className="btn btn-white text-primary rounded-pill px-4 py-2.5 fw-medium shadow-sm hover-lift">
+                            <Link href={route('dashboard')} className="btn btn-outline-light rounded-pill px-4 py-2.5 fw-medium shadow-sm hover-lift">
                                 Dashboard
                             </Link>
                         ) : (
                             <>
-                                <Link href={route('login.patient')} className="btn btn-white text-primary rounded-pill px-4 py-2.5 fw-medium shadow-sm hover-lift">
+                                <Link href={route('login.patient')} className="btn btn-outline-light rounded-pill px-4 py-2.5 fw-medium shadow-sm hover-lift">
                                     Patient Login
                                 </Link>
-                                <Link href={route('login.staff')} className="btn btn-white text-primary rounded-pill px-4 py-2.5 fw-medium shadow-sm hover-lift">
+                                <Link href={route('login.staff')} className="btn btn-outline-light rounded-pill px-4 py-2.5 fw-medium shadow-sm hover-lift">
                                     Staff Portal
                                 </Link>
                             </>
@@ -119,7 +145,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
                     return null;
                 })}
 
-                <div className="py-12 bg-gray-50 border-top border-gray-100">
+                <div className="section-rhythm-sm bg-gray-50 border-top border-gray-100">
                     <InsuranceCarousel />
                 </div>
             </main>
@@ -130,21 +156,21 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content border-0 rounded-4 shadow-2xl p-4 overflow-hidden position-relative">
                             <div className="modal-body text-center py-5 position-relative z-10">
-                                <div className="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-5 shadow-sm border border-success-subtle" style={{ width: '100px', height: '100px' }}>
+                                <div className="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-5 shadow-sm border border-success-subtle w-[100px] h-[100px]">
                                     <i className="fas fa-check-circle fa-3x"></i>
                                 </div>
-                                <h3 className="fw-extrabold text-gray-900 mb-3 tracking-tightest">Request Transmitted!</h3>
+                                <h3 className="fw-bold text-gray-900 mb-3 h2">Request Transmitted!</h3>
                                 <p className="text-muted mb-5 leading-relaxed font-medium">
                                     Our clinical coordinators will contact you at <span className="text-primary fw-bold">{guestData?.email}</span> to finalize your consultation schedule.
                                 </p>
                                 <div className="d-grid gap-3">
                                     <Link 
                                         href={`/register?name=${encodeURIComponent(guestData?.name)}&email=${encodeURIComponent(guestData?.email)}&phone=${encodeURIComponent(guestData?.phone)}`} 
-                                        className="btn btn-primary btn-lg rounded-pill fw-extrabold extra-small tracking-widest py-3.5 shadow-lg"
+                                        className="btn btn-primary btn-lg rounded-pill fw-semibold py-3 shadow-lg"
                                     >
-                                        <i className="fas fa-user-plus me-2"></i>COMPLETE PROFILE REGISTRATION
+                                        <i className="fas fa-user-plus me-2"></i>Complete Profile Registration
                                     </Link>
-                                    <button type="button" className="btn btn-light btn-lg rounded-pill text-muted fw-extrabold extra-small tracking-widest py-3.5" onClick={() => setShowSuccessModal(false)}>DISMISS</button>
+                                    <button type="button" className="btn btn-light btn-lg rounded-pill text-muted fw-medium py-3" onClick={() => setShowSuccessModal(false)}>Dismiss</button>
                                 </div>
                             </div>
                             <div className="position-absolute top-0 end-0 p-5 opacity-5">
@@ -156,23 +182,23 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
             )}
 
             {/* Footer */}
-            <footer className="footer-elegant pt-20 text-white overflow-hidden">
+            <footer className="footer-elegant py-24 text-white overflow-hidden" style={{ minHeight: '600px' }}>
                 <div className="container pb-5">
                     <div className="row g-5 mb-16">
-                        <div className="col-lg-4 pe-lg-12">
+                        <div className="col-lg-4 pe-lg-16">
                             <div className="bg-white rounded-2xl p-2 d-inline-block shadow-sm mb-5">
                                 <img src="/assets/img/logo/Logo2-transparent.png" alt="Logo" height="50" />
                             </div>
                             <p className="opacity-75 mb-8 leading-relaxed font-medium">
                                 Delivering specialized healthcare with clinical excellence and compassionate innovation. Your wellness journey, guided by expertise.
                             </p>
-                            <div className="d-flex gap-3">
-                                <a href="https://www.instagram.com/nyalife_womenshealth" target="_blank" rel="noopener noreferrer" className="social-link"><i className="fab fa-instagram"></i></a>
-                                <a href="https://www.linkedin.com/company/nyalife-women-s-health/" target="_blank" rel="noopener noreferrer" className="social-link"><i className="fab fa-linkedin-in"></i></a>
+                                <div className="d-flex gap-3">
+                                    <a href="https://www.instagram.com/nyalife_womenshealth" target="_blank" rel="noopener noreferrer" className="social-link"><i className="fab fa-instagram"></i></a>
+                                    <a href="https://www.linkedin.com/company/nyalife-women-s-health/" target="_blank" rel="noopener noreferrer" className="social-link"><i className="fab fa-linkedin-in"></i></a>
+                                </div>
                             </div>
-                        </div>
                         
-                        <div className="col-lg-2 col-md-4">
+                        <div className="col-lg-2 col-md-6">
                             <h6 className="fw-extrabold mb-5 extra-small text-uppercase tracking-widest opacity-50">CLINICAL SERVICES</h6>
                             <ul className="list-unstyled footer-links space-y-3">
                                 <li><a href="#services">Prenatal Diagnostics</a></li>
@@ -182,7 +208,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
                             </ul>
                         </div>
 
-                        <div className="col-lg-2 col-md-4">
+                        <div className="col-lg-2 col-md-6">
                             <h6 className="fw-extrabold mb-5 extra-small text-uppercase tracking-widest opacity-50">DIGITAL PORTAL</h6>
                             <ul className="list-unstyled footer-links space-y-3">
                                 <li><Link href={route('login.patient')}>Patient Access</Link></li>
@@ -192,7 +218,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
                             </ul>
                         </div>
 
-                        <div className="col-lg-4 col-md-4">
+                        <div className="col-lg-4 col-md-12">
                             <h6 className="fw-extrabold mb-5 extra-small text-uppercase tracking-widest opacity-50">COORDINATION CENTER</h6>
                             <div className="space-y-6">
                                 <div>

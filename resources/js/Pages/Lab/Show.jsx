@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { useEffect, useState } from 'react';
 
 // FilePond
@@ -178,7 +179,7 @@ export default function Show({ request, auth }) {
                     <div className="col-lg-4">
                         <div className="card shadow-sm border-0 rounded-2xl overflow-hidden mb-4 bg-white shadow-hover">
                             <div className="card-header bg-white py-4 border-bottom-0">
-                                <h6 className="mb-0 fw-extrabold text-uppercase tracking-widest extra-small text-primary">Patient Identity</h6>
+                                <h6 className="mb-0 fw-extrabold text-uppercase tracking-widest extra-small text-pink-500">Patient Identity</h6>
                             </div>
                             <div className="card-body p-4 pt-0">
                                 <div className="d-flex align-items-center mb-4 p-3 bg-light rounded-2xl border border-light shadow-inner">
@@ -216,7 +217,7 @@ export default function Show({ request, auth }) {
 
                         <div className="card shadow-sm border-0 rounded-2xl overflow-hidden bg-white mb-4 shadow-hover">
                             <div className="card-header bg-white py-4 border-bottom-0">
-                                <h6 className="mb-0 fw-extrabold text-uppercase tracking-widest extra-small text-primary">Metadata</h6>
+                                <h6 className="mb-0 fw-extrabold text-uppercase tracking-widest extra-small text-pink-500">Metadata</h6>
                             </div>
                             <div className="card-body p-4 pt-0">
                                 <div className="space-y-4">
@@ -249,7 +250,7 @@ export default function Show({ request, auth }) {
                     <div className="col-lg-8">
                         <div className="card shadow-sm border-0 rounded-2xl overflow-hidden mb-4 bg-white shadow-hover">
                             <div className="card-header bg-white py-4 border-bottom-0 d-flex justify-content-between align-items-center">
-                                <h6 className="mb-0 fw-extrabold text-uppercase tracking-widest extra-small text-primary">Investigation Parameters</h6>
+                                <h6 className="mb-0 fw-extrabold text-uppercase tracking-widest extra-small text-pink-500">Investigation Parameters</h6>
                                 <span className="badge bg-blue-50 text-blue-700 rounded-pill px-3 py-2 border border-blue-100 extra-small fw-bold">
                                     {request.test_type?.category || 'LABORATORY'}
                                 </span>
@@ -386,8 +387,8 @@ export default function Show({ request, auth }) {
                                     <form onSubmit={submit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                                         <div className="space-y-6">
                                             <div>
-                                                <h6 className="extra-small fw-extrabold text-uppercase text-primary tracking-widest mb-4 d-flex align-items-center gap-3">
-                                                    <span className="avatar-sm bg-primary text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">1</span>
+                                                <h6 className="extra-small fw-extrabold text-uppercase text-pink-500 tracking-widest mb-4 d-flex align-items-center gap-3">
+                                                    <span className="avatar-sm bg-pink-500 text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">1</span>
                                                     DATA ENTRY
                                                 </h6>
                                                 
@@ -427,8 +428,8 @@ export default function Show({ request, auth }) {
 
                                             <div className="row g-4">
                                                 <div className="col-md-6">
-                                                    <h6 className="extra-small fw-extrabold text-uppercase text-primary tracking-widest mb-4 d-flex align-items-center gap-3">
-                                                        <span className="avatar-sm bg-primary text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">2</span>
+                                                    <h6 className="extra-small fw-extrabold text-uppercase text-pink-500 tracking-widest mb-4 d-flex align-items-center gap-3">
+                                                        <span className="avatar-sm bg-pink-500 text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">2</span>
                                                         OBSERVATIONS
                                                     </h6>
                                                     <textarea 
@@ -440,8 +441,8 @@ export default function Show({ request, auth }) {
                                                     ></textarea>
                                                 </div>
                                                 <div className="col-md-6">
-                                                    <h6 className="extra-small fw-extrabold text-uppercase text-primary tracking-widest mb-4 d-flex align-items-center gap-3">
-                                                        <span className="avatar-sm bg-primary text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">3</span>
+                                                    <h6 className="extra-small fw-extrabold text-uppercase text-pink-500 tracking-widest mb-4 d-flex align-items-center gap-3">
+                                                        <span className="avatar-sm bg-pink-500 text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">3</span>
                                                         CONCLUSION
                                                     </h6>
                                                     <textarea 
@@ -455,8 +456,8 @@ export default function Show({ request, auth }) {
                                             </div>
 
                                             <div>
-                                                <h6 className="extra-small fw-extrabold text-uppercase text-primary tracking-widest mb-4 d-flex align-items-center gap-3">
-                                                    <span className="avatar-sm bg-primary text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">4</span>
+                                                <h6 className="extra-small fw-extrabold text-uppercase text-pink-500 tracking-widest mb-4 d-flex align-items-center gap-3">
+                                                    <span className="avatar-sm bg-pink-500 text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">4</span>
                                                     EVIDENCE UPLOAD
                                                 </h6>
                                                 <div className="border-2 border-dashed border-gray-200 rounded-3xl p-4 bg-gray-50 shadow-inner">
@@ -526,6 +527,27 @@ export default function Show({ request, auth }) {
                     </div>
                 </div>
             )}
+            <UnifiedToolbar 
+                actions={[
+                    request.status === 'completed' && { 
+                        label: 'PRINT REPORT', 
+                        icon: 'fa-print', 
+                        onClick: handlePrint 
+                    },
+                    !processing && isLabTech && request.status !== 'completed' && { 
+                        label: 'RELEASE RESULTS', 
+                        icon: 'fa-check-double', 
+                        onClick: submit,
+                        color: 'success'
+                    },
+                    { 
+                        label: 'BACK TO REGISTRY', 
+                        icon: 'fa-arrow-left', 
+                        href: route('lab.index'),
+                        color: 'gray'
+                    }
+                ].filter(Boolean)}
+            />
         </AuthenticatedLayout>
     );
 }

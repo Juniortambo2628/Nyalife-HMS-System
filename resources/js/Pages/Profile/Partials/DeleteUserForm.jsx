@@ -6,7 +6,6 @@ import InputLabel from '@/Components/InputLabel';
 import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
-import { Trash2, AlertTriangle, ShieldX, XCircle } from 'lucide-react';
 
 export default function DeleteUserForm({ className = '' }) {
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
@@ -50,7 +49,7 @@ export default function DeleteUserForm({ className = '' }) {
         <section className={`${className} bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700`}>
             <header className="flex items-center gap-4 mb-10">
                 <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl text-red-600 dark:text-red-400 shadow-sm border border-red-100/50">
-                    <ShieldX size={24} />
+                    <i className="fas fa-shield-alt fa-lg"></i>
                 </div>
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Delete Account</h2>
@@ -60,7 +59,7 @@ export default function DeleteUserForm({ className = '' }) {
 
             <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-lg p-4 mb-6">
                 <div className="flex gap-3">
-                    <AlertTriangle className="text-red-500 shrink-0" size={20} />
+                    <i className="fas fa-exclamation-triangle text-red-500 shrink-0"></i>
                     <p className="text-sm text-red-700 dark:text-red-400">
                         Once your account is deleted, all of its resources and data will be permanently deleted. This action is irreversible.
                     </p>
@@ -68,7 +67,7 @@ export default function DeleteUserForm({ className = '' }) {
             </div>
 
             <DangerButton onClick={confirmUserDeletion} className="flex items-center gap-2 !py-4 !px-10 !rounded-xl text-lg font-bold">
-                <Trash2 size={20} />
+                <i className="fas fa-trash-alt"></i>
                 Confirm Deletion
             </DangerButton>
 
@@ -76,7 +75,7 @@ export default function DeleteUserForm({ className = '' }) {
                 <form onSubmit={deleteUser} className="p-8">
                     <div className="flex items-center gap-4 mb-6">
                         <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center text-red-600 dark:text-red-400">
-                            <AlertTriangle size={24} />
+                            <i className="fas fa-exclamation-triangle fa-lg"></i>
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                             Confirm Persistent Deletion
@@ -101,14 +100,14 @@ export default function DeleteUserForm({ className = '' }) {
                                 isFocused
                                 placeholder="Enter your password to confirm"
                             />
-                            <ShieldX className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-red-500 transition-colors" size={20} />
+                            <i className="fas fa-shield-alt absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-red-500 transition-colors"></i>
                         </div>
                         <InputError message={errors.password} className="mt-2" />
                     </div>
 
                     <div className="mt-8 flex justify-end gap-3">
                         <SecondaryButton onClick={closeModal} className="flex items-center gap-2">
-                            <XCircle size={18} />
+                            <i className="fas fa-times-circle"></i>
                             Cancel
                         </SecondaryButton>
 
@@ -116,7 +115,7 @@ export default function DeleteUserForm({ className = '' }) {
                             {processing ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                             ) : (
-                                <Trash2 size={18} />
+                                <i className="fas fa-trash-alt"></i>
                             )}
                             Finalize Deletion
                         </DangerButton>

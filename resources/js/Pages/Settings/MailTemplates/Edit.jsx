@@ -1,6 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
-import DashboardHero from '@/Components/DashboardHero';
 
 export default function Edit({ template }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -16,15 +15,13 @@ export default function Edit({ template }) {
 
     return (
         <AuthenticatedLayout
-            header={`Edit Template: ${template.mailable}`}
+            headerTitle={`Edit Template: ${template.mailable}`}
+            breadcrumbs={[
+                { label: 'Email Templates', url: route('mail-templates.index') },
+                { label: 'Edit', active: true }
+            ]}
         >
             <Head title={`Edit ${template.mailable}`} />
-
-            <DashboardHero 
-                title="Edit Template"
-                subtitle={`Customizing ${template.mailable}`}
-                icon="fas fa-edit"
-            />
 
             <div className="container-fluid mt-4 px-0">
                 <div className="row">

@@ -7,7 +7,9 @@ import ViewToggle from '@/Components/ViewToggle';
 import InfoModal from '@/Components/InfoModal';
 import PageHeader from '@/Components/PageHeader';
 import DashboardSelect from '@/Components/DashboardSelect';
-import { useState, useMemo } from 'react';
+import TableActions from '@/Components/TableActions';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import { useState, useMemo, useEffect } from 'react';
 import { formatDateTime } from '@/Utils/dateUtils';
 
 export default function Index({ consultations, drafts = [], filters, auth }) {
@@ -15,6 +17,13 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
     const [search, setSearch] = useState(filters.search || '');
     const [activeFilter, setActiveFilter] = useState(filters.status || '');
     const [quickFilter, setQuickFilter] = useState(filters.quick_filter || '');
+    const [selectedIds, setSelectedIds] = useState([]);
+
+    useEffect(() => {
+        const handleClear = () => setSelectedIds([]);
+        window.addEventListener('toolbar-clear-selection', handleClear);
+        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
+    }, []);
     
     const [modalConfig, setModalConfig] = useState({
         show: false,
@@ -54,7 +63,7 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
             header: 'Date',
             accessorKey: 'consultation_date',
             cell: ({ row }) => (
-                <div className="fw-bold text-gray-900 px-1">{formatDateTime(row.original.consultation_date)}</div>
+                <div className="fw-extrabold text-pink-500 px-1 extra-small tracking-widest uppercase">{formatDateTime(row.original.consultation_date)}</div>
             )
         },
         {
@@ -98,77 +107,32 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
         {
             header: 'Actions',
             id: 'actions',
-            cell: ({ row }) => (
-                <div className="dropdown">
-                    <button 
-                        className="btn btn-light rounded-circle p-2 border border-light-subtle shadow-sm avatar-sm d-flex align-items-center justify-content-center" 
-                        type="button" 
-                        data-bs-toggle="dropdown" 
-                        aria-expanded="false"
-                    >
-                        <i className="fas fa-ellipsis-v text-gray-400"></i>
-                    </button>
-                    <ul className="dropdown-menu dropdown-menu-end shadow-2xl border-0 rounded-2xl py-2 mt-2 animate-in fade-in zoom-in-95 duration-200">
-                        <li>
-                            <button onClick={() => openModal(row.original)} className="dropdown-item py-2 px-3 d-flex align-items-center gap-3">
-                                <div className="avatar-sm rounded-lg bg-primary-subtle d-flex align-items-center justify-content-center text-primary">
-                                    <i className="fas fa-stethoscope"></i>
-                                </div>
-                                <span className="fw-bold text-gray-700">Quick Clinical View</span>
-                            </button>
-                        </li>
-                        {auth.user.role !== 'patient' && (
-                            <>
-                                <li>
-                                    <Link href={route('consultations.edit', row.original.consultation_id)} className="dropdown-item py-2 px-3 d-flex align-items-center gap-3">
-                                        <div className="avatar-sm rounded-lg bg-warning-subtle d-flex align-items-center justify-content-center text-warning">
-                                            <i className="fas fa-edit"></i>
-                                        </div>
-                                        <span className="fw-bold text-gray-700">Edit Record</span>
-                                    </Link>
-                                </li>
-                                {row.original.consultation_status !== 'completed' && (
-                                    <li>
-                                        <button 
-                                            onClick={() => {
-                                                if (confirm('Are you sure you want to conclude this consultation?')) {
-                                                    router.put(route('consultations.update', row.original.consultation_id), {
-                                                        ...row.original,
-                                                        status: 'completed'
-                                                    });
-                                                }
-                                            }}
-                                            className="dropdown-item py-2 px-3 d-flex align-items-center gap-3 text-success"
-                                        >
-                                            <div className="avatar-sm rounded-lg bg-success-subtle d-flex align-items-center justify-content-center text-success">
-                                                <i className="fas fa-check-double"></i>
-                                            </div>
-                                            <span className="fw-bold">Conclude & Close</span>
-                                        </button>
-                                    </li>
-                                )}
-                            </>
-                        )}
-                        <li><hr className="dropdown-divider opacity-10 mx-3" /></li>
-                        <li>
-                            <Link href={route('lab.index', { consultation_id: row.original.consultation_id })} className="dropdown-item py-2 px-3 d-flex align-items-center gap-3">
-                                <div className="avatar-sm rounded-lg bg-info-subtle d-flex align-items-center justify-content-center text-info">
-                                    <i className="fas fa-microscope"></i>
-                                </div>
-                                <span className="fw-bold text-gray-700">See Related Labs</span>
-                            </Link>
-                        </li>
-                        <li>
-                            <Link href={route('prescriptions.index', { consultation_id: row.original.consultation_id })} className="dropdown-item py-2 px-3 d-flex align-items-center gap-3">
-                                <div className="avatar-sm rounded-lg bg-purple-subtle d-flex align-items-center justify-content-center text-purple">
-                                    <i className="fas fa-pills"></i>
-                                </div>
-                                <span className="fw-bold text-gray-700">See Prescriptions</span>
-                            </Link>
-                        </li>
-                    </ul>
-                </div>
-            )
+            cell: ({ row }) => {
+                const actions = [
+                    { icon: 'fa-stethoscope', label: 'Quick Clinical View', onClick: () => openModal(row.original), color: 'primary' },
+                ];
+                if (auth.user.role !== 'patient') {
+                    actions.push(
+                        { icon: 'fa-edit', label: 'Edit Record', href: route('consultations.edit', row.original.consultation_id), color: 'warning' },
+                    );
+                    if (row.original.consultation_status !== 'completed') {
+                        actions.push(
+                            { icon: 'fa-check-double', label: 'Conclude & Close', color: 'success', onClick: () => {
+                                if (confirm('Are you sure you want to conclude this consultation?')) {
+                                    router.put(route('consultations.update', row.original.consultation_id), {
+                                        ...row.original,
+                                        status: 'completed'
+                                    });
+                                }
+                            }},
+                        );
+                    }
+                }
+                actions.push({ isDivider: true });
+                actions.push({ icon: 'fa-microscope', label: 'See Related Labs', href: route('lab.index', { consultation_id: row.original.consultation_id }), color: 'info' });
+                actions.push({ icon: 'fa-pills', label: 'See Prescriptions', href: route('prescriptions.index', { consultation_id: row.original.consultation_id }), color: 'primary' });
+                return <TableActions actions={actions} />;
+            }
         }
     ], []);
 
@@ -314,41 +278,65 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
 
     return (
         <AuthenticatedLayout 
-            header="Clinical Consultations"
-            toolbarFilters={
-                <div className="d-flex align-items-center gap-2">
-                    <DashboardSelect 
-                        options={[
-                            { label: 'All Status', value: '' },
-                            { label: 'Pending', value: 'pending' },
-                            { label: 'In Progress', value: 'in_progress' },
-                            { label: 'Completed', value: 'completed' },
-                        ]}
-                        value={activeFilter}
-                        onChange={handleFilterChange}
-                        placeholder="Status..."
-                        theme="dark"
-                        dropup={true}
-                        style={{ width: '150px' }}
-                    />
-                </div>
-            }
-            toolbarActions={
-                <div className="d-flex align-items-center gap-2">
-                    <ViewToggle view={view} setView={handleViewChange} />
-                    {auth.user.role !== 'patient' && (
-                        <Link href={route('consultations.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
-                            <i className="fas fa-plus-circle me-1"></i> NEW
-                        </Link>
-                    )}
-                </div>
-            }
+            headerTitle="Clinical Registry"
+            breadcrumbs={[{ label: 'Consultations', active: true }]}
         >
             <Head title="Consultations" />
 
-            <PageHeader 
-                title="Clinical Registry"
-                breadcrumbs={[{ label: 'Consultations', active: true }]}
+            <UnifiedToolbar 
+                viewOptions={[
+                    {
+                        label: 'LIST VIEW',
+                        icon: 'fa-list-ul',
+                        onClick: () => handleViewChange('list'),
+                        color: view === 'list' ? 'pink-500' : 'gray-400'
+                    },
+                    { 
+                        label: 'GRID VIEW', 
+                        icon: 'fa-th-large', 
+                        onClick: () => handleViewChange('grid'),
+                        color: view === 'grid' ? 'pink-500' : 'gray-400'
+                    }
+                ]}
+                filters={
+                    <>
+                        <DashboardSelect 
+                            options={[
+                                { label: 'All Status', value: '' },
+                                { label: 'Pending', value: 'pending' },
+                                { label: 'In Progress', value: 'in_progress' },
+                                { label: 'Completed', value: 'completed' },
+                            ]}
+                            value={activeFilter}
+                            onChange={handleFilterChange}
+                            placeholder="Status..."
+                            theme="dark"
+                            dropup={true}
+                        />
+                        <DashboardSelect 
+                            options={[
+                                { label: 'All Consults', value: '' },
+                                { label: 'In Progress', value: 'in_progress' },
+                                { label: 'Walk-ins', value: 'walk_in' },
+                            ]}
+                            value={quickFilter}
+                            onChange={handleQuickFilterChange}
+                            placeholder="Type..."
+                            theme="dark"
+                            dropup={true}
+                        />
+                    </>
+                }
+                actions={[
+                    auth.user.role !== 'patient' && { label: 'NEW RECORD', icon: 'fa-plus-circle', href: route('consultations.create') }
+                ]}
+                bulkActions={[
+                    { label: 'MARK COMPLETE', icon: 'fa-check-double', onClick: () => console.log('Complete', selectedIds) },
+                    { label: 'EXPORT NOTES', icon: 'fa-file-export', onClick: () => console.log('Export', selectedIds) },
+                    { label: 'DELETE', icon: 'fa-trash-alt', onClick: () => console.log('Delete', selectedIds), color: 'danger' }
+                ]}
+                drafts={drafts.data}
+                selectionCount={selectedIds.length}
             />
 
             <div className="px-0">
@@ -416,6 +404,10 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                         data={consultations.data}
                         pagination={consultations}
                         emptyMessage="No consultations found."
+                        selectable={true}
+                        selectedIds={selectedIds}
+                        onSelectionChange={setSelectedIds}
+                        idField="consultation_id"
                     />
                 ) : (
                     <div className="row g-4">
@@ -443,15 +435,15 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                                                 <div className="space-y-3 mb-4">
                                                     <div className="d-flex align-items-center gap-3 text-gray-600">
                                                         <i className="fas fa-calendar-day text-muted w-5"></i>
-                                                        <span className="font-bold text-sm">{cons.consultation_date}</span>
+                                                        <span className="fw-bold text-sm text-gray-700">{cons.consultation_date}</span>
                                                     </div>
                                                     <div className="d-flex align-items-center gap-3 text-gray-600">
                                                         <i className="fas fa-user-md text-muted w-5"></i>
-                                                        <span className="font-bold text-sm">Dr. {cons.doctor.user.first_name} {cons.doctor.user.last_name}</span>
+                                                        <span className="fw-bold text-sm text-gray-700">Dr. {cons.doctor.user.first_name} {cons.doctor.user.last_name}</span>
                                                     </div>
-                                                    <div className="bg-gray-50 p-3 rounded-xl border border-light">
-                                                        <div className="extra-small text-gray-400 font-bold text-uppercase tracking-wider mb-1">Diagnosis</div>
-                                                        <p className="text-sm text-gray-800 fw-extrabold mb-1 line-clamp-1">{cons.diagnosis || 'General Assessment'}</p>
+                                                    <div className="bg-gray-50 p-4 rounded-2xl border border-light shadow-inner">
+                                                        <div className="extra-small text-pink-500 font-bold text-uppercase tracking-widest mb-2 opacity-75">Clinical Impression</div>
+                                                        <p className="text-sm text-gray-900 fw-extrabold mb-1 line-clamp-1">{cons.diagnosis || 'General Assessment'}</p>
                                                         <p className="extra-small text-gray-500 mb-0 line-clamp-2 italic opacity-75">"{cons.chief_complaint}"</p>
                                                     </div>
                                                 </div>
@@ -459,13 +451,13 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                                                 <div className="d-flex gap-2 border-top pt-4">
                                                     <button 
                                                         onClick={() => openModal(cons)}
-                                                        className="btn btn-light bg-gray-50 text-gray-700 rounded-xl flex-1 fw-extrabold border-0 py-2.5 hover-bg-gray-100 transition-all"
+                                                        className="btn btn-light bg-gray-50 text-gray-700 rounded-xl flex-1 fw-extrabold border-0 py-3 hover-bg-gray-100 transition-all shadow-sm"
                                                     >
                                                         CLINICAL VIEW
                                                     </button>
                                                     <Link 
                                                         href={route('consultations.show', cons.consultation_id)}
-                                                        className="btn btn-outline-primary rounded-xl px-4 border-2 d-flex align-items-center justify-content-center"
+                                                        className="btn btn-outline-primary rounded-xl px-4 border-2 d-flex align-items-center justify-content-center transition-all hover-translate-up shadow-sm"
                                                     >
                                                         <i className="fas fa-file-medical-alt"></i>
                                                     </Link>

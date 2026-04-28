@@ -26,7 +26,7 @@ export default function HeroSection({ cms, isLoggedIn }) {
     };
 
     return (
-        <section className="hero-modern min-vh-50 w-100 position-relative d-flex align-items-center py-3">
+        <section className="hero-modern min-vh-50 w-100 position-relative d-flex align-items-center section-rhythm-sm">
             {/* Background Slides with Stronger Overlay */}
             <div className="hero-background-wrapper position-absolute w-100 h-100 top-0 start-0 overflow-hidden">
                 {slides.map((slide, idx) => (
@@ -52,8 +52,8 @@ export default function HeroSection({ cms, isLoggedIn }) {
                                 </span>
                             </div>
                             
-                            <h1 className="hero-main-title fw-semibold text-white mb-3 fs-2">
-                                {cms.hero_title || 'Nyalife Women\'s Clinic'}
+                            <h1 className="hero-main-title fw-extrabold text-white mb-3 display-3 tracking-tightest">
+                                {cms.hero_title || 'NYALIFE HMS'}
                             </h1>
                             
                             <p className="text-white opacity-75 mb-4 max-w-2xl fw-normal fs-5">
@@ -66,11 +66,11 @@ export default function HeroSection({ cms, isLoggedIn }) {
                                     <div key={`card-${idx}`} className="col-6 col-md-3">
                                         <div className="hero-feature-card rounded-4 p-1 hover-lift transition-all">
                                             <div className="d-flex flex-column align-items-center justify-content-center text-center py-3 px-2">
-                                                <div className="avatar-md bg-white bg-opacity-10 text-white rounded-circle d-flex align-items-center justify-content-center mb-2 shadow-inner">
-                                                    <i className={`fas ${card.icon} fs-5`}></i>
+                                                <div className="avatar-md bg-white bg-opacity-10 text-white rounded-circle d-flex align-items-center justify-content-center mb-3 shadow-inner">
+                                                    <i className={`fas ${card.icon} fs-3`}></i>
                                                 </div>
-                                                <span className="badge bg-pink-100 text-pink-600 px-3 py-1.5 rounded-pill fw-medium d-inline-block">
-                                                    {card.title}
+                                                <span className="badge bg-pink-500 text-white px-4 py-2 rounded-pill fw-extrabold extra-small tracking-widest d-inline-block shadow-sm">
+                                                    {card.title.toUpperCase()}
                                                 </span>
                                             </div>
                                         </div>

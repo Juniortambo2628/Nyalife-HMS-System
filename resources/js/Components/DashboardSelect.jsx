@@ -89,8 +89,8 @@ export default function DashboardSelect({
 
     // Determine font color for trigger based on state
     // "change the font color of the Doctor and patient input boxes to black when state=active"
-    const triggerTextColor = (isOpen || value) ? 'text-dark' : (isDark ? 'text-white' : 'text-dark');
-    const triggerBgColor = (isOpen || value) ? 'bg-white' : (isDark ? 'bg-white bg-opacity-10' : 'bg-white');
+    const triggerTextColor = (isOpen || value) ? 'text-pink-500' : 'text-pink-500';
+    const triggerBgColor = (isOpen || value) ? 'bg-white' : (isDark ? 'bg-white bg-opacity-20 hover-bg-opacity-30' : 'bg-white');
 
     return (
         <div className={`dashboard-select-container position-relative ${className}`} ref={dropdownRef} style={style}>
@@ -100,8 +100,12 @@ export default function DashboardSelect({
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <div className="d-flex align-items-center gap-2 overflow-hidden flex-grow-1">
-                    {loading && <div className="spinner-border spinner-border-sm text-primary opacity-50 nyl-select-spinner" role="status"></div>}
-                    <span className="fw-bold small text-truncate">
+                    {loading ? (
+                        <div className="spinner-border spinner-border-sm text-pink-500 opacity-50 nyl-select-spinner" role="status"></div>
+                    ) : (
+                        <i className={`fas fa-filter text-pink-500 extra-small`}></i>
+                    )}
+                    <span className="fw-extrabold extra-small tracking-widest text-uppercase text-truncate">
                         {selectedDisplay || placeholder}
                     </span>
                 </div>
@@ -120,7 +124,7 @@ export default function DashboardSelect({
                             <i className="fas fa-times-circle"></i>
                         </button>
                     )}
-                    <i className={`fas fa-chevron-${isOpen ? (dropup ? 'up' : 'down') : (dropup ? 'down' : 'up')} text-primary fs-xs transition-all duration-500 ${isOpen ? 'opacity-100' : 'opacity-40'}`}></i>
+                    <i className={`fas fa-chevron-${isOpen ? (dropup ? 'up' : 'down') : (dropup ? 'down' : 'up')} text-pink-500 fs-xs transition-all duration-500 ${isOpen ? 'opacity-100' : 'opacity-40'}`}></i>
                 </div>
             </div>
 

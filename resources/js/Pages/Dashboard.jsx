@@ -1,31 +1,33 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
+
 import DashboardHero from '@/Components/DashboardHero';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Dashboard({ auth }) {
     const user = auth?.user || {};
     
     return (
         <AuthenticatedLayout 
-            header="HMS Dashboard"
-            toolbarActions={
-                <div className="d-flex align-items-center gap-2">
-                    <Link href="/appointments" className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                        <i className="fas fa-calendar-alt me-1"></i> View Schedule
-                    </Link>
-                    <Link href="/patients" className="btn btn-outline-light rounded-pill px-4 py-2 fw-bold small">
-                        <i className="fas fa-users me-1"></i> Patient Registry
-                    </Link>
-                </div>
-            }
+            headerTitle={`Welcome back, ${user.first_name || 'User'}!`}
+            breadcrumbs={[{ label: 'Dashboard', active: true }]}
         >
             <Head title="Dashboard" />
 
-            <PageHeader 
-                title={`Welcome back, ${user.first_name || 'User'}!`}
-                breadcrumbs={[{ label: 'Dashboard', active: true }]}
-                showBack={false}
+            <UnifiedToolbar 
+                actions={[
+                    { 
+                        label: 'VIEW SCHEDULE', 
+                        icon: 'fa-calendar-alt', 
+                        href: '/appointments' 
+                    },
+                    { 
+                        label: 'PATIENT REGISTRY', 
+                        icon: 'fa-users', 
+                        href: '/patients',
+                        color: 'pink'
+                    }
+                ]}
             />
 
             <div className="px-0">

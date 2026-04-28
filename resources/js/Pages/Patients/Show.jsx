@@ -88,7 +88,7 @@ export default function Show({ patient, auth }) {
                                     </div>
                                     <div className="d-flex align-items-center pt-3 border-top border-gray-50">
                                         <div className="avatar-sm bg-pink-50 text-pink-500 rounded-xl d-flex align-items-center justify-content-center me-3 flex-shrink-0 border border-pink-100">
-                                            <i className="fas fa-heartbeat text-xs opacity-50"></i>
+                                            <i className="fas fa-user-shield text-xs opacity-50"></i>
                                         </div>
                                         <div>
                                             <div className="extra-small text-muted fw-bold text-uppercase tracking-wider opacity-50">Emergency Contact</div>
@@ -98,12 +98,6 @@ export default function Show({ patient, auth }) {
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="d-grid mt-5">
-                                    <Link href={route('appointments.create', { patient_id: patient.patient_id })} className="btn btn-primary rounded-pill py-3 fw-extrabold extra-small tracking-widest shadow-sm">
-                                        <i className="fas fa-calendar-plus me-2"></i>SCHEDULE NEW VISIT
-                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -322,18 +316,25 @@ export default function Show({ patient, auth }) {
             </div>
 
             <UnifiedToolbar 
-                actions={
-                    <div className="d-flex align-items-center gap-2">
-                        {['doctor', 'nurse', 'admin', 'lab_technician'].includes(auth.user.role) && (
-                            <Link href={route('consultations.create', { patient_id: patient.patient_id })} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
-                                <i className="fas fa-stethoscope me-1"></i> New Consultation
-                            </Link>
-                        )}
-                        <Link href={route('patients.edit', patient.patient_id)} className="btn btn-light rounded-pill px-4 py-2 fw-extrabold small border shadow-sm">
-                            <i className="fas fa-user-edit me-1"></i> Edit Profile
-                        </Link>
-                    </div>
-                }
+                actions={[
+                    ['doctor', 'nurse', 'admin', 'lab_technician'].includes(auth.user.role) && { 
+                        label: 'NEW CONSULTATION', 
+                        icon: 'fa-stethoscope', 
+                        href: route('consultations.create', { patient_id: patient.patient_id }) 
+                    },
+                    { 
+                        label: 'SCHEDULE VISIT', 
+                        icon: 'fa-calendar-plus', 
+                        href: route('appointments.create', { patient_id: patient.patient_id }),
+                        color: 'pink'
+                    },
+                    { 
+                        label: 'EDIT PROFILE', 
+                        icon: 'fa-user-edit', 
+                        href: route('patients.edit', patient.patient_id),
+                        color: 'gray'
+                    }
+                ].filter(Boolean)}
             />
         </AuthenticatedLayout>
     );

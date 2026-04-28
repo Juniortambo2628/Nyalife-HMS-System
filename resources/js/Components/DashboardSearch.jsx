@@ -59,20 +59,6 @@ export default function DashboardSearch({
                 </div>
             </form>
             
-            {filters && filters.length > 0 && (
-                <div className="d-flex flex-wrap gap-2 mt-2 px-2 overflow-auto no-scrollbar">
-                    <small className="text-gray-400 fw-bold text-uppercase tracking-wider align-middle pt-1 me-2 nyl-filter-label">Quick Filters:</small>
-                    {filters.map((filter, idx) => (
-                        <span 
-                            key={idx}
-                            onClick={() => handleFilterClick(filter)}
-                            className={`badge rounded-pill nyl-filter-badge border px-3 py-2 cursor-pointer transition-all fw-semibold shadow-sm ${activeFilter === filter.value ? 'active-filter' : ''}`}
-                        >
-                            {filter.label}
-                        </span>
-                    ))}
-                </div>
-            )}
         </div>
     );
 }

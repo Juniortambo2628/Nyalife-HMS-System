@@ -1,11 +1,9 @@
 import React from 'react';
 import { useForm, usePage } from '@inertiajs/react';
-import { Transition } from '@headlessui/react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { Briefcase, Award, Building, CheckCircle, ShieldCheck } from 'lucide-react';
 
 export default function UpdateProfessionalProfileForm({ className = '' }) {
     const { auth, staff } = usePage().props;
@@ -31,7 +29,7 @@ export default function UpdateProfessionalProfileForm({ className = '' }) {
         <section className={`${className} bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700`}>
             <header className="flex items-center gap-4 mb-10">
                 <div className="p-3 bg-pink-50 dark:bg-pink-900/20 rounded-xl text-pink-600 dark:text-pink-400 shadow-sm border border-pink-100/50">
-                    <Briefcase size={24} />
+                    <i className="fas fa-briefcase fa-lg"></i>
                 </div>
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Professional Profile</h2>
@@ -51,7 +49,7 @@ export default function UpdateProfessionalProfileForm({ className = '' }) {
                                 onChange={(e) => setData('specialization', e.target.value)}
                                 placeholder="e.g. General Practice, Cardiology"
                             />
-                            <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors" size={20} />
+                            <i className="fas fa-award absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
                         </div>
                         <InputError className="mt-2" message={errors.specialization} />
                     </div>
@@ -66,7 +64,7 @@ export default function UpdateProfessionalProfileForm({ className = '' }) {
                                 onChange={(e) => setData('department', e.target.value)}
                                 placeholder="e.g. Outpatient, Surgery"
                             />
-                            <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors" size={20} />
+                            <i className="fas fa-building absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
                         </div>
                         <InputError className="mt-2" message={errors.department} />
                     </div>
@@ -82,7 +80,7 @@ export default function UpdateProfessionalProfileForm({ className = '' }) {
                             onChange={(e) => setData('license_number', e.target.value)}
                             placeholder="MED-123456"
                         />
-                        <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors" size={20} />
+                        <i className="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
                     </div>
                     <InputError className="mt-2" message={errors.license_number} />
                 </div>
@@ -97,19 +95,12 @@ export default function UpdateProfessionalProfileForm({ className = '' }) {
                         )}
                     </PrimaryButton>
 
-                    <Transition
-                        show={recentlySuccessful}
-                        enter="transition ease-in-out duration-300"
-                        enterFrom="opacity-0 translate-x-4"
-                        enterTo="opacity-100 translate-x-0"
-                        leave="transition ease-in-out duration-300"
-                        leaveTo="opacity-0 translate-x-4"
-                    >
-                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium">
-                            <CheckCircle size={20} />
+                    {recentlySuccessful && (
+                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium animate-in fade-in slide-in-from-right-4 duration-500">
+                            <i className="fas fa-check-circle"></i>
                             <span>Staff profile updated!</span>
                         </div>
-                    </Transition>
+                    )}
                 </div>
             </form>
         </section>

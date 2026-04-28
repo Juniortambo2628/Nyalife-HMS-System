@@ -4,7 +4,6 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import PageHeader from '@/Components/PageHeader';
 
 export default function Calendar({ appointments, auth }) {
     const calendarEvents = appointments.map(apt => ({
@@ -27,22 +26,18 @@ export default function Calendar({ appointments, auth }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header="Appointments Calendar"
+            headerTitle="Schedules & Appointments"
+            breadcrumbs={[
+                { label: 'Appointments', url: route('appointments.index') },
+                { label: 'Calendar View', active: true }
+            ]}
+            headerActions={
+                <Link href={route('appointments.index')} className="btn btn-outline-secondary rounded-pill px-4 shadow-sm fw-bold">
+                    <i className="fas fa-list me-2"></i>List View
+                </Link>
+            }
         >
             <Head title="Appointments Calendar" />
-
-            <PageHeader 
-                title="Schedules & Appointments"
-                breadcrumbs={[
-                    { label: 'Appointments', url: route('appointments.index') },
-                    { label: 'Calendar View', active: true }
-                ]}
-                actions={
-                    <Link href={route('appointments.index')} className="btn btn-outline-secondary rounded-pill px-4 shadow-sm fw-bold">
-                        <i className="fas fa-list me-2"></i>List View
-                    </Link>
-                }
-            />
 
             <div className="container-fluid appointments-page px-0">
                 <div className="card shadow-sm border-0">

@@ -3,30 +3,16 @@ import { Link } from '@inertiajs/react';
 import Modal from '@/Components/Modal';
 import { formatDateTime } from '@/Utils/dateUtils';
 
-export default function ConsultationDraftSwitcher({ drafts = [] }) {
-    const [isOpen, setIsOpen] = useState(false);
+export default function ConsultationDraftSwitcher({ drafts = [], isOpen: propIsOpen, onClose: propOnClose }) {
+    const [internalIsOpen, setInternalIsOpen] = useState(false);
+    
+    const isOpen = propIsOpen !== undefined ? propIsOpen : internalIsOpen;
+    const setIsOpen = propOnClose !== undefined ? propOnClose : setInternalIsOpen;
 
     if (!drafts || drafts.length === 0) return null;
 
     return (
         <>
-            {/* Floating Action Button */}
-            <div className="fixed bottom-8 right-8 z-[60]">
-                <button
-                    onClick={() => setIsOpen(true)}
-                    className="group relative flex h-16 w-16 items-center justify-center rounded-2xl bg-pink-600 text-white shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-pink-700 active:scale-95"
-                    title={`You have ${drafts.length} active sessions`}
-                >
-                    <div className="absolute -top-2 -right-2 flex h-6 w-6 animate-bounce items-center justify-center rounded-full bg-warning-500 text-[10px] font-black text-white shadow-sm ring-2 ring-white">
-                        {drafts.length}
-                    </div>
-                    <i className="fas fa-history text-2xl group-hover:rotate-12 transition-transform"></i>
-                    
-                    {/* Ripple Effect */}
-                    <span className="absolute inset-0 block rounded-2xl bg-pink-400 opacity-0 group-hover:animate-ping group-hover:opacity-20"></span>
-                </button>
-            </div>
-
             {/* Slide-over Style Modal */}
             <Modal show={isOpen} onClose={() => setIsOpen(false)} maxWidth="md">
                 <div className="relative h-full bg-white shadow-2xl">

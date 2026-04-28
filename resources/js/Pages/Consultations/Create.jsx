@@ -8,6 +8,7 @@ import FormSelect from '@/Components/FormSelect';
 import QuickPatientModal from '@/Components/QuickPatientModal';
 import Modal from '@/Components/Modal';
 import ConsultationDraftSwitcher from '@/Components/ConsultationDraftSwitcher';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { toLocalISO } from '@/Utils/dateUtils';
@@ -139,6 +140,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
         try {
             localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
             setAutosaveStatus('Draft saved');
+            window.dispatchEvent(new CustomEvent('autosave', { detail: { status: 'saved' } }));
             setTimeout(() => setAutosaveStatus(''), 3000);
         } catch (e) { /* storage full */ }
     }, [data]);
@@ -319,14 +321,34 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                 ]}
             />
 
-            {/* Autosave indicator */}
-            {autosaveStatus && (
-                <div className="position-fixed bottom-0 end-0 m-3 z-3">
-                    <div className="badge bg-success-subtle text-success px-3 py-2 rounded-pill shadow-sm">
-                        <i className="fas fa-check-circle me-1"></i>{autosaveStatus}
-                    </div>
-                </div>
-            )}
+            <UnifiedToolbar 
+                autosaveStatus={autosaveStatus}
+                drafts={consultationDrafts.data}
+                actions={[
+                    auth?.user?.role === 'nurse' ? { 
+                        label: 'SAVE VITALS', 
+                        icon: 'fa-heartbeat', 
+                        onClick: (e) => submit(e, 'in_progress') 
+                    } : { 
+                        label: 'CONCLUDE & CLOSE', 
+                        icon: 'fa-check-double', 
+                        onClick: (e) => submit(e, 'completed') 
+                    },
+                    auth?.user?.role !== 'nurse' && { 
+                        label: 'SAVE & REQUEST LABS', 
+                        icon: 'fa-vials', 
+                        onClick: (e) => submit(e, 'in_progress') 
+                    },
+                    { 
+                        label: 'DISCARD DRAFT', 
+                        icon: 'fa-trash-alt', 
+                        onClick: () => clearDraft(false),
+                        color: 'danger'
+                    }
+                ].filter(Boolean)}
+            />
+
+            {/* Autosave indicator - Now managed by UnifiedToolbar center-top */}
 
             {showDraftAlert && (
                 <div className="alert alert-info border-0 shadow-sm rounded-3 d-flex align-items-center mb-4 animate__animated animate__fadeIn">
@@ -346,7 +368,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                 <FormSection 
                     title="Patient Biodata & Vitals" 
                     icon="fas fa-user-injured"
-                    headerClassName="bg-gradient-primary-to-secondary text-white p-4"
+                    headerClassName="bg-pink-500 text-white p-4"
                 >
                     <div className="row g-3 mb-4">
                         <FormField label="Patient" required error={errors.patient_id} className="col-md-4">
@@ -423,7 +445,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                         </FormField>
                     </div>
                     
-                    <h6 className="text-primary fw-bold mb-3 border-bottom pb-2">Vital Signs</h6>
+                    <h6 className="text-pink-500 fw-extrabold extra-small text-uppercase tracking-widest mb-3 border-bottom border-gray-100 pb-2">Vital Signs</h6>
                     <div className="row g-3">
                         <FormField label="BP (mmHg)" className="col-md-3">
                             <input type="text" className="form-control" placeholder="120/80" value={data.vital_signs.blood_pressure} onChange={e => setNestedData('vital_signs', 'blood_pressure', e.target.value)} />
@@ -450,7 +472,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                     <>
                         {/* 2. Complaints & History of Present Illness */}
                 <div className="col-lg-6">
-                    <FormSection title="Chief Complaints & HPI" className="h-100" headerClassName="bg-white border-bottom text-primary p-3">
+                    <FormSection title="Chief Complaints & HPI" className="h-100" headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
                         <FormField label="Chief Complaints" error={errors.chief_complaint} className="mb-3">
                             <textarea 
                                 className={`form-control bg-light border-0 ${errors.chief_complaint ? 'is-invalid' : ''}`}
@@ -474,7 +496,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
 
                 {/* 3. Medical & Surgical History */}
                 <div className="col-lg-6">
-                    <FormSection title="Medical & Surgical History" className="h-100" headerClassName="bg-white border-bottom text-primary p-3">
+                    <FormSection title="Medical & Surgical History" className="h-100" headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
                         <FormField label="Past Medical History" className="mb-3">
                             <textarea className="form-control" rows="2" value={data.past_medical_history} onChange={e => setData('past_medical_history', e.target.value)} placeholder="Chronic conditions, allergies, past illnesses..." />
                         </FormField>
@@ -498,7 +520,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                     <FormSection 
                         title="Gynaecological History" 
                         icon="fas fa-venus" 
-                        headerClassName="bg-pink-50 text-pink-700 p-3"
+                        headerClassName="bg-pink-50 text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest"
                         actions={
                             <div className="d-flex gap-3 align-items-center me-2">
                                 <div className="form-check form-switch mb-0">
@@ -578,7 +600,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                 {/* 5. Obstetric History */}
                 {((patientGender === 'female' || isPartnerContext) && !skipRepro) && (
                 <div className="col-12 animate-fade-in">
-                    <FormSection title="Obstetric History" icon="fas fa-baby-carriage" headerClassName="bg-purple-50 text-purple-700 p-3">
+                    <FormSection title="Obstetric History" icon="fas fa-baby-carriage" headerClassName="bg-purple-50 text-purple-700 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
                         <div className="row g-3 mb-4">
                             <FormField label="Parity (No. of Pregnancies)" className="col-md-4">
                                 <input type="number" className="form-control" value={data.parity} onChange={e => setData('parity', e.target.value)} />
@@ -655,7 +677,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                 
                 {/* 6. Examination & System Review */}
                 <div className="col-12">
-                    <FormSection title="Examination & Review of Systems" headerClassName="bg-white border-bottom text-primary p-3">
+                    <FormSection title="Examination & Review of Systems" headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
                         <div className="row g-4">
                             <FormField label="General Examination" className="col-md-6">
                                 <textarea className="form-control" rows="3" placeholder="General appearance..." value={data.general_examination} onChange={e => setData('general_examination', e.target.value)} />
@@ -675,7 +697,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                     <FormSection 
                         title="Services, Procedures & Diagnostics" 
                         icon="fas fa-microscope" 
-                        headerClassName="bg-blue-50 text-blue-700 p-3"
+                        headerClassName="bg-blue-50 text-blue-700 p-3 fw-extrabold extra-small text-uppercase tracking-widest"
                     >
                         <div className="row g-4">
                             {/* Lab Tests Column */}
@@ -797,23 +819,6 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                 )}
 
                 {/* Actions */}
-                <div className="col-12 text-end">
-                    <button type="button" onClick={() => { reset(); clearDraft(false); }} className="btn btn-light rounded-pill px-4 me-2">Clear</button>
-                    {auth?.user?.role === 'nurse' ? (
-                        <button type="submit" onClick={(e) => submit(e, 'in_progress')} disabled={processing} className="btn btn-primary rounded-pill px-5 btn-lg shadow fw-bold">
-                            <i className="fas fa-heartbeat me-2"></i>Save Vitals
-                        </button>
-                    ) : (
-                        <>
-                            <button type="button" onClick={(e) => submit(e, 'in_progress')} disabled={processing} className="btn btn-outline-primary rounded-pill px-4 me-3 shadow-sm fw-bold">
-                                <i className="fas fa-save me-2"></i>Save Progress & Request Labs
-                            </button>
-                            <button type="submit" disabled={processing} className="btn btn-primary rounded-pill px-5 btn-lg shadow fw-bold">
-                                <i className="fas fa-check-circle me-2"></i>Conclude Consultation
-                            </button>
-                        </>
-                    )}
-                </div>
             </form>
 
             <QuickPatientModal 

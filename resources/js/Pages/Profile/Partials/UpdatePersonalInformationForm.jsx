@@ -1,11 +1,9 @@
 import React from 'react';
 import { useForm, usePage } from '@inertiajs/react';
-import { Transition } from '@headlessui/react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { User, Mail, Phone, MapPin, Calendar, CheckCircle } from 'lucide-react';
 
 export default function UpdatePersonalInformationForm({ mustVerifyEmail, status, className = '' }) {
     const user = usePage().props.auth.user;
@@ -31,7 +29,7 @@ export default function UpdatePersonalInformationForm({ mustVerifyEmail, status,
         <section className={`${className} bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700`}>
             <header className="flex items-center gap-4 mb-10">
                 <div className="p-3 bg-pink-50 dark:bg-pink-900/20 rounded-xl text-pink-600 dark:text-pink-400 shadow-sm border border-pink-100/50">
-                    <User size={24} />
+                    <i className="fas fa-user fa-lg"></i>
                 </div>
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Personal Details</h2>
@@ -52,7 +50,7 @@ export default function UpdatePersonalInformationForm({ mustVerifyEmail, status,
                                 required
                                 placeholder="Enter first name"
                             />
-                            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors" size={20} />
+                            <i className="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
                         </div>
                         <InputError className="mt-2" message={errors.first_name} />
                     </div>
@@ -68,7 +66,7 @@ export default function UpdatePersonalInformationForm({ mustVerifyEmail, status,
                                 required
                                 placeholder="Enter last name"
                             />
-                            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors" size={20} />
+                            <i className="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
                         </div>
                         <InputError className="mt-2" message={errors.last_name} />
                     </div>
@@ -87,7 +85,7 @@ export default function UpdatePersonalInformationForm({ mustVerifyEmail, status,
                                 required
                                 placeholder="name@example.com"
                             />
-                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors" size={20} />
+                            <i className="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
                         </div>
                         <InputError className="mt-2" message={errors.email} />
                     </div>
@@ -102,7 +100,7 @@ export default function UpdatePersonalInformationForm({ mustVerifyEmail, status,
                                 onChange={(e) => setData('phone', e.target.value)}
                                 placeholder="+1 (555) 000-0000"
                             />
-                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors" size={20} />
+                            <i className="fas fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
                         </div>
                         <InputError className="mt-2" message={errors.phone} />
                     </div>
@@ -135,7 +133,7 @@ export default function UpdatePersonalInformationForm({ mustVerifyEmail, status,
                                 value={data.date_of_birth}
                                 onChange={(e) => setData('date_of_birth', e.target.value)}
                             />
-                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors" size={20} />
+                            <i className="fas fa-calendar-alt absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
                         </div>
                         <InputError className="mt-2" message={errors.date_of_birth} />
                     </div>
@@ -151,7 +149,7 @@ export default function UpdatePersonalInformationForm({ mustVerifyEmail, status,
                             onChange={(e) => setData('address', e.target.value)}
                             placeholder="Enter your street address, city, and state"
                         ></textarea>
-                        <MapPin className="absolute left-4 top-4 text-gray-400 group-focus-within:text-pink-500 transition-colors" size={20} />
+                        <i className="fas fa-map-marker-alt absolute left-4 top-4 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
                     </div>
                     <InputError className="mt-2" message={errors.address} />
                 </div>
@@ -166,19 +164,12 @@ export default function UpdatePersonalInformationForm({ mustVerifyEmail, status,
                         )}
                     </PrimaryButton>
 
-                    <Transition
-                        show={recentlySuccessful}
-                        enter="transition ease-in-out duration-300"
-                        enterFrom="opacity-0 translate-x-4"
-                        enterTo="opacity-100 translate-x-0"
-                        leave="transition ease-in-out duration-300"
-                        leaveTo="opacity-0 translate-x-4"
-                    >
-                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium">
-                            <CheckCircle size={20} />
+                    {recentlySuccessful && (
+                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium animate-in fade-in slide-in-from-right-4 duration-500">
+                            <i className="fas fa-check-circle"></i>
                             <span>Saved successfully!</span>
                         </div>
-                    </Transition>
+                    )}
                 </div>
             </form>
         </section>

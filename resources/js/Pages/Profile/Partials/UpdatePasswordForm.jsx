@@ -1,11 +1,9 @@
 import React, { useRef } from 'react';
 import { useForm } from '@inertiajs/react';
-import { Transition } from '@headlessui/react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { Lock, ShieldAlert, CheckCircle } from 'lucide-react';
 
 export default function UpdatePasswordForm({ className = '' }) {
     const passwordInput = useRef();
@@ -49,7 +47,7 @@ export default function UpdatePasswordForm({ className = '' }) {
         <section className={`${className} bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700`}>
             <header className="flex items-center gap-4 mb-10">
                 <div className="p-3 bg-pink-50 dark:bg-pink-900/20 rounded-xl text-pink-600 dark:text-pink-400 shadow-sm border border-pink-100/50">
-                    <Lock size={24} />
+                    <i className="fas fa-lock fa-lg"></i>
                 </div>
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Security Settings</h2>
@@ -71,7 +69,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                             autoComplete="current-password"
                             placeholder="••••••••"
                         />
-                        <ShieldAlert className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors" size={20} />
+                        <i className="fas fa-shield-alt absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
                     </div>
                     <InputError message={errors.current_password} className="mt-2" />
                 </div>
@@ -90,7 +88,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                                 autoComplete="new-password"
                                 placeholder="Min 8 characters"
                             />
-                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors" size={20} />
+                            <i className="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
                         </div>
                         <InputError message={errors.password} className="mt-2" />
                     </div>
@@ -107,7 +105,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                                 autoComplete="new-password"
                                 placeholder="Confirm password"
                             />
-                            <CheckCircle className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors" size={20} />
+                            <i className="fas fa-check-circle absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
                         </div>
                         <InputError message={errors.password_confirmation} className="mt-2" />
                     </div>
@@ -123,19 +121,12 @@ export default function UpdatePasswordForm({ className = '' }) {
                         )}
                     </PrimaryButton>
 
-                    <Transition
-                        show={recentlySuccessful}
-                        enter="transition ease-in-out duration-300"
-                        enterFrom="opacity-0 translate-x-4"
-                        enterTo="opacity-100 translate-x-0"
-                        leave="transition ease-in-out duration-300"
-                        leaveTo="opacity-0 translate-x-4"
-                    >
-                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium">
-                            <CheckCircle size={20} />
+                    {recentlySuccessful && (
+                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium animate-in fade-in slide-in-from-right-4 duration-500">
+                            <i className="fas fa-check-circle"></i>
                             <span>Password updated!</span>
                         </div>
-                    </Transition>
+                    )}
                 </div>
             </form>
         </section>

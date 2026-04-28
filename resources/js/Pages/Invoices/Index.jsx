@@ -1,16 +1,24 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { useState, useMemo } from 'react';
-import PageHeader from '@/Components/PageHeader';
+import { useState, useMemo, useEffect } from 'react';
+
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
 import StatusBadge from '@/Components/StatusBadge';
 import DashboardSelect from '@/Components/DashboardSelect';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Index({ invoices, filters, auth }) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [quickFilter, setQuickFilter] = useState(filters.quick_filter || '');
+    const [selectedIds, setSelectedIds] = useState([]);
+
+    useEffect(() => {
+        const handleClear = () => setSelectedIds([]);
+        window.addEventListener('toolbar-clear-selection', handleClear);
+        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
+    }, []);
 
     const applyFilters = (searchValue, statusValue = status, quickFilterValue = quickFilter) => {
         router.get(route('invoices.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {
@@ -34,7 +42,7 @@ export default function Index({ invoices, filters, auth }) {
             header: 'Invoice #',
             accessorKey: 'invoice_number',
             cell: info => (
-                <span className="badge bg-light text-primary fw-bold p-2 border border-light-subtle shadow-sm">
+                <span className="badge bg-light text-pink-500 fw-extrabold extra-small tracking-widest p-2 border border-pink-100 shadow-sm">
                     {info.getValue()}
                 </span>
             )
@@ -75,11 +83,11 @@ export default function Index({ invoices, filters, auth }) {
             id: 'actions',
             cell: info => (
                 <div className="d-flex justify-content-end gap-2">
-                    <Link href={route('invoices.show', info.row.original.invoice_id)} className="btn btn-sm btn-light border text-primary rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center">
+                    <Link href={route('invoices.show', info.row.original.invoice_id)} className="btn btn-sm btn-light border text-pink-500 rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center" title="View Document">
                         <i className="fas fa-eye extra-small"></i>
                     </Link>
                     {info.row.original.status !== 'paid' && (
-                        <Link href={route('invoices.show', info.row.original.invoice_id)} className="btn btn-sm btn-light border text-success rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center">
+                        <Link href={route('invoices.show', info.row.original.invoice_id)} className="btn btn-sm btn-light border text-success rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center" title="Collect Payment">
                             <i className="fas fa-money-bill-wave extra-small"></i>
                         </Link>
                     )}
@@ -90,37 +98,57 @@ export default function Index({ invoices, filters, auth }) {
 
     return (
         <AuthenticatedLayout 
-            header="Billing & Invoices"
-            toolbarFilters={
-                <div className="d-flex align-items-center gap-2">
-                    <DashboardSelect 
-                        options={[
-                            { label: 'Pending', value: 'pending' },
-                            { label: 'Paid', value: 'paid' },
-                            { label: 'Overdue', value: 'overdue' },
-                            { label: 'Cancelled', value: 'cancelled' },
-                        ]}
-                        value={status}
-                        onChange={handleStatusChange}
-                        placeholder="Status..."
-                        theme="dark"
-                        dropup={true}
-                    />
-                </div>
-            }
-            toolbarActions={
-                (auth.user.role === 'admin' || auth.user.role === 'receptionist') && (
-                    <Link href={route('invoices.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                        <i className="fas fa-file-medical me-1"></i> New Invoice
-                    </Link>
-                )
-            }
+            headerTitle="Financial Registry"
+            breadcrumbs={[{ label: 'Billing', url: route('invoices.index') }, { label: 'Revenue Registry', active: true }]}
         >
             <Head title="Billing" />
 
-            <PageHeader 
-                title="Financial Registry"
-                breadcrumbs={[{ label: 'Billing', active: true }, { label: 'Invoices', active: true }]}
+            <UnifiedToolbar 
+                viewOptions={[
+                    { label: 'LIST VIEW', icon: 'fa-list-ul', onClick: () => {} },
+                    { label: 'GRID VIEW', icon: 'fa-th-large', onClick: () => {} }
+                ]}
+                filters={
+                    <>
+                        <DashboardSelect 
+                            options={[
+                                { label: 'Pending', value: 'pending' },
+                                { label: 'Paid', value: 'paid' },
+                                { label: 'Overdue', value: 'overdue' },
+                                { label: 'Cancelled', value: 'cancelled' },
+                            ]}
+                            value={status}
+                            onChange={handleStatusChange}
+                            placeholder="Status..."
+                            theme="dark"
+                            dropup={true}
+                        />
+                        <DashboardSelect 
+                            options={[
+                                { label: 'Cash', value: 'cash' },
+                                { label: 'Insurance', value: 'insurance' },
+                            ]}
+                            value={quickFilter}
+                            onChange={handleQuickFilterChange}
+                            placeholder="Type..."
+                            theme="dark"
+                            dropup={true}
+                        />
+                    </>
+                }
+                actions={[
+                    (auth.user.role === 'admin' || auth.user.role === 'receptionist') && { 
+                        label: 'NEW INVOICE', 
+                        icon: 'fa-file-medical', 
+                        href: route('invoices.create') 
+                    }
+                ]}
+                bulkActions={[
+                    { label: 'MARK PAID', icon: 'fa-money-bill-wave', onClick: () => console.log('Mark paid', selectedIds) },
+                    { label: 'PRINT BATCH', icon: 'fa-print', onClick: () => console.log('Print', selectedIds) },
+                    { label: 'VOID SELECTED', icon: 'fa-ban', onClick: () => console.log('Void', selectedIds), color: 'danger' }
+                ]}
+                selectionCount={selectedIds.length}
             />
 
             <div className="px-0">
@@ -142,6 +170,10 @@ export default function Index({ invoices, filters, auth }) {
                     columns={columns}
                     pagination={invoices}
                     emptyMessage="No financial records found matching your search."
+                    selectable={true}
+                    selectedIds={selectedIds}
+                    onSelectionChange={setSelectedIds}
+                    idField="invoice_id"
                 />
 
             </div>

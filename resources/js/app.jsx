@@ -1,16 +1,10 @@
+// 1. Vendor CSS (loaded first, like the original <link> tags in app.blade.php)
 import '../css/bootstrap-local.min.css';
 import '../css/fontawesome-local.min.css';
-import '../css/z-index.css';
-import '../css/nyalife-loader-unified.css';
-import '../css/footer.css';
-import '../css/modal-unified.css';
-import '../css/nyalife-theme.css';
-import '../css/style.css';
-import '../css/custom.css';
-import '../css/nyalife-sidebar.css';
-import '../css/layout-system.css';
-import '../css/dashboard-fresh.css';
-import '../css/nyalife-components.css';
+
+// 2. Core Application CSS (Consolidated)
+import '../css/nyalife-core.css';
+
 import './bootstrap';
 import './echo';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';

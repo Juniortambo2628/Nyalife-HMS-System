@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
+
 import DashboardHero from '@/Components/DashboardHero';
 import StatCard from '@/Components/StatCard';
 
@@ -14,7 +14,8 @@ export default function Admin({ auth, stats, recentActivity }) {
 
     return (
         <AuthenticatedLayout 
-            header="Administrator Dashboard"
+            headerTitle="System Overview"
+            breadcrumbs={[{ label: 'Dashboard', active: true }]}
             toolbarActions={
                 <div className="d-flex align-items-center gap-2">
                     <Link href={route('users.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
@@ -28,11 +29,7 @@ export default function Admin({ auth, stats, recentActivity }) {
         >
             <Head title="Admin Dashboard" />
 
-            <PageHeader 
-                title="System Overview"
-                breadcrumbs={[{ label: 'Dashboard', active: true }]}
-                showBack={false}
-            />
+
 
             <div className="px-0">
                 <DashboardHero 

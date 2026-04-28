@@ -5,6 +5,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import ContextSwitcher from '@/Components/ContextSwitcher';
 import UserAvatar from '@/Components/UserAvatar';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import PageHeader from '@/Components/PageHeader';
 
 // Role-based sidebar menu items matching legacy system
 const sidebarMenus = {
@@ -75,8 +76,14 @@ export default function AuthenticatedLayout({
     children, 
     toolbarActions, 
     toolbarFilters, 
+    toolbarViewOptions,
     toolbarBulkActions, 
-    selectionCount 
+    selectionCount,
+    autosaveStatus: propAutosaveStatus,
+    drafts = [],
+    headerTitle,
+    breadcrumbs,
+    headerActions
 }) {
     const page = usePage();
     const { auth } = page.props;
@@ -92,19 +99,24 @@ export default function AuthenticatedLayout({
         return saved === 'true';
     });
     const [sidebarOpen, setSidebarOpen] = useState(false); // For mobile
-    const [autosaveStatus, setAutosaveStatus] = useState(null); // { status: 'saving' | 'saved', timestamp: number }
+    const [autosaveStatus, setAutosaveStatus] = useState(null);
+    const [showDraftSwitcher, setShowDraftSwitcher] = useState(false);
 
     useEffect(() => {
         const handleAutosave = (e) => {
-            setAutosaveStatus(e.detail);
+            setAutosaveStatus(e.detail.status === 'saved' ? 'Draft saved' : 'Draft saving...');
             if (e.detail.status === 'saved') {
-                setTimeout(() => {
-                    setAutosaveStatus(prev => prev?.status === 'saved' ? null : prev);
-                }, 3000);
+                setTimeout(() => setAutosaveStatus(null), 3000);
             }
         };
+        const handleShowDrafts = () => setShowDraftSwitcher(true);
+
         window.addEventListener('autosave', handleAutosave);
-        return () => window.removeEventListener('autosave', handleAutosave);
+        window.addEventListener('show-draft-switcher', handleShowDrafts);
+        return () => {
+            window.removeEventListener('autosave', handleAutosave);
+            window.removeEventListener('show-draft-switcher', handleShowDrafts);
+        };
     }, []);
 
     const toggleSidebar = () => {
@@ -167,7 +179,31 @@ export default function AuthenticatedLayout({
 
     return (
         <div className={`has-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-            <Toaster position="top-right" reverseOrder={false} />
+            <Toaster 
+                position="top-right" 
+                reverseOrder={false} 
+                toastOptions={{
+                    className: 'premium-toast',
+                    style: {
+                        borderRadius: '16px',
+                        background: '#333',
+                        color: '#fff',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        padding: '16px 24px',
+                        fontWeight: '600',
+                        fontSize: '14px',
+                        letterSpacing: '0.025em',
+                    },
+                    success: {
+                        style: { background: '#10b981' },
+                        iconTheme: { primary: '#fff', secondary: '#10b981' },
+                    },
+                    error: {
+                        style: { background: '#ef4444' },
+                        iconTheme: { primary: '#fff', secondary: '#ef4444' },
+                    },
+                }}
+            />
             {/* Sidebar */}
             <aside id="nyalifeSidebar" className={`nyalife-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${sidebarOpen ? 'open' : ''}`}>
                 {/* Sidebar Toggle Button */}
@@ -253,16 +289,7 @@ export default function AuthenticatedLayout({
                             {header && <div className="page-title mb-0 fs-5 fw-bold text-gray-800">{header}</div>}
                         </div>
                         <div className="d-flex align-items-center gap-2 gap-md-3 ms-auto">
-                            {/* Autosave Status Indicator */}
-                            {autosaveStatus && (
-                                <div className={`autosave-indicator animate-in fade-in slide-in-from-right-4 d-flex align-items-center gap-2 px-3 py-1.5 rounded-pill small fw-bold ${autosaveStatus.status === 'saving' ? 'bg-primary-subtle text-primary' : 'bg-success-subtle text-success'}`}>
-                                    {autosaveStatus.status === 'saving' ? (
-                                        <><i className="fas fa-sync fa-spin"></i> Saving...</>
-                                    ) : (
-                                        <><i className="fas fa-check-circle"></i> Draft Saved</>
-                                    )}
-                                </div>
-                            )}
+                            {/* Autosave Status Indicator - Hidden here, now in UnifiedToolbar center */}
                             {/* Messages Toggle */}
                             <div className="dropdown">
                                 <button 
@@ -299,21 +326,35 @@ export default function AuthenticatedLayout({
                                     aria-expanded="false"
                                 >
                                     <i className="fas fa-bell fa-lg"></i>
-                                    {auth.unread_notifications_count > 0 && (
+                                    {(auth.unread_notifications_count > 0 || (auth.notifications && auth.notifications.length > 0)) && (
                                         <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style={{ fontSize: '0.6rem' }}>
-                                            {auth.unread_notifications_count}
+                                            {auth.unread_notifications_count || auth.notifications?.length || 0}
                                         </span>
                                     )}
                                 </button>
-                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-2xl border-0 rounded-2xl overflow-hidden mt-3 animate-in fade-in zoom-in-95 duration-200" style={{ width: '280px', maxWidth: '90vw' }}>
+                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-2xl border-0 rounded-2xl overflow-hidden mt-3 animate-in fade-in zoom-in-95 duration-200" style={{ width: '320px', maxWidth: '90vw' }}>
                                     <li className="px-4 py-3 bg-white border-b border-gray-100 d-flex justify-content-between align-items-center">
                                         <span className="fw-bold text-gray-900">Notifications</span>
                                         <Link href="/notifications" className="text-xs text-pink-500 hover:underline">View All</Link>
                                     </li>
-                                    <li className="p-4 text-center text-muted small">
-                                        <i className="fas fa-bell mb-2 d-block fa-2x opacity-20"></i>
-                                        {auth.unread_notifications_count > 0 ? `You have ${auth.unread_notifications_count} unread notifications.` : 'No new notifications.'}
-                                    </li>
+                                    {auth.notifications && auth.notifications.length > 0 ? (
+                                        auth.notifications.slice(0, 5).map((notification, idx) => (
+                                            <li key={idx} className="px-4 py-3 border-bottom border-light d-flex align-items-start gap-3 hover-bg-gray-50 transition-colors cursor-pointer">
+                                                <div className="avatar-xs rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0 mt-1">
+                                                    <i className="fas fa-info-circle text-xs"></i>
+                                                </div>
+                                                <div className="flex-grow-1 overflow-hidden">
+                                                    <div className="fw-bold text-gray-800 small text-truncate">{notification.data?.message || notification.message || 'New notification'}</div>
+                                                    <div className="extra-small text-muted opacity-75">{notification.created_at_human || 'Just now'}</div>
+                                                </div>
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <li className="p-4 text-center text-muted small">
+                                            <i className="fas fa-bell mb-2 d-block fa-2x opacity-20"></i>
+                                            No new notifications.
+                                        </li>
+                                    )}
                                 </ul>
                             </div>
 
@@ -331,7 +372,6 @@ export default function AuthenticatedLayout({
                                         <div className="fw-bold text-gray-900" style={{ fontSize: '0.9rem' }}>{displayName}</div>
                                         <div className="text-muted text-capitalize font-bold extra-small opacity-75">{userRole.replace('_', ' ')}</div>
                                     </div>
-                                    <i className="fas fa-chevron-down text-gray-400 ms-1 d-none d-md-block" style={{ fontSize: '0.7rem' }}></i>
                                 </button>
                                 <ul className="dropdown-menu dropdown-menu-end p-2 shadow-2xl border-0 rounded-2xl mt-3 animate-in fade-in zoom-in-95 duration-200">
                                     <li>
@@ -364,22 +404,41 @@ export default function AuthenticatedLayout({
 
                 {/* Page Content */}
                 <div className="content-container">
+                    {headerTitle && (
+                        <PageHeader 
+                            title={headerTitle}
+                            breadcrumbs={breadcrumbs}
+                            actions={headerActions}
+                        />
+                    )}
                     {children}
                 </div>
             </main>
 
             {/* Shared Page Actions Toolbar */}
-            {(toolbarActions || toolbarFilters || toolbarBulkActions) && (
+            {(toolbarActions || toolbarFilters || toolbarViewOptions || toolbarBulkActions || autosaveStatus || propAutosaveStatus || drafts.length > 0) && (
                 <UnifiedToolbar 
                     actions={toolbarActions}
                     filters={toolbarFilters}
+                    viewOptions={toolbarViewOptions}
                     bulkActions={toolbarBulkActions}
                     selectionCount={selectionCount}
+                    autosaveStatus={autosaveStatus || propAutosaveStatus}
+                    drafts={drafts}
                 />
             )}
 
             <CookieBanner />
             <ContextSwitcher />
+            
+            {/* Standardized Draft Switcher Modal */}
+            {drafts.length > 0 && (
+                <ConsultationDraftSwitcher 
+                    drafts={drafts} 
+                    isOpen={showDraftSwitcher} 
+                    onClose={() => setShowDraftSwitcher(false)} 
+                />
+            )}
         </div>
     );
 }

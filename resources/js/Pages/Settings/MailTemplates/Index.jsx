@@ -1,20 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Index({ templates }) {
     return (
         <AuthenticatedLayout
-            header="Email Templates"
+            headerTitle="Email Templates"
+            breadcrumbs={[{ label: 'Settings', url: '/dashboard' }, { label: 'Email Templates', active: true }]}
         >
             <Head title="Email Templates" />
-
-            <PageHeader 
-                title="Email Templates"
-                subtitle="Customize automated system emails"
-                breadcrumbs={[{ label: 'Settings', url: '/dashboard' }, { label: 'Email Templates', active: true }]}
-            />
 
             <div className="py-4">
                 <div className="card border-0 shadow-sm rounded-4 overflow-hidden">

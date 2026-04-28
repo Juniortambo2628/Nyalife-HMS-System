@@ -2,11 +2,13 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import DashboardTable from '@/Components/DashboardTable';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import StatusBadge from '@/Components/StatusBadge';
+import TableActions from '@/Components/TableActions';
 import { useState } from 'react';
 
 export default function Index({ messages, auth }) {
     const [processing, setProcessing] = useState(null);
+    const [selectedIds, setSelectedIds] = useState([]);
 
     const markAsRead = (id) => {
         setProcessing(id);
@@ -44,15 +46,7 @@ export default function Index({ messages, auth }) {
                             header: 'Status',
                             accessorKey: 'status',
                             cell: info => (
-                                info.getValue() === 'pending' ? (
-                                    <span className="badge bg-warning text-dark rounded-pill px-3 py-2">
-                                        <i className="fas fa-envelope me-1"></i> New
-                                    </span>
-                                ) : (
-                                    <span className="badge bg-light text-muted rounded-pill px-3 py-2">
-                                        <i className="fas fa-envelope-open me-1"></i> Read
-                                    </span>
-                                )
+                                <StatusBadge status={info.getValue() === 'pending' ? 'pending' : 'completed'} />
                             )
                         },
                         {
@@ -87,64 +81,26 @@ export default function Index({ messages, auth }) {
                         {
                             header: 'Actions',
                             id: 'actions',
-                            cell: info => (
-                                <div className="text-end">
-                                    <div className="d-flex justify-content-end gap-2">
-                                        <Link 
-                                            href={route('admin.messages.show', info.row.original.contact_message_id)}
-                                            className="btn btn-sm btn-outline-info rounded-circle shadow-sm"
-                                            title="View Message"
-                                            style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        >
-                                            <i className="fas fa-eye"></i>
-                                        </Link>
-                                        {info.row.original.status === 'pending' && (
-                                            <button 
-                                                onClick={() => markAsRead(info.row.original.contact_message_id)}
-                                                disabled={processing === info.row.original.contact_message_id}
-                                                className="btn btn-sm btn-outline-success rounded-circle shadow-sm"
-                                                title="Mark as Read"
-                                                style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                            >
-                                                {processing === info.row.original.contact_message_id ? (
-                                                    <span className="spinner-border spinner-border-sm"></span>
-                                                ) : (
-                                                    <i className="fas fa-check"></i>
-                                                )}
-                                            </button>
-                                        )}
-                                        <button 
-                                            onClick={() => deleteMessage(info.row.original.contact_message_id)}
-                                            className="btn btn-sm btn-outline-danger rounded-circle shadow-sm"
-                                            title="Delete"
-                                            style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        >
-                                            <i className="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            )
+                            cell: info => {
+                                const actions = [
+                                    { icon: 'fa-eye', label: 'View Message', href: route('admin.messages.show', info.row.original.contact_message_id) },
+                                ];
+                                if (info.row.original.status === 'pending') {
+                                    actions.push({ icon: 'fa-check', label: 'Mark as Read', onClick: () => markAsRead(info.row.original.contact_message_id) });
+                                }
+                                actions.push({ icon: 'fa-trash', label: 'Delete', color: 'danger', onClick: () => deleteMessage(info.row.original.contact_message_id) });
+                                return <TableActions actions={actions} />;
+                            }
                         }
                     ]}
                     emptyMessage="No messages yet"
+                    selectable={true}
+                    selectedIds={selectedIds}
+                    onSelectionChange={setSelectedIds}
+                    idField="contact_message_id"
                 />
 
-                <UnifiedToolbar 
-                    actions={
-                        <button 
-                            onClick={() => router.reload({ preserveScroll: true })}
-                            className="btn btn-primary rounded-pill px-3 py-2 fw-bold small"
-                        >
-                            <i className="fas fa-sync-alt me-1"></i> Refresh Messages
-                        </button>
-                    }
-                />
             </div>
-
-            <style>{`
-                .extra-small { font-size: 0.75rem; }
-                .rounded-xl { border-radius: 1rem; }
-            `}</style>
         </AuthenticatedLayout>
     );
 }

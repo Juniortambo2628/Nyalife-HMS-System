@@ -44,11 +44,11 @@ export default function Show({ invoice, auth, clinic_settings = {} }) {
                                     <div className="col-sm-6">
                                         <div className="d-flex align-items-center gap-3 mb-4">
                                             <div className="bg-white rounded-xl p-2 shadow-sm border border-light">
-                                                <img src="/assets/logo/Logo2-transparent.png" alt="Nyalife" style={{ height: '60px' }} />
+                                                <img src="/assets/img/logo/Logo2-transparent.png" alt="Nyalife" style={{ height: '70px' }} />
                                             </div>
                                             <div>
-                                                <h3 className="mb-0 text-gray-900 fw-extrabold tracking-tightest">NYALIFE</h3>
-                                                <div className="text-pink-500 extra-small font-bold uppercase tracking-widest">Women's Clinic</div>
+                                                <h3 className="mb-0 text-gray-900 fw-extrabold tracking-tightest fs-2">NYALIFE</h3>
+                                                <div className="text-clinical-high extra-small font-bold uppercase tracking-widest">Women's Clinic</div>
                                             </div>
                                         </div>
                                         <div className="space-y-1">
@@ -58,10 +58,10 @@ export default function Show({ invoice, auth, clinic_settings = {} }) {
                                         </div>
                                     </div>
                                     <div className="col-sm-6 text-sm-end mt-4 mt-sm-0">
-                                        <h1 className="mb-3 text-uppercase fw-extrabold text-gray-900 tracking-tightest opacity-10 display-4 d-none d-sm-block">INVOICE</h1>
+                                        <h1 className="mb-3 text-uppercase fw-extrabold text-gray-900 tracking-tightest opacity-10 display-4 d-none d-sm-block">RECEIPT</h1>
                                         <div className="space-y-1">
-                                            <div className="mb-1 fw-bold text-gray-500 extra-small text-uppercase">Reference</div>
-                                            <div className="h4 fw-extrabold text-primary mb-3">{invoice.invoice_number}</div>
+                                            <div className="mb-1 fw-bold text-gray-500 extra-small text-uppercase tracking-widest">Reference</div>
+                                            <div className="h4 fw-extrabold text-clinical-high mb-3">{invoice.invoice_number}</div>
                                             <div className="d-flex flex-column align-items-sm-end">
                                                 <div className="small text-muted mb-1"><span className="fw-bold text-gray-700">Date:</span> {invoice.invoice_date}</div>
                                                 <div className="small text-muted mb-3"><span className="fw-bold text-gray-700">Due:</span> {invoice.due_date}</div>
@@ -97,13 +97,13 @@ export default function Show({ invoice, auth, clinic_settings = {} }) {
 
                                 <div className="table-responsive rounded-3 overflow-hidden border border-gray-100 mb-4">
                                     <table className="table table-hover align-middle mb-0">
-                                        <thead className="bg-gray-50">
+                                        <thead className="bg-pink-500 border-0">
                                             <tr>
-                                                <th className="px-4 py-3 text-muted extra-small fw-extrabold text-uppercase border-0">#</th>
-                                                <th className="px-4 py-3 text-muted extra-small fw-extrabold text-uppercase border-0">Description</th>
-                                                <th className="px-4 py-3 text-muted extra-small fw-extrabold text-uppercase border-0 text-end">Unit Price</th>
-                                                <th className="px-4 py-3 text-muted extra-small fw-extrabold text-uppercase border-0 text-center">Qty</th>
-                                                <th className="px-4 py-3 text-muted extra-small fw-extrabold text-uppercase border-0 text-end">Total</th>
+                                                <th className="px-4 py-3 text-white extra-small fw-extrabold text-uppercase border-0">#</th>
+                                                <th className="px-4 py-3 text-white extra-small fw-extrabold text-uppercase border-0">Description</th>
+                                                <th className="px-4 py-3 text-white extra-small fw-extrabold text-uppercase border-0 text-end">Unit Price</th>
+                                                <th className="px-4 py-3 text-white extra-small fw-extrabold text-uppercase border-0 text-center">Qty</th>
+                                                <th className="px-4 py-3 text-white extra-small fw-extrabold text-uppercase border-0 text-end">Total</th>
                                             </tr>
                                         </thead>
                                         <tbody className="border-0">
@@ -138,10 +138,10 @@ export default function Show({ invoice, auth, clinic_settings = {} }) {
                                                     <span className="text-muted extra-small fw-bold text-uppercase">Tax ({taxRate}%)</span>
                                                     <span className="fw-bold text-gray-800">Ksh {taxAmount.toLocaleString()}</span>
                                                 </div>
-                                                <div className="d-flex justify-content-between align-items-center pt-2">
-                                                    <span className="fw-extrabold text-gray-900">TOTAL DUE</span>
-                                                    <span className="h4 fw-extrabold text-primary mb-0">Ksh {finalTotal.toLocaleString()}</span>
-                                                </div>
+                                                 <div className="d-flex justify-content-between align-items-center pt-2">
+                                                     <span className="fw-extrabold text-gray-900">TOTAL DUE</span>
+                                                     <span className="h4 fw-extrabold text-clinical-high mb-0">Ksh {finalTotal.toLocaleString()}</span>
+                                                 </div>
                                             </div>
                                         </div>
                                     </div>
@@ -204,23 +204,27 @@ export default function Show({ invoice, auth, clinic_settings = {} }) {
                     </div>
                 </div>
 
-                <UnifiedToolbar 
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            {invoice.status !== 'paid' && auth.user.role !== 'patient' && (
-                                <button onClick={markAsPaid} className="btn btn-success rounded-pill px-4 py-2 fw-bold small shadow-sm hover-translate-up transition-all">
-                                    <i className="fas fa-check-circle me-1"></i> Finalize Payment
-                                </button>
-                            )}
-                            <button onClick={handlePrint} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm hover-translate-up transition-all">
-                                <i className="fas fa-print me-1"></i> Print Receipt
-                            </button>
-                            <Link href={route('invoices.index')} className="btn btn-light rounded-pill px-4 py-2 fw-bold small border shadow-sm">
-                                <i className="fas fa-list me-1"></i> Financial Registry
-                            </Link>
-                        </div>
+            <UnifiedToolbar 
+                actions={[
+                    invoice.status !== 'paid' && auth.user.role !== 'patient' && { 
+                        label: 'FINALIZE PAYMENT', 
+                        icon: 'fa-check-circle', 
+                        onClick: markAsPaid,
+                        color: 'success'
+                    },
+                    { 
+                        label: 'PRINT RECEIPT', 
+                        icon: 'fa-print', 
+                        onClick: handlePrint 
+                    },
+                    { 
+                        label: 'FINANCIAL REGISTRY', 
+                        icon: 'fa-list', 
+                        href: route('invoices.index'),
+                        color: 'gray'
                     }
-                />
+                ].filter(Boolean)}
+            />
             </div>
         </AuthenticatedLayout>
     );

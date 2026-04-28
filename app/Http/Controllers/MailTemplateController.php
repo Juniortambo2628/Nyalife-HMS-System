@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Spatie\MailTemplates\Models\MailTemplate;
+use App\Models\MailTemplate;
 use Inertia\Inertia;
 
 class MailTemplateController extends Controller

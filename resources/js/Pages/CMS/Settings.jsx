@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
+
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
 import TextInput from '@/Components/TextInput';
@@ -49,6 +49,8 @@ export default function Settings({ settings, serviceTabs }) {
 
     return (
         <AuthenticatedLayout
+            headerTitle="Landing Page Configuration"
+            breadcrumbs={[{ label: 'Admin', url: '/dashboard' }, { label: 'CMS', active: true }]}
             toolbarActions={
                 <button 
                     onClick={handleSubmit}
@@ -61,10 +63,7 @@ export default function Settings({ settings, serviceTabs }) {
         >
             <Head title="CMS Settings" />
 
-            <PageHeader 
-                title="Landing Page Configuration"
-                breadcrumbs={[{ label: 'Admin', url: '/dashboard' }, { label: 'CMS', active: true }]}
-            />
+
 
             <div className="py-0">
                 {/* Section Order Tool - Special Case */}

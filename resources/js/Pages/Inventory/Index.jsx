@@ -1,6 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import PageHeader from '@/Components/PageHeader';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import DashboardSearch from '@/Components/DashboardSearch';
+import DashboardTable from '@/Components/DashboardTable';
+import TableActions from '@/Components/TableActions';
+import StatusBadge from '@/Components/StatusBadge';
 
 export default function Index({ medications, filters, auth }) {
     const [search, setSearch] = useState(filters.search || '');
@@ -14,93 +20,104 @@ export default function Index({ medications, filters, auth }) {
     };
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header="Pharmacy Inventory"
-        >
-            <Head title="Inventory" />
+        <AuthenticatedLayout header="Pharmacy Inventory">
+            <Head title="Inventory Stock" />
 
-            <div className="container-fluid inventory-page px-0">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2 className="mb-0">Medication Stock</h2>
-                    {auth.user.role === 'pharmacist' && (
-                        <Link href="#" className="btn btn-primary shadow-sm">
-                            <i className="fas fa-plus me-2"></i>Add New Drug
-                        </Link>
-                    )}
-                </div>
+            <PageHeader 
+                title="Clinical Inventory"
+                breadcrumbs={[{ label: 'Pharmacy', active: false }, { label: 'Inventory Stock', active: true }]}
+            />
 
-                {/* Search */}
-                <div className="card shadow-sm border-0 mb-4">
-                    <div className="card-body p-4">
-                        <form onSubmit={handleSearch} className="row g-3">
-                            <div className="col-md-10">
-                                <div className="input-group">
-                                    <span className="input-group-text bg-white border-end-0">
-                                        <i className="fas fa-search text-muted"></i>
-                                    </span>
-                                    <input 
-                                        type="text" 
-                                        className="form-control border-start-0 ps-0" 
-                                        placeholder="Search by medication name or generic name..." 
-                                        value={search}
-                                        onChange={e => setSearch(e.target.value)}
-                                    />
+            <UnifiedToolbar 
+                actions={[
+                    auth.user.role === 'pharmacist' && { 
+                        label: 'ADD NEW DRUG', 
+                        icon: 'fa-plus', 
+                        href: '#' 
+                    }
+                ]}
+            />
+
+            <div className="px-0">
+                <DashboardSearch 
+                    placeholder="Search catalog by medication name or generic identity..." 
+                    value={search}
+                    onChange={setSearch}
+                    onSubmit={() => router.get(route('inventory.index'), { search }, { preserveState: true, replace: true })}
+                />
+
+                <DashboardTable 
+                    data={medications.data}
+                    pagination={medications}
+                    columns={[
+                        {
+                            header: 'Medication Name',
+                            accessorKey: 'medication_name',
+                            cell: info => <span className="fw-extrabold text-gray-900">{info.getValue()}</span>
+                        },
+                        {
+                            header: 'Type',
+                            accessorKey: 'medication_type',
+                            cell: info => <span className="text-muted extra-small fw-bold text-uppercase">{info.getValue()}</span>
+                        },
+                        {
+                            header: 'Strength',
+                            accessorKey: 'strength',
+                            cell: info => (
+                                <span className="text-muted extra-small fw-bold">
+                                    {info.getValue()} {info.row.original.unit}
+                                </span>
+                            )
+                        },
+                        {
+                            header: 'In Stock',
+                            accessorKey: 'stock_quantity',
+                            cell: info => (
+                                <div className="text-center">
+                                    <span className="fw-extrabold text-gray-900">{info.getValue()}</span>
                                 </div>
-                            </div>
-                            <div className="col-md-2">
-                                <button type="submit" className="btn btn-primary w-100">Search</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                {/* Table */}
-                <div className="card shadow-sm border-0 overflow-hidden">
-                    <div className="table-responsive">
-                        <table className="table table-hover align-middle mb-0">
-                            <thead className="bg-light">
-                                <tr>
-                                    <th className="px-4 py-3">Medication Name</th>
-                                    <th className="py-3">Type</th>
-                                    <th className="py-3">Strength</th>
-                                    <th className="py-3 text-center">In Stock</th>
-                                    <th className="py-3 text-center">Status</th>
-                                    <th className="pe-4 py-3 text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {medications.data.length > 0 ? (
-                                    medications.data.map((m) => (
-                                        <tr key={m.medication_id}>
-                                            <td className="px-4 fw-bold text-primary">{m.medication_name}</td>
-                                            <td>{m.medication_type}</td>
-                                            <td>{m.strength} {m.unit}</td>
-                                            <td className="text-center fw-bold">{m.stock_quantity}</td>
-                                            <td className="text-center">
-                                                <span className={`badge ${m.stock_quantity > 20 ? 'bg-success' : (m.stock_quantity > 0 ? 'bg-warning text-dark' : 'bg-danger')}`}>
-                                                    {m.stock_quantity > 20 ? 'In Stock' : (m.stock_quantity > 0 ? 'Low Stock' : 'Out of Stock')}
-                                                </span>
-                                            </td>
-                                            <td className="pe-4 text-end">
-                                                <Link href={route('inventory.show', m.medication_id)} className="btn btn-sm btn-outline-primary shadow-sm">
-                                                    <i className="fas fa-eye me-1"></i> View
-                                                </Link>
-                                                <button className="btn btn-sm btn-outline-secondary shadow-sm ms-2">
-                                                    <i className="fas fa-edit"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="6" className="text-center py-5 text-muted">No medications found.</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                            )
+                        },
+                        {
+                            header: 'Status',
+                            accessorKey: 'stock_quantity',
+                            id: 'stock_status',
+                            cell: info => {
+                                const qty = info.getValue();
+                                let status = 'in-stock';
+                                if (qty <= 0) status = 'out-of-stock';
+                                else if (qty <= 20) status = 'low-stock';
+                                
+                                return (
+                                    <div className="text-center">
+                                        <StatusBadge status={status} />
+                                    </div>
+                                );
+                            }
+                        },
+                        {
+                            header: 'Actions',
+                            id: 'actions',
+                            cell: info => (
+                                <TableActions actions={[
+                                    { 
+                                        icon: 'fa-eye', 
+                                        label: 'View Inventory', 
+                                        href: route('inventory.show', info.row.original.medication_id),
+                                        color: 'primary'
+                                    },
+                                    { 
+                                        icon: 'fa-edit', 
+                                        label: 'Edit Stock', 
+                                        onClick: () => {/* handleEdit */},
+                                        color: 'warning'
+                                    }
+                                ]} />
+                            )
+                        }
+                    ]}
+                    emptyMessage="No medical stock found in the repository."
+                />
             </div>
         </AuthenticatedLayout>
     );

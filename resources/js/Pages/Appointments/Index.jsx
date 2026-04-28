@@ -1,18 +1,25 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import InfoModal from '@/Components/InfoModal';
-import PageHeader from '@/Components/PageHeader';
 import ViewToggle from '@/Components/ViewToggle';
 import DashboardSelect from '@/Components/DashboardSelect';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
 import StatusBadge from '@/Components/StatusBadge';
+import TableActions from '@/Components/TableActions';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Index({ appointments, filters, auth }) {
     const [view, setView] = useState(() => localStorage.getItem('appointments_view') || 'list');
     const [search, setSearch] = useState(filters.search || '');
     const [selectedIds, setSelectedIds] = useState([]);
+
+    useEffect(() => {
+        const handleClear = () => setSelectedIds([]);
+        window.addEventListener('toolbar-clear-selection', handleClear);
+        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
+    }, []);
     const [filterData, setFilterData] = useState({
         status: filters.status || '',
         date: filters.date || '',
@@ -66,29 +73,6 @@ export default function Index({ appointments, filters, auth }) {
 
     const columns = useMemo(() => [
         {
-            id: 'selection',
-            header: () => (
-                <div className="form-check ms-1">
-                    <input 
-                        type="checkbox" 
-                        className="form-check-input shadow-none cursor-pointer" 
-                        onChange={handleSelectAll}
-                        checked={selectedIds.length === appointments.data.length && appointments.data.length > 0}
-                    />
-                </div>
-            ),
-            cell: ({ row }) => (
-                <div className="form-check ms-1">
-                    <input 
-                        type="checkbox" 
-                        className="form-check-input shadow-none cursor-pointer" 
-                        checked={selectedIds.includes(row.original.appointment_id)}
-                        onChange={() => toggleSelection(row.original.appointment_id)}
-                    />
-                </div>
-            )
-        },
-        {
             header: 'Date & Time',
             accessorKey: 'appointment_date',
             cell: ({ row }) => (
@@ -138,25 +122,13 @@ export default function Index({ appointments, filters, auth }) {
             header: 'Actions',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="d-flex justify-content-end gap-2">
-                    <button 
-                        onClick={() => openModal(row.original)}
-                        className="btn btn-sm btn-light border-0 rounded-circle shadow-none p-2 avatar-xs d-flex align-items-center justify-content-center" 
-                        title="Quick View"
-                    >
-                        <i className="fas fa-eye text-xs text-muted"></i>
-                    </button>
-                    <Link 
-                        href={route('appointments.show', row.original.appointment_id)}
-                        className="btn btn-sm btn-light border-0 rounded-circle shadow-none p-2 avatar-xs d-flex align-items-center justify-content-center" 
-                        title="Detailed View"
-                    >
-                        <i className="fas fa-clipboard-list text-xs text-muted"></i>
-                    </Link>
-                </div>
+                <TableActions actions={[
+                    { icon: 'fa-eye', label: 'Quick View', onClick: () => openModal(row.original) },
+                    { icon: 'fa-clipboard-list', label: 'Detailed View', href: route('appointments.show', row.original.appointment_id) },
+                ]} />
             )
         }
-    ], [selectedIds, appointments.data]);
+    ], []);
 
     const openModal = (apt) => {
         setModalConfig({
@@ -321,84 +293,93 @@ export default function Index({ appointments, filters, auth }) {
 
     return (
         <AuthenticatedLayout
-            header="Appointments"
-            selectionCount={selectedIds.length}
-            toolbarBulkActions={
-                <div className="d-flex align-items-center gap-2">
-                    <button className="btn btn-white btn-sm rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm">
-                        <i className="fas fa-check-circle me-2"></i> CONFIRM BATCH
-                    </button>
-                    <button className="btn btn-white btn-sm rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm">
-                        <i className="fas fa-print me-2"></i> PRINT CARDS
-                    </button>
-                    <button className="btn btn-danger btn-sm rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm border border-white border-opacity-20">
-                        <i className="fas fa-trash-alt me-2"></i> CANCEL
-                    </button>
+            headerTitle="Appointments Ledger"
+            breadcrumbs={[{ label: 'Appointments', active: true }]}
+            headerActions={auth.user.role !== 'patient' && (
+                <div className="d-flex gap-2">
+                    <Link href={route('appointments.calendar')} className="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
+                        <i className="fas fa-calendar-alt me-2"></i> Calendar
+                    </Link>
                 </div>
-            }
-            toolbarFilters={
-                <div className="d-flex align-items-center gap-2">
-                    <DashboardSelect 
-                        asyncUrl="/doctors/search"
-                        value={filterData.doctor_id} 
-                        onChange={val => handleAsyncChange('doctor_id', val)}
-                        placeholder="Doctor..."
-                        initialLabel={filters.doctor_name}
-                        theme="dark"
-                        dropup={true}
-                        style={{ width: '150px' }}
-                    />
-                    <DashboardSelect 
-                        asyncUrl="/patients/search"
-                        value={filterData.patient_id} 
-                        onChange={val => handleAsyncChange('patient_id', val)}
-                        placeholder="Patient..."
-                        initialLabel={filters.patient_name}
-                        theme="dark"
-                        dropup={true}
-                        style={{ width: '150px' }}
-                    />
-                    <DashboardSelect 
-                        options={[
-                            { label: 'Scheduled', value: 'scheduled' },
-                            { label: 'Confirmed', value: 'confirmed' },
-                            { label: 'Arrived', value: 'arrived' },
-                            { label: 'Completed', value: 'completed' },
-                            { label: 'Cancelled', value: 'cancelled' },
-                            { label: 'No Show', value: 'no_show' }
-                        ]}
-                        value={filterData.status} 
-                        onChange={val => handleAsyncChange('status', val)}
-                        placeholder="Status..."
-                        theme="dark"
-                        dropup={true}
-                        style={{ width: '150px' }}
-                    />
-                </div>
-            }
-            toolbarActions={
-                <div className="d-flex align-items-center gap-2">
-                    <ViewToggle view={view} setView={handleViewChange} />
-                    {auth.user.role !== 'patient' && (
-                        <Link href={route('appointments.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold extra-small tracking-widest shadow-sm">
-                            <i className="fas fa-plus me-1"></i> BOOK VISIT
-                        </Link>
-                    )}
-                </div>
-            }
+            )}
         >
             <Head title="Appointments" />
 
-            <PageHeader 
-                title="Appointments Ledger"
-                breadcrumbs={[{ label: 'Appointments', active: true }]}
-                actions={auth.user.role !== 'patient' && (
-                    <div className="d-flex gap-2">
-                        <Link href={route('appointments.calendar')} className="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                            <i className="fas fa-calendar-alt me-2"></i> Calendar
-                        </Link>
-                    </div>
-                )}
+
+
+            <UnifiedToolbar 
+                viewOptions={[
+                    { 
+                        label: 'LIST VIEW', 
+                        icon: 'fa-list-ul', 
+                        onClick: () => handleViewChange('list'),
+                        color: view === 'list' ? 'pink-500' : 'gray-400'
+                    },
+                    { 
+                        label: 'GRID VIEW', 
+                        icon: 'fa-th-large', 
+                        onClick: () => handleViewChange('grid'),
+                        color: view === 'grid' ? 'pink-500' : 'gray-400'
+                    }
+                ]}
+                filters={
+                    <>
+                        <DashboardSelect 
+                            options={[
+                                { label: 'All Status', value: '' },
+                                { label: 'Scheduled', value: 'scheduled' },
+                                { label: 'Confirmed', value: 'confirmed' },
+                                { label: 'Arrived', value: 'arrived' },
+                                { label: 'Completed', value: 'completed' },
+                                { label: 'Cancelled', value: 'cancelled' },
+                                { label: 'No Show', value: 'no_show' }
+                            ]}
+                            value={filterData.status} 
+                            onChange={val => handleAsyncChange('status', val)}
+                            placeholder="Status..."
+                            theme="dark"
+                            dropup={true}
+                        />
+                        <DashboardSelect 
+                            options={[
+                                { label: 'Consultation', value: 'consultation' },
+                                { label: 'Follow-up', value: 'followup' },
+                                { label: 'Procedure', value: 'procedure' },
+                            ]}
+                            value={filterData.quick_filter}
+                            onChange={handleQuickFilterChange}
+                            placeholder="Type..."
+                            theme="dark"
+                            dropup={true}
+                        />
+                    </>
+                }
+                actions={[
+                    auth.user.role !== 'patient' && { 
+                        label: 'BOOK VISIT', 
+                        icon: 'fa-plus', 
+                        href: route('appointments.create') 
+                    }
+                ]}
+                bulkActions={[
+                    { 
+                        label: 'CONFIRM BATCH', 
+                        icon: 'fa-check-circle', 
+                        onClick: () => console.log('Batch confirm', selectedIds) 
+                    },
+                    { 
+                        label: 'PRINT CARDS', 
+                        icon: 'fa-print', 
+                        onClick: () => console.log('Batch print', selectedIds) 
+                    },
+                    { 
+                        label: 'CANCEL', 
+                        icon: 'fa-trash-alt', 
+                        onClick: () => console.log('Batch cancel', selectedIds),
+                        color: 'danger'
+                    }
+                ]}
+                selectionCount={selectedIds.length}
             />
 
             <div className="px-0">
@@ -422,6 +403,10 @@ export default function Index({ appointments, filters, auth }) {
                         data={appointments.data}
                         pagination={appointments}
                         emptyMessage="No matching appointments detected in the ledger."
+                        selectable={true}
+                        selectedIds={selectedIds}
+                        onSelectionChange={setSelectedIds}
+                        idField="appointment_id"
                     />
                 ) : (
                     <div className="row g-4 mb-5">
@@ -431,10 +416,10 @@ export default function Index({ appointments, filters, auth }) {
                                     <div key={apt.appointment_id} className="col-md-6 col-lg-4">
                                         <div className={`card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-shadow-lg transition-all duration-300 bg-white ${selectedIds.includes(apt.appointment_id) ? 'ring-2 ring-primary ring-opacity-50' : ''}`}>
                                             <div className="card-body p-4 position-relative">
-                                                <div className="form-check position-absolute top-0 end-0 m-4">
+                                                <div className="form-check position-absolute top-0 end-0 m-4 d-flex justify-content-center align-items-center p-0">
                                                     <input 
                                                         type="checkbox" 
-                                                        className="form-check-input shadow-none cursor-pointer" 
+                                                        className="form-check-input shadow-none cursor-pointer nyl-checkbox m-0" 
                                                         checked={selectedIds.includes(apt.appointment_id)}
                                                         onChange={() => toggleSelection(apt.appointment_id)}
                                                     />

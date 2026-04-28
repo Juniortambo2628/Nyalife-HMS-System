@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function AboutSection({ cms }) {
     return (
-        <section className="py-20 bg-white" id="about">
+        <section className="section-rhythm-md bg-white" id="about">
             <div className="container">
                 <div className="row g-5 align-items-center">
                     <div className="col-lg-6">

@@ -8,17 +8,16 @@ import UpdateProfessionalProfileForm from './Partials/UpdateProfessionalProfileF
 import UpdateProfileImageForm from './Partials/UpdateProfileImageForm';
 import PageHeader from '@/Components/PageHeader';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
-import { User, Lock, Briefcase, ShieldX } from 'lucide-react';
 
 export default function Edit({ mustVerifyEmail, status, staff }) {
     const { auth } = usePage().props;
     const [activeTab, setActiveTab] = useState('personal');
 
     const tabs = [
-        { id: 'personal', label: 'Personal Info', icon: User, color: 'text-pink-600', activeBg: 'bg-pink-600', activeText: 'text-white', show: true },
-        { id: 'professional', label: 'Professional', icon: Briefcase, color: 'text-pink-600', activeBg: 'bg-pink-600', activeText: 'text-white', show: !!staff },
-        { id: 'security', label: 'Security', icon: Lock, color: 'text-pink-600', activeBg: 'bg-pink-600', activeText: 'text-white', show: true },
-        { id: 'danger', label: 'Danger Zone', icon: ShieldX, color: 'text-red-600', activeBg: 'bg-red-600', activeText: 'text-white', show: true },
+        { id: 'personal', label: 'Personal Info', icon: 'fas fa-user', color: 'text-pink-600', activeBg: 'bg-pink-600', activeText: 'text-white', show: true },
+        { id: 'professional', label: 'Professional', icon: 'fas fa-briefcase', color: 'text-pink-600', activeBg: 'bg-pink-600', activeText: 'text-white', show: !!staff },
+        { id: 'security', label: 'Security', icon: 'fas fa-lock', color: 'text-pink-600', activeBg: 'bg-pink-600', activeText: 'text-white', show: true },
+        { id: 'danger', label: 'Danger Zone', icon: 'fas fa-shield-alt', color: 'text-red-600', activeBg: 'bg-red-600', activeText: 'text-white', show: true },
     ].filter(tab => tab.show !== false);
 
     return (
@@ -52,7 +51,7 @@ export default function Edit({ mustVerifyEmail, status, staff }) {
                                                 : 'text-gray-600 dark:text-gray-400 hover:bg-pink-50 dark:hover:bg-gray-800'
                                         }`}
                                     >
-                                        <Icon size={20} className={isActive ? 'text-white' : 'text-gray-400'} />
+                                        <i className={`${tab.icon} ${isActive ? 'text-white' : 'text-gray-400'}`} style={{ width: '20px' }}></i>
                                         {tab.label}
                                         {isActive && (
                                             <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>

@@ -2,6 +2,9 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import DashboardTable from '@/Components/DashboardTable';
+import TableActions from '@/Components/TableActions';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import StatusBadge from '@/Components/StatusBadge';
 
 export default function LabTestsIndex({ tests }) {
     const handleToggleStatus = (id) => {
@@ -19,13 +22,24 @@ export default function LabTestsIndex({ tests }) {
             <Head title="Lab Test types" />
 
             <PageHeader 
-                title="Laboratory Test Catalog"
-                breadcrumbs={[{ label: 'Lab', url: route('lab.index') }, { label: 'Manage Tests', active: true }]}
-                actions={
-                    <Link href={route('lab-tests.create')} className="btn btn-primary rounded-pill px-4 font-bold shadow-sm">
-                        <i className="fas fa-plus me-2"></i>New Test Type
-                    </Link>
-                }
+                title="Lab Test Catalog"
+                breadcrumbs={[{ label: 'Lab Registry', url: route('lab.index') }, { label: 'Manage Tests', active: true }]}
+            />
+
+            <UnifiedToolbar 
+                actions={[
+                    { 
+                        label: 'NEW TEST TYPE', 
+                        icon: 'fa-plus-circle', 
+                        href: route('lab-tests.create') 
+                    },
+                    { 
+                        label: 'BACK TO LAB', 
+                        icon: 'fa-arrow-left', 
+                        href: route('lab.index'),
+                        color: 'gray'
+                    }
+                ]}
             />
 
             <div className="py-0">
@@ -42,11 +56,11 @@ export default function LabTestsIndex({ tests }) {
                                 </div>
                             )
                         },
-                        {
+                         {
                             header: 'Category',
                             accessorKey: 'category',
                             cell: info => (
-                                <span className="badge bg-soft-primary text-primary rounded-pill px-3">
+                                <span className="badge bg-soft-primary text-primary rounded-pill px-3 py-1.5 fw-bold extra-small text-uppercase border border-primary-subtle">
                                     {info.getValue()}
                                 </span>
                             )
@@ -55,7 +69,7 @@ export default function LabTestsIndex({ tests }) {
                             header: 'Price',
                             accessorKey: 'price',
                             cell: info => (
-                                <span className="fw-semibold">
+                                <span className="fw-extrabold text-gray-900">
                                     Ksh. {new Intl.NumberFormat('en-KE').format(info.getValue())}
                                 </span>
                             )
@@ -64,44 +78,36 @@ export default function LabTestsIndex({ tests }) {
                             header: 'Normal Range',
                             accessorKey: 'normal_range',
                             cell: info => (
-                                <span>
-                                    {info.getValue()} <small className="text-muted">{info.row.original.units}</small>
-                                </span>
+                                <div className="fw-bold text-gray-700">
+                                    {info.getValue() || 'N/A'} <small className="text-muted extra-small opacity-50">{info.row.original.units}</small>
+                                </div>
                             )
                         },
                         {
                             header: 'Status',
                             accessorKey: 'is_active',
                             cell: info => (
-                                info.getValue() ? (
-                                    <span className="badge bg-success rounded-pill">Active</span>
-                                ) : (
-                                    <span className="badge bg-secondary rounded-pill">Inactive</span>
-                                )
+                                <StatusBadge status={info.getValue() ? 'active' : 'inactive'} />
                             )
                         },
                         {
                             header: 'Actions',
                             id: 'actions',
                             cell: info => (
-                                <div className="text-end">
-                                    <div className="d-flex justify-content-end gap-2">
-                                        <Link 
-                                            href={route('lab-tests.edit', info.row.original.test_type_id)}
-                                            className="btn btn-sm btn-outline-info"
-                                            title="Edit"
-                                        >
-                                            <i className="fas fa-edit"></i>
-                                        </Link>
-                                        <button 
-                                            onClick={() => handleToggleStatus(info.row.original.test_type_id)}
-                                            className={`btn btn-sm ${info.row.original.is_active ? 'btn-outline-danger' : 'btn-outline-success'}`}
-                                            title={info.row.original.is_active ? 'Deactivate' : 'Activate'}
-                                        >
-                                            <i className={`fas fa-${info.row.original.is_active ? 'eye-slash' : 'eye'}`}></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                <TableActions actions={[
+                                    { 
+                                        icon: 'fa-edit', 
+                                        label: 'Edit Configuration', 
+                                        href: route('lab-tests.edit', info.row.original.test_type_id),
+                                        color: 'warning'
+                                    },
+                                    { 
+                                        icon: info.row.original.is_active ? 'fa-eye-slash' : 'fa-eye', 
+                                        label: info.row.original.is_active ? 'Deactivate' : 'Activate', 
+                                        onClick: () => handleToggleStatus(info.row.original.test_type_id),
+                                        color: info.row.original.is_active ? 'danger' : 'success'
+                                    },
+                                ]} />
                             )
                         }
                     ]}

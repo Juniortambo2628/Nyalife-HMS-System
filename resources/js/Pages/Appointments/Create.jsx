@@ -1,6 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import DashboardSelect from '@/Components/DashboardSelect';
 import Modal from '@/Components/Modal';
 import QuickPatientModal from '@/Components/QuickPatientModal';
@@ -30,18 +29,14 @@ export default function Create({ preselected_patient_id, preselected_patient_lab
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header="Create Appointment"
+            headerTitle="New Appointment"
+            breadcrumbs={[
+                { label: 'Dashboard', url: route('dashboard') },
+                { label: 'Appointments', url: route('appointments.index') },
+                { label: 'Create', active: true }
+            ]}
         >
             <Head title="Create Appointment" />
-            
-            <PageHeader 
-                title="New Appointment"
-                breadcrumbs={[
-                    { label: 'Dashboard', url: route('dashboard') },
-                    { label: 'Appointments', url: route('appointments.index') },
-                    { label: 'Create', active: true }
-                ]}
-            />
 
             <div className="container-fluid appointments-page px-0">
 

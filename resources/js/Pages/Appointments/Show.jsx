@@ -66,51 +66,7 @@ export default function Show({ appointment, auth }) {
                                     </div>
                                 </div>
                                 
-                                {['admin', 'doctor', 'receptionist'].includes(auth.user.role) && (
-                                    <div className="mt-5 space-y-2">
-                                        {appointment.status === 'scheduled' && (
-                                            (() => {
-                                                const aptDate = new Date(`${appointment.appointment_date}T${appointment.appointment_time}`);
-                                                const now = new Date();
-                                                const isPast = aptDate < now;
-                                                
-                                                if (isPast) {
-                                                    return (
-                                                        <div className="alert alert-warning border-0 rounded-2xl p-3 mb-0 d-flex align-items-center gap-3">
-                                                            <i className="fas fa-exclamation-circle fs-4"></i>
-                                                            <div className="extra-small fw-bold text-uppercase tracking-wider">Historical Record Only</div>
-                                                        </div>
-                                                    );
-                                                }
-                                                
-                                                return (
-                                                    <button onClick={() => updateStatus('confirmed')} className="btn btn-primary w-100 rounded-pill py-2.5 fw-extrabold extra-small tracking-widest shadow-sm">
-                                                        CONFIRM ATTENDANCE
-                                                    </button>
-                                                );
-                                            })()
-                                        )}
-                                        {['scheduled', 'confirmed'].includes(appointment.status) && (
-                                            <div className="row g-2">
-                                                <div className="col-6">
-                                                    <button onClick={() => updateStatus('completed')} className="btn btn-success w-100 rounded-pill py-2.5 fw-extrabold extra-small tracking-widest shadow-sm">
-                                                        COMPLETE
-                                                    </button>
-                                                </div>
-                                                <div className="col-6">
-                                                    <button onClick={() => updateStatus('cancelled')} className="btn btn-danger w-100 rounded-pill py-2.5 fw-extrabold extra-small tracking-widest shadow-sm">
-                                                        CANCEL
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {appointment.status === 'scheduled' && new Date(`${appointment.appointment_date}T${appointment.appointment_time}`) < new Date() && (
-                                             <button onClick={() => updateStatus('no_show')} className="btn btn-dark w-100 rounded-pill py-2.5 fw-extrabold extra-small tracking-widest shadow-sm">
-                                                MARK AS NO SHOW
-                                             </button>
-                                        )}
-                                    </div>
-                                )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -242,27 +198,40 @@ export default function Show({ appointment, auth }) {
                                 </div>
                             </div>
                         </div>
-                    </div>
                 </div>
             </div>
 
             <UnifiedToolbar 
-                actions={
-                    <div className="d-flex align-items-center gap-2">
-                        {auth?.user?.role === 'nurse' ? (
-                            <Link href={route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id })} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
-                                <i className="fas fa-heartbeat me-1"></i> Record Vitals
-                            </Link>
-                        ) : auth?.user?.role === 'doctor' ? (
-                            <Link href={route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id })} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
-                                <i className="fas fa-stethoscope me-1"></i> Start Consultation
-                            </Link>
-                        ) : null}
-                        <Link href={route('appointments.index')} className="btn btn-light rounded-pill px-4 py-2 fw-extrabold small border shadow-sm">
-                            <i className="fas fa-list me-1"></i> Back to Registry
-                        </Link>
-                    </div>
-                }
+                actions={[
+                    auth.user.role === 'nurse' && { 
+                        label: 'RECORD VITALS', 
+                        icon: 'fa-heartbeat', 
+                        href: route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id }) 
+                    },
+                    auth.user.role === 'doctor' && { 
+                        label: 'START CONSULTATION', 
+                        icon: 'fa-stethoscope', 
+                        href: route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id }) 
+                    },
+                    ['admin', 'doctor', 'receptionist'].includes(auth.user.role) && appointment.status === 'scheduled' && {
+                        label: 'CONFIRM ARRIVAL',
+                        icon: 'fa-check-circle',
+                        onClick: () => updateStatus('confirmed'),
+                        color: 'success'
+                    },
+                    ['admin', 'doctor', 'receptionist'].includes(auth.user.role) && ['scheduled', 'confirmed'].includes(appointment.status) && {
+                        label: 'CANCEL VISIT',
+                        icon: 'fa-times-circle',
+                        onClick: () => updateStatus('cancelled'),
+                        color: 'gray'
+                    },
+                    { 
+                        label: 'REGISTRY', 
+                        icon: 'fa-arrow-left', 
+                        href: route('appointments.index'),
+                        color: 'gray'
+                    }
+                ].filter(Boolean)}
             />
         </AuthenticatedLayout>
     );

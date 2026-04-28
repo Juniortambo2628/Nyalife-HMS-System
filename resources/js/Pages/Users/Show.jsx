@@ -13,9 +13,9 @@ export default function Show({ user }) {
             <PageHeader 
                 title={`${user.first_name} ${user.last_name}`}
                 breadcrumbs={[
-                    { label: 'Dashboard', url: route('dashboard') },
-                    { label: 'Users', url: '/users' },
-                    { label: 'User Profile', active: true }
+                    { label: 'Admin', url: route('dashboard') },
+                    { label: 'Users Registry', url: route('users.index') },
+                    { label: 'Staff Profile', active: true }
                 ]}
             />
 
@@ -50,13 +50,20 @@ export default function Show({ user }) {
             </div>
 
             <UnifiedToolbar 
-                actions={
-                    <div className="d-flex align-items-center gap-2">
-                        <Link href={`/users/${user.user_id}/edit`} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
-                            <i className="fas fa-user-edit me-1"></i> Edit Profile
-                        </Link>
-                    </div>
-                }
+                actions={[
+                    { 
+                        label: 'EDIT PERMISSIONS', 
+                        icon: 'fa-user-shield', 
+                        href: route('users.edit', user.user_id),
+                        color: 'primary'
+                    },
+                    { 
+                        label: 'USERS REGISTRY', 
+                        icon: 'fa-arrow-left', 
+                        href: route('users.index'),
+                        color: 'gray'
+                    }
+                ]}
             />
         </AuthenticatedLayout>
     );

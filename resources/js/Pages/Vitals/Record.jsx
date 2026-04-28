@@ -4,6 +4,7 @@ import PageHeader from '@/Components/PageHeader';
 import DashboardSelect from '@/Components/DashboardSelect';
 import FormSection from '@/Components/FormSection';
 import FormField from '@/Components/FormField';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import QuickPatientModal from '@/Components/QuickPatientModal';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -233,30 +234,26 @@ export default function Record({ preselected_patient_id, preselected_patient_lab
                                     className="form-control bg-light border-0 rounded-2xl p-4 fw-medium" 
                                     rows="4"
                                     value={data.notes}
-                                    onChange={e => setData('notes', e.target.value)}
-                                    placeholder="Enter any additional clinical observations or patient comments..."
                                 ></textarea>
                             </FormField>
                         </FormSection>
 
-                        {/* Submission */}
-                        <div className="d-flex justify-content-between align-items-center mt-5">
-                            <button type="button" onClick={() => router.visit(route('vitals.index'))} className="btn btn-link text-muted fw-bold text-decoration-none">
-                                <i className="fas fa-arrow-left me-2"></i> Back to Ledger
-                            </button>
-                            <button 
-                                type="submit" 
-                                className="btn btn-primary rounded-pill px-5 py-3 fw-extrabold shadow-lg transition-all hover-lift" 
-                                disabled={processing}
-                            >
-                                {processing ? (
-                                    <span className="spinner-border spinner-border-sm me-2"></span>
-                                ) : (
-                                    <i className="fas fa-save me-2"></i>
-                                )}
-                                SAVE CLINICAL RECORDS
-                            </button>
-                        </div>
+                        <UnifiedToolbar 
+                            actions={[
+                                { 
+                                    label: 'SAVE RECORDS', 
+                                    icon: 'fa-save', 
+                                    onClick: handleSubmit,
+                                    color: 'success'
+                                },
+                                { 
+                                    label: 'DISCARD', 
+                                    icon: 'fa-times', 
+                                    href: route('vitals.index'),
+                                    color: 'gray'
+                                }
+                            ]}
+                        />
                     </form>
                 </div>
             </div>

@@ -1,24 +1,26 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Index({ appointments }) {
     return (
-        <AuthenticatedLayout
-            header="Vital Signs History"
-            toolbarActions={
-                <div className="d-flex align-items-center gap-2">
-                    <Link href={route('vitals.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-extrabold small shadow-sm">
-                        <i className="fas fa-plus me-1"></i> Ad Hoc Vitals
-                    </Link>
-                </div>
-            }
-        >
+        <AuthenticatedLayout header="Vital Signs History">
             <Head title="Vitals & Triage" />
 
             <PageHeader 
                 title="Daily Triage Queue"
                 breadcrumbs={[{ label: 'Clinical', active: false }, { label: 'Vitals', active: true }]}
+            />
+
+            <UnifiedToolbar 
+                actions={[
+                    { 
+                        label: 'AD HOC VITALS', 
+                        icon: 'fa-plus', 
+                        href: route('vitals.create') 
+                    }
+                ]}
             />
 
             <div className="card shadow-sm border-0 rounded-2xl bg-white overflow-hidden">
@@ -28,12 +30,12 @@ export default function Index({ appointments }) {
                 </div>
                 <div className="table-responsive">
                     <table className="table table-hover align-middle mb-0">
-                        <thead className="bg-light">
+                        <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-4 py-3 text-muted text-uppercase small fw-bold">Time</th>
-                                <th className="px-4 py-3 text-muted text-uppercase small fw-bold">Patient</th>
-                                <th className="px-4 py-3 text-muted text-uppercase small fw-bold">Vitals Status</th>
-                                <th className="px-4 py-3 text-end text-muted text-uppercase small fw-bold">Actions</th>
+                                <th className="px-5 py-3 extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Timestamp</th>
+                                <th className="px-5 py-3 extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Subject Identity</th>
+                                <th className="px-5 py-3 extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Monitoring State</th>
+                                <th className="px-5 py-3 text-end extra-small fw-extrabold text-muted text-uppercase tracking-widest border-0">Action</th>
                             </tr>
                         </thead>
                         <tbody>

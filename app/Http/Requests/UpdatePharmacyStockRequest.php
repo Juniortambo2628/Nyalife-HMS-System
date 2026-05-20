@@ -18,6 +18,7 @@ class UpdatePharmacyStockRequest extends FormRequest
             'quantity' => 'required|integer',
             'type' => 'required|in:add,set',
             'notes' => 'nullable|string',
+            'expiry_date' => 'nullable|date',
         ];
     }
 }

@@ -85,6 +85,10 @@ Route::post('/contact', [App\Http\Controllers\ContactMessageController::class, '
 Route::post('/guest-appointment', [App\Http\Controllers\AppointmentController::class, 'storeGuest'])->name('appointments.guest.store');
 Route::post('/check-guest-data', [App\Http\Controllers\CheckGuestDataController::class, 'check'])->name('guest.check');
 
+// Telehealth
+Route::get('/telehealth', [App\Http\Controllers\TelehealthController::class, 'index'])->name('telehealth.index');
+Route::post('/telehealth/consent', [App\Http\Controllers\TelehealthController::class, 'store'])->name('telehealth.store');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     // Admin Contact Messages
     Route::get('/admin/messages', [\App\Http\Controllers\ContactMessageController::class, 'index'])->name('admin.messages.index');
@@ -117,6 +121,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/patients/{id}', [\App\Http\Controllers\PatientController::class, 'update'])->name('patients.update');
     Route::get('/patients/{id}/edit', [\App\Http\Controllers\PatientController::class, 'edit'])->name('patients.edit');
     Route::post('/patients/quick-store', [\App\Http\Controllers\PatientController::class, 'quickStore'])->name('patients.quick-store');
+    Route::post('/patients/import', [\App\Http\Controllers\PatientController::class, 'import'])->name('patients.import');
     
     // Consultations
     Route::resource('consultations', \App\Http\Controllers\ConsultationController::class);
@@ -164,6 +169,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/lab-results', [\App\Http\Controllers\LabController::class, 'results'])->name('lab.results');
     
+    // Radiology
+    Route::get('/radiology/requests', [\App\Http\Controllers\RadiologyController::class, 'index'])->name('radiology.index');
+    Route::get('/radiology/requests/create', [\App\Http\Controllers\RadiologyController::class, 'create'])->name('radiology.create');
+    Route::post('/radiology/requests', [\App\Http\Controllers\RadiologyController::class, 'store'])->name('radiology.store');
+    Route::get('/radiology/requests/{id}', [\App\Http\Controllers\RadiologyController::class, 'show'])->name('radiology.show');
+    Route::post('/radiology/requests/{id}/status', [\App\Http\Controllers\RadiologyController::class, 'updateStatus'])->name('radiology.update-status');
+    Route::delete('/radiology/requests/{id}', [\App\Http\Controllers\RadiologyController::class, 'destroy'])->name('radiology.destroy');
+
+    
     // Pharmacy
     Route::get('/pharmacy/inventory', [\App\Http\Controllers\PharmacyController::class, 'inventory'])->name('pharmacy.inventory');
     Route::post('/pharmacy/inventory/update-stock', [\App\Http\Controllers\PharmacyController::class, 'updateStock'])->name('pharmacy.inventory.update-stock');
@@ -171,6 +185,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/pharmacy/medicines', [\App\Http\Controllers\PharmacyController::class, 'storeMedicine'])->name('pharmacy.medicines.store');
     Route::put('/pharmacy/medicines/{id}', [\App\Http\Controllers\PharmacyController::class, 'updateMedicine'])->name('pharmacy.medicines.update');
     Route::delete('/pharmacy/medicines/{id}', [\App\Http\Controllers\PharmacyController::class, 'destroyMedicine'])->name('pharmacy.medicines.destroy');
+    Route::get('/pharmacy/purchase-orders', [\App\Http\Controllers\PharmacyController::class, 'poIndex'])->name('pharmacy.po');
+    Route::post('/pharmacy/purchase-orders', [\App\Http\Controllers\PharmacyController::class, 'storePO'])->name('pharmacy.po.store');
+    Route::put('/pharmacy/purchase-orders/{id}/status', [\App\Http\Controllers\PharmacyController::class, 'updatePOStatus'])->name('pharmacy.po.update-status');
     
     // Invoices
     Route::get('/invoices', [\App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');
@@ -233,6 +250,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/admin/medical-procedures/{id}', [\App\Http\Controllers\MedicalProcedureController::class, 'update'])->name('medical-procedures.update');
     Route::delete('/admin/medical-procedures/{id}', [\App\Http\Controllers\MedicalProcedureController::class, 'destroy'])->name('medical-procedures.destroy');
     Route::post('/admin/medical-procedures/{id}/toggle', [\App\Http\Controllers\MedicalProcedureController::class, 'toggle'])->name('medical-procedures.toggle');
+
+    // Telehealth Admin
+    Route::get('/admin/telehealth-consents', [App\Http\Controllers\TelehealthController::class, 'adminIndex'])->name('telehealth.admin.index');
+    Route::get('/admin/telehealth-consents/{id}', [App\Http\Controllers\TelehealthController::class, 'show'])->name('telehealth.admin.show');
+    Route::post('/admin/telehealth-consents/{id}/doctor-sign', [App\Http\Controllers\TelehealthController::class, 'signDoctor'])->name('telehealth.admin.sign-doctor');
 });
 
 // Insurance Public API

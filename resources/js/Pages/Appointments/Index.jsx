@@ -28,6 +28,19 @@ export default function Index({ appointments, filters, auth }) {
         quick_filter: filters.quick_filter || '',
     });
 
+    const calculateAge = (dob) => {
+        if (!dob) return null;
+        const birthDate = new Date(dob);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+
     const [modalConfig, setModalConfig] = useState({
         show: false,
         appointment: null,
@@ -85,17 +98,22 @@ export default function Index({ appointments, filters, auth }) {
         {
             header: 'Patient',
             accessorKey: 'patient_id',
-            cell: ({ row }) => (
-                <div>
-                    <div 
-                        onClick={() => openModal(row.original)}
-                        className="cursor-pointer fw-bold text-pink-500 hover:text-pink-700 transition-colors"
-                    >
-                        {row.original.patient?.user?.first_name || 'Unknown'} {row.original.patient?.user?.last_name || 'Patient'}
+            cell: ({ row }) => {
+                const dob = row.original.patient?.date_of_birth || row.original.patient?.user?.date_of_birth;
+                const age = calculateAge(dob);
+                return (
+                    <div>
+                        <div 
+                            onClick={() => openModal(row.original)}
+                            className="cursor-pointer fw-bold text-pink-500 hover:text-pink-700 transition-colors"
+                        >
+                            {row.original.patient?.user?.first_name || 'Unknown'} {row.original.patient?.user?.last_name || 'Patient'}
+                            {age !== null && <span className="text-muted fw-normal ms-1 small">({age}Y)</span>}
+                        </div>
+                        <div className="extra-small text-muted font-bold text-uppercase opacity-75">ID: PAT-{row.original.patient_id}</div>
                     </div>
-                    <div className="extra-small text-muted font-bold text-uppercase opacity-75">ID: PAT-{row.original.patient_id}</div>
-                </div>
-            )
+                );
+            }
         },
         {
             header: 'Doctor',
@@ -432,6 +450,9 @@ export default function Index({ appointments, filters, auth }) {
                                                         <div>
                                                             <h5 className="fw-extrabold text-gray-900 mb-0 text-truncate" style={{ maxWidth: '140px' }}>
                                                                 {apt.patient?.user?.first_name} {apt.patient?.user?.last_name}
+                                                                {calculateAge(apt.patient?.date_of_birth || apt.patient?.user?.date_of_birth) !== null && (
+                                                                    <span className="text-muted fw-normal ms-1 fs-6">({calculateAge(apt.patient?.date_of_birth || apt.patient?.user?.date_of_birth)}Y)</span>
+                                                                )}
                                                             </h5>
                                                             <span className="extra-small text-muted font-bold text-uppercase tracking-widest">PAT-{apt.patient_id}</span>
                                                         </div>

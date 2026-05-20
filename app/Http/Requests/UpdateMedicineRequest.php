@@ -20,6 +20,7 @@ class UpdateMedicineRequest extends FormRequest
             'unit' => 'required|string|max:50',
             'price_per_unit' => 'required|numeric|min:0',
             'description' => 'nullable|string',
+            'expiry_date' => 'nullable|date',
         ];
     }
 }

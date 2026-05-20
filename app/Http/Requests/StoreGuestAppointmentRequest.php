@@ -25,7 +25,7 @@ class StoreGuestAppointmentRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:20',
-            'date' => 'required|date|after:today',
+            'date' => 'required|date|after_or_equal:today',
             'time' => 'required',
             'reason' => 'required|string|max:500',
         ];

@@ -224,17 +224,19 @@ export default function View({ consultation, auth }) {
 
                     {/* Right Column: Detailed Records */}
                     <div className="col-lg-9">
-                        {['doctor', 'admin'].includes(auth.user.role) ? (
+                        {['doctor', 'admin', 'nurse', 'lab_technician', 'receptionist'].includes(auth.user.role) ? (
                             <div className="space-y-6">
-                                {/* 1. Complaints */}
-                                <div className="card border-0 shadow-sm rounded-3xl bg-white shadow-hover">
-                                    <div className="card-header bg-white py-4 px-5 d-flex justify-content-between align-items-center border-bottom-0">
-                                        <h6 className="mb-0 fw-extrabold text-pink-500 extra-small text-uppercase tracking-widest">Initial Assessment</h6>
-                                        {auth.user.role === 'doctor' && consultation.consultation_status === 'open' && (
-                                            <Link href={route('consultations.edit', consultation.consultation_id)} className="btn btn-sm btn-outline-pink rounded-pill px-3 fw-bold extra-small">
-                                                <i className="fas fa-edit me-1"></i>EDIT RECORD
-                                            </Link>
-                                        )}
+                                {['doctor', 'admin'].includes(auth.user.role) && (
+                                    <>
+                                    {/* 1. Complaints */}
+                                    <div className="card border-0 shadow-sm rounded-3xl bg-white shadow-hover">
+                                        <div className="card-header bg-white py-4 px-5 d-flex justify-content-between align-items-center border-bottom-0">
+                                            <h6 className="mb-0 fw-extrabold text-pink-500 extra-small text-uppercase tracking-widest">Initial Assessment</h6>
+                                            {auth.user.role === 'doctor' && consultation.consultation_status === 'open' && (
+                                                <Link href={route('consultations.edit', consultation.consultation_id)} className="btn btn-sm btn-outline-pink rounded-pill px-3 fw-bold extra-small">
+                                                    <i className="fas fa-edit me-1"></i>EDIT RECORD
+                                                </Link>
+                                            )}
                                     </div>
                                     <div className="card-body p-5 pt-0">
                                         <div className="p-4 bg-light rounded-2xl border-l-4 border-pink-500 mb-5 shadow-inner">
@@ -366,28 +368,36 @@ export default function View({ consultation, auth }) {
                                     </div>
                                 </div>
 
-                                {/* 4. Examination */}
+                                {/* 4. Review of Systems */}
+                                <div className="card border-0 shadow-sm rounded-3xl bg-white shadow-hover mb-4">
+                                    <div className="card-header bg-white py-4 px-5 border-bottom-0">
+                                        <h6 className="mb-0 fw-extrabold text-pink-500 extra-small text-uppercase tracking-widest">Review of Systems</h6>
+                                    </div>
+                                    <div className="card-body p-5 pt-0">
+                                        <p className="small text-gray-800 fw-bold">{safeText(consultation.review_of_systems)}</p>
+                                    </div>
+                                </div>
+
+                                {/* 5. Examination */}
                                 <div className="card border-0 shadow-sm rounded-3xl bg-white shadow-hover">
                                     <div className="card-header bg-white py-4 px-5 border-bottom-0">
                                         <h6 className="mb-0 fw-extrabold text-primary extra-small text-uppercase tracking-widest">Physical Examination Findings</h6>
                                     </div>
                                     <div className="card-body p-5 pt-0">
                                         <div className="row g-5">
-                                            <div className="col-md-4">
+                                            <div className="col-md-6">
                                                 <div className="extra-small text-muted fw-extrabold text-uppercase tracking-widest mb-3 opacity-50">General Systems</div>
                                                 <p className="small text-gray-800 fw-bold">{safeText(consultation.general_examination)}</p>
                                             </div>
-                                            <div className="col-md-4">
-                                                <div className="extra-small text-muted fw-extrabold text-uppercase tracking-widest mb-3 opacity-50">Review of Systems</div>
-                                                <p className="small text-gray-800 fw-bold">{safeText(consultation.review_of_systems)}</p>
-                                            </div>
-                                            <div className="col-md-4">
+                                            <div className="col-md-6">
                                                 <div className="extra-small text-muted fw-extrabold text-uppercase tracking-widest mb-3 opacity-50">Targeted Systems</div>
                                                 <p className="small text-gray-800 fw-bold">{safeText(consultation.systems_examination)}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                                </>
+                            )}
 
                                 {/* 5. Diagnosis & Plan */}
                                 <div className="card border-0 shadow-sm rounded-3xl bg-white shadow-hover border-l-4 border-success overflow-hidden">
@@ -395,10 +405,12 @@ export default function View({ consultation, auth }) {
                                         <h6 className="mb-0 fw-extrabold text-success-emphasis extra-small text-uppercase tracking-widest">Diagnosis & Management Protocol</h6>
                                     </div>
                                     <div className="card-body p-5">
-                                        <div className="mb-5">
-                                            <div className="extra-small fw-extrabold text-success text-uppercase tracking-widest mb-3 opacity-50">Clinical Impression</div>
-                                            <h4 className="fw-extrabold text-gray-900 tracking-tightest">{consultation.diagnosis}</h4>
-                                        </div>
+                                        {['doctor', 'admin'].includes(auth.user.role) && (
+                                            <div className="mb-5">
+                                                <div className="extra-small fw-extrabold text-success text-uppercase tracking-widest mb-3 opacity-50">Clinical Impression</div>
+                                                <h4 className="fw-extrabold text-gray-900 tracking-tightest">{consultation.diagnosis}</h4>
+                                            </div>
+                                        )}
                                         
                                         <div className="row g-5">
                                             <div className="col-md-6">
@@ -506,7 +518,7 @@ export default function View({ consultation, auth }) {
                                     </div>
                                     <h4 className="fw-extrabold text-gray-900 tracking-tightest mb-3">CLINICAL RECORDS RESTRICTED</h4>
                                     <p className="text-muted fw-medium mx-auto opacity-75" style={{ maxWidth: '500px' }}>
-                                        Professional nursing access is limited to patient biodata and vital sign monitoring. Clinical narratives, diagnostic findings, and professional management plans are restricted to attending physicians and administrators.
+                                        Access to detailed clinical logs, examinations, and diagnostic plans is restricted to clinical personnel and authorized staff. If you require copies of your medical reports, please request them from the reception desk.
                                     </p>
                                 </div>
                             </div>
@@ -527,7 +539,7 @@ export default function View({ consultation, auth }) {
 
             <UnifiedToolbar 
                 actions={[
-                    { 
+                    ['doctor', 'admin'].includes(auth.user.role) && { 
                         label: 'ADD PRESCRIPTION', 
                         icon: 'fa-prescription', 
                         href: route('prescriptions.create', { 
@@ -535,7 +547,7 @@ export default function View({ consultation, auth }) {
                             consultation_id: consultation.consultation_id 
                         })
                     },
-                    { 
+                    ['receptionist', 'admin', 'doctor'].includes(auth.user.role) && { 
                         label: 'GENERATE INVOICE', 
                         icon: 'fa-file-invoice-dollar', 
                         href: route('invoices.create', { 
@@ -544,7 +556,7 @@ export default function View({ consultation, auth }) {
                         }),
                         color: 'success'
                     },
-                    { 
+                    ['doctor', 'nurse', 'admin'].includes(auth.user.role) && { 
                         label: 'ADD LAB REQUEST', 
                         icon: 'fa-flask', 
                         href: route('lab.create', { 
@@ -559,7 +571,7 @@ export default function View({ consultation, auth }) {
                         href: route('consultations.index'),
                         color: 'gray'
                     }
-                ]}
+                ].filter(Boolean)}
             />
         </AuthenticatedLayout>
     );

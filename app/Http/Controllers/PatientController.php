@@ -240,4 +240,107 @@ class PatientController extends Controller
             ];
         }));
     }
+
+    /**
+     * Import patients from CSV.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:5120',
+        ]);
+
+        $file = $request->file('csv_file');
+        $filePath = $file->getRealPath();
+
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            return redirect()->back()->with('error', 'Unable to open uploaded CSV file.');
+        }
+
+        $header = fgetcsv($handle, 1000, ',');
+        if (!$header) {
+            fclose($handle);
+            return redirect()->back()->with('error', 'CSV file is empty or malformed.');
+        }
+
+        // Clean headers (remove BOM/spaces/lowercase)
+        $header = array_map(function($h) {
+            return strtolower(trim(preg_replace('/[\x00-\x1F\x7F-\x9F\xEF\xBB\xBF]/', '', $h)));
+        }, $header);
+
+        $requiredHeaders = ['first_name', 'last_name', 'email', 'phone', 'gender', 'date_of_birth'];
+        $missing = array_diff($requiredHeaders, $header);
+
+        if (count($missing) > 0) {
+            fclose($handle);
+            return redirect()->back()->with('error', 'Missing required CSV headers: ' . implode(', ', $missing) . '. Please ensure headers are present.');
+        }
+
+        $importedCount = 0;
+        $skippedCount = 0;
+        $roleId = \App\Models\Role::where('role_name', 'patient')->first()->role_id ?? 7;
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
+                if (count($row) < count($header)) {
+                    continue; // Skip malformed rows
+                }
+
+                $data = array_combine($header, array_slice($row, 0, count($header)));
+
+                // Check if user already exists
+                $existingUser = User::where('email', trim($data['email']))
+                    ->orWhere('phone', trim($data['phone']))
+                    ->first();
+
+                if ($existingUser) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                $safeFirstName = str_replace(' ', '', $data['first_name']);
+                $safeLastName = str_replace(' ', '', $data['last_name']);
+                $username = strtolower($safeFirstName . '.' . $safeLastName . '.' . rand(1000, 9999));
+
+                $user = User::create([
+                    'first_name' => trim($data['first_name']),
+                    'last_name' => trim($data['last_name']),
+                    'email' => trim($data['email']),
+                    'phone' => trim($data['phone']),
+                    'username' => $username,
+                    'password' => Hash::make('password123'), // Default temporary password
+                    'role_id' => $roleId,
+                    'is_active' => true,
+                    'gender' => trim(strtolower($data['gender'])),
+                    'date_of_birth' => trim($data['date_of_birth']),
+                    'address' => isset($data['address']) ? trim($data['address']) : null,
+                ]);
+
+                Patient::create([
+                    'user_id' => $user->user_id,
+                    'date_of_birth' => trim($data['date_of_birth']),
+                    'gender' => trim(strtolower($data['gender'])),
+                    'address' => isset($data['address']) ? trim($data['address']) : null,
+                    'blood_group' => isset($data['blood_group']) ? trim($data['blood_group']) : null,
+                    'emergency_name' => isset($data['emergency_name']) ? trim($data['emergency_name']) : null,
+                    'emergency_contact' => isset($data['emergency_contact']) ? trim($data['emergency_contact']) : null,
+                    'patient_number' => 'PAT-' . date('Ymd') . '-' . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
+                ]);
+
+                $importedCount++;
+            }
+            
+            fclose($handle);
+            \Illuminate\Support\Facades\DB::commit();
+        } catch (\Exception $e) {
+            fclose($handle);
+            \Illuminate\Support\Facades\DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Patient CSV Import failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred during import: ' . $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', "CSV Import completed. Imported: {$importedCount}, Skipped (Duplicates): {$skippedCount}.");
+    }
 }

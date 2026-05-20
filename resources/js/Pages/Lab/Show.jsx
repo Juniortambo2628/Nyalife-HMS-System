@@ -39,11 +39,12 @@ export default function Show({ request, auth }) {
     }
 
     const { data, setData, post, processing, errors } = useForm({
-        status: 'completed',
+        status: auth.user.role === 'lab_technician' ? 'pending_verification' : 'completed',
         results: initialResults
     });
 
     const isLabTech = auth.user.role === 'lab_technician' || auth.user.role === 'admin';
+    const isDoctorOrAdmin = ['doctor', 'admin'].includes(auth.user.role);
     const storageKey = `lab_draft_${request.request_id}`;
 
     // Draft Recovery
@@ -119,8 +120,8 @@ export default function Show({ request, auth }) {
         });
     };
 
-    const submit = async (e) => {
-        e.preventDefault();
+    const submit = async (e, statusOverride = null) => {
+        if (e && e.preventDefault) e.preventDefault();
         const filePromises = files.map(async (fileItem) => {
             const file = fileItem.file;
             let fileData = null;
@@ -137,8 +138,12 @@ export default function Show({ request, auth }) {
         });
         const attachments = await Promise.all(filePromises);
         const finalResults = { ...data.results, attachments: attachments };
+        
+        const targetStatus = statusOverride || data.status;
+
         router.post(route('lab.update-status', request.request_id), {
             ...data,
+            status: targetStatus,
             results: finalResults
         }, {
             onSuccess: () => localStorage.removeItem(storageKey)
@@ -231,8 +236,11 @@ export default function Show({ request, auth }) {
                                     </div>
                                     <div className="d-flex justify-content-between align-items-center">
                                         <span className="text-muted extra-small fw-bold text-uppercase">Status</span>
-                                        <span className={`badge rounded-pill px-3 py-1 fw-extrabold extra-small text-uppercase ${request.status === 'completed' ? 'bg-success text-white' : 'bg-warning text-dark'}`}>
-                                            {request.status}
+                                        <span className={`badge rounded-pill px-3 py-1 fw-extrabold extra-small text-uppercase ${
+                                            ['verified', 'completed'].includes(request.status) ? 'bg-success text-white' : 
+                                            request.status === 'pending_verification' ? 'bg-info text-white' : 'bg-warning text-dark'
+                                        }`}>
+                                            {request.status?.replace('_', ' ')}
                                         </span>
                                     </div>
                                 </div>
@@ -291,14 +299,28 @@ export default function Show({ request, auth }) {
                                 <h6 className="mb-0 fw-extrabold text-uppercase tracking-widest extra-small">Investigation Findings</h6>
                             </div>
                             <div className="card-body p-4">
-                                {request.status === 'completed' ? (
+                                {['verified', 'completed', 'pending_verification'].includes(request.status) ? (
                                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                                         <div className="text-center mb-5">
-                                            <div className="bg-success-subtle text-success p-4 rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm border border-success-subtle" style={{ width: '100px', height: '100px' }}>
-                                                <i className="fas fa-check-double fa-2x"></i>
-                                            </div>
-                                            <h4 className="fw-extrabold text-gray-900 tracking-tighter">RESULTS CERTIFIED</h4>
-                                            <p className="extra-small fw-bold text-muted text-uppercase tracking-widest opacity-50">Analysis verified by laboratory department</p>
+                                            {request.status === 'pending_verification' ? (
+                                                <>
+                                                    <div className="bg-warning-subtle text-warning p-4 rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm border border-warning-subtle" style={{ width: '100px', height: '100px' }}>
+                                                        <i className="fas fa-history fa-2x"></i>
+                                                    </div>
+                                                    <h4 className="fw-extrabold text-warning tracking-tighter">AWAITING VERIFICATION</h4>
+                                                    <p className="extra-small fw-bold text-muted text-uppercase tracking-widest opacity-50">Results compiled, awaiting physician verification</p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="bg-success-subtle text-success p-4 rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm border border-success-subtle" style={{ width: '100px', height: '100px' }}>
+                                                        <i className="fas fa-check-double fa-2x"></i>
+                                                    </div>
+                                                    <h4 className="fw-extrabold text-success tracking-tighter">RESULTS CERTIFIED</h4>
+                                                    <p className="extra-small fw-bold text-muted text-uppercase tracking-widest opacity-50">
+                                                        Analysis verified by {request.verified_by ? 'Dr. ' + (request.verifiedByUser?.last_name || 'attending physician') : 'laboratory department'}
+                                                    </p>
+                                                </>
+                                            )}
                                         </div>
 
                                         <div className="space-y-8">
@@ -529,16 +551,22 @@ export default function Show({ request, auth }) {
             )}
             <UnifiedToolbar 
                 actions={[
-                    request.status === 'completed' && { 
+                    ['verified', 'completed'].includes(request.status) && { 
                         label: 'PRINT REPORT', 
                         icon: 'fa-print', 
                         onClick: handlePrint 
                     },
-                    !processing && isLabTech && request.status !== 'completed' && { 
-                        label: 'RELEASE RESULTS', 
-                        icon: 'fa-check-double', 
-                        onClick: submit,
+                    !processing && isDoctorOrAdmin && request.status === 'pending_verification' && {
+                        label: 'VERIFY & RELEASE RESULTS',
+                        icon: 'fa-check-double',
+                        onClick: (e) => submit(e, 'verified'),
                         color: 'success'
+                    },
+                    !processing && isLabTech && !['verified', 'completed', 'pending_verification'].includes(request.status) && { 
+                        label: 'RELEASE RESULTS', 
+                        icon: 'fa-paper-plane', 
+                        onClick: (e) => submit(e, 'pending_verification'),
+                        color: 'warning'
                     },
                     { 
                         label: 'BACK TO REGISTRY', 

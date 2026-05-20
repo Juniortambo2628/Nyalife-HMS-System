@@ -47,8 +47,8 @@ class BlogController extends Controller
             'title' => $validated['title'],
             'slug' => Str::slug($validated['title']) . '-' . rand(1000, 9999),
             'content' => $validated['content'],
-            'excerpt' => $validated['excerpt'],
-            'tags' => $validated['tags'],
+            'excerpt' => $validated['excerpt'] ?? null,
+            'tags' => $validated['tags'] ?? [],
             'image_path' => $imagePath,
             'author_id' => auth()->id(),
             'is_published' => true,
@@ -62,9 +62,12 @@ class BlogController extends Controller
     {
         $blog = Blog::findOrFail($id);
         $validated = $request->validated();
+        
         if ($request->file('image')) {
             $validated['image_path'] = $request->file('image')->store('blogs', 'public');
         }
+        
+        unset($validated['image']);
 
         $blog->update($validated);
 

@@ -147,6 +147,13 @@ class DashboardController extends Controller
                 ->where('consultation_date', '>=', now()->startOfWeek())
                 ->count();
 
+            $stats['completed_today'] = Consultation::where('doctor_id', $staff->staff_id)
+                ->where('consultation_status', 'completed')
+                ->whereDate('consultation_date', today())
+                ->with('patient.user')
+                ->latest()
+                ->get();
+
             $stats['in_progress_consultations'] = Consultation::where('doctor_id', $staff->staff_id)
                 ->whereIn('consultation_status', ['pending', 'in_progress'])
                 ->whereDoesntHave('labTestRequests', function($q) {

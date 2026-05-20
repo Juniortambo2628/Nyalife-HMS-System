@@ -14,6 +14,14 @@ class LabTestRequestResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $user = $request->user();
+        $showResults = true;
+        if ($user && $user->role === 'patient') {
+            if (!in_array($this->status, ['verified', 'completed'])) {
+                $showResults = false;
+            }
+        }
+
         return [
             'request_id' => $this->request_id,
             'request_number' => $this->request_number,
@@ -28,14 +36,17 @@ class LabTestRequestResource extends JsonResource
             'processed_at' => $this->processed_at instanceof \DateTimeInterface ? $this->processed_at->format(\DateTimeInterface::ATOM) : $this->processed_at,
             'created_at' => $this->created_at instanceof \DateTimeInterface ? $this->created_at->format(\DateTimeInterface::ATOM) : $this->created_at,
             'updated_at' => $this->updated_at instanceof \DateTimeInterface ? $this->updated_at->format(\DateTimeInterface::ATOM) : $this->updated_at,
-            'results' => $this->results,
+            'results' => $showResults ? $this->results : null,
             'completed_at' => $this->completed_at instanceof \DateTimeInterface ? $this->completed_at->format(\DateTimeInterface::ATOM) : $this->completed_at,
             'assigned_to' => $this->assigned_to,
+            'verified_by' => $this->verified_by,
+            'verified_at' => $this->verified_at instanceof \DateTimeInterface ? $this->verified_at->format(\DateTimeInterface::ATOM) : $this->verified_at,
             'notes' => $this->notes,
             'patient' => $this->whenLoaded('patient', fn () => new PatientResource($this->patient)),
             'doctor' => $this->whenLoaded('doctor', fn () => new StaffResource($this->doctor)),
             'requestedBy' => $this->whenLoaded('requestedBy', fn () => new UserResource($this->requestedBy)),
             'assignedToUser' => $this->whenLoaded('assignedTo', fn () => new UserResource($this->assignedTo)),
+            'verifiedByUser' => $this->whenLoaded('verifiedBy', fn () => new UserResource($this->verifiedBy)),
             'test_type' => $this->whenLoaded('testType', fn () => $this->testType),
             'consultation' => $this->whenLoaded('consultation', fn () => new ConsultationResource($this->consultation)),
         ];

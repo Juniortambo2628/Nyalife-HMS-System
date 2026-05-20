@@ -26,10 +26,10 @@ class LabTestRequest extends Model
         'request_number',
         'patient_id',
         'doctor_id',
-        'test_type_id', // Note: Legacy used test_id or test_type_id
+        'test_type_id',
         'priority',
         'requested_by',
-        'status', // pending, completed
+        'status', // pending, processing, pending_verification, verified, completed, cancelled
         'request_date',
         'completed_at',
         'results',
@@ -37,13 +37,16 @@ class LabTestRequest extends Model
         'sample_collected_by',
         'notes',
         'consultation_id',
-        'appointment_id'
+        'appointment_id',
+        'verified_by',
+        'verified_at'
     ];
 
     protected $casts = [
         'results' => 'array',
         'request_date' => 'datetime',
-        'completed_at' => 'datetime'
+        'completed_at' => 'datetime',
+        'verified_at' => 'datetime'
     ];
 
     public function patient()
@@ -69,6 +72,11 @@ class LabTestRequest extends Model
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to', 'user_id');
+    }
+
+    public function verifiedBy()
+    {
+        return $this->belongsTo(User::class, 'verified_by', 'user_id');
     }
 
     public function consultation()

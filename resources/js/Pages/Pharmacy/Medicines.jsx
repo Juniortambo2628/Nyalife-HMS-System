@@ -18,6 +18,7 @@ export default function Medicines({ medicines, filters, auth }) {
         unit: 'Pills',
         price_per_unit: '',
         description: '',
+        expiry_date: '',
     });
 
     const handleSearch = (searchValue, quickFilterValue = filters?.quick_filter) => {
@@ -43,6 +44,7 @@ export default function Medicines({ medicines, filters, auth }) {
             unit: med.unit || 'Pills',
             price_per_unit: med.price_per_unit || 0,
             description: med.description || '',
+            expiry_date: med.expiry_date || '',
         });
         setShowModal(true);
     };
@@ -166,6 +168,7 @@ export default function Medicines({ medicines, filters, auth }) {
                                 <option value="Syrup">Syrup</option>
                                 <option value="Injection">Injection</option>
                                 <option value="Ointment">Ointment</option>
+                                <option value="Pessaries">Pessaries</option>
                                 <option value="General">General</option>
                             </select>
                         </div>
@@ -205,6 +208,17 @@ export default function Medicines({ medicines, filters, auth }) {
                                 required
                             />
                         </div>
+                    </div>
+
+                    <div className="mb-3">
+                        <label className="form-label small fw-bold text-muted">Expiry Date (Optional)</label>
+                        <input 
+                            type="date" 
+                            className={`form-control ${errors.expiry_date ? 'is-invalid' : ''}`}
+                            value={data.expiry_date || ''}
+                            onChange={e => setData('expiry_date', e.target.value)}
+                        />
+                        {errors.expiry_date && <div className="invalid-feedback">{errors.expiry_date}</div>}
                     </div>
 
                     <div className="mb-4">

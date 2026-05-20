@@ -38,11 +38,20 @@ class LabController extends Controller
                 case 'pending':
                     $query->where('status', 'pending');
                     break;
+                case 'processing':
+                    $query->where('status', 'processing');
+                    break;
+                case 'pending_verification':
+                    $query->where('status', 'pending_verification');
+                    break;
+                case 'verified':
+                    $query->whereIn('status', ['verified', 'completed']);
+                    break;
                 case 'completed':
                     $query->where('status', 'completed');
                     break;
                 case 'urgent':
-                    $query->where('priority', 'urgent')->where('status', 'pending');
+                    $query->where('priority', 'urgent')->whereIn('status', ['pending', 'processing']);
                     break;
             }
         }
@@ -130,7 +139,7 @@ class LabController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,processing,completed,cancelled',
+            'status' => 'required|in:pending,processing,pending_verification,verified,completed,cancelled',
             'results' => 'nullable|array'
         ]);
 
@@ -141,9 +150,22 @@ class LabController extends Controller
             'results' => $validated['results'] ?? $labRequest->results,
         ];
 
+        // Lab technician submits results → pending_verification
+        if ($validated['status'] === 'pending_verification') {
+            $updateData['assigned_to'] = Auth::id();
+        }
+
+        // Senior / Doctor verifies results → verified (also marks completed)
+        if ($validated['status'] === 'verified') {
+            $updateData['verified_by'] = Auth::id();
+            $updateData['verified_at'] = now();
+            $updateData['completed_at'] = now();
+        }
+
+        // Legacy direct-complete path
         if ($validated['status'] === 'completed') {
             $updateData['completed_at'] = now();
-            $updateData['assigned_to'] = Auth::id(); // Or processed_by if that's the column
+            $updateData['assigned_to'] = Auth::id();
         }
 
         if ($validated['status'] === 'processing') {
@@ -154,11 +176,11 @@ class LabController extends Controller
 
         ActivityLogger::log(
             'lab',
-            "Lab request " . ($validated['status'] === 'completed' ? 'results ready' : "updated to {$validated['status']}"),
+            "Lab request " . ($validated['status'] === 'verified' ? 'results verified' : ($validated['status'] === 'pending_verification' ? 'awaiting verification' : "updated to {$validated['status']}")),
             ['request_id' => $labRequest->request_id, 'status' => $validated['status']],
             Auth::user(),
             $labRequest,
-            [$labRequest->requested_by, $labRequest->patient->user_id, 1] // Notify Doctor, Patient, and Admin
+            [$labRequest->requested_by, $labRequest->patient->user_id, 1]
         );
 
         return redirect()->back()->with('success', 'Lab request status updated to ' . $validated['status']);

@@ -104,10 +104,19 @@ class PharmacyController extends Controller
         $validated = $request->validated();
         $medication = Medication::findOrFail($validated['medication_id']);
 
+        $updateData = [];
         if ($validated['type'] === 'add') {
             $medication->increment('stock_quantity', $validated['quantity']);
         } else {
-            $medication->update(['stock_quantity' => $validated['quantity']]);
+            $updateData['stock_quantity'] = $validated['quantity'];
+        }
+
+        if (array_key_exists('expiry_date', $validated)) {
+            $updateData['expiry_date'] = $validated['expiry_date'];
+        }
+
+        if (!empty($updateData)) {
+            $medication->update($updateData);
         }
 
         return redirect()->back()->with('success', 'Inventory updated successfully.');
@@ -130,5 +139,69 @@ class PharmacyController extends Controller
             });
 
         return response()->json($medications);
+    }
+
+    /**
+     * Display a listing of pharmacy purchase orders.
+     */
+    public function poIndex(Request $request)
+    {
+        $orders = \App\Models\PharmacyPurchaseOrder::with('medication')->latest()->paginate(15);
+        $lowStockMedications = Medication::where('stock_quantity', '<=', 20)->get();
+
+        return Inertia::render('Pharmacy/PurchaseOrders', [
+            'orders' => $orders,
+            'lowStockMedications' => $lowStockMedications,
+        ]);
+    }
+
+    /**
+     * Store a new pharmacy purchase order.
+     */
+    public function storePO(Request $request)
+    {
+        $validated = $request->validate([
+            'medication_id' => 'required|exists:medications,medication_id',
+            'quantity' => 'required|integer|min:1',
+            'supplier_name' => 'required|string|max:255',
+            'estimated_cost' => 'required|numeric|min:0',
+        ]);
+
+        $medication = Medication::findOrFail($validated['medication_id']);
+
+        \App\Models\PharmacyPurchaseOrder::create([
+            'order_number' => 'PO-' . strtoupper(uniqid()),
+            'medication_id' => $medication->medication_id,
+            'medication_name' => $medication->medication_name,
+            'quantity' => $validated['quantity'],
+            'supplier_name' => $validated['supplier_name'],
+            'estimated_cost' => $validated['estimated_cost'],
+            'status' => 'pending',
+        ]);
+
+        return redirect()->back()->with('success', 'Purchase order created successfully.');
+    }
+
+    /**
+     * Update the status of a pharmacy purchase order.
+     */
+    public function updatePOStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,ordered,received,cancelled',
+        ]);
+
+        $order = \App\Models\PharmacyPurchaseOrder::findOrFail($id);
+        $order->update(['status' => $validated['status']]);
+
+        // If received, auto-update the stock of the medication!
+        if ($validated['status'] === 'received' && $order->medication_id) {
+            $medication = Medication::find($order->medication_id);
+            if ($medication) {
+                $medication->increment('stock_quantity', $order->quantity);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Purchase order status updated successfully.');
     }
 }

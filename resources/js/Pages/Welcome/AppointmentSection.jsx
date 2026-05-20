@@ -8,7 +8,7 @@ export default function AppointmentSection({ data, setData, handleSubmit, proces
                 <div className="max-w-3xl mx-auto">
                     <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <span className="badge bg-pink-100 text-pink-600 px-3 py-2 rounded-pill fw-medium d-inline-block shadow-sm mb-4">
-                            Reservation Registry
+                            Booking Registry
                         </span>
                         <h2 className="display-5 fw-bold text-gray-900 mb-4 section-title-main">Begin Your Healthcare Journey</h2>
                         <p className="lead text-gray-600 max-w-2xl mx-auto fw-medium">

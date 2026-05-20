@@ -25,6 +25,8 @@ const StatusBadge = ({ status, className = "" }) => {
         processing: { bg: 'bg-info-subtle', text: 'text-info', icon: 'fa-flask fa-spin', label: 'Processing' },
         awaiting_sample: { bg: 'bg-warning-subtle', text: 'text-warning-emphasis', icon: 'fa-vial', label: 'Awaiting Sample' },
         dispensed: { bg: 'bg-success-subtle', text: 'text-success', icon: 'fa-prescription-bottle', label: 'Dispensed' },
+        pending_verification: { bg: 'bg-info-subtle', text: 'text-info', icon: 'fa-history', label: 'Pending Verification' },
+        verified: { bg: 'bg-success-subtle', text: 'text-success', icon: 'fa-check-double', label: 'Verified' },
         
         // Generic
         active: { bg: 'bg-success-subtle', text: 'text-success', icon: 'fa-toggle-on', label: 'Active' },

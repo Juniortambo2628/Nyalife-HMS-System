@@ -602,8 +602,8 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                 <div className="col-12 animate-fade-in">
                     <FormSection title="Obstetric History" icon="fas fa-baby-carriage" headerClassName="bg-purple-50 text-purple-700 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
                         <div className="row g-3 mb-4">
-                            <FormField label="Parity (No. of Pregnancies)" className="col-md-4">
-                                <input type="number" className="form-control" value={data.parity} onChange={e => setData('parity', e.target.value)} />
+                            <FormField label="Parity (Para X+Y)" className="col-md-4">
+                                <input type="text" className="form-control" placeholder="e.g. 2+0" value={data.parity} onChange={e => setData('parity', e.target.value)} />
                             </FormField>
                             <FormField label="Current Pregnancy Notes" className="col-md-8">
                                 <input type="text" className="form-control" placeholder="Any details on current pregnancy..." value={data.current_pregnancy} onChange={e => setData('current_pregnancy', e.target.value)} />
@@ -675,17 +675,25 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                     </div>
                 )}
                 
-                {/* 6. Examination & System Review */}
+                {/* 6. Review of Systems */}
                 <div className="col-12">
-                    <FormSection title="Examination & Review of Systems" headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
+                    <FormSection title="Review of Systems" headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
+                        <div className="row g-4">
+                            <FormField label="Review of Systems" className="col-12">
+                                <textarea className="form-control" rows="3" placeholder="Systematic review of systems..." value={data.review_of_systems} onChange={e => setData('review_of_systems', e.target.value)} />
+                            </FormField>
+                        </div>
+                    </FormSection>
+                </div>
+
+                {/* 7. Physical Examination */}
+                <div className="col-12">
+                    <FormSection title="Physical Examination" headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
                         <div className="row g-4">
                             <FormField label="General Examination" className="col-md-6">
                                 <textarea className="form-control" rows="3" placeholder="General appearance..." value={data.general_examination} onChange={e => setData('general_examination', e.target.value)} />
                             </FormField>
-                            <FormField label="Review of Systems" className="col-md-6">
-                                <textarea className="form-control" rows="3" placeholder="Systematic review..." value={data.review_of_systems} onChange={e => setData('review_of_systems', e.target.value)} />
-                            </FormField>
-                            <FormField label="Specific Systems Examination" className="col-12">
+                            <FormField label="Specific Systems Examination" className="col-md-6">
                                 <textarea className="form-control" rows="3" placeholder="Detailed findings..." value={data.systems_examination} onChange={e => setData('systems_examination', e.target.value)} />
                             </FormField>
                         </div>

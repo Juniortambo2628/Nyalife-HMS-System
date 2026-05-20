@@ -50,8 +50,10 @@ export default function Requests({ requests, filters }) {
             accessorKey: 'status',
             cell: ({ row }) => {
                 const s = row.original.status;
-                const badgeClass = s === 'completed' ? 'bg-success' : 'bg-warning text-dark';
-                return <span className={`badge rounded-pill px-3 py-1 ${badgeClass}`}>{s.toUpperCase()}</span>;
+                const badgeClass = ['verified', 'completed'].includes(s) ? 'bg-success text-white' : 
+                                   s === 'pending_verification' ? 'bg-info text-white' : 
+                                   'bg-warning text-dark';
+                return <span className={`badge rounded-pill px-3 py-1 ${badgeClass}`}>{s.replace('_', ' ').toUpperCase()}</span>;
             }
         },
         {

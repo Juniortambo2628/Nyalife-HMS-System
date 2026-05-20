@@ -92,6 +92,23 @@ class ConsultationController extends Controller
             'patient_id' => $patientId,
             'url' => $request->fullUrl()
         ]);
+
+        // Auto-redirect if an active draft already exists for this patient/appointment to prevent duplication
+        if ($appointmentId || $patientId) {
+            $existingDraft = Consultation::where('consultation_status', 'in_progress')
+                ->when($appointmentId, function($q) use ($appointmentId) {
+                    return $q->where('appointment_id', $appointmentId);
+                })
+                ->when($patientId && !$appointmentId, function($q) use ($patientId) {
+                    return $q->where('patient_id', $patientId);
+                })
+                ->first();
+
+            if ($existingDraft) {
+                return redirect()->route('consultations.edit', $existingDraft->consultation_id)
+                    ->with('info', 'Redirected to resume active assessment draft.');
+            }
+        }
         
         $appointment = null;
         $patient = null;
@@ -333,11 +350,6 @@ class ConsultationController extends Controller
     {
         $user = Auth::user();
         
-        // Block receptionists from clinical details
-        if ($user && $user->role === 'receptionist') {
-            abort(403, 'Unauthorized access to clinical details.');
-        }
-
         $consultation = Consultation::with([
             'patient.user', 
             'doctor.user', 

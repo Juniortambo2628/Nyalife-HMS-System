@@ -69,7 +69,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
                     },
                 }}
             />
-            <Head title="Nyalife Women's Clinic - Specialized O&G Care" />
+            <Head title="Nyalife Women's Clinic - Specialized OBGYN Care" />
             
             {/* Elegant Navbar */}
             <nav className="navbar navbar-expand-lg sticky-top landing-navbar">
@@ -227,7 +227,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
                                     <p className="mb-0 font-bold">nyalifewomenshealth@gmail.com</p>
                                 </div>
                                 <div>
-                                    <div className="extra-small fw-bold opacity-50 mb-2 uppercase tracking-widest">Clinical Hotline</div>
+                                    <div className="extra-small fw-bold opacity-50 mb-2 uppercase tracking-widest">Clinic Contact</div>
                                     <p className="mb-0 h5 fw-extrabold tracking-tighter">0746 516514</p>
                                 </div>
                                 <div>

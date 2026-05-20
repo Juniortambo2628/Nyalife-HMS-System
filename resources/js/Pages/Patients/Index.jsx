@@ -47,6 +47,23 @@ export default function Index({ patients, filters, auth }) {
         });
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('csv_file', file);
+
+        router.post(route('patients.import'), formData, {
+            onSuccess: () => {
+                // Flash success will be handled by session flash
+            },
+            onError: (err) => {
+                alert(err.csv_file || 'CSV Import failed. Please verify format.');
+            }
+        });
+    };
+
     const calculateAge = (dob) => {
         if (!dob) return 'N/A';
         const birthDate = new Date(dob);
@@ -276,6 +293,7 @@ export default function Index({ patients, filters, auth }) {
                     />
                 }
                 actions={[
+                    { label: 'IMPORT CSV', icon: 'fa-file-import', onClick: () => document.getElementById('csvFileInput').click(), color: 'success' },
                     { label: 'REGISTER NEW', icon: 'fa-user-plus', href: route('patients.create') }
                 ]}
                 bulkActions={[
@@ -390,6 +408,15 @@ export default function Index({ patients, filters, auth }) {
                     </div>
                 )}
             </div>
+
+            {/* Hidden CSV Input */}
+            <input 
+                type="file" 
+                id="csvFileInput" 
+                accept=".csv" 
+                className="d-none" 
+                onChange={handleFileChange} 
+            />
 
             {/* Quick Info Modal */}
             <InfoModal

@@ -18,7 +18,8 @@ class Medication extends Model
         'strength',
         'unit',
         'stock_quantity',
-        'price_per_unit'
+        'price_per_unit',
+        'expiry_date'
     ];
 
     public function scopeSearchByNameOrType($query, $search)

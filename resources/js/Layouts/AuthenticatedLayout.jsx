@@ -289,6 +289,16 @@ export default function AuthenticatedLayout({
                             {header && <div className="page-title mb-0 fs-5 fw-bold text-gray-800">{header}</div>}
                         </div>
                         <div className="d-flex align-items-center gap-2 gap-md-3 ms-auto">
+                            {auth.user.role !== 'patient' && (
+                                <Link 
+                                    href={route('appointments.create')} 
+                                    className="btn btn-sm text-white rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-2 shadow-sm border-0" 
+                                    style={{ background: 'linear-gradient(135deg, #db2777 0%, #be185d 100%)', fontSize: '0.8rem', transition: 'all 0.2s' }}
+                                >
+                                    <i className="fas fa-calendar-plus"></i>
+                                    <span className="d-none d-sm-inline">Book Appointment</span>
+                                </Link>
+                            )}
                             {/* Autosave Status Indicator - Hidden here, now in UnifiedToolbar center */}
                             {/* Messages Toggle */}
                             <div className="dropdown">

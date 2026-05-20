@@ -16,6 +16,7 @@ export default function Inventory({ inventory, filters, auth }) {
         quantity: '',
         type: 'add',
         notes: '',
+        expiry_date: '',
     });
 
     const handleSearch = (searchValue, quickFilterValue = filters?.quick_filter) => {
@@ -28,7 +29,13 @@ export default function Inventory({ inventory, filters, auth }) {
 
     const openUpdateModal = (item) => {
         setSelectedMed(item);
-        setData('medication_id', item.medication_id);
+        setData({
+            medication_id: item.medication_id,
+            quantity: '',
+            type: 'add',
+            notes: '',
+            expiry_date: item.expiry_date || '',
+        });
         setShowModal(true);
     };
 
@@ -60,6 +67,39 @@ export default function Inventory({ inventory, filters, auth }) {
             header: 'Stock Level',
             accessorKey: 'stock_quantity',
             cell: ({ row }) => <span className="fw-semibold">{row.original.stock_quantity ?? 0} {row.original.unit || 'units'}</span>
+        },
+        {
+            header: 'Expiry Date',
+            accessorKey: 'expiry_date',
+            cell: ({ row }) => {
+                const expiry = row.original.expiry_date;
+                if (!expiry) return <span className="text-muted">—</span>;
+                
+                const expDate = new Date(expiry);
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                expDate.setHours(0,0,0,0);
+                
+                const diffTime = expDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                let badgeClass = 'bg-soft-success text-success border border-success-subtle';
+                let label = expiry;
+                
+                if (diffDays < 0) {
+                    badgeClass = 'bg-soft-danger text-danger border border-danger-subtle';
+                    label = `${expiry} (Expired)`;
+                } else if (diffDays <= 90) {
+                    badgeClass = 'bg-soft-warning text-warning border border-warning-subtle';
+                    label = `${expiry} (${diffDays} days left)`;
+                }
+                
+                return (
+                    <span className={`badge px-3 py-1 rounded-pill ${badgeClass}`} style={{ fontSize: '0.8rem' }}>
+                        {label}
+                    </span>
+                );
+            }
         },
         {
             header: 'Status',
@@ -143,6 +183,16 @@ export default function Inventory({ inventory, filters, auth }) {
                             value={data.quantity}
                             onChange={e => setData('quantity', e.target.value)}
                             required
+                        />
+                    </div>
+
+                    <div className="mb-3">
+                        <label className="form-label small fw-bold text-muted">Expiry Date (Optional)</label>
+                        <input 
+                            type="date" 
+                            className="form-control"
+                            value={data.expiry_date || ''}
+                            onChange={e => setData('expiry_date', e.target.value)}
                         />
                     </div>
 

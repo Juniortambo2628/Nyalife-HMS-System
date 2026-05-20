@@ -537,7 +537,7 @@ export default function Edit({
                     <div className="col-12">
                         <FormSection title="Obstetric History" icon="fas fa-baby-carriage">
                             <div className="row g-3 mb-4">
-                                <FormField label="Parity" className="col-md-4"><input type="number" className="form-control" value={data.parity} onChange={e => setData('parity', e.target.value)} /></FormField>
+                                <FormField label="Parity (Para X+Y)" className="col-md-4"><input type="text" className="form-control" placeholder="e.g. 2+0" value={data.parity} onChange={e => setData('parity', e.target.value)} /></FormField>
                                 <FormField label="Current Pregnancy Notes" className="col-md-8"><input type="text" className="form-control" value={data.current_pregnancy} onChange={e => setData('current_pregnancy', e.target.value)} /></FormField>
                             </div>
                         </FormSection>
@@ -545,13 +545,21 @@ export default function Edit({
                     </>
                 )}
 
-                {/* Examination */}
+                {/* Review of Systems */}
                 <div className="col-12">
-                    <FormSection title="Examination & Review of Systems">
+                    <FormSection title="Review of Systems">
+                        <div className="row g-4">
+                            <FormField label="Review of Systems" className="col-12"><textarea className="form-control" rows="3" placeholder="Systematic review of systems..." value={data.review_of_systems} onChange={e => setData('review_of_systems', e.target.value)} /></FormField>
+                        </div>
+                    </FormSection>
+                </div>
+
+                {/* Physical Examination */}
+                <div className="col-12">
+                    <FormSection title="Physical Examination">
                         <div className="row g-4">
                             <FormField label="General Examination" className="col-md-6"><textarea className="form-control" rows="3" value={data.general_examination} onChange={e => setData('general_examination', e.target.value)} /></FormField>
-                            <FormField label="Review of Systems" className="col-md-6"><textarea className="form-control" rows="3" value={data.review_of_systems} onChange={e => setData('review_of_systems', e.target.value)} /></FormField>
-                            <FormField label="Specific Systems Examination" className="col-12"><textarea className="form-control" rows="3" value={data.systems_examination} onChange={e => setData('systems_examination', e.target.value)} /></FormField>
+                            <FormField label="Specific Systems Examination" className="col-md-6"><textarea className="form-control" rows="3" value={data.systems_examination} onChange={e => setData('systems_examination', e.target.value)} /></FormField>
                         </div>
                     </FormSection>
                 </div>

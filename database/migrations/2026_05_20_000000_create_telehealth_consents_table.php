@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('telehealth_consents', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('patient_id')->nullable();
+            $table->integer('patient_id')->nullable();
             $table->string('patient_name');
             $table->string('patient_email');
             $table->string('patient_phone');

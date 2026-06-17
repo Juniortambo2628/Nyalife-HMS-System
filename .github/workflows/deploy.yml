@@ -41,15 +41,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 🔍 Verify runner environment
-        shell: bash
+        shell: powershell
         run: |
-          echo "Git version:"
+          Write-Host "Git version:"
           git --version
-          echo "SSH available:"
-          which ssh || echo "SSH not found"
-          echo "PHP version:"
+          Write-Host "SSH available:"
+          Get-Command ssh -ErrorAction SilentlyContinue
+          Write-Host "PHP version:"
           php --version
-          echo "Composer version:"
+          Write-Host "Composer version:"
           composer --version
 
       - name: Download build artifacts

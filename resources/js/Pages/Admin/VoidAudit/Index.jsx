@@ -7,6 +7,7 @@ import DashboardSearch from '@/Components/DashboardSearch';
 import PatientTableCell from '@/Components/PatientTableCell';
 import { RefBadge, TableCellPrimary, TableCellStack } from '@/Components/TableCells';
 import { formatDateTime } from '@/Utils/dateUtils';
+import StatCardGrid from '@/Components/StatCardGrid';
 
 const TABS = [
     { id: 'prescriptions', label: 'Prescriptions', icon: 'fa-prescription' },
@@ -14,8 +15,29 @@ const TABS = [
     { id: 'invoices', label: 'Invoices', icon: 'fa-file-invoice' },
 ];
 
-export default function Index({ type, prescriptions, vitals, invoices, filters, counts }) {
+export default function Index({ type, prescriptions, vitals, invoices, filters, counts, stats }) {
     const [search, setSearch] = useState(filters.search || '');
+
+    const statItems = useMemo(() => [
+        {
+            label: 'Voided Prescriptions',
+            value: stats?.prescriptions ?? 0,
+            icon: 'fa-prescription',
+            color: 'danger',
+        },
+        {
+            label: 'Voided Vitals',
+            value: stats?.vitals ?? 0,
+            icon: 'fa-heartbeat',
+            color: 'warning',
+        },
+        {
+            label: 'Voided Invoices',
+            value: stats?.invoices ?? 0,
+            icon: 'fa-file-invoice',
+            color: 'info',
+        },
+    ], [stats]);
 
     const applyFilters = (nextType = type, nextSearch = search) => {
         router.get(route('admin.void-audit.index'), { type: nextType, search: nextSearch || undefined }, {
@@ -151,6 +173,8 @@ export default function Index({ type, prescriptions, vitals, invoices, filters, 
             <Head title="Void Audit Trail" />
 
             <ReportsNav active="void-audit" />
+
+            <StatCardGrid items={statItems} cols={3} />
 
             <div className="mb-4">
                 <ul className="nav nav-pills gap-2 flex-wrap">

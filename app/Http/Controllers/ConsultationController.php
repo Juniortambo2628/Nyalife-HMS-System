@@ -79,10 +79,18 @@ class ConsultationController extends Controller
             ->latest()
             ->get();
 
+        $stats = [
+            'total' => Consultation::count(),
+            'in_progress' => Consultation::where('consultation_status', 'in_progress')->count(),
+            'completed' => Consultation::where('consultation_status', 'completed')->count(),
+            'today' => Consultation::whereDate('consultation_date', today())->count(),
+        ];
+
         return Inertia::render('Consultations/Index', [
             'consultations' => ConsultationResource::collection($consultations),
             'drafts' => ConsultationResource::collection($this->getActiveDrafts()),
             'filters' => $request->only(['search', 'doctor_id', 'patient_id', 'quick_filter']),
+            'stats' => $stats,
         ]);
     }
 

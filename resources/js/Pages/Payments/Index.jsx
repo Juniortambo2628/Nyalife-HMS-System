@@ -9,6 +9,7 @@ import TableActions from '@/Components/TableActions';
 import { RefBadge, TableCellPrimary } from '@/Components/TableCells';
 import PatientTableCell from '@/Components/PatientTableCell';
 import { formatCurrency } from '@/Utils/formatUtils';
+import StatCardGrid from '@/Components/StatCardGrid';
 
 export default function Index({ payments, filters, stats, paymentMethods, auth }) {
     const [search, setSearch] = useState(filters.search || '');
@@ -97,36 +98,32 @@ export default function Index({ payments, filters, stats, paymentMethods, auth }
         },
     ], []);
 
+    const statItems = useMemo(() => [
+        {
+            label: 'Total Collected',
+            value: formatCurrency(stats?.total_collected || 0),
+            icon: 'fa-money-bill-wave',
+            color: 'success',
+        },
+        {
+            label: 'Completed Payments',
+            value: stats?.payment_count ?? 0,
+            icon: 'fa-check-circle',
+            color: 'primary',
+        },
+        {
+            label: 'Pending',
+            value: stats?.pending_count ?? 0,
+            icon: 'fa-clock',
+            color: 'warning',
+        },
+    ], [stats]);
+
     return (
         <AuthenticatedLayout headerTitle="Payment Registry">
             <Head title="Payments" />
 
-            <div className="row g-3 mb-4">
-                <div className="col-md-4">
-                    <div className="card border-0 shadow-sm rounded-4 bg-success text-white">
-                        <div className="card-body p-4">
-                            <div className="extra-small fw-bold opacity-75 text-uppercase tracking-widest mb-1">Total Collected</div>
-                            <div className="h3 fw-extrabold mb-0">{formatCurrency(stats?.total_collected || 0)}</div>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-4">
-                    <div className="card border-0 shadow-sm rounded-4 bg-white">
-                        <div className="card-body p-4">
-                            <div className="extra-small fw-bold text-muted text-uppercase tracking-widest mb-1">Completed Payments</div>
-                            <div className="h3 fw-extrabold text-gray-900 mb-0">{stats?.payment_count ?? 0}</div>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-4">
-                    <div className="card border-0 shadow-sm rounded-4 bg-white">
-                        <div className="card-body p-4">
-                            <div className="extra-small fw-bold text-muted text-uppercase tracking-widest mb-1">Pending</div>
-                            <div className="h3 fw-extrabold text-warning mb-0">{stats?.pending_count ?? 0}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <StatCardGrid items={statItems} cols={3} />
 
             <UnifiedToolbar
                 filterGroups={[

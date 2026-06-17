@@ -7,6 +7,7 @@ import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import TableActions from '@/Components/TableActions';
 import StatusBadge from '@/Components/StatusBadge';
 import { TableCellPrimary, TableCellStack } from '@/Components/TableCells';
+import StatCardGrid from '@/Components/StatCardGrid';
 
 export default function Index({ departments, filters, stats, departmentTypes }) {
     const [search, setSearch] = useState(filters.search || '');
@@ -90,36 +91,32 @@ export default function Index({ departments, filters, stats, departmentTypes }) 
         },
     ], []);
 
+    const statItems = useMemo(() => [
+        {
+            label: 'Total Departments',
+            value: stats?.total ?? 0,
+            icon: 'fa-building',
+            color: 'primary',
+        },
+        {
+            label: 'Active',
+            value: stats?.active ?? 0,
+            icon: 'fa-check-circle',
+            color: 'success',
+        },
+        {
+            label: 'Clinical',
+            value: stats?.clinical ?? 0,
+            icon: 'fa-stethoscope',
+            color: 'info',
+        },
+    ], [stats]);
+
     return (
         <AuthenticatedLayout headerTitle="Departments">
             <Head title="Departments" />
 
-            <div className="row g-3 mb-4">
-                <div className="col-md-4">
-                    <div className="card border-0 shadow-sm rounded-4 bg-primary text-white">
-                        <div className="card-body p-4">
-                            <div className="extra-small fw-bold opacity-75 text-uppercase tracking-widest mb-1">Total Departments</div>
-                            <div className="h3 fw-extrabold mb-0">{stats?.total ?? 0}</div>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-4">
-                    <div className="card border-0 shadow-sm rounded-4 bg-white">
-                        <div className="card-body p-4">
-                            <div className="extra-small fw-bold text-muted text-uppercase tracking-widest mb-1">Active</div>
-                            <div className="h3 fw-extrabold text-success mb-0">{stats?.active ?? 0}</div>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-4">
-                    <div className="card border-0 shadow-sm rounded-4 bg-white">
-                        <div className="card-body p-4">
-                            <div className="extra-small fw-bold text-muted text-uppercase tracking-widest mb-1">Clinical</div>
-                            <div className="h3 fw-extrabold text-gray-900 mb-0">{stats?.clinical ?? 0}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <StatCardGrid items={statItems} cols={3} />
 
             <UnifiedToolbar
                 filterGroups={[

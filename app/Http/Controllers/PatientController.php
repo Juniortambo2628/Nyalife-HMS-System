@@ -48,9 +48,17 @@ class PatientController extends Controller
             ->paginate(15)
             ->withQueryString();
         
+        $stats = [
+            'total' => Patient::count(),
+            'male' => Patient::where('gender', 'male')->count(),
+            'female' => Patient::where('gender', 'female')->count(),
+            'recent' => Patient::where('created_at', '>=', now()->subDays(7))->count(),
+        ];
+
         return Inertia::render('Patients/Index', [
             'patients' => PatientResource::collection($patients),
             'filters' => $request->only(['search', 'status']),
+            'stats' => $stats,
         ]);
     }
 

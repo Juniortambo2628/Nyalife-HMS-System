@@ -11,14 +11,36 @@ import TableActions from '@/Components/TableActions';
 import StatusBadge from '@/Components/StatusBadge';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { TableCellPrimary, TableCellStack } from '@/Components/TableCells';
+import StatCardGrid from '@/Components/StatCardGrid';
 
-export default function Index({ users, filters, roles, auth }) {
+export default function Index({ users, filters, roles, auth, stats }) {
     const [viewMode, setViewMode] = useState('list');
     const [search, setSearch] = useState(filters?.search || '');
     const [roleFilter, setRoleFilter] = useState(filters?.role || '');
     const [sortBy, setSortBy] = useState(typeof filters?.sort === 'string' ? filters.sort : 'created_at');
     const [direction, setDirection] = useState(filters?.direction || 'desc');
     const [selectedIds, setSelectedIds] = useState([]);
+
+    const statItems = useMemo(() => [
+        {
+            label: 'Total Users',
+            value: stats?.total ?? 0,
+            icon: 'fa-users',
+            color: 'primary',
+        },
+        {
+            label: 'Active Staff',
+            value: stats?.active ?? 0,
+            icon: 'fa-user-check',
+            color: 'success',
+        },
+        {
+            label: 'Inactive Staff',
+            value: stats?.inactive ?? 0,
+            icon: 'fa-user-slash',
+            color: 'danger',
+        },
+    ], [stats]);
 
     useEffect(() => {
         const handleClear = () => setSelectedIds([]);
@@ -115,6 +137,8 @@ export default function Index({ users, filters, roles, auth }) {
             breadcrumbs={[{ label: 'Users Registry', active: true }]}
         >
             <Head title="Users Registry" />
+
+            <StatCardGrid items={statItems} cols={3} />
 
             <UnifiedToolbar 
                 viewMode={viewMode}

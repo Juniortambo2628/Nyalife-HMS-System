@@ -9,10 +9,32 @@ import StatusBadge from '@/Components/StatusBadge';
 import TableActions from '@/Components/TableActions';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { formatDateOnly } from '@/Utils/dateUtils';
+import StatCardGrid from '@/Components/StatCardGrid';
 
-export default function Index({ results, filters }) {
+export default function Index({ results, filters, stats }) {
     const { auth } = usePage().props;
     const [search, setSearch] = useState(filters.search || '');
+
+    const statItems = useMemo(() => [
+        {
+            label: 'Total Results',
+            value: stats?.total ?? 0,
+            icon: 'fa-file-medical-alt',
+            color: 'primary',
+        },
+        {
+            label: 'Completed Today',
+            value: stats?.today ?? 0,
+            icon: 'fa-calendar-day',
+            color: 'success',
+        },
+        {
+            label: 'Completed This Week',
+            value: stats?.this_week ?? 0,
+            icon: 'fa-calendar-week',
+            color: 'info',
+        },
+    ], [stats]);
 
     const applyFilters = (searchValue) => {
         router.get(route('lab.results'), { search: searchValue }, { preserveState: true, replace: true });
@@ -90,6 +112,8 @@ export default function Index({ results, filters }) {
             ]}
         >
             <Head title="Lab Results" />
+
+            {!isPatient && <StatCardGrid items={statItems} cols={3} />}
 
             <UnifiedToolbar
                 actions={[

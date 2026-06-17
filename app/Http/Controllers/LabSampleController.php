@@ -110,9 +110,16 @@ class LabSampleController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        $stats = [
+            'total' => LabSample::count(),
+            'registered' => LabSample::where('status', 'registered')->count(),
+            'completed' => LabSample::where('status', 'completed')->count(),
+        ];
+
         return Inertia::render('Lab/Samples/Index', [
             'samples' => LabSampleResource::collection($samples),
             'filters' => $request->only(['search', 'status']),
+            'stats' => $stats,
             'sampleStatuses' => LabSample::STATUSES,
         ]);
     }

@@ -12,11 +12,39 @@ import { RefBadge, TableCellStack, TableDateTimeCell, TableDoctorCell } from '@/
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import GridCardActions from '@/Components/GridCardActions';
 import { PatientIdLabel } from '@/Components/PatientTableCell';
+import StatCardGrid from '@/Components/StatCardGrid';
 
-export default function Index({ appointments, filters, auth }) {
+export default function Index({ appointments, filters, auth, stats }) {
     const [view, setView] = useState(() => localStorage.getItem('appointments_view') || 'list');
     const [search, setSearch] = useState(filters.search || '');
     const [selectedIds, setSelectedIds] = useState([]);
+
+    const statItems = useMemo(() => [
+        {
+            label: 'Total Appointments',
+            value: stats?.total ?? 0,
+            icon: 'fa-calendar-alt',
+            color: 'primary',
+        },
+        {
+            label: 'Pending',
+            value: stats?.pending ?? 0,
+            icon: 'fa-clock',
+            color: 'warning',
+        },
+        {
+            label: 'Scheduled',
+            value: stats?.scheduled ?? 0,
+            icon: 'fa-calendar-check',
+            color: 'info',
+        },
+        {
+            label: 'Completed',
+            value: stats?.completed ?? 0,
+            icon: 'fa-check-circle',
+            color: 'success',
+        },
+    ], [stats]);
 
     useEffect(() => {
         const handleClear = () => setSelectedIds([]);
@@ -333,6 +361,8 @@ export default function Index({ appointments, filters, auth }) {
             breadcrumbs={[{ label: 'Appointments', active: true }]}
         >
             <Head title="Appointments" />
+
+            <StatCardGrid items={statItems} cols={4} />
 
 
 

@@ -180,9 +180,18 @@ class AppointmentController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        $stats = [
+            'total' => Appointment::count(),
+            'pending' => Appointment::where('status', 'pending')->count(),
+            'scheduled' => Appointment::where('status', 'scheduled')->count(),
+            'completed' => Appointment::where('status', 'completed')->count(),
+            'today' => Appointment::whereDate('appointment_date', today())->count(),
+        ];
+
         return Inertia::render('Appointments/Index', [
             'appointments' => AppointmentResource::collection($appointments),
             'filters' => $request->only(['status', 'date', 'doctor_id', 'patient_id', 'quick_filter', 'search']),
+            'stats' => $stats,
         ]);
     }
 

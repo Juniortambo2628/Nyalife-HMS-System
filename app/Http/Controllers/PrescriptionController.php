@@ -58,9 +58,17 @@ class PrescriptionController extends Controller
             ->latest()
             ->paginate(15);
 
+        $stats = [
+            'total' => Prescription::count(),
+            'pending' => Prescription::where('status', 'pending')->count(),
+            'dispensed' => Prescription::where('status', 'dispensed')->count(),
+            'today' => Prescription::whereDate('prescription_date', today())->count(),
+        ];
+
         return Inertia::render('Prescriptions/Index', [
             'prescriptions' => PrescriptionResource::collection($prescriptions),
-            'filters' => $request->only(['search', 'status', 'quick_filter'])
+            'filters' => $request->only(['search', 'status', 'quick_filter']),
+            'stats' => $stats,
         ]);
     }
 

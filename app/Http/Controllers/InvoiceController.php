@@ -49,9 +49,17 @@ class InvoiceController extends Controller
             ->latest()
             ->paginate(15);
 
+        $stats = [
+            'total' => Invoice::count(),
+            'unpaid' => Invoice::where('status', 'unpaid')->count(),
+            'paid' => Invoice::where('status', 'paid')->count(),
+            'total_amount' => Invoice::sum('total_amount'),
+        ];
+
         return Inertia::render('Invoices/Index', [
             'invoices' => InvoiceResource::collection($invoices),
-            'filters' => $request->only(['search', 'status', 'quick_filter'])
+            'filters' => $request->only(['search', 'status', 'quick_filter']),
+            'stats' => $stats,
         ]);
     }
 

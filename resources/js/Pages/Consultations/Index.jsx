@@ -11,15 +11,43 @@ import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import GridCardActions from '@/Components/GridCardActions';
 import { PatientIdLabel } from '@/Components/PatientTableCell';
 import { TableCellPrimary, TableCellStack, TableCellSub } from '@/Components/TableCells';
+import StatCardGrid from '@/Components/StatCardGrid';
 import { useState, useMemo, useEffect } from 'react';
 import { formatDateTime } from '@/Utils/dateUtils';
 
-export default function Index({ consultations, drafts = [], filters, auth }) {
+export default function Index({ consultations, drafts = [], filters, auth, stats }) {
     const [view, setView] = useState(() => localStorage.getItem('consultations_view') || 'list');
     const [search, setSearch] = useState(filters.search || '');
     const [activeFilter, setActiveFilter] = useState(filters.status || '');
     const [quickFilter, setQuickFilter] = useState(filters.quick_filter || '');
     const [selectedIds, setSelectedIds] = useState([]);
+
+    const statItems = useMemo(() => [
+        {
+            label: 'Total Consultations',
+            value: stats?.total ?? 0,
+            icon: 'fa-stethoscope',
+            color: 'primary',
+        },
+        {
+            label: 'In Progress',
+            value: stats?.in_progress ?? 0,
+            icon: 'fa-spinner',
+            color: 'warning',
+        },
+        {
+            label: 'Completed',
+            value: stats?.completed ?? 0,
+            icon: 'fa-check-circle',
+            color: 'success',
+        },
+        {
+            label: 'Today',
+            value: stats?.today ?? 0,
+            icon: 'fa-calendar-day',
+            color: 'info',
+        },
+    ], [stats]);
 
     useEffect(() => {
         const handleClear = () => setSelectedIds([]);
@@ -304,6 +332,8 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
             breadcrumbs={[{ label: 'Consultations', active: true }]}
         >
             <Head title="Consultations" />
+
+            <StatCardGrid items={statItems} cols={4} />
 
             <UnifiedToolbar 
                 viewMode={view}

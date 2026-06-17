@@ -9,13 +9,41 @@ import TableActions from '@/Components/TableActions';
 import { RefBadge, TableCellPrimary, TableCellSub } from '@/Components/TableCells';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import PatientTableCell from '@/Components/PatientTableCell';
-import { formatNumber } from '@/Utils/formatUtils';
+import { formatNumber, formatCurrency } from '@/Utils/formatUtils';
+import StatCardGrid from '@/Components/StatCardGrid';
 
-export default function Index({ invoices, filters, auth }) {
+export default function Index({ invoices, filters, auth, stats }) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [quickFilter, setQuickFilter] = useState(filters.quick_filter || '');
     const [selectedIds, setSelectedIds] = useState([]);
+
+    const statItems = useMemo(() => [
+        {
+            label: 'Total Invoices',
+            value: stats?.total ?? 0,
+            icon: 'fa-file-invoice-dollar',
+            color: 'primary',
+        },
+        {
+            label: 'Unpaid Invoices',
+            value: stats?.unpaid ?? 0,
+            icon: 'fa-exclamation-circle',
+            color: 'warning',
+        },
+        {
+            label: 'Paid Invoices',
+            value: stats?.paid ?? 0,
+            icon: 'fa-check-circle',
+            color: 'success',
+        },
+        {
+            label: 'Total Invoiced',
+            value: formatCurrency(stats?.total_amount ?? 0),
+            icon: 'fa-money-bill-wave',
+            color: 'info',
+        },
+    ], [stats]);
 
     useEffect(() => {
         const handleClear = () => setSelectedIds([]);
@@ -114,6 +142,8 @@ export default function Index({ invoices, filters, auth }) {
             breadcrumbs={[{ label: 'Billing', url: route('invoices.index') }, { label: 'Revenue Registry', active: true }]}
         >
             <Head title="Billing" />
+
+            <StatCardGrid items={statItems} cols={4} />
 
             <UnifiedToolbar 
                 filterGroups={[

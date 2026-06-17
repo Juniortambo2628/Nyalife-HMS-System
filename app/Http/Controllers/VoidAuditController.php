@@ -79,6 +79,11 @@ class VoidAuditController extends Controller
                 'vitals' => Vital::withoutGlobalScope('not_voided')->where('is_voided', true)->count(),
                 'invoices' => Invoice::withoutGlobalScope('not_voided')->where('is_voided', true)->count(),
             ],
+            'stats' => [
+                'prescriptions' => Prescription::withoutGlobalScope('not_voided')->where('is_voided', true)->count(),
+                'vitals' => Vital::withoutGlobalScope('not_voided')->where('is_voided', true)->count(),
+                'invoices' => Invoice::withoutGlobalScope('not_voided')->where('is_voided', true)->count(),
+            ],
         ]);
     }
 }

@@ -9,13 +9,35 @@ import GridCardActions from '@/Components/GridCardActions';
 import StatusBadge from '@/Components/StatusBadge';
 import { TableCellPrimary, TableCellStack } from '@/Components/TableCells';
 import { formatNumber } from '@/Utils/formatUtils';
+import StatCardGrid from '@/Components/StatCardGrid';
 import { useState, useMemo, useEffect } from 'react';
 
-export default function TestsCatalog({ tests, auth, filters, categories }) {
+export default function TestsCatalog({ tests, auth, filters, categories, stats }) {
     const [search, setSearch] = useState(filters.search || '');
     const [quickFilter, setQuickFilter] = useState(filters.category || '');
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('lab_tests_view') || 'list'); 
     const [selectedTests, setSelectedTests] = useState([]);
+
+    const statItems = useMemo(() => [
+        {
+            label: 'Total Protocols',
+            value: stats?.total ?? 0,
+            icon: 'fa-vials',
+            color: 'primary',
+        },
+        {
+            label: 'Active Visibility',
+            value: stats?.active ?? 0,
+            icon: 'fa-eye',
+            color: 'success',
+        },
+        {
+            label: 'Inactive / Hidden',
+            value: stats?.inactive ?? 0,
+            icon: 'fa-eye-slash',
+            color: 'danger',
+        },
+    ], [stats]);
 
     useEffect(() => {
         const handleClear = () => setSelectedTests([]);
@@ -172,6 +194,8 @@ export default function TestsCatalog({ tests, auth, filters, categories }) {
             breadcrumbs={[{ label: 'Lab', url: route('lab.index') }, { label: 'Tests', active: true }]}
         >
             <Head title="Lab Tests" />
+
+            <StatCardGrid items={statItems} cols={3} />
 
             <UnifiedToolbar
                 viewMode={viewMode}

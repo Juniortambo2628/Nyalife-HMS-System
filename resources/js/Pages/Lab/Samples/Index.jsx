@@ -9,10 +9,32 @@ import PatientTableCell from '@/Components/PatientTableCell';
 import { RefBadge, TableCellPrimary } from '@/Components/TableCells';
 import TableActions from '@/Components/TableActions';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import StatCardGrid from '@/Components/StatCardGrid';
 
-export default function Index({ samples, filters, sampleStatuses }) {
+export default function Index({ samples, filters, sampleStatuses, stats }) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
+
+    const statItems = useMemo(() => [
+        {
+            label: 'Total Samples',
+            value: stats?.total ?? 0,
+            icon: 'fa-vial',
+            color: 'primary',
+        },
+        {
+            label: 'Registered',
+            value: stats?.registered ?? 0,
+            icon: 'fa-clipboard-list',
+            color: 'warning',
+        },
+        {
+            label: 'Completed',
+            value: stats?.completed ?? 0,
+            icon: 'fa-check-circle',
+            color: 'success',
+        },
+    ], [stats]);
 
     const applyFilters = (searchValue, statusValue = status) => {
         router.get(route('lab.samples.index'), {
@@ -92,6 +114,8 @@ export default function Index({ samples, filters, sampleStatuses }) {
     return (
         <AuthenticatedLayout headerTitle="Lab Samples">
             <Head title="Lab Samples" />
+
+            <StatCardGrid items={statItems} cols={3} />
 
             <UnifiedToolbar
                 actions={[

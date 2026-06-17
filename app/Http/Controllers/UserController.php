@@ -40,10 +40,17 @@ class UserController extends Controller
         $users = $query->paginate(12)->withQueryString();
         $users->through(fn ($user) => (new UserResource($user))->resolve());
 
+        $stats = [
+            'total' => User::count(),
+            'active' => User::where('is_active', true)->count(),
+            'inactive' => User::where('is_active', false)->count(),
+        ];
+
         return Inertia::render('Users/Index', [
             'users' => $users,
             'filters' => (object) $request->only(['search', 'role', 'sort', 'direction', 'quick_filter']),
-            'roles' => Role::all()
+            'roles' => Role::all(),
+            'stats' => $stats,
         ]);
     }
 

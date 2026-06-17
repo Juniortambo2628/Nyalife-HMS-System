@@ -10,13 +10,41 @@ import TableActions from '@/Components/TableActions';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import GridCardActions from '@/Components/GridCardActions';
 import { PatientIdLabel } from '@/Components/PatientTableCell';
+import StatCardGrid from '@/Components/StatCardGrid';
 import { useState, useMemo, useEffect } from 'react';
 
-export default function Index({ patients, filters, auth }) {
+export default function Index({ patients, filters, auth, stats }) {
     const [view, setView] = useState(() => localStorage.getItem('patients_view') || 'list');
     const [search, setSearch] = useState(filters.search || '');
     const [activeFilter, setActiveFilter] = useState(filters.status || '');
     const [selectedIds, setSelectedIds] = useState([]);
+
+    const statItems = useMemo(() => [
+        {
+            label: 'Total Patients',
+            value: stats?.total ?? 0,
+            icon: 'fa-users',
+            color: 'primary',
+        },
+        {
+            label: 'Female',
+            value: stats?.female ?? 0,
+            icon: 'fa-venus',
+            color: 'pink',
+        },
+        {
+            label: 'Male',
+            value: stats?.male ?? 0,
+            icon: 'fa-mars',
+            color: 'info',
+        },
+        {
+            label: 'Recent (7d)',
+            value: stats?.recent ?? 0,
+            icon: 'fa-user-clock',
+            color: 'warning',
+        },
+    ], [stats]);
 
     useEffect(() => {
         const handleClear = () => setSelectedIds([]);
@@ -296,6 +324,8 @@ export default function Index({ patients, filters, auth }) {
             breadcrumbs={[{ label: 'Patients', active: true }]}
         >
             <Head title="Patients" />
+
+            <StatCardGrid items={statItems} cols={4} />
 
             <UnifiedToolbar 
                 viewMode={view}

@@ -122,10 +122,17 @@ class LabController extends Controller
             'Microbiology', 'Pathology', 'Parasitology', 'Biochemistry', 'Toxicology', 'General'
         ];
 
+        $stats = [
+            'total' => LabTestType::count(),
+            'active' => LabTestType::where('is_active', true)->count(),
+            'inactive' => LabTestType::where('is_active', false)->count(),
+        ];
+
         return Inertia::render('Lab/TestsCatalog', [
             'tests' => $query->paginate(10)->withQueryString(),
             'filters' => $request->only(['search', 'sort', 'direction']),
             'categories' => $labCategories,
+            'stats' => $stats,
         ]);
     }
 
@@ -148,6 +155,13 @@ class LabController extends Controller
             $query->where('requested_by', $user->user_id);
         }
 
+        $resultsQuery = clone $query;
+        $stats = [
+            'total' => $resultsQuery->count(),
+            'today' => (clone $resultsQuery)->whereDate('completed_at', today())->count(),
+            'this_week' => (clone $resultsQuery)->where('completed_at', '>=', now()->startOfWeek())->count(),
+        ];
+
         $results = $query
             ->searchByPatientName($request->search)
             ->when($request->request_number, fn ($q) => $q->where('request_number', 'like', '%' . $request->request_number . '%'))
@@ -159,6 +173,7 @@ class LabController extends Controller
         return Inertia::render('LabResults/Index', [
             'results' => LabTestRequestResource::collection($results),
             'filters' => $request->only(['search', 'request_number']),
+            'stats' => $stats,
         ]);
     }
 

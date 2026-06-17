@@ -7,12 +7,40 @@ import TableActions from '@/Components/TableActions';
 import { RefBadge, TableCellPrimary, TableCellStack, TableCellSub } from '@/Components/TableCells';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import PatientTableCell from '@/Components/PatientTableCell';
+import StatCardGrid from '@/Components/StatCardGrid';
 import { useState, useMemo, useEffect } from 'react';
 
-export default function Index({ prescriptions, filters, auth }) {
+export default function Index({ prescriptions, filters, auth, stats }) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [selectedIds, setSelectedIds] = useState([]);
+
+    const statItems = useMemo(() => [
+        {
+            label: 'Total Prescriptions',
+            value: stats?.total ?? 0,
+            icon: 'fa-prescription',
+            color: 'primary',
+        },
+        {
+            label: 'Pending',
+            value: stats?.pending ?? 0,
+            icon: 'fa-clock',
+            color: 'warning',
+        },
+        {
+            label: 'Dispensed',
+            value: stats?.dispensed ?? 0,
+            icon: 'fa-check-circle',
+            color: 'success',
+        },
+        {
+            label: 'Prescribed Today',
+            value: stats?.today ?? 0,
+            icon: 'fa-calendar-day',
+            color: 'info',
+        },
+    ], [stats]);
 
     useEffect(() => {
         const handleClear = () => setSelectedIds([]);
@@ -115,6 +143,10 @@ export default function Index({ prescriptions, filters, auth }) {
             breadcrumbs={[{ label: 'Pharmacy', url: route('pharmacy.inventory') }, { label: 'Prescriptions', active: true }]}
         >
             <Head title={auth.user.role === 'patient' ? 'My Prescriptions' : 'Pharmacy'} />
+
+            {auth.user.role !== 'patient' && (
+                <StatCardGrid items={statItems} cols={4} />
+            )}
 
             <UnifiedToolbar 
                 filterGroups={[

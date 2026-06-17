@@ -2,15 +2,10 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
-use Spatie\DatabaseMailTemplates\HasDatabaseMailTemplate;
+use Spatie\MailTemplates\TemplateMailable;
 
-class DynamicMailable extends Mailable
+class DynamicMailable extends TemplateMailable
 {
-    use Queueable, SerializesModels, HasDatabaseMailTemplate;
-
     public $data;
 
     public function __construct(array $data)

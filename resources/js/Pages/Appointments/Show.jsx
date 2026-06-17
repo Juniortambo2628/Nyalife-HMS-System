@@ -1,236 +1,462 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { useState } from 'react';
-import PageHeader from '@/Components/PageHeader';
+import { useMemo } from 'react';
 import UserAvatar from '@/Components/UserAvatar';
 import StatusBadge from '@/Components/StatusBadge';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import DashboardPanel from '@/Components/DashboardPanel';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
+import StatCardGrid from '@/Components/StatCardGrid';
+import TableActions from '@/Components/TableActions';
+import PriorityBadge from '@/Components/PriorityBadge';
+import { PatientIdLabel } from '@/Components/PatientTableCell';
+import { RefBadge, TableCellPrimary, TableCellStack } from '@/Components/TableCells';
+import { formatDateTime } from '@/Utils/dateUtils';
+
+const formatLabel = (value) =>
+    (value || '')
+        .toString()
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase()) || '—';
+
+const formatTime = (value) => {
+    if (!value) return '—';
+    const str = value.toString();
+    return str.length >= 5 ? str.slice(0, 5) : str;
+};
 
 export default function Show({ appointment, auth }) {
     const isReceptionist = auth.user.role === 'receptionist';
-    const [activeTab, setActiveTab] = useState('summary');
-    
+    const canViewClinical = !isReceptionist;
+
+    const patient = appointment.patient;
+    const doctor = appointment.doctor;
+    const consultations = appointment.consultations || [];
+    const labRequests = appointment.lab_test_requests || [];
+    const prescriptions = appointment.prescriptions || [];
+
+    const prescriptionRows = useMemo(() =>
+        prescriptions.flatMap((rx) =>
+            (rx.items || []).map((item) => ({
+                ...item,
+                prescription_id: rx.prescription_id,
+                prescription_status: rx.status,
+                prescription_date: rx.prescription_date,
+            }))
+        ),
+    [prescriptions]);
+
     const updateStatus = (status) => {
-        if (confirm(`Are you sure you want to change the status to ${status}?`)) {
+        if (confirm(`Change visit status to "${formatLabel(status)}"?`)) {
             router.patch(route('appointments.update', appointment.appointment_id), { status }, {
-                preserveState: true,
+                preserveScroll: true,
             });
         }
     };
 
+    const checkIn = () => {
+        if (confirm('Confirm patient arrival for this visit?')) {
+            router.post(route('appointments.check-in', appointment.appointment_id), {}, {
+                preserveScroll: true,
+            });
+        }
+    };
+
+    const statItems = [
+        {
+            label: 'Visit date',
+            value: appointment.appointment_date || '—',
+            icon: 'fa-calendar-day',
+            color: 'pink',
+        },
+        {
+            label: 'Scheduled time',
+            value: appointment.end_time
+                ? `${formatTime(appointment.appointment_time)} – ${formatTime(appointment.end_time)}`
+                : formatTime(appointment.appointment_time),
+            icon: 'fa-clock',
+            color: 'teal',
+        },
+        {
+            label: 'Visit type',
+            value: formatLabel(appointment.appointment_type),
+            icon: 'fa-tag',
+            color: 'info',
+        },
+        {
+            label: 'Visit status',
+            value: formatLabel(appointment.status),
+            icon: 'fa-info-circle',
+            color: appointment.status === 'completed' ? 'success' : appointment.status === 'cancelled' ? 'danger' : 'warning',
+            sub: `${consultations.length} consultation${consultations.length === 1 ? '' : 's'}`,
+        },
+    ];
+
+    const consultationColumns = useMemo(() => [
+        {
+            header: 'Record',
+            accessorKey: 'consultation_id',
+            cell: ({ row }) => <RefBadge variant="info">CON-{row.original.consultation_id}</RefBadge>,
+        },
+        {
+            header: 'Date',
+            accessorKey: 'consultation_date',
+            cell: ({ row }) => (
+                <TableCellPrimary>{formatDateTime(row.original.consultation_date)}</TableCellPrimary>
+            ),
+        },
+        {
+            header: 'Diagnosis',
+            accessorKey: 'diagnosis',
+            cell: ({ row }) => (
+                <TableCellStack
+                    primary={row.original.diagnosis || 'General assessment'}
+                    secondary={row.original.chief_complaint}
+                />
+            ),
+        },
+        {
+            header: 'Status',
+            accessorKey: 'consultation_status',
+            cell: ({ row }) => <StatusBadge status={row.original.consultation_status || 'in_progress'} />,
+        },
+        {
+            header: 'Actions',
+            id: 'actions',
+            cell: ({ row }) => (
+                <TableActions actions={[
+                    { icon: 'fa-eye', label: 'View consultation', href: route('consultations.show', row.original.consultation_id) },
+                    { icon: 'fa-edit', label: 'Edit record', href: route('consultations.edit', row.original.consultation_id) },
+                ]} />
+            ),
+        },
+    ], []);
+
+    const labColumns = useMemo(() => [
+        {
+            header: 'Request',
+            accessorKey: 'request_id',
+            cell: ({ row }) => <RefBadge variant="info">LAB-{row.original.request_id}</RefBadge>,
+        },
+        {
+            header: 'Test',
+            id: 'test',
+            cell: ({ row }) => (
+                <TableCellStack
+                    primary={row.original.test_type?.test_name || 'Lab test'}
+                    secondary={row.original.test_type?.category}
+                />
+            ),
+        },
+        {
+            header: 'Priority',
+            accessorKey: 'priority',
+            cell: ({ row }) => <PriorityBadge priority={row.original.priority || 'normal'} />,
+        },
+        {
+            header: 'Status',
+            accessorKey: 'status',
+            cell: ({ row }) => <StatusBadge status={row.original.status} />,
+        },
+        {
+            header: 'Actions',
+            id: 'actions',
+            cell: ({ row }) => (
+                <TableActions actions={[
+                    { icon: 'fa-eye', label: 'View request', href: route('lab.show', row.original.request_id) },
+                ]} />
+            ),
+        },
+    ], []);
+
+    const prescriptionColumns = useMemo(() => [
+        {
+            header: 'Prescription',
+            accessorKey: 'prescription_id',
+            cell: ({ row }) => <RefBadge variant="info">RX-{row.original.prescription_id}</RefBadge>,
+        },
+        {
+            header: 'Medication',
+            id: 'medication',
+            cell: ({ row }) => (
+                <TableCellStack
+                    primary={row.original.medication?.medication_name || row.original.medicine_name || 'Medication'}
+                    secondary={[row.original.medication?.strength, row.original.dosage].filter(Boolean).join(' · ')}
+                />
+            ),
+        },
+        {
+            header: 'Regimen',
+            id: 'regimen',
+            cell: ({ row }) => (
+                <TableCellPrimary className="text-muted small">
+                    {[row.original.frequency, row.original.duration].filter(Boolean).join(' · ') || '—'}
+                </TableCellPrimary>
+            ),
+        },
+        {
+            header: 'Status',
+            accessorKey: 'prescription_status',
+            cell: ({ row }) => <StatusBadge status={row.original.prescription_status || 'pending'} />,
+        },
+        {
+            header: 'Actions',
+            id: 'actions',
+            cell: ({ row }) => (
+                <TableActions actions={[
+                    { icon: 'fa-eye', label: 'View prescription', onClick: () => router.visit(route('prescriptions.show', row.original.prescription_id)) },
+                ]} />
+            ),
+        },
+    ], []);
+
     return (
-        <AuthenticatedLayout header="Appointment Detail">
-            <Head title={`Appointment - ${appointment.patient?.user?.first_name || 'Patient'}`} />
+        <AuthenticatedLayout
+            headerTitle="Visit record"
+            breadcrumbs={[
+                { label: 'Appointments', url: route('appointments.index') },
+                { label: `APT-${appointment.appointment_id}`, active: true },
+            ]}
+        >
+            <Head title={`Appointment APT-${appointment.appointment_id}`} />
 
-            <PageHeader 
-                title={`Visit Management`}
-                breadcrumbs={[
-                    { label: 'Appointments', url: route('appointments.index') },
-                    { label: `REF #${appointment.appointment_id}`, active: true }
-                ]}
-            />
+            <div className="pb-5">
+                <StatCardGrid items={statItems} cols={4} />
 
-            <div className="px-0 pb-5">
                 <div className="row g-4">
+                    {/* Patient & provider sidebar */}
                     <div className="col-lg-4">
-                        {/* Quick Info Card */}
-                        <div className="card shadow-sm border-0 mb-4 rounded-3xl overflow-hidden bg-white shadow-hover">
-                            <div className="card-header bg-gradient-primary-to-secondary p-5 border-0 text-center">
-                                <UserAvatar user={appointment.patient?.user} size="xl" className="mb-3 border border-4 border-white shadow-lg" />
-                                <h4 className="mb-1 text-white fw-extrabold tracking-tighter">{appointment.patient?.user?.first_name} {appointment.patient?.user?.last_name}</h4>
-                                <div className="extra-small font-bold text-white opacity-50 tracking-widest uppercase mb-3">PAT-ID: {appointment.patient_id}</div>
+                        <DashboardPanel
+                            title="Patient"
+                            icon="fa-user-injured"
+                            headerVariant="gradient"
+                            className="mb-4 nyl-detail-panel"
+                            bodyClassName="p-4"
+                        >
+                            <div className="text-center mb-4">
+                                <UserAvatar user={patient?.user} size="xl" className="mb-3 shadow-sm" />
+                                <h5 className="fw-extrabold text-gray-900 mb-1">
+                                    {patient?.user?.first_name} {patient?.user?.last_name}
+                                </h5>
+                                <PatientIdLabel
+                                    id={appointment.patient_id}
+                                    variant="pat-id"
+                                    className="extra-small font-bold text-muted tracking-widest uppercase mb-3 d-block"
+                                />
                                 <StatusBadge status={appointment.status} />
                             </div>
-                            <div className="card-body p-4">
-                                <div className="space-y-4">
-                                    <div className="d-flex justify-content-between align-items-center border-bottom border-gray-50 pb-2">
-                                        <div className="d-flex align-items-center gap-2">
-                                            <i className="fas fa-calendar-alt text-primary opacity-50"></i>
-                                            <span className="extra-small fw-bold text-muted text-uppercase">Scheduled Date</span>
-                                        </div>
-                                        <span className="fw-extrabold text-gray-900 small">{appointment.appointment_date}</span>
-                                    </div>
-                                    <div className="d-flex justify-content-between align-items-center border-bottom border-gray-50 pb-2">
-                                        <div className="d-flex align-items-center gap-2">
-                                            <i className="fas fa-clock text-primary opacity-50"></i>
-                                            <span className="extra-small fw-bold text-muted text-uppercase">Allocated Time</span>
-                                        </div>
-                                        <span className="fw-extrabold text-gray-900 small">{appointment.appointment_time}</span>
-                                    </div>
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <div className="d-flex align-items-center gap-2">
-                                            <i className="fas fa-user-md text-primary opacity-50"></i>
-                                            <span className="extra-small fw-bold text-muted text-uppercase">Assigned Doctor</span>
-                                        </div>
-                                        <span className="fw-extrabold text-gray-900 small">Dr. {appointment.doctor?.user?.last_name}</span>
-                                    </div>
+
+                            <div className="nyl-meta-grid mb-4">
+                                <div className="nyl-meta-item">
+                                    <div className="nyl-meta-item__label">Phone</div>
+                                    <div className="nyl-meta-item__value">{patient?.user?.phone || '—'}</div>
                                 </div>
-                                
+                                <div className="nyl-meta-item">
+                                    <div className="nyl-meta-item__label">Email</div>
+                                    <div className="nyl-meta-item__value text-truncate">{patient?.user?.email || '—'}</div>
                                 </div>
                             </div>
-                        </div>
+
+                            {(patient?.blood_group || patient?.gender) && (
+                                <div className="d-flex flex-wrap gap-2 mb-4">
+                                    {patient?.gender && (
+                                        <span className="badge bg-pink-50 text-pink-600 rounded-pill px-3 py-2 extra-small fw-bold uppercase">
+                                            {patient.gender}
+                                        </span>
+                                    )}
+                                    {patient?.blood_group && (
+                                        <span className="badge bg-danger-subtle text-danger rounded-pill px-3 py-2 extra-small fw-bold">
+                                            {patient.blood_group}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+
+                            <Link
+                                href={route('patients.show', appointment.patient_id)}
+                                className="btn btn-outline-primary btn-sm w-100 rounded-pill fw-bold"
+                            >
+                                View patient profile
+                            </Link>
+                        </DashboardPanel>
+
+                        <DashboardPanel
+                            title="Assigned provider"
+                            icon="fa-user-md"
+                            headerVariant="section"
+                            className="nyl-detail-panel"
+                            bodyClassName="p-4"
+                        >
+                            <div className="nyl-detail-meta-row">
+                                <span className="extra-small fw-bold text-muted text-uppercase">Physician</span>
+                                <span className="fw-extrabold text-gray-900 small">
+                                    Dr. {doctor?.user?.first_name} {doctor?.user?.last_name}
+                                </span>
+                            </div>
+                            <div className="nyl-detail-meta-row">
+                                <span className="extra-small fw-bold text-muted text-uppercase">Specialization</span>
+                                <span className="fw-bold text-gray-800 small">{doctor?.specialization || 'General practice'}</span>
+                            </div>
+                            <div className="nyl-detail-meta-row">
+                                <span className="extra-small fw-bold text-muted text-uppercase">Department</span>
+                                <span className="fw-bold text-gray-800 small">
+                                    {doctor?.department_name || doctor?.department || '—'}
+                                </span>
+                            </div>
+                        </DashboardPanel>
                     </div>
 
+                    {/* Main content */}
                     <div className="col-lg-8">
-                        <div className="card shadow-sm border-0 rounded-3xl bg-white shadow-hover overflow-hidden">
-                            <div className="card-header bg-white border-bottom-0 pt-4 pb-0 px-5">
-                                <div className="d-flex gap-4 border-bottom border-gray-100">
-                                    <button
-                                        onClick={() => setActiveTab('summary')}
-                                        className={`pb-3 extra-small fw-extrabold tracking-widest transition-all border-bottom-2 ${
-                                            activeTab === 'summary' ? 'text-primary border-primary' : 'text-muted border-transparent opacity-50'
-                                        }`}
-                                    >
-                                        GENERAL
-                                    </button>
-                                    {!isReceptionist && (
-                                        <>
-                                            <button
-                                                onClick={() => setActiveTab('history')}
-                                                className={`pb-3 extra-small fw-extrabold tracking-widest transition-all border-bottom-2 ${
-                                                    activeTab === 'history' ? 'text-primary border-primary' : 'text-muted border-transparent opacity-50'
-                                                }`}
-                                            >
-                                                CLINICAL
-                                            </button>
-                                            <button
-                                                onClick={() => setActiveTab('prescriptions')}
-                                                className={`pb-3 extra-small fw-extrabold tracking-widest transition-all border-bottom-2 ${
-                                                    activeTab === 'prescriptions' ? 'text-primary border-primary' : 'text-muted border-transparent opacity-50'
-                                                }`}
-                                            >
-                                                PHARMACY
-                                            </button>
-                                        </>
-                                    )}
+                        <DashboardPanel
+                            title="Visit summary"
+                            icon="fa-clipboard-list"
+                            headerVariant="gradient"
+                            className="mb-4 nyl-detail-panel"
+                            bodyClassName="p-4"
+                        >
+                            <div className="row g-4 mx-0">
+                                <div className="col-md-6">
+                                    <div className="nyl-content-box__title mb-2">Reason for visit</div>
+                                    <div className="nyl-content-box nyl-content-box--highlight mb-0">
+                                        {appointment.reason || 'Routine visit — no specific reason recorded.'}
+                                    </div>
+                                </div>
+                                <div className="col-md-6">
+                                    <div className="nyl-content-box__title mb-2">Triage & internal notes</div>
+                                    <div className="nyl-content-box nyl-content-box--muted mb-0">
+                                        {appointment.notes || 'No triage or internal notes recorded.'}
+                                    </div>
                                 </div>
                             </div>
-                            <div className="card-body p-5 pt-0">
-                                <div className="tab-content py-5">
-                                    {activeTab === 'summary' && (
-                                        <div className="space-y-6">
-                                            <div>
-                                                <h6 className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-3">Primary Concern</h6>
-                                                <div className="p-4 bg-light rounded-2xl border-l-4 border-primary shadow-inner fw-bold text-gray-800 leading-relaxed">
-                                                    {appointment.reason || 'Routine medical check-up / No specific reason provided.'}
-                                                </div>
-                                            </div>
-                                            
-                                            <div>
-                                                <h6 className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-3">Triage Notes</h6>
-                                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 text-muted small leading-relaxed font-medium">
-                                                    {appointment.notes || 'No triage or internal notes recorded for this visit.'}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
 
-                                    {activeTab === 'history' && (
-                                        <div className="space-y-4">
-                                            <h6 className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-4">Historical Consultations</h6>
-                                            {appointment.consultations?.length > 0 ? (
-                                                <div className="space-y-3">
-                                                    {appointment.consultations.map(c => (
-                                                        <div key={c.consultation_id} className="p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover-lift transition-all">
-                                                            <div className="d-flex justify-content-between align-items-center mb-2">
-                                                                <h6 className="fw-extrabold text-gray-900 mb-0">{c.diagnosis}</h6>
-                                                                <span className="extra-small text-muted font-bold opacity-50">{c.created_at}</span>
-                                                            </div>
-                                                            <p className="small text-muted mb-0">{c.treatment_plan}</p>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <div className="p-5 text-center bg-light rounded-3xl border border-gray-50">
-                                                    <i className="fas fa-folder-open text-gray-300 fa-3x mb-3 opacity-20"></i>
-                                                    <p className="text-muted extra-small fw-bold text-uppercase tracking-widest mb-0">No active clinical records</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {activeTab === 'prescriptions' && (
-                                        <div className="space-y-4">
-                                            <div className="d-flex justify-content-between align-items-center mb-4">
-                                                <h6 className="mb-0 extra-small fw-extrabold text-muted text-uppercase tracking-widest">Active Prescriptions</h6>
-                                                {auth.user.role === 'doctor' && (
-                                                    <Link href="#" className="btn btn-primary btn-sm rounded-pill px-3 fw-bold extra-small tracking-widest">NEW RX</Link>
-                                                )}
-                                            </div>
-                                            <div className="table-responsive rounded-2xl border border-gray-100 overflow-hidden shadow-inner">
-                                                <table className="table table-hover align-middle mb-0">
-                                                    <thead className="bg-gray-50">
-                                                        <tr>
-                                                            <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0">MEDICINE</th>
-                                                            <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0">DOSAGE</th>
-                                                            <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0">DURATION</th>
-                                                            <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0 text-center">STATUS</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="border-0">
-                                                        {appointment.prescriptions?.length > 0 ? (
-                                                            appointment.prescriptions.flatMap(p => (
-                                                                p.items?.map(item => (
-                                                                    <tr key={item.item_id} className="border-bottom border-gray-50">
-                                                                        <td className="px-4 py-3 fw-bold text-gray-800">{item.medicine_name}</td>
-                                                                        <td className="px-4 py-3 small text-muted font-medium">{item.dosage}</td>
-                                                                        <td className="px-4 py-3 small text-muted font-medium">{item.duration} {item.duration_unit}</td>
-                                                                        <td className="px-4 py-3 text-center">
-                                                                            <span className={`badge rounded-pill px-3 py-1.5 fw-extrabold extra-small text-uppercase ${p.status === 'dispensed' ? 'bg-success text-white' : 'bg-warning text-dark'}`}>
-                                                                                {p.status}
-                                                                            </span>
-                                                                        </td>
-                                                                    </tr>
-                                                                ))
-                                                            ))
-                                                        ) : (
-                                                            <tr>
-                                                                <td colSpan="4" className="text-center py-5 bg-gray-50">
-                                                                    <p className="text-muted extra-small fw-bold text-uppercase tracking-widest mb-0 opacity-50">No pharmacy entries found</p>
-                                                                </td>
-                                                            </tr>
-                                                        )}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    )}
+                            <div className="nyl-meta-grid mt-4">
+                                <div className="nyl-meta-item">
+                                    <div className="nyl-meta-item__label">Booked on</div>
+                                    <div className="nyl-meta-item__value">{formatDateTime(appointment.created_at)}</div>
+                                </div>
+                                <div className="nyl-meta-item">
+                                    <div className="nyl-meta-item__label">Last updated</div>
+                                    <div className="nyl-meta-item__value">{formatDateTime(appointment.updated_at)}</div>
+                                </div>
+                                <div className="nyl-meta-item">
+                                    <div className="nyl-meta-item__label">Lab requests</div>
+                                    <div className="nyl-meta-item__value">{labRequests.length}</div>
+                                </div>
+                                <div className="nyl-meta-item">
+                                    <div className="nyl-meta-item__label">Prescriptions</div>
+                                    <div className="nyl-meta-item__value">{prescriptions.length}</div>
                                 </div>
                             </div>
-                        </div>
+                        </DashboardPanel>
+
+                        {canViewClinical && (
+                            <RegistryTablePanel
+                                title="Clinical consultations"
+                                icon="fa-stethoscope"
+                                columns={consultationColumns}
+                                data={consultations}
+                                emptyMessage="No consultations linked to this visit yet."
+                                idField="consultation_id"
+                                panelClassName="mb-4"
+                            />
+                        )}
+
+                        {canViewClinical && (
+                            <RegistryTablePanel
+                                title="Laboratory requests"
+                                icon="fa-flask"
+                                columns={labColumns}
+                                data={labRequests}
+                                emptyMessage="No lab tests requested for this visit."
+                                idField="request_id"
+                                panelClassName="mb-4"
+                            />
+                        )}
+
+                        {canViewClinical && (
+                            <RegistryTablePanel
+                                title="Pharmacy orders"
+                                icon="fa-pills"
+                                columns={prescriptionColumns}
+                                data={prescriptionRows}
+                                emptyMessage="No prescriptions issued for this visit."
+                                idField="item_id"
+                            />
+                        )}
+
+                        {isReceptionist && (
+                            <DashboardPanel title="Clinical records" icon="fa-lock" headerVariant="section">
+                                <p className="text-muted mb-0 small">
+                                    Clinical consultations, lab results, and pharmacy orders are restricted to clinical staff.
+                                    Use check-in and status actions from the toolbar below.
+                                </p>
+                            </DashboardPanel>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            <UnifiedToolbar 
+            <UnifiedToolbar
                 actions={[
-                    auth.user.role === 'nurse' && { 
-                        label: 'RECORD VITALS', 
-                        icon: 'fa-heartbeat', 
-                        href: route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id }) 
+                    auth.user.role === 'nurse' && {
+                        label: 'RECORD VITALS',
+                        icon: 'fa-heartbeat',
+                        href: route('consultations.create', {
+                            patient_id: appointment.patient_id,
+                            appointment_id: appointment.appointment_id,
+                        }),
                     },
-                    auth.user.role === 'doctor' && { 
-                        label: 'START CONSULTATION', 
-                        icon: 'fa-stethoscope', 
-                        href: route('consultations.create', { patient_id: appointment.patient_id, appointment_id: appointment.appointment_id }) 
+                    auth.user.role === 'doctor' && {
+                        label: 'START CONSULTATION',
+                        icon: 'fa-stethoscope',
+                        href: route('consultations.create', {
+                            patient_id: appointment.patient_id,
+                            appointment_id: appointment.appointment_id,
+                        }),
                     },
-                    ['admin', 'doctor', 'receptionist'].includes(auth.user.role) && appointment.status === 'scheduled' && {
+                    ['admin', 'doctor'].includes(auth.user.role) && {
+                        label: 'NEW PRESCRIPTION',
+                        icon: 'fa-prescription',
+                        href: route('prescriptions.create', {
+                            patient_id: appointment.patient_id,
+                            appointment_id: appointment.appointment_id,
+                        }),
+                    },
+                    ['admin', 'doctor', 'receptionist'].includes(auth.user.role) &&
+                        ['scheduled', 'confirmed'].includes(appointment.status) && {
                         label: 'CONFIRM ARRIVAL',
                         icon: 'fa-check-circle',
-                        onClick: () => updateStatus('confirmed'),
-                        color: 'success'
+                        onClick: checkIn,
+                        color: 'success',
                     },
-                    ['admin', 'doctor', 'receptionist'].includes(auth.user.role) && ['scheduled', 'confirmed'].includes(appointment.status) && {
+                    ['admin', 'doctor', 'receptionist'].includes(auth.user.role) &&
+                        ['arrived', 'confirmed'].includes(appointment.status) && {
+                        label: 'MARK COMPLETE',
+                        icon: 'fa-flag-checkered',
+                        onClick: () => updateStatus('completed'),
+                        color: 'success',
+                    },
+                    ['admin', 'doctor', 'receptionist'].includes(auth.user.role) &&
+                        !['completed', 'cancelled', 'no_show'].includes(appointment.status) && {
+                        label: 'MARK NO-SHOW',
+                        icon: 'fa-user-slash',
+                        onClick: () => updateStatus('no_show'),
+                        color: 'gray',
+                    },
+                    ['admin', 'doctor', 'receptionist'].includes(auth.user.role) &&
+                        !['completed', 'cancelled'].includes(appointment.status) && {
                         label: 'CANCEL VISIT',
                         icon: 'fa-times-circle',
                         onClick: () => updateStatus('cancelled'),
-                        color: 'gray'
+                        color: 'danger',
                     },
-                    { 
-                        label: 'REGISTRY', 
-                        icon: 'fa-arrow-left', 
+                    {
+                        label: 'BACK TO REGISTRY',
+                        icon: 'fa-arrow-left',
                         href: route('appointments.index'),
-                        color: 'gray'
-                    }
+                        color: 'gray',
+                    },
                 ].filter(Boolean)}
             />
         </AuthenticatedLayout>

@@ -19,7 +19,12 @@ class AppointmentResource extends JsonResource
             'patient_id' => $this->patient_id,
             'doctor_id' => $this->doctor_id,
             'appointment_date' => $this->appointment_date instanceof \DateTimeInterface ? $this->appointment_date->format('Y-m-d') : $this->appointment_date,
-            'appointment_time' => $this->appointment_time,
+            'appointment_time' => $this->appointment_time instanceof \DateTimeInterface
+                ? $this->appointment_time->format('H:i')
+                : (is_string($this->appointment_time) ? substr($this->appointment_time, 0, 5) : $this->appointment_time),
+            'end_time' => $this->end_time instanceof \DateTimeInterface
+                ? $this->end_time->format('H:i')
+                : (is_string($this->end_time) ? substr($this->end_time, 0, 5) : $this->end_time),
             'appointment_type' => $this->appointment_type,
             'status' => $this->status,
             'reason' => $this->reason,
@@ -29,6 +34,9 @@ class AppointmentResource extends JsonResource
             'updated_at' => $this->updated_at instanceof \DateTimeInterface ? $this->updated_at->format(\DateTimeInterface::ATOM) : $this->updated_at,
             'patient' => $this->whenLoaded('patient', fn () => new PatientResource($this->patient)),
             'doctor' => $this->whenLoaded('doctor', fn () => new StaffResource($this->doctor)),
+            'prescriptions' => $this->whenLoaded('prescriptions', fn () => PrescriptionResource::collection($this->prescriptions)),
+            'lab_test_requests' => $this->whenLoaded('labTestRequests', fn () => LabTestRequestResource::collection($this->labTestRequests)),
+            'consultations' => $this->whenLoaded('consultations', fn () => ConsultationResource::collection($this->consultations)),
         ];
     }
 }

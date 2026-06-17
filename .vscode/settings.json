@@ -5,5 +5,7 @@
   "files.exclude": {
     "**/legacy_backup": true
   },
-  "git.ignoreLimitWarning": true
+  "git.ignoreLimitWarning": true,
+  "editor.tabCompletion": "on",
+  "diffEditor.codeLens": true
 }

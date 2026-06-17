@@ -1,8 +1,8 @@
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import PageHeader from '@/Components/PageHeader';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import DashboardSelect from '@/Components/DashboardSelect';
+import { formatCurrency } from '@/Utils/formatUtils';
 
 export default function Create({ testTypes, preselected_patient_id, preselected_patient_label, consultation_id, auth }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -21,17 +21,13 @@ export default function Create({ testTypes, preselected_patient_id, preselected_
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header="Create Lab Request"
+            headerTitle="Laboratory Order"
+            breadcrumbs={[
+                { label: 'Lab Registry', url: route('lab.index') },
+                { label: 'New Request', active: true },
+            ]}
         >
             <Head title="New Lab Request" />
-
-            <PageHeader 
-                title="Laboratory Order"
-                breadcrumbs={[
-                    { label: 'Lab Registry', url: route('lab.index') },
-                    { label: 'New Request', active: true }
-                ]}
-            />
 
             <UnifiedToolbar 
                 actions={[
@@ -80,7 +76,7 @@ export default function Create({ testTypes, preselected_patient_id, preselected_
                                                 <option value="">Select Test Type</option>
                                                 {testTypes.map(t => (
                                                     <option key={t.test_type_id} value={t.test_type_id}>
-                                                        {t.test_name} - {t.category} (Ksh {t.price})
+                                                        {t.test_name} - {t.category} ({formatCurrency(t.price)})
                                                     </option>
                                                 ))}
                                             </select>

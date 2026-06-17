@@ -1,12 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react'; // Import Link
-import PageHeader from '@/Components/PageHeader';
 import FormSection from '@/Components/FormSection';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import FormField from '@/Components/FormField';
 import TextInput from '@/Components/TextInput';
 import DashboardSelect from '@/Components/DashboardSelect'; // Import DashboardSelect
 import { useState, useEffect } from 'react';
+import { formatCurrency } from '@/Utils/formatUtils';
 
 export default function Create({ patient_id, consultation_id, consultation, consultation_fee, auth }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -53,17 +53,13 @@ export default function Create({ patient_id, consultation_id, consultation, cons
 
     return (
         <AuthenticatedLayout
-            header="Create Invoice"
+            headerTitle="Generate New Invoice"
+            breadcrumbs={[
+                { label: 'Billing', url: route('invoices.index') },
+                { label: 'Create Invoice', active: true },
+            ]}
         >
             <Head title="Create Invoice" />
-
-            <PageHeader 
-                title="Generate New Invoice"
-                breadcrumbs={[
-                    { label: 'Billing', url: route('invoices.index') },
-                    { label: 'Create Invoice', active: true }
-                ]}
-            />
 
             <div className="container-fluid px-0 pb-5">
                 <form onSubmit={submit}>
@@ -120,7 +116,7 @@ export default function Create({ patient_id, consultation_id, consultation, cons
                                                         </div>
                                                     </td>
                                                     <td className="text-end fw-bold">
-                                                        Ksh {(item.quantity * item.unit_price).toLocaleString()}
+                                                        {formatCurrency(item.quantity * item.unit_price)}
                                                     </td>
                                                     <td className="text-end">
                                                         {data.items.length > 1 && (
@@ -207,8 +203,7 @@ export default function Create({ patient_id, consultation_id, consultation, cons
                                 <div className="card-body p-5">
                                     <h6 className="text-white-50 text-uppercase extra-small fw-extrabold tracking-widest mb-1">Total Payable</h6>
                                     <div className="display-4 fw-extrabold mb-0 tracking-tightest">
-                                        <span className="small opacity-50 me-2" style={{ fontSize: '0.4em' }}>Ksh</span>
-                                        {totalAmount.toLocaleString()}
+                                        {formatCurrency(totalAmount)}
                                     </div>
                                 </div>
                             </div>

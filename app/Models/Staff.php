@@ -14,14 +14,26 @@ class Staff extends Model
 
     protected $fillable = [
         'user_id',
+        'employee_id',
         'specialization',
         'department',
-        'license_number'
+        'department_id',
+        'position',
+        'license_number',
+        'qualification',
+        'join_date',
+        'emergency_contact',
+        'emergency_name',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
+
+    public function departmentRelation()
+    {
+        return $this->belongsTo(Department::class, 'department_id', 'department_id');
     }
     
     public function appointments()

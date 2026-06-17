@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -26,5 +27,13 @@ class AppServiceProvider extends ServiceProvider
         Vite::prefetch(event: 'hover');
         // So Inertia receives the same shape as raw models (no top-level "data" wrapper)
         JsonResource::withoutWrapping();
+
+        Gate::before(function ($user, $ability) {
+            if ($user instanceof \App\Models\User && $user->role === 'admin') {
+                return true;
+            }
+
+            return null;
+        });
     }
 }

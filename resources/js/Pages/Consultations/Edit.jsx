@@ -1,8 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { toast } from 'react-hot-toast';
 import DashboardSelect from '@/Components/DashboardSelect';
-import PageHeader from '@/Components/PageHeader';
 import FormSection from '@/Components/FormSection';
 import FormField from '@/Components/FormField';
 import FormSelect from '@/Components/FormSelect';
@@ -10,6 +9,8 @@ import QuickPatientModal from '@/Components/QuickPatientModal';
 import Modal from '@/Components/Modal';
 import ConsultationDraftSwitcher from '@/Components/ConsultationDraftSwitcher';
 import InfoModalComp from '@/Components/InfoModal';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import { formatDateTime } from '@/Utils/dateUtils';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { toLocalISO } from '@/Utils/dateUtils';
@@ -378,7 +379,7 @@ export default function Edit({
                                 <div className="mt-3 pt-3 border-top">
                                     <div className="small text-muted mb-2 fw-bold">Parameters & Reference Ranges</div>
                                     <div className="table-responsive">
-                                        <table className="table table-sm mb-0" style={{ fontSize: '0.8rem' }}>
+                                        <table className="table table-sm mb-0 extra-small">
                                             <thead><tr><th className="border-0 text-muted">Parameter</th><th className="border-0 text-muted">Unit</th><th className="border-0 text-muted">Normal Range</th></tr></thead>
                                             <tbody>
                                                 {lab.test_type.template.map((t, i) => (
@@ -407,11 +408,11 @@ export default function Edit({
                             </div>
                             <div className="d-flex justify-content-between border-bottom pb-2" style={{ borderColor: '#f3f4f6' }}>
                                 <span className="text-muted">Requested Date</span>
-                                <span className="fw-bold">{lab.created_at ? new Date(lab.created_at).toLocaleString() : 'N/A'}</span>
+                                <span className="fw-bold">{lab.created_at ? formatDateTime(lab.created_at) : 'N/A'}</span>
                             </div>
                             <div className="d-flex justify-content-between border-bottom pb-2" style={{ borderColor: '#f3f4f6' }}>
                                 <span className="text-muted">Completed Date</span>
-                                <span className="fw-bold">{lab.completed_at ? new Date(lab.completed_at).toLocaleString() : 'N/A'}</span>
+                                <span className="fw-bold">{lab.completed_at ? formatDateTime(lab.completed_at) : 'N/A'}</span>
                             </div>
                             <div className="d-flex justify-content-between border-bottom pb-2" style={{ borderColor: '#f3f4f6' }}>
                                 <span className="text-muted">Performed By</span>
@@ -440,16 +441,60 @@ export default function Edit({
     };
 
     return (
-        <AuthenticatedLayout user={auth.user} header={`Edit Consultation #${consultation.consultation_id}`}>
+        <AuthenticatedLayout
+            user={auth.user}
+            headerTitle={`Edit Consultation: ${data.patient_label}`}
+            breadcrumbs={[
+                { label: 'Dashboard', url: route('dashboard') },
+                { label: 'Consultations', url: route('consultations.index') },
+                { label: 'Edit Record', active: true },
+            ]}
+        >
             <Head title="Edit Consultation" />
 
-            <PageHeader 
-                title={`Edit Consultation: ${data.patient_label}`}
-                breadcrumbs={[
-                    { label: 'Dashboard', url: route('dashboard') },
-                    { label: 'Consultations', url: route('consultations.index') },
-                    { label: 'Edit Record', active: true }
-                ]}
+            <UnifiedToolbar
+                autosaveStatus={autosaveStatus}
+                drafts={consultationDrafts.data}
+                actions={[
+                    auth?.user?.role === 'nurse' ? {
+                        label: 'SAVE VITALS',
+                        icon: 'fa-heartbeat',
+                        onClick: (e) => submit(e, 'in_progress'),
+                    } : {
+                        label: 'CONCLUDE & CLOSE',
+                        icon: 'fa-check-double',
+                        onClick: (e) => submit(e, 'completed'),
+                    },
+                    auth?.user?.role !== 'nurse' && {
+                        label: 'SAVE CHANGES',
+                        icon: 'fa-save',
+                        onClick: (e) => submit(e, 'in_progress'),
+                    },
+                    auth?.user?.role !== 'nurse' && {
+                        label: 'SAVE & REQUEST LABS',
+                        icon: 'fa-vials',
+                        onClick: (e) => submit(e, 'in_progress'),
+                    },
+                    {
+                        label: 'VIEW RECORD',
+                        icon: 'fa-eye',
+                        href: route('consultations.show', consultation.consultation_id),
+                    },
+                    ['doctor', 'admin'].includes(auth?.user?.role) && {
+                        label: 'ADD PRESCRIPTION',
+                        icon: 'fa-prescription',
+                        href: route('prescriptions.create', {
+                            patient_id: consultation.patient_id,
+                            consultation_id: consultation.consultation_id,
+                        }),
+                    },
+                    {
+                        label: 'BACK TO LIST',
+                        icon: 'fa-arrow-left',
+                        href: route('consultations.index'),
+                        color: 'gray',
+                    },
+                ].filter(Boolean)}
             />
 
             <form onSubmit={e => submit(e, 'completed')} className="row g-4 pb-5">
@@ -566,9 +611,9 @@ export default function Edit({
 
                 {/* Service Requests */}
                 <div className="col-12">
-                    <FormSection title="Additional Services & Diagnostics" icon="fas fa-microscope" headerClassName="bg-blue-50 text-blue-700 p-3">
-                         <div className="row g-4">
-                            <div className="col-lg-4 border-end">
+                    <FormSection title="Additional Services & Diagnostics" icon="fas fa-microscope" headerClassName="bg-blue-50 text-blue-700 p-3" className="overflow-visible" bodyClassName="p-4 overflow-visible">
+                         <div className="row g-4 overflow-visible">
+                            <div className="col-lg-4 border-end overflow-visible">
                                 <h6 className="fw-bold mb-3 text-secondary small text-uppercase">Laboratory Tests</h6>
 
                                 {existingLabs.length > 0 && (
@@ -685,6 +730,30 @@ export default function Edit({
                             {/* Prescriptions Column */}
                             <div className="col-lg-4">
                                 <h6 className="fw-bold mb-3 text-secondary small text-uppercase">Prescriptions</h6>
+
+                                {prescriptions.length > 0 && (
+                                    <div className="mb-4">
+                                        <h6 className="text-xs fw-bold text-primary text-uppercase mb-2">Already Prescribed</h6>
+                                        <ul className="list-group list-group-flush mb-0">
+                                            {prescriptions.map((rx) => (
+                                                <li key={rx.prescription_id} className="list-group-item d-flex justify-content-between align-items-center bg-light mb-2 rounded border-0 py-2">
+                                                    <div>
+                                                        <span className="fw-bold text-gray-800 d-block small">Prescription #{rx.prescription_id}</span>
+                                                        <span className="text-secondary extra-small text-capitalize">{rx.status || 'pending'}</span>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold"
+                                                        onClick={() => router.visit(route('prescriptions.show', rx.prescription_id))}
+                                                    >
+                                                        View
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
                                 <div className="mb-3">
                                     <DashboardSelect
                                         options={medications.map(m => ({ value: m.medication_id, label: `${m.medication_name} ${m.strength || ''}`, sublabel: m.medication_type }))}
@@ -752,22 +821,6 @@ export default function Edit({
                     </FormSection>
                 </div>
 
-                {/* Actions */}
-                <div className="col-12 text-end">
-                    <div className="d-flex justify-content-between align-items-center">
-                        <Link href={route('consultations.index')} className="btn btn-link text-muted"><i className="fas fa-arrow-left me-2"></i>Back to List</Link>
-                        <div className="d-flex gap-3">
-                            <button type="button" onClick={e => submit(e, 'in_progress')} disabled={processing} className="btn btn-outline-primary px-4 py-2 rounded-pill fw-bold">
-                                {processing ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="fas fa-save me-2"></i>}
-                                Save Changes
-                            </button>
-                            <button type="submit" disabled={processing} className="btn btn-success px-5 py-2 rounded-pill fw-bold shadow-sm">
-                                {processing ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="fas fa-check-circle me-2"></i>}
-                                Conclude Consultation
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </form>
 
             {/* Toast / Modals */}

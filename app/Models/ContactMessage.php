@@ -14,5 +14,13 @@ class ContactMessage extends Model
         'message',
         'status',
         'read_at',
+        'reply',
+        'replied_at',
+        'replied_by',
     ];
+
+    public function replier()
+    {
+        return $this->belongsTo(User::class, 'replied_by', 'user_id');
+    }
 }

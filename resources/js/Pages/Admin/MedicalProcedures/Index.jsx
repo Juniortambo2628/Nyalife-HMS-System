@@ -1,8 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 import { useState, useMemo, useCallback } from 'react';
-import PageHeader from '@/Components/PageHeader';
-import DashboardTable from '@/Components/DashboardTable';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import TableActions from '@/Components/TableActions';
+import StatusBadge from '@/Components/StatusBadge';
+import { TableCellPrimary, TableCellStack } from '@/Components/TableCells';
+import { formatCurrency } from '@/Utils/formatUtils';
 import { toast } from 'react-hot-toast';
 
 export default function Index({ procedures, auth }) {
@@ -77,90 +81,90 @@ export default function Index({ procedures, auth }) {
         }
     }, [destroy]);
 
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES' }).format(amount);
-    };
-
     const columns = useMemo(() => [
         {
             header: 'Name & Description',
             accessorKey: 'name',
             cell: ({ row }) => (
-                <div className="px-1">
-                    <div className="fw-extrabold text-gray-900">{row.original.name}</div>
-                    <div className="text-muted extra-small text-truncate" style={{maxWidth: '300px'}}>
-                        {row.original.description || 'No description provided'}
-                    </div>
-                </div>
-            )
+                <TableCellStack
+                    primary={row.original.name}
+                    secondary={row.original.description || 'No description provided'}
+                />
+            ),
         },
         {
             header: 'Category',
             accessorKey: 'category',
             cell: ({ row }) => (
-                <span className="badge bg-secondary-subtle text-secondary px-3 py-1 rounded-pill fw-bold text-uppercase tracking-wider text-xs border border-secondary-subtle shadow-sm">
-                    {row.original.category}
-                </span>
-            )
+                <TableCellPrimary className="text-uppercase">{row.original.category}</TableCellPrimary>
+            ),
         },
         {
             header: 'Standard Fee',
             accessorKey: 'standard_fee',
             cell: ({ row }) => (
-                <div className="fw-extrabold text-gray-800">
-                    {formatCurrency(row.original.standard_fee)}
-                </div>
-            )
+                <TableCellPrimary>{formatCurrency(row.original.standard_fee)}</TableCellPrimary>
+            ),
         },
         {
             header: 'Status',
             accessorKey: 'is_active',
             cell: ({ row }) => (
-                <div className="form-check form-switch ms-2">
-                    <input 
-                        className="form-check-input transition-all" 
-                        type="checkbox" 
-                        checked={row.original.is_active} 
-                        onChange={() => toggleStatus(row.original.procedure_id)}
-                        style={{cursor: 'pointer', transform: 'scale(1.2)'}}
-                    />
-                </div>
-            )
+                <button
+                    type="button"
+                    className="btn btn-link p-0 border-0 text-decoration-none"
+                    onClick={() => toggleStatus(row.original.procedure_id)}
+                >
+                    <StatusBadge status={row.original.is_active ? 'active' : 'inactive'} />
+                </button>
+            ),
         },
         {
             header: 'Actions',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="text-end">
-                    <div className="d-flex justify-content-end gap-2">
-                        <button onClick={() => openModal(row.original)} className="btn btn-sm btn-white border shadow-sm rounded-circle d-flex align-items-center justify-content-center transition-all hover-scale" style={{width: 34, height: 34}} title="Edit">
-                            <i className="fas fa-edit text-primary"></i>
-                        </button>
-                        <button onClick={() => deleteProcedure(row.original.procedure_id)} className="btn btn-sm btn-white border shadow-sm rounded-circle d-flex align-items-center justify-content-center transition-all hover-scale" style={{width: 34, height: 34}} title="Delete">
-                            <i className="fas fa-trash-alt text-danger"></i>
-                        </button>
-                    </div>
-                </div>
-            )
-        }
+                <TableActions actions={[
+                    {
+                        icon: 'fa-edit',
+                        label: 'Edit procedure',
+                        onClick: () => openModal(row.original),
+                        color: 'warning',
+                    },
+                    {
+                        icon: 'fa-trash-alt',
+                        label: 'Delete procedure',
+                        color: 'danger',
+                        onClick: () => deleteProcedure(row.original.procedure_id),
+                    },
+                ]} />
+            ),
+        },
     ], [openModal, deleteProcedure, toggleStatus]);
 
     return (
-        <AuthenticatedLayout header="Medical Procedures Catalog">
+        <AuthenticatedLayout
+            headerTitle="Service & Procedure Catalog"
+            breadcrumbs={[
+                { label: 'Admin CMS', active: false },
+                { label: 'Procedures Catalog', active: true },
+            ]}
+        >
             <Head title="Service & Procedure Catalog" />
 
-            <PageHeader 
-                title="Service & Procedure Catalog"
-                breadcrumbs={[{ label: 'Admin CMS', active: false }, { label: 'Procedures Catalog', active: true }]}
-                actions={
-                    <button onClick={() => openModal()} className="btn btn-primary shadow-sm fw-bold rounded-pill px-4">
-                        <i className="fas fa-plus me-2"></i>Add Procedure
-                    </button>
-                }
+            <UnifiedToolbar
+                actions={[
+                    {
+                        label: 'ADD PROCEDURE',
+                        icon: 'fa-plus',
+                        onClick: () => openModal(),
+                    },
+                ]}
             />
 
             <div className="py-0">
-                <DashboardTable 
+                <RegistryTablePanel
+                    title="Procedure catalog"
+                    icon="fa-notes-medical"
                     columns={columns}
                     data={procedures}
                     emptyMessage="No procedures found in the catalog."

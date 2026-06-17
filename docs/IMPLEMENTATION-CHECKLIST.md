@@ -24,7 +24,7 @@ Track progress for each phase. Check off items as they are completed.
 - [x] **2.3** Add `HasRoles` to User model
 - [x] **2.4** Define roles and permissions (seeder: `php artisan db:seed --class=SyncSpatieRolesSeeder`)
 - [x] **2.5** New users get Spatie role in UserController::store; use `$user->hasRole('role')` where needed
-- [ ] **2.6** (Optional) Share permissions to frontend for UI
+- [x] **2.6** Share permissions to frontend for UI gating
 
 **Note:** Spatie uses table `spatie_roles` to avoid conflict with existing `roles`. After migrate, run the seeder once to sync existing users.
 

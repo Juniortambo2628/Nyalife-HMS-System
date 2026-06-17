@@ -2,12 +2,14 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import ViewToggle from '@/Components/ViewToggle';
 import InfoModal from '@/Components/InfoModal';
-import DashboardSelect from '@/Components/DashboardSelect';
 import UserAvatar from '@/Components/UserAvatar';
 import TableActions from '@/Components/TableActions';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import GridCardActions from '@/Components/GridCardActions';
+import { PatientIdLabel } from '@/Components/PatientTableCell';
 import { useState, useMemo, useEffect } from 'react';
 
 export default function Index({ patients, filters, auth }) {
@@ -26,6 +28,25 @@ export default function Index({ patients, filters, auth }) {
         show: false,
         patient: null,
     });
+
+    const handleBulkAction = (action) => {
+        if (action === 'export') {
+            window.location.href = route('patients.export') + '?ids=' + selectedIds.join(',');
+            setSelectedIds([]);
+            return;
+        }
+        if (action === 'print_cards') {
+            window.open(route('patients.print-cards') + '?ids=' + selectedIds.join(','), '_blank');
+            setSelectedIds([]);
+            return;
+        }
+        router.post(route('patients.bulk-action'), {
+            action: action,
+            ids: selectedIds
+        }, {
+            onSuccess: () => setSelectedIds([]),
+        });
+    };
 
     const handleViewChange = (newView) => {
         setView(newView);
@@ -89,7 +110,11 @@ export default function Index({ patients, filters, auth }) {
                         >
                             {row.original.user.first_name} {row.original.user.last_name}
                         </button>
-                        <div className="extra-small text-muted font-bold opacity-50 text-uppercase tracking-widest mt-1">PAT-{row.original.patient_id}</div>
+                        <PatientIdLabel
+                            id={row.original.patient_id}
+                            variant="short"
+                            className="extra-small text-muted font-bold opacity-50 text-uppercase tracking-widest mt-1"
+                        />
                     </div>
                 </div>
             )
@@ -218,8 +243,8 @@ export default function Index({ patients, filters, auth }) {
                                 </div>
                             </div>
                         </div>
-                        <div className="p-4 bg-pink-50 rounded-2xl border border-pink-100 shadow-inner">
-                            <h6 className="extra-small fw-extrabold text-pink-500 text-uppercase tracking-widest mb-3">Emergency Response (NOK)</h6>
+                        <div className="p-4 bg-pink-50 rounded-2xl border border-pink-100 shadow-inner nyl-content-box nyl-content-box--highlight">
+                            <h6 className="nyl-content-box__title nyl-content-box__title--pink mb-3">Emergency Response (NOK)</h6>
                             <div className="fw-extrabold text-gray-800 d-flex align-items-center gap-3">
                                 <i className="fas fa-user-shield text-pink-300"></i>
                                 {patient.emergency_name ? `${patient.emergency_name.toUpperCase()}` : 'NOT REGISTERED'}
@@ -273,32 +298,29 @@ export default function Index({ patients, filters, auth }) {
             <Head title="Patients" />
 
             <UnifiedToolbar 
-                viewOptions={[
-                    { label: 'LIST VIEW', icon: 'fa-list-ul', onClick: () => handleViewChange('list'), color: view === 'list' ? 'pink-500' : 'gray-400' },
-                    { label: 'GRID VIEW', icon: 'fa-th-large', onClick: () => handleViewChange('grid'), color: view === 'grid' ? 'pink-500' : 'gray-400' }
-                ]}
-                filters={
-                    <DashboardSelect 
-                        options={[
-                            { label: 'All Subjects', value: '' },
+                viewMode={view}
+                onViewModeChange={handleViewChange}
+                filterGroups={[
+                    {
+                        id: 'filter',
+                        label: 'Filter',
+                        emptyLabel: 'All subjects',
+                        value: activeFilter,
+                        onChange: handleFilterChange,
+                        options: [
                             { label: 'Recently Registered', value: 'recent' },
                             { label: 'Biological Male', value: 'male' },
                             { label: 'Biological Female', value: 'female' },
-                        ]}
-                        value={activeFilter} 
-                        onChange={handleFilterChange}
-                        theme="dark"
-                        dropup={true}
-                        placeholder="Filter..."
-                    />
-                }
+                        ],
+                    },
+                ]}
                 actions={[
                     { label: 'IMPORT CSV', icon: 'fa-file-import', onClick: () => document.getElementById('csvFileInput').click(), color: 'success' },
                     { label: 'REGISTER NEW', icon: 'fa-user-plus', href: route('patients.create') }
                 ]}
                 bulkActions={[
-                    { label: 'EXPORT RECORDS', icon: 'fa-file-export', onClick: () => console.log('Export', selectedIds) },
-                    { label: 'PRINT CARDS', icon: 'fa-id-card', onClick: () => console.log('Print cards', selectedIds) }
+                    { label: 'EXPORT RECORDS', icon: 'fa-file-export', onClick: () => handleBulkAction('export') },
+                    { label: 'PRINT CARDS', icon: 'fa-id-card', onClick: () => handleBulkAction('print_cards') }
                 ]}
                 selectionCount={selectedIds.length}
             />
@@ -320,7 +342,9 @@ export default function Index({ patients, filters, auth }) {
 
                 {/* View Content */}
                 {view === 'list' ? (
-                    <DashboardTable 
+                    <RegistryTablePanel
+                        title="Patient registry"
+                        icon="fa-users"
                         columns={columns}
                         data={patients.data}
                         pagination={patients}
@@ -343,7 +367,11 @@ export default function Index({ patients, filters, auth }) {
                                                         <UserAvatar user={p.user} size="lg" className="rounded-2xl shadow-sm border border-white" />
                                                         <div>
                                                             <h5 className="fw-extrabold text-gray-900 mb-0 tracking-tightest">{p.user?.first_name} {p.user?.last_name}</h5>
-                                                            <div className="extra-small text-muted font-bold text-uppercase tracking-widest opacity-50">PAT-{p.patient_id}</div>
+                                                            <PatientIdLabel
+                                                                id={p.patient_id}
+                                                                variant="short"
+                                                                className="extra-small text-muted font-bold text-uppercase tracking-widest opacity-50"
+                                                            />
                                                         </div>
                                                     </div>
                                                     <span className="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 fw-extrabold extra-small border border-primary-subtle">
@@ -362,27 +390,11 @@ export default function Index({ patients, filters, auth }) {
                                                     </div>
                                                 </div>
 
-                                                <div className="d-flex gap-2 pt-4 border-top border-gray-50">
-                                                    <button 
-                                                        onClick={() => openModal(p)}
-                                                        className="btn btn-light bg-gray-50 text-gray-700 rounded-pill flex-1 fw-extrabold extra-small tracking-widest border-0 py-2.5 shadow-sm"
-                                                    >
-                                                        QUICK VIEW
-                                                    </button>
-                                                    <Link
-                                                        href={route('vitals.create', { patient_id: p.patient_id })}
-                                                        className="btn btn-outline-success rounded-circle p-2 avatar-sm d-flex align-items-center justify-content-center shadow-sm border-2"
-                                                        title="Record Vitals"
-                                                    >
-                                                        <i className="fas fa-heartbeat text-xs"></i>
-                                                    </Link>
-                                                    <Link 
-                                                        href={route('patients.show', p.patient_id)}
-                                                        className="btn btn-primary rounded-circle p-2 avatar-sm d-flex align-items-center justify-content-center shadow-sm"
-                                                    >
-                                                        <i className="fas fa-chevron-right text-xs"></i>
-                                                    </Link>
-                                                </div>
+                                                <GridCardActions actions={[
+                                                    { icon: 'fa-eye', label: 'Quick view', onClick: () => openModal(p) },
+                                                    { icon: 'fa-heartbeat', label: 'Record vitals', href: route('vitals.create', { patient_id: p.patient_id }), color: 'success' },
+                                                    { icon: 'fa-user-circle', label: 'Full profile', href: route('patients.show', p.patient_id) },
+                                                ]} />
                                             </div>
                                         </div>
                                     </div>

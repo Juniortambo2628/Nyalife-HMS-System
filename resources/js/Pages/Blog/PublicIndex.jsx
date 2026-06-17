@@ -1,5 +1,7 @@
 import { Link, Head, router } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
+import { resolvePublicImageUrl } from '@/Utils/imageUtils';
+import { formatDateOnly } from '@/Utils/dateUtils';
 
 export default function PublicIndex({ blogs = { data: [], links: [] }, filters = {}, allTags = [] }) {
     const [search, setSearch] = useState(filters?.search || '');
@@ -15,11 +17,7 @@ export default function PublicIndex({ blogs = { data: [], links: [] }, filters =
         e.target.className = 'w-100 h-100 object-fit-contain p-4 transition-all opacity-50';
     };
 
-    const getImageUrl = (path) => {
-        if (!path) return '/assets/img/logo/Logo2-transparent.png';
-        if (path.includes('/assets/img/') || path.startsWith('http')) return path;
-        return `/storage/${path.replace(/^\//, '')}`;
-    };
+    const getImageUrl = (path) => resolvePublicImageUrl(path, '/assets/img/logo/Logo2-transparent.png');
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -179,7 +177,7 @@ export default function PublicIndex({ blogs = { data: [], links: [] }, filters =
                                                     <i className="fas fa-user" style={{fontSize: '10px'}}></i>
                                                 </div>
                                                 <span className="me-3">{blog.author?.first_name} {blog.author?.last_name}</span>
-                                                <span className="ms-auto"><i className="far fa-calendar-alt me-1"></i> {new Date(blog.published_at || blog.created_at).toLocaleDateString()}</span>
+                                                <span className="ms-auto"><i className="far fa-calendar-alt me-1"></i> {formatDateOnly(blog.published_at || blog.created_at)}</span>
                                             </div>
                                             <h3 className="h4 card-title fw-bold mb-3 text-gray-900 leading-tight">{blog.title}</h3>
                                             <p className="card-text text-gray-600 mb-4 flex-grow-1 lead-sm">

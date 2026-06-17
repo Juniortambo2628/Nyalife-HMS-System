@@ -30,6 +30,7 @@ class AuthenticatedSessionController extends Controller
             'authType' => 'patient',
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
+            'cms' => \App\Models\Setting::all()->pluck('value', 'key'),
         ]);
     }
 
@@ -42,6 +43,7 @@ class AuthenticatedSessionController extends Controller
             'authType' => 'staff',
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
+            'cms' => \App\Models\Setting::all()->pluck('value', 'key'),
         ]);
     }
 

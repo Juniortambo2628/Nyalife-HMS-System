@@ -15,6 +15,7 @@ class StoreVitalRequest extends FormRequest
     {
         return [
             'patient_id' => 'required|exists:patients,patient_id',
+            'consultation_id' => 'nullable|exists:consultations,consultation_id',
             'temperature' => 'nullable|numeric|between:30,45',
             'blood_pressure' => 'nullable|string|max:20',
             'heart_rate' => 'nullable|integer|between:20,300',
@@ -22,8 +23,10 @@ class StoreVitalRequest extends FormRequest
             'weight' => 'nullable|numeric|between:0,500',
             'height' => 'nullable|numeric|between:0,300',
             'oxygen_saturation' => 'nullable|integer|between:0,100',
+            'pain_level' => 'nullable|integer|between:0,10',
             'priority' => 'nullable|string|in:normal,emergency',
             'notes' => 'nullable|string',
+            'measured_at' => 'nullable|date',
         ];
     }
 }

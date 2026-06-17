@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react';
 import React, { useRef, useEffect, useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
+import { formatDateTime } from '@/Utils/dateUtils';
 
 export default function Show({ consent, doctors, auth }) {
     const isDoctor = auth.user.role === 'doctor';
@@ -94,9 +95,12 @@ export default function Show({ consent, doctors, auth }) {
     };
 
     return (
-        <AuthenticatedLayout 
-            header="Telehealth Consent Sheet"
-            auth={auth}
+        <AuthenticatedLayout
+            headerTitle="Telehealth Consent Sheet"
+            breadcrumbs={[
+                { label: 'Telehealth', url: route('telehealth.admin.index') },
+                { label: `Consent #${consent.id}`, active: true },
+            ]}
         >
             <Head title={`Telehealth Consent - ${consent.patient_name}`} />
             <Toaster position="top-right" />
@@ -108,7 +112,7 @@ export default function Show({ consent, doctors, auth }) {
                             <div className="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
                                 <div>
                                     <h4 className="fw-extrabold text-gray-900 mb-1">Telehealth Consent Form</h4>
-                                    <p className="text-muted small mb-0">Form ID: THC-{consent.id} | Signed on {new Date(consent.signed_at).toLocaleString()}</p>
+                                    <p className="text-muted small mb-0">Form ID: THC-{consent.id} | Signed on {formatDateTime(consent.signed_at)}</p>
                                 </div>
                                 <span className={`badge rounded-pill px-3 py-2 fw-bold ${consent.doctor_signature_path ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}`}>
                                     {consent.doctor_signature_path ? 'Fully Executed' : 'Doctor Sign Off Pending'}

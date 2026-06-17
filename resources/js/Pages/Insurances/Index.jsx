@@ -1,6 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import TableActions from '@/Components/TableActions';
+import StatusBadge from '@/Components/StatusBadge';
+import GridCardActions from '@/Components/GridCardActions';
 import { useCallback } from 'react';
 
 export default function Index({ auth, insurances }) {
@@ -22,24 +25,25 @@ export default function Index({ auth, insurances }) {
 
     return (
         <AuthenticatedLayout
-            toolbarActions={userRole === 'admin' ? (
-                <Link 
-                    href={route('insurances.create')} 
-                    className="btn btn-primary rounded-pill px-4 py-2 fw-bold small"
-                >
-                    <i className="fas fa-plus-circle me-1"></i> Add Provider
-                </Link>
-            ) : null}
+            headerTitle="Insurance Partners"
+            breadcrumbs={[
+                { label: 'Dashboard', url: '/dashboard' },
+                { label: 'Insurances', active: true },
+            ]}
         >
             <Head title="Health Insurances" />
-            
-            <PageHeader 
-                title="Insurance Partners"
-                breadcrumbs={[
-                    { label: 'Dashboard', url: '/dashboard' },
-                    { label: 'Insurances', active: true }
-                ]}
-            />
+
+            {userRole === 'admin' && (
+                <UnifiedToolbar
+                    actions={[
+                        {
+                            label: 'ADD PROVIDER',
+                            icon: 'fa-plus-circle',
+                            href: route('insurances.create'),
+                        },
+                    ]}
+                />
+            )}
 
             <div className="container-fluid pb-5">
                 {insurances.length === 0 ? (
@@ -60,35 +64,20 @@ export default function Index({ auth, insurances }) {
                                 <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden insurance-card transition-all">
                                     {/* Action Header */}
                                     <div className="p-3 d-flex justify-content-between align-items-center bg-light-subtle border-bottom">
-                                        <button 
+                                        <button
+                                            type="button"
                                             onClick={() => toggleStatus(insurance.insurance_id)}
-                                            className={`badge rounded-pill border-0 px-3 py-1 fw-bold extra-small transition-all shadow-sm ${insurance.is_active ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}
-                                            title={insurance.is_active ? 'Visible to patients' : 'Hidden from patients'}
+                                            className="btn btn-link p-0 border-0 text-decoration-none"
                                         >
-                                            <i className={`fas fa-${insurance.is_active ? 'check-circle' : 'times-circle'} me-1`}></i>
-                                            {insurance.is_active ? 'Active' : 'Hidden'}
+                                            <StatusBadge status={insurance.is_active ? 'active' : 'inactive'} />
                                         </button>
-                                        <div className="dropdown">
-                                            <button className="btn btn-link link-secondary p-0 border-0 shadow-none" data-bs-toggle="dropdown">
-                                                <i className="fas fa-ellipsis-v"></i>
-                                            </button>
-                                            <ul className="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
-                                                <li>
-                                                    <Link className="dropdown-item py-2 px-3 fw-bold small text-dark" href={route('insurances.edit', insurance.insurance_id)}>
-                                                        <i className="fas fa-edit text-primary me-2"></i>Edit Details
-                                                    </Link>
-                                                </li>
-                                                <li><hr className="dropdown-divider opacity-50" /></li>
-                                                <li>
-                                                    <button 
-                                                        onClick={() => handleDelete(insurance.insurance_id)}
-                                                        className="dropdown-item py-2 px-3 fw-bold small text-danger"
-                                                    >
-                                                        <i className="fas fa-trash me-2"></i>Delete Provider
-                                                    </button>
-                                                </li>
-                                            </ul>
-                                        </div>
+                                        <GridCardActions
+                                            className="border-0 pt-0 mt-0"
+                                            actions={[
+                                                { icon: 'fa-edit', label: 'Edit details', href: route('insurances.edit', insurance.insurance_id) },
+                                                { icon: 'fa-trash', label: 'Delete provider', color: 'danger', onClick: () => handleDelete(insurance.insurance_id) },
+                                            ]}
+                                        />
                                     </div>
                                     
                                     {/* Card Content */}

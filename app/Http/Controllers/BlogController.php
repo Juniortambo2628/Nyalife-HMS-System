@@ -11,13 +11,6 @@ use Inertia\Inertia;
 
 class BlogController extends Controller
 {
-    public function index()
-    {
-        return Inertia::render('Welcome', [
-            'blogs' => Blog::with('author')->where('is_published', true)->latest()->get()
-        ]);
-    }
-
     public function manage()
     {
         return Inertia::render('Blog/Index', [

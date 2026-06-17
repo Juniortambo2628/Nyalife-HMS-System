@@ -1,7 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
-
 export default function Edit({ user, roles }) {
     const { data, setData, put, processing, errors } = useForm({
         first_name: user.first_name || '',
@@ -17,18 +15,14 @@ export default function Edit({ user, roles }) {
 
     return (
         <AuthenticatedLayout
-            header="Edit User"
+            headerTitle={`Edit ${user.first_name} ${user.last_name}`}
+            breadcrumbs={[
+                { label: 'Dashboard', url: route('dashboard') },
+                { label: 'Users', url: route('users.index') },
+                { label: 'Edit User', active: true },
+            ]}
         >
             <Head title={`Edit User: ${user.first_name}`} />
-
-            <PageHeader 
-                title={`Edit ${user.first_name} ${user.last_name}`}
-                breadcrumbs={[
-                    { label: 'Dashboard', url: route('dashboard') },
-                    { label: 'Users', url: route('users.index') },
-                    { label: 'Edit User', active: true }
-                ]}
-            />
 
             <div className="py-4 max-w-2xl mx-auto">
                 <div className="card shadow-sm border-0 rounded-2xl bg-white overflow-hidden">

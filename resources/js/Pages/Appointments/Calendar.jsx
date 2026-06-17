@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -19,7 +20,6 @@ export default function Calendar({ appointments, auth }) {
     }));
 
     const handleEventClick = (info) => {
-        // Simple navigation to appointment show page
         window.location.href = route('appointments.show', info.event.id);
     };
 
@@ -31,16 +31,27 @@ export default function Calendar({ appointments, auth }) {
                 { label: 'Appointments', url: route('appointments.index') },
                 { label: 'Calendar View', active: true }
             ]}
-            headerActions={
-                <Link href={route('appointments.index')} className="btn btn-outline-secondary rounded-pill px-4 shadow-sm fw-bold">
-                    <i className="fas fa-list me-2"></i>List View
-                </Link>
-            }
         >
             <Head title="Appointments Calendar" />
 
+            <UnifiedToolbar
+                actions={[
+                    {
+                        label: 'List view',
+                        icon: 'fa-list',
+                        href: route('appointments.index'),
+                        color: 'gray',
+                    },
+                    auth.user.role !== 'patient' && {
+                        label: 'Book visit',
+                        icon: 'fa-plus',
+                        href: route('appointments.create'),
+                    },
+                ].filter(Boolean)}
+            />
+
             <div className="container-fluid appointments-page px-0">
-                <div className="card shadow-sm border-0">
+                <div className="card shadow-sm border-0 rounded-2xl">
                     <div className="card-body p-4">
                         <FullCalendar
                             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}

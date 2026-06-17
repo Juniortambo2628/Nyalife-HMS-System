@@ -1,5 +1,7 @@
+import { PatientIdLabel } from '@/Components/PatientTableCell';
 import { Head } from '@inertiajs/react';
 import { useEffect } from 'react';
+import { formatDateOnly } from '@/Utils/dateUtils';
 
 export default function Print({ request, clinic_name, clinic_address, clinic_phone }) {
     useEffect(() => {
@@ -11,17 +13,17 @@ export default function Print({ request, clinic_name, clinic_address, clinic_pho
     const results = request.results || {};
 
     return (
-        <div className="print-container p-5 bg-white">
+        <div className="print-container nyl-lab-print p-5 bg-white">
             <Head title={`Lab Report - LAB-${request.request_id}`} />
 
             {/* Letterhead */}
             <div className="d-flex justify-content-between align-items-center mb-5 border-bottom pb-4">
                 <div className="d-flex align-items-center">
-                    <div className="me-3" style={{ height: '80px' }}>
+                    <div className="me-3 nyl-print-logo-wrap">
                         <img 
                             src="/assets/logo/Logo2-transparent.png" 
                             alt="Nyalife HMS" 
-                            style={{ height: '100%', width: 'auto', objectFit: 'contain' }} 
+                            className="nyl-print-logo-img"
                         />
                     </div>
                     <div>
@@ -40,7 +42,7 @@ export default function Print({ request, clinic_name, clinic_address, clinic_pho
                 <div className="col-6 border-end p-4 bg-light">
                     <h6 className="text-muted text-uppercase extra-small fw-bold mb-3">Patient Information</h6>
                     <div className="mb-1 fw-bold fs-5">{request.patient?.user?.first_name} {request.patient?.user?.last_name}</div>
-                    <div className="text-muted small mb-1">ID: PAT-{request.patient_id}</div>
+                    <PatientIdLabel id={request.patient_id} variant="print" />
                     <div className="text-muted small">Gender: {request.patient?.gender || request.patient?.user?.gender || 'N/A'} | Age: {request.patient?.age ?? 'N/A'}</div>
                 </div>
                 <div className="col-6 p-4">
@@ -50,10 +52,10 @@ export default function Print({ request, clinic_name, clinic_address, clinic_pho
                         <div className="col-6 fw-bold text-end">Dr. {request.doctor?.user?.last_name || 'System'}</div>
                         
                         <div className="col-6 text-muted mt-2">Request Date:</div>
-                        <div className="col-6 fw-bold text-end mt-2">{new Date(request.created_at).toLocaleDateString()}</div>
+                        <div className="col-6 fw-bold text-end mt-2">{formatDateOnly(request.created_at)}</div>
                         
                         <div className="col-6 text-muted mt-2">Report Date:</div>
-                        <div className="col-6 fw-bold text-end mt-2">{new Date().toLocaleDateString()}</div>
+                        <div className="col-6 fw-bold text-end mt-2">{formatDateOnly(new Date())}</div>
                     </div>
                 </div>
             </div>
@@ -116,11 +118,11 @@ export default function Print({ request, clinic_name, clinic_address, clinic_pho
 
             {/* Certification */}
             <div className="mt-5 pt-5 d-flex justify-content-between align-items-end">
-                <div className="text-center" style={{ width: '200px' }}>
+                <div className="text-center nyl-print-signature-block">
                     <div className="border-bottom mb-2"></div>
                     <div className="extra-small text-muted">Laboratory Technician Signature</div>
                 </div>
-                <div className="text-center" style={{ width: '200px' }}>
+                <div className="text-center nyl-print-signature-block">
                     <div className="border-bottom mb-2"></div>
                     <div className="extra-small text-muted">Clinical Director Approval</div>
                 </div>
@@ -132,23 +134,6 @@ export default function Print({ request, clinic_name, clinic_address, clinic_pho
                     This is a computer-generated medical report. Electronic signatures are valid and binding.
                 </div>
             </div>
-
-            <style>{`
-                @media print {
-                    .btn, nav, .sidebar, .header { display: none !important; }
-                    body { background: white !important; }
-                    .print-container { padding: 0 !important; }
-                }
-                .extra-small { font-size: 0.7rem; }
-                .bg-light-blue { background-color: #f0f7ff; }
-                .whitespace-pre-wrap { white-space: pre-wrap; }
-                .leading-relaxed { line-height: 1.6; }
-                .text-primary { color: #e91e63 !important; }
-                .bg-primary { background-color: #e91e63 !important; }
-                .border-primary-subtle { border-color: #fbcfe8 !important; }
-                .bg-primary-subtle { background-color: #fce7f3 !important; }
-                .text-primary-emphasis { color: #be185d !important; }
-            `}</style>
         </div>
     );
 }

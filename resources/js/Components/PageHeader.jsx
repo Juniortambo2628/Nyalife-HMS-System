@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 
-export default function PageHeader({ title, breadcrumbs = [], actions, showBack = true }) {
+export default function PageHeader({ title, breadcrumbs = [], showBack = true }) {
     const handleBack = () => {
         window.history.back();
     };
@@ -15,7 +15,7 @@ export default function PageHeader({ title, breadcrumbs = [], actions, showBack 
                     </div>
 
                     <div className="row align-items-center position-relative">
-                        <div className="col-lg-8">
+                        <div className="col-12">
                             {/* Breadcrumbs */}
                             <nav aria-label="breadcrumb" className="mb-2">
                                 <ol className="breadcrumb small font-bold text-uppercase tracking-wider mb-0">
@@ -49,12 +49,6 @@ export default function PageHeader({ title, breadcrumbs = [], actions, showBack 
                                     </button>
                                 )}
                                 <h2 className="display-6 fw-bold text-gray-900 mb-0">{title}</h2>
-                            </div>
-                        </div>
-
-                        <div className="col-lg-4 mt-4 mt-lg-0 text-lg-end">
-                            <div className="d-flex flex-wrap gap-2 justify-content-lg-end">
-                                {actions}
                             </div>
                         </div>
                     </div>

@@ -1,7 +1,7 @@
 import AuthLayout from '@/Layouts/AuthLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Login({ status, canResetPassword, authType = 'patient' }) {
+export default function Login({ status, canResetPassword, authType = 'patient', cms }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -43,17 +43,18 @@ export default function Login({ status, canResetPassword, authType = 'patient' }
 
                 <form onSubmit={submit}>
                     <div className="mb-3">
-                        <label htmlFor="email" className="form-label fw-medium text-muted">Email Address</label>
+                        <label htmlFor="email" className="form-label fw-medium text-muted">Email or username</label>
                         <input 
-                            type="email" 
+                            type="text" 
                             className={`form-control form-control-premium ${errors.email ? 'is-invalid' : ''}`}
                             id="email" 
                             name="email" 
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="name@example.com"
+                            placeholder="name@example.com or username"
                             required 
                             autoFocus
+                            autoComplete="username"
                         />
                         {errors.email && <div className="invalid-feedback extra-small fw-bold">{errors.email}</div>}
                     </div>
@@ -107,12 +108,7 @@ export default function Login({ status, canResetPassword, authType = 'patient' }
                             href={route('auth.google', { role: authType })} 
                             className="btn btn-outline-light border text-gray-700 d-flex align-items-center justify-content-center btn-premium-lg hover-lift shadow-sm transition-all"
                         >
-                            <img 
-                                src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" 
-                                alt="Google" 
-                                className="me-2" 
-                                style={{ width: '20px', height: '20px' }} 
-                            />
+                            <i className="fab fa-google me-2" aria-hidden="true" style={{ fontSize: '1.125rem' }} />
                             <span className="fw-medium">Sign in with Google</span>
                         </a>
                     </div>
@@ -121,7 +117,7 @@ export default function Login({ status, canResetPassword, authType = 'patient' }
                 <div className="mt-5 text-center">
                     {isStaff ? (
                         <p className="text-muted small fw-medium mb-0">
-                            Don't have an account? <Link href="#" className="text-primary fw-medium text-decoration-none">Contact Admin</Link>
+                            Don't have an account? <a href={`mailto:${cms?.contact_email || 'admin@nyalife.com'}`} className="text-primary fw-medium text-decoration-none">Contact Admin</a>
                         </p>
                     ) : (
                         <p className="text-muted small fw-medium mb-0">

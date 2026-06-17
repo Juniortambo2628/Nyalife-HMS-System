@@ -1,9 +1,13 @@
-import DashboardTable from '@/Components/DashboardTable';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import { useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, useForm } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import Modal from '@/Components/Modal';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import TableActions from '@/Components/TableActions';
+import StatusBadge from '@/Components/StatusBadge';
+import { TableCellPrimary } from '@/Components/TableCells';
+import { formatCurrency } from '@/Utils/formatUtils';
 
 export default function PurchaseOrders({ orders, lowStockMedications, auth }) {
     const [showModal, setShowModal] = useState(false);
@@ -42,45 +46,34 @@ export default function PurchaseOrders({ orders, lowStockMedications, auth }) {
         {
             header: 'PO Number',
             accessorKey: 'order_number',
-            cell: ({ row }) => <span className="fw-bold text-primary">{row.original.order_number}</span>
+            cell: ({ row }) => <TableCellPrimary>{row.original.order_number}</TableCellPrimary>,
         },
         {
             header: 'Medication',
             accessorKey: 'medication_name',
-            cell: ({ row }) => <span className="fw-semibold">{row.original.medication_name}</span>
+            cell: ({ row }) => <TableCellPrimary>{row.original.medication_name}</TableCellPrimary>,
         },
         {
             header: 'Quantity',
             accessorKey: 'quantity',
-            cell: ({ row }) => <span>{row.original.quantity} units</span>
+            cell: ({ row }) => <TableCellPrimary>{row.original.quantity} units</TableCellPrimary>,
         },
         {
             header: 'Supplier',
             accessorKey: 'supplier_name',
-            cell: ({ row }) => <span className="text-muted">{row.original.supplier_name}</span>
+            cell: ({ row }) => <TableCellPrimary className="text-muted">{row.original.supplier_name}</TableCellPrimary>,
         },
         {
             header: 'Est. Cost',
             accessorKey: 'estimated_cost',
-            cell: ({ row }) => <span className="fw-semibold">Ksh {Number(row.original.estimated_cost).toLocaleString()}</span>
+            cell: ({ row }) => (
+                <TableCellPrimary>{formatCurrency(row.original.estimated_cost)}</TableCellPrimary>
+            ),
         },
         {
             header: 'Status',
             accessorKey: 'status',
-            cell: ({ row }) => {
-                const status = row.original.status;
-                let badgeClass = 'bg-soft-secondary text-secondary';
-                if (status === 'pending') badgeClass = 'bg-soft-warning text-warning border border-warning-subtle';
-                if (status === 'ordered') badgeClass = 'bg-soft-info text-info border border-info-subtle';
-                if (status === 'received') badgeClass = 'bg-soft-success text-success border border-success-subtle';
-                if (status === 'cancelled') badgeClass = 'bg-soft-danger text-danger border border-danger-subtle';
-                
-                return (
-                    <span className={`badge px-3 py-1 rounded-pill ${badgeClass}`} style={{ textTransform: 'capitalize' }}>
-                        {status}
-                    </span>
-                );
-            }
+            cell: ({ row }) => <StatusBadge status={row.original.status} />,
         },
         {
             header: 'Actions',
@@ -88,56 +81,56 @@ export default function PurchaseOrders({ orders, lowStockMedications, auth }) {
             cell: ({ row }) => {
                 const order = row.original;
                 if (order.status === 'received' || order.status === 'cancelled') {
-                    return <span className="text-muted small">No actions</span>;
+                    return null;
                 }
-                return (
-                    <div className="d-flex gap-2 justify-content-end">
-                        {order.status === 'pending' && (
-                            <button 
-                                onClick={() => updateStatus(order.id, 'ordered')} 
-                                className="btn btn-xs btn-outline-info rounded-pill px-2"
-                                style={{ fontSize: '0.75rem' }}
-                            >
-                                Mark Ordered
-                            </button>
-                        )}
-                        {order.status === 'ordered' && (
-                            <button 
-                                onClick={() => updateStatus(order.id, 'received')} 
-                                className="btn btn-xs btn-outline-success rounded-pill px-2"
-                                style={{ fontSize: '0.75rem' }}
-                            >
-                                Mark Received
-                            </button>
-                        )}
-                        <button 
-                            onClick={() => updateStatus(order.id, 'cancelled')} 
-                            className="btn btn-xs btn-outline-danger rounded-pill px-2"
-                            style={{ fontSize: '0.75rem' }}
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                );
-            }
-        }
+
+                const actions = [];
+                if (order.status === 'pending') {
+                    actions.push({
+                        icon: 'fa-truck',
+                        label: 'Mark ordered',
+                        onClick: () => updateStatus(order.id, 'ordered'),
+                        color: 'info',
+                    });
+                }
+                if (order.status === 'ordered') {
+                    actions.push({
+                        icon: 'fa-box-open',
+                        label: 'Mark received',
+                        onClick: () => updateStatus(order.id, 'received'),
+                        color: 'success',
+                    });
+                }
+                actions.push({
+                    icon: 'fa-times',
+                    label: 'Cancel order',
+                    onClick: () => updateStatus(order.id, 'cancelled'),
+                    color: 'danger',
+                });
+
+                return <TableActions actions={actions} />;
+            },
+        },
     ], [lowStockMedications]);
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
-            header="Purchase Orders"
+            headerTitle="Medicine Purchase Orders"
+            breadcrumbs={[
+                { label: 'Pharmacy', url: route('pharmacy.inventory') },
+                { label: 'Purchase Orders', active: true },
+            ]}
         >
             <Head title="Pharmacy Purchase Orders" />
 
-            <PageHeader 
-                title="Medicine Purchase Orders"
-                breadcrumbs={[{ label: 'Pharmacy', url: route('pharmacy.inventory') }, { label: 'Purchase Orders', active: true }]}
-                actions={
-                    <button onClick={openCreateModal} className="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
-                        <i className="fas fa-plus me-2"></i>Create Purchase Order
-                    </button>
-                }
+            <UnifiedToolbar
+                actions={[
+                    {
+                        label: 'CREATE PURCHASE ORDER',
+                        icon: 'fa-plus',
+                        onClick: openCreateModal,
+                    },
+                ]}
             />
 
             <div className="py-0">
@@ -177,7 +170,9 @@ export default function PurchaseOrders({ orders, lowStockMedications, auth }) {
                     </div>
                 </div>
 
-                <DashboardTable 
+                <RegistryTablePanel
+                    title="Purchase orders"
+                    icon="fa-shopping-cart"
                     columns={columns}
                     data={orders.data || []}
                     pagination={orders}

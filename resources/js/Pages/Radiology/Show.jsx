@@ -1,8 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm, router } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import { PatientIdLabel } from '@/Components/PatientTableCell';
 import { useEffect, useState } from 'react';
+import { formatDateTime } from '@/Utils/dateUtils';
 
 // FilePond
 import { FilePond, registerPlugin } from 'react-filepond';
@@ -137,18 +138,14 @@ export default function Show({ request, auth }) {
     };
 
     return (
-        <AuthenticatedLayout header={`Radiology Order - ${request.request_number}`}>
+        <AuthenticatedLayout
+            headerTitle="Radiology & Imaging Order Details"
+            breadcrumbs={[
+                { label: 'Radiology Registry', url: route('radiology.index') },
+                { label: request.request_number, active: true },
+            ]}
+        >
             <Head title={`Radiology scan ${request.request_number}`} />
-
-            <div className="d-print-none">
-                <PageHeader 
-                    title="Radiology & Imaging Order Details"
-                    breadcrumbs={[
-                        { label: 'Radiology Registry', url: route('radiology.index') },
-                        { label: request.request_number, active: true }
-                    ]}
-                />
-            </div>
 
             {/* Print Header styling */}
             {isPrinting && (
@@ -177,7 +174,7 @@ export default function Show({ request, auth }) {
                                         <div className="fw-extrabold text-gray-900 tracking-tighter" style={{ fontSize: '1.1rem' }}>
                                             {request.patient?.user?.first_name} {request.patient?.user?.last_name}
                                         </div>
-                                        <div className="extra-small font-bold text-muted opacity-50">PAT-ID: PAT-{request.patient_id}</div>
+                                        <PatientIdLabel id={request.patient_id} variant="pat-id" />
                                     </div>
                                 </div>
                                 <div className="space-y-3">
@@ -356,7 +353,7 @@ export default function Show({ request, auth }) {
                                                         VERIFIED BY: DR. {request.verifiedByUser?.first_name?.toUpperCase()} {request.verifiedByUser?.last_name?.toUpperCase()} ({request.verifiedByUser?.role?.toUpperCase()})
                                                     </div>
                                                     <div className="extra-small fw-bold text-success-emphasis opacity-75">
-                                                        VERIFIED AT: {request.verified_at ? new Date(request.verified_at).toLocaleString() : 'N/A'}
+                                                        VERIFIED AT: {request.verified_at ? formatDateTime(request.verified_at) : 'N/A'}
                                                     </div>
                                                 </div>
                                                 <button onClick={handlePrint} className="btn btn-sm btn-success rounded-pill px-4 py-2 fw-bold d-print-none shadow-sm">
@@ -505,6 +502,40 @@ export default function Show({ request, auth }) {
                         </div>
                     </div>
                 </div>
+            </div>
+            <div className="d-print-none">
+                <UnifiedToolbar 
+                    actions={[
+                        isAttendingOrAdmin && request.status === 'pending' && {
+                            label: 'EDIT ORDER',
+                            icon: 'fa-edit',
+                            href: route('radiology.edit', request.request_id),
+                            color: 'primary'
+                        },
+                        isAttendingOrAdmin && request.status === 'pending' && {
+                            label: 'DELETE ORDER',
+                            icon: 'fa-trash-alt',
+                            onClick: () => {
+                                if (confirm('Are you sure you want to delete this pending radiology request?')) {
+                                    router.delete(route('radiology.destroy', request.request_id));
+                                }
+                            },
+                            color: 'danger'
+                        },
+                        ['verified', 'completed'].includes(request.status) && {
+                            label: 'PRINT REPORT',
+                            icon: 'fa-print',
+                            onClick: handlePrint,
+                            color: 'success'
+                        },
+                        { 
+                            label: 'BACK TO REGISTRY', 
+                            icon: 'fa-layer-group', 
+                            href: route('radiology.index'),
+                            color: 'gray'
+                        }
+                    ].filter(Boolean)}
+                />
             </div>
         </AuthenticatedLayout>
     );

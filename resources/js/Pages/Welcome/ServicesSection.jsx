@@ -1,7 +1,27 @@
 import React, { useState } from 'react';
+import { resolvePublicImageUrl } from '@/Utils/imageUtils';
 
-export default function ServicesSection({ serviceTabs }) {
+export default function ServicesSection({ serviceTabs = [] }) {
     const [activeTab, setActiveTab] = useState(serviceTabs[0]?.id || null);
+
+    if (serviceTabs.length === 0) {
+        return (
+            <section className="section-rhythm-md bg-gray-50" id="services">
+                <div className="container">
+                    <div className="text-center mb-16">
+                        <span className="badge bg-pink-100 text-pink-600 px-3 py-2 rounded-pill mb-3 font-bold text-uppercase tracking-wider">Specialties</span>
+                        <h2 className="display-5 fw-bold text-gray-900 section-title-main">Our Specialized Services</h2>
+                    </div>
+                    <div className="py-10 text-center">
+                        <div className="p-8 border-2 border-dashed border-gray-200 rounded-3xl bg-white">
+                            <i className="fas fa-stethoscope fa-3x text-gray-200 mb-4"></i>
+                            <h5 className="text-gray-400">Service information is being updated.</h5>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section className="section-rhythm-md bg-gray-50" id="services">
@@ -51,7 +71,7 @@ export default function ServicesSection({ serviceTabs }) {
                                             <div className="col-md-5">
                                                 <div className="rounded-2xl overflow-hidden shadow-lg border-4 border-white">
                                                     <img 
-                                                        src={tab.image_path || "/assets/img/service-tabs/doctor-1.jpg"} 
+                                                        src={resolvePublicImageUrl(tab.image_path, '/assets/img/service-tabs/doctor-1.jpg')} 
                                                         className="img-fluid" 
                                                         alt={tab.title} 
                                                     />

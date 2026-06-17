@@ -1,6 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import FormSection from '@/Components/FormSection';
 import FormField from '@/Components/FormField';
 
@@ -18,6 +17,14 @@ export default function Create({ auth }) {
         gender: 'male',
         address: '',
         blood_group: '',
+        height: '',
+        weight: '',
+        allergies: '',
+        chronic_diseases: '',
+        marital_status: '',
+        occupation: '',
+        insurance_provider: '',
+        insurance_id: '',
         emergency_name: '',
         emergency_contact: '',
     });
@@ -30,17 +37,13 @@ export default function Create({ auth }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header="Register Patient"
+            headerTitle="Onboard New Patient"
+            breadcrumbs={[
+                { label: 'Patients Catalog', url: route('patients.index') },
+                { label: 'New Registration', active: true },
+            ]}
         >
             <Head title="Register New Patient" />
-
-            <PageHeader 
-                title="Onboard New Patient"
-                breadcrumbs={[
-                    { label: 'Patients Catalog', url: route('patients.index') },
-                    { label: 'New Registration', active: true }
-                ]}
-            />
 
             <div className="container-fluid px-0 pb-5 mt-4">
                 <div className="row justify-content-center">
@@ -185,6 +188,86 @@ export default function Create({ auth }) {
                                             placeholder="Contact Phone"
                                             value={data.emergency_contact}
                                             onChange={e => setData('emergency_contact', e.target.value)}
+                                        />
+                                    </FormField>
+                                </div>
+                            </FormSection>
+
+                            {/* Section 4: Clinical & insurance profile */}
+                            <FormSection
+                                title="Clinical Profile & Insurance"
+                                icon="fas fa-notes-medical"
+                                headerClassName="bg-white border-bottom text-primary p-4"
+                            >
+                                <div className="row g-4">
+                                    <FormField label="Height (cm)" error={errors.height} className="col-md-3">
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            className="form-control form-control-lg bg-light border-0 fw-bold px-4"
+                                            value={data.height}
+                                            onChange={e => setData('height', e.target.value)}
+                                        />
+                                    </FormField>
+                                    <FormField label="Weight (kg)" error={errors.weight} className="col-md-3">
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            className="form-control form-control-lg bg-light border-0 fw-bold px-4"
+                                            value={data.weight}
+                                            onChange={e => setData('weight', e.target.value)}
+                                        />
+                                    </FormField>
+                                    <FormField label="Marital status" error={errors.marital_status} className="col-md-3">
+                                        <select
+                                            className="form-select form-select-lg bg-light border-0 fw-bold px-4"
+                                            value={data.marital_status}
+                                            onChange={e => setData('marital_status', e.target.value)}
+                                        >
+                                            <option value="">Not specified</option>
+                                            {['single', 'married', 'divorced', 'widowed', 'other'].map((s) => (
+                                                <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                                            ))}
+                                        </select>
+                                    </FormField>
+                                    <FormField label="Occupation" error={errors.occupation} className="col-md-3">
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-lg bg-light border-0 fw-bold px-4"
+                                            value={data.occupation}
+                                            onChange={e => setData('occupation', e.target.value)}
+                                        />
+                                    </FormField>
+                                    <FormField label="Known allergies" error={errors.allergies} className="col-md-6">
+                                        <textarea
+                                            className="form-control bg-light border-0 rounded-2xl p-4 fw-medium"
+                                            rows="2"
+                                            value={data.allergies}
+                                            onChange={e => setData('allergies', e.target.value)}
+                                        />
+                                    </FormField>
+                                    <FormField label="Chronic conditions" error={errors.chronic_diseases} className="col-md-6">
+                                        <textarea
+                                            className="form-control bg-light border-0 rounded-2xl p-4 fw-medium"
+                                            rows="2"
+                                            value={data.chronic_diseases}
+                                            onChange={e => setData('chronic_diseases', e.target.value)}
+                                        />
+                                    </FormField>
+                                    <FormField label="Insurance provider" error={errors.insurance_provider} className="col-md-6">
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-lg bg-light border-0 fw-bold px-4"
+                                            value={data.insurance_provider}
+                                            onChange={e => setData('insurance_provider', e.target.value)}
+                                        />
+                                    </FormField>
+                                    <FormField label="Insurance member ID" error={errors.insurance_id} className="col-md-6">
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-lg bg-light border-0 fw-bold px-4"
+                                            value={data.insurance_id}
+                                            onChange={e => setData('insurance_id', e.target.value)}
                                         />
                                     </FormField>
                                 </div>

@@ -41,6 +41,8 @@ class Patient extends Model
     ];
     protected $casts = [
         'date_of_birth' => 'date',
+        'height' => 'decimal:2',
+        'weight' => 'decimal:2',
     ];
 
     public function getAgeAttribute()

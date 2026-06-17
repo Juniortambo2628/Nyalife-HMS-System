@@ -1,6 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import TextInput from '@/Components/TextInput';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
@@ -30,18 +29,14 @@ export default function Form({ test = null }) {
 
     return (
         <AuthenticatedLayout
-            header={isEditing ? `Edit Test: ${test.test_name}` : 'New Lab Test Type'}
+            headerTitle={isEditing ? 'Update Test Protocol' : 'Create New Investigation'}
+            breadcrumbs={[
+                { label: 'Lab', url: route('lab.index') },
+                { label: 'Test catalog', url: route('lab.tests') },
+                { label: isEditing ? 'Edit' : 'New', active: true },
+            ]}
         >
             <Head title={isEditing ? 'Edit Lab Test' : 'New Lab Test'} />
-
-            <PageHeader 
-                title={isEditing ? 'Update Test Protocol' : 'Create New Investigation'}
-                breadcrumbs={[
-                    { label: 'Lab', url: route('lab.index') }, 
-                    { label: 'Manage Tests', url: route('lab-tests.index') },
-                    { label: isEditing ? 'Edit' : 'New', active: true }
-                ]}
-            />
 
             <div className="py-0">
                 <div className="card shadow-sm border-0 rounded-2xl overflow-hidden p-5 bg-white">
@@ -126,7 +121,7 @@ export default function Form({ test = null }) {
                         </div>
 
                         <div className="col-12 d-flex justify-content-between align-items-center mt-5">
-                            <Link href={route('lab-tests.index')} className="btn btn-outline-secondary rounded-pill px-4">
+                            <Link href={route('lab.tests')} className="btn btn-outline-secondary rounded-pill px-4">
                                 Cancel
                             </Link>
                             <button className="btn btn-primary rounded-pill px-5 py-2 font-bold shadow" disabled={processing}>

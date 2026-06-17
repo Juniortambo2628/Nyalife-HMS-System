@@ -3,10 +3,13 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState, useMemo, useEffect } from 'react';
 
 import DashboardSearch from '@/Components/DashboardSearch';
-import DashboardTable from '@/Components/DashboardTable';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import StatusBadge from '@/Components/StatusBadge';
-import DashboardSelect from '@/Components/DashboardSelect';
+import TableActions from '@/Components/TableActions';
+import { RefBadge, TableCellPrimary, TableCellSub } from '@/Components/TableCells';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import PatientTableCell from '@/Components/PatientTableCell';
+import { formatNumber } from '@/Utils/formatUtils';
 
 export default function Index({ invoices, filters, auth }) {
     const [search, setSearch] = useState(filters.search || '');
@@ -19,6 +22,15 @@ export default function Index({ invoices, filters, auth }) {
         window.addEventListener('toolbar-clear-selection', handleClear);
         return () => window.removeEventListener('toolbar-clear-selection', handleClear);
     }, []);
+
+    const handleBulkAction = (action) => {
+        router.post(route('invoices.bulk-action'), {
+            action: action,
+            ids: selectedIds
+        }, {
+            onSuccess: () => setSelectedIds([]),
+        });
+    };
 
     const applyFilters = (searchValue, statusValue = status, quickFilterValue = quickFilter) => {
         router.get(route('invoices.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {
@@ -42,29 +54,24 @@ export default function Index({ invoices, filters, auth }) {
             header: 'Invoice #',
             accessorKey: 'invoice_number',
             cell: info => (
-                <span className="badge bg-light text-pink-500 fw-extrabold extra-small tracking-widest p-2 border border-pink-100 shadow-sm">
-                    {info.getValue()}
-                </span>
+                <RefBadge>{info.getValue()}</RefBadge>
             )
         },
         {
             header: 'Patient',
             accessorKey: 'patient.user.first_name',
             cell: info => (
-                <div>
-                    <div className="fw-bold text-gray-900">{info.row.original.patient.user.first_name} {info.row.original.patient.user.last_name}</div>
-                    <div className="extra-small text-muted fw-bold text-uppercase opacity-75">ID: PAT-{info.row.original.patient_id}</div>
-                </div>
+                <PatientTableCell patient={info.row.original.patient} patientId={info.row.original.patient_id} />
             )
         },
         {
             header: 'Amount',
             accessorKey: 'total_amount',
             cell: info => (
-                <div className="fw-extrabold text-gray-900">
-                    <span className="text-muted extra-small me-1 fw-bold">KES</span>
-                    {Number(info.getValue()).toLocaleString()}
-                </div>
+                <TableCellPrimary>
+                    <span className="text-muted nyl-table-cell-sub d-inline me-1">KES</span>
+                    {formatNumber(info.getValue())}
+                </TableCellPrimary>
             )
         },
         {
@@ -76,22 +83,27 @@ export default function Index({ invoices, filters, auth }) {
         {
             header: 'Date',
             accessorKey: 'invoice_date',
-            cell: info => <span className="extra-small fw-bold text-gray-500 text-uppercase">{info.getValue()}</span>
+            cell: info => (
+                <TableCellSub>{info.getValue()}</TableCellSub>
+            )
         },
         {
             header: 'Actions',
             id: 'actions',
             cell: info => (
-                <div className="d-flex justify-content-end gap-2">
-                    <Link href={route('invoices.show', info.row.original.invoice_id)} className="btn btn-sm btn-light border text-pink-500 rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center" title="View Document">
-                        <i className="fas fa-eye extra-small"></i>
-                    </Link>
-                    {info.row.original.status !== 'paid' && (
-                        <Link href={route('invoices.show', info.row.original.invoice_id)} className="btn btn-sm btn-light border text-success rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center" title="Collect Payment">
-                            <i className="fas fa-money-bill-wave extra-small"></i>
-                        </Link>
-                    )}
-                </div>
+                <TableActions actions={[
+                    {
+                        label: 'View document',
+                        icon: 'fa-eye',
+                        href: route('invoices.show', info.row.original.invoice_id),
+                    },
+                    ['pending', 'partially_paid', 'overdue'].includes(info.row.original.status) && {
+                        label: 'Collect payment',
+                        icon: 'fa-money-bill-wave',
+                        href: route('payments.create', { invoice_id: info.row.original.invoice_id }),
+                        color: 'success',
+                    },
+                ].filter(Boolean)} />
             )
         }
     ], []);
@@ -104,49 +116,47 @@ export default function Index({ invoices, filters, auth }) {
             <Head title="Billing" />
 
             <UnifiedToolbar 
-                viewOptions={[
-                    { label: 'LIST VIEW', icon: 'fa-list-ul', onClick: () => {} },
-                    { label: 'GRID VIEW', icon: 'fa-th-large', onClick: () => {} }
+                filterGroups={[
+                    {
+                        id: 'status',
+                        label: 'Status',
+                        emptyLabel: 'All statuses',
+                        value: status,
+                        onChange: handleStatusChange,
+                        options: [
+                            { label: 'Pending', value: 'pending' },
+                            { label: 'Paid', value: 'paid' },
+                            { label: 'Overdue', value: 'overdue' },
+                            { label: 'Cancelled', value: 'cancelled' },
+                        ],
+                    },
+                    {
+                        id: 'payment',
+                        label: 'Payment',
+                        emptyLabel: 'All types',
+                        value: quickFilter,
+                        onChange: handleQuickFilterChange,
+                        options: [
+                            { label: 'Cash', value: 'cash' },
+                            { label: 'Insurance', value: 'insurance' },
+                        ],
+                    },
                 ]}
-                filters={
-                    <>
-                        <DashboardSelect 
-                            options={[
-                                { label: 'Pending', value: 'pending' },
-                                { label: 'Paid', value: 'paid' },
-                                { label: 'Overdue', value: 'overdue' },
-                                { label: 'Cancelled', value: 'cancelled' },
-                            ]}
-                            value={status}
-                            onChange={handleStatusChange}
-                            placeholder="Status..."
-                            theme="dark"
-                            dropup={true}
-                        />
-                        <DashboardSelect 
-                            options={[
-                                { label: 'Cash', value: 'cash' },
-                                { label: 'Insurance', value: 'insurance' },
-                            ]}
-                            value={quickFilter}
-                            onChange={handleQuickFilterChange}
-                            placeholder="Type..."
-                            theme="dark"
-                            dropup={true}
-                        />
-                    </>
-                }
                 actions={[
                     (auth.user.role === 'admin' || auth.user.role === 'receptionist') && { 
                         label: 'NEW INVOICE', 
                         icon: 'fa-file-medical', 
                         href: route('invoices.create') 
-                    }
+                    },
+                    (auth.user.role === 'admin' || auth.user.role === 'receptionist') && {
+                        label: 'EXPORT CSV',
+                        icon: 'fa-file-csv',
+                        href: route('invoices.export.csv', filters),
+                    },
                 ]}
                 bulkActions={[
-                    { label: 'MARK PAID', icon: 'fa-money-bill-wave', onClick: () => console.log('Mark paid', selectedIds) },
-                    { label: 'PRINT BATCH', icon: 'fa-print', onClick: () => console.log('Print', selectedIds) },
-                    { label: 'VOID SELECTED', icon: 'fa-ban', onClick: () => console.log('Void', selectedIds), color: 'danger' }
+                    { label: 'VOID SELECTED', icon: 'fa-ban', onClick: () => handleBulkAction('void'), color: 'danger' },
+                    { label: 'DELETE SELECTED', icon: 'fa-trash-alt', onClick: () => handleBulkAction('delete'), color: 'danger' }
                 ]}
                 selectionCount={selectedIds.length}
             />
@@ -165,7 +175,9 @@ export default function Index({ invoices, filters, auth }) {
                     ]}
                 />
 
-                <DashboardTable 
+                <RegistryTablePanel
+                    title="Invoice registry"
+                    icon="fa-file-invoice"
                     data={invoices.data}
                     columns={columns}
                     pagination={invoices}

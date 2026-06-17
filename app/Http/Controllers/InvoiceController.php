@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Services\ActivityLogger;
+use App\Support\Permissions;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceController extends Controller
 {
@@ -55,7 +57,13 @@ class InvoiceController extends Controller
 
     public function show($id)
     {
-        $invoice = Invoice::with(['patient.user', 'items', 'consultation'])->findOrFail($id);
+        $invoice = Invoice::with(['patient.user', 'items', 'consultation', 'payments.receivedBy'])->findOrFail($id);
+
+        $this->requireStaffOrOwnPatient(
+            $invoice->patient_id,
+            Permissions::MANAGE_INVOICES,
+            Permissions::MANAGE_PAYMENTS
+        );
         
         $settings = \App\Models\Setting::whereIn('key', [
             'contact_address', 
@@ -66,7 +74,8 @@ class InvoiceController extends Controller
 
         return Inertia::render('Invoices/Show', [
             'invoice' => InvoiceResource::make($invoice),
-            'clinic_settings' => $settings
+            'clinic_settings' => $settings,
+            'paymentMethods' => \App\Models\Payment::METHODS,
         ]);
     }
     public function create(Request $request)
@@ -84,7 +93,7 @@ class InvoiceController extends Controller
             'patient_id' => $patient_id,
             'consultation_id' => $consultation_id,
             'consultation' => $consultation,
-            'consultation_fee' => 1500, // Default consultation fee, can be made dynamic later
+            'consultation_fee' => \App\Models\Setting::where('key', 'consultation_fee')->value('value') ?: 1500,
         ]);
     }
 
@@ -169,4 +178,183 @@ class InvoiceController extends Controller
 
         return back()->with('error', 'No valid updates provided.');
     }
+
+    public function destroy(Request $request, $id)
+    {
+        $request->validate([
+            'void_reason' => 'required|string|max:255'
+        ]);
+
+        $invoice = Invoice::with('patient.user')->findOrFail($id);
+
+        if ($invoice->status === 'paid') {
+            return back()->with('error', 'Paid invoices cannot be voided.');
+        }
+
+        $invoice->update([
+            'is_voided' => true,
+            'void_reason' => $request->void_reason,
+            'voided_by' => Auth::id(),
+            'voided_at' => now(),
+        ]);
+
+        ActivityLogger::log(
+            'billing',
+            "Invoice #{$invoice->invoice_number} voided: {$request->void_reason}",
+            ['invoice_id' => $invoice->invoice_id, 'amount' => $invoice->total_amount],
+            Auth::user(),
+            $invoice,
+            [$invoice->patient->user_id, 1]
+        );
+
+        return redirect()->route('invoices.index')->with('success', 'Invoice has been voided.');
+    }
+
+    /**
+     * Handle bulk actions on invoices.
+     */
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:void,delete',
+            'ids'    => 'required|array|min:1',
+            'ids.*'  => 'integer',
+        ]);
+
+        $ids    = $validated['ids'];
+        $action = $validated['action'];
+        $count  = count($ids);
+
+        switch ($action) {
+            case 'void':
+                $invoices = Invoice::whereIn('invoice_id', $ids)->get();
+                $voidedCount = 0;
+                foreach ($invoices as $invoice) {
+                    if ($invoice->status !== 'paid' && !$invoice->is_voided) {
+                        $invoice->update([
+                            'is_voided' => true,
+                            'void_reason' => 'Bulk voided via toolbar',
+                            'voided_by' => Auth::id(),
+                            'voided_at' => now(),
+                        ]);
+                        ActivityLogger::log(
+                            'billing',
+                            "Invoice #{$invoice->invoice_number} bulk voided",
+                            ['invoice_id' => $invoice->invoice_id, 'amount' => $invoice->total_amount],
+                            Auth::user(),
+                            $invoice,
+                            [$invoice->patient->user_id, 1]
+                        );
+                        $voidedCount++;
+                    }
+                }
+                return redirect()->back()->with('success', "{$voidedCount} invoice(s) voided.");
+
+            case 'delete':
+                $deletedCount = Invoice::whereIn('invoice_id', $ids)
+                    ->where('status', '!=', 'paid')
+                    ->delete();
+                return redirect()->back()->with('success', "{$deletedCount} unpaid invoice(s) deleted.");
+        }
+
+        return redirect()->back()->with('error', 'Unknown bulk action.');
+    }
+
+    public function exportCsv(Request $request)
+    {
+        abort_unless(in_array(Auth::user()?->role, ['admin', 'receptionist', 'doctor'], true), 403);
+
+        $user = Auth::user();
+        $query = Invoice::with(['patient.user']);
+
+        if ($user && $user->role === 'patient') {
+            $patient = Patient::where('user_id', $user->user_id)->first();
+            if ($patient) {
+                $query->where('patient_id', $patient->patient_id);
+            }
+        }
+
+        $invoices = $query
+            ->searchByPatientOrNumber($request->search)
+            ->status($request->status)
+            ->latest()
+            ->get();
+
+        $filename = 'invoices-' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($invoices) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Invoice #', 'Patient', 'Date', 'Due Date', 'Amount', 'Status', 'Payment Method']);
+
+            foreach ($invoices as $invoice) {
+                fputcsv($handle, [
+                    $invoice->invoice_number,
+                    trim(($invoice->patient?->user?->first_name ?? '') . ' ' . ($invoice->patient?->user?->last_name ?? '')),
+                    $invoice->invoice_date,
+                    $invoice->due_date,
+                    $invoice->total_amount,
+                    $invoice->status,
+                    $invoice->payment_method,
+                ]);
+            }
+
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    public function print($id)
+    {
+        $invoice = Invoice::with(['patient.user', 'items', 'payments'])->findOrFail($id);
+
+        $this->requireStaffOrOwnPatient(
+            $invoice->patient_id,
+            Permissions::MANAGE_INVOICES,
+            Permissions::MANAGE_PAYMENTS
+        );
+
+        $settings = \App\Models\Setting::whereIn('key', [
+            'contact_address', 'contact_email', 'contact_phone', 'tax_rate',
+        ])->pluck('value', 'key');
+
+        return Inertia::render('Invoices/Print', [
+            'invoice' => InvoiceResource::make($invoice),
+            'clinic_settings' => $settings,
+        ]);
+    }
+
+    public function downloadPdf($id)
+    {
+        $invoice = Invoice::with(['patient.user', 'items', 'payments'])->findOrFail($id);
+
+        $this->requireStaffOrOwnPatient(
+            $invoice->patient_id,
+            Permissions::MANAGE_INVOICES,
+            Permissions::MANAGE_PAYMENTS
+        );
+
+        $settings = \App\Models\Setting::whereIn('key', [
+            'contact_address', 'contact_email', 'contact_phone', 'tax_rate',
+        ])->pluck('value', 'key');
+
+        $subtotal = $invoice->items->sum('total_price');
+        $taxRate = (float) ($settings['tax_rate'] ?? 0);
+        $taxAmount = $subtotal * ($taxRate / 100);
+        $total = $subtotal + $taxAmount - (float) ($invoice->discount ?? 0);
+        $amountPaid = $invoice->payments->where('payment_status', 'completed')->sum('amount');
+        $balanceDue = max(0, $total - $amountPaid);
+
+        $pdf = Pdf::loadView('invoices.pdf', [
+            'invoice' => $invoice,
+            'clinic' => $settings,
+            'subtotal' => $subtotal,
+            'taxRate' => $taxRate,
+            'taxAmount' => $taxAmount,
+            'total' => $total,
+            'amountPaid' => $amountPaid,
+            'balanceDue' => $balanceDue,
+        ]);
+
+        return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
+    }
 }
+

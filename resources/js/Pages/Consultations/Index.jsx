@@ -3,12 +3,14 @@ import { Head, Link, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
 import StatusBadge from '@/Components/StatusBadge';
 import DashboardTable from '@/Components/DashboardTable';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import ViewToggle from '@/Components/ViewToggle';
 import InfoModal from '@/Components/InfoModal';
-import PageHeader from '@/Components/PageHeader';
-import DashboardSelect from '@/Components/DashboardSelect';
 import TableActions from '@/Components/TableActions';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import GridCardActions from '@/Components/GridCardActions';
+import { PatientIdLabel } from '@/Components/PatientTableCell';
+import { TableCellPrimary, TableCellStack, TableCellSub } from '@/Components/TableCells';
 import { useState, useMemo, useEffect } from 'react';
 import { formatDateTime } from '@/Utils/dateUtils';
 
@@ -29,6 +31,15 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
         show: false,
         consultation: null,
     });
+
+    const handleBulkAction = (action) => {
+        router.post(route('consultations.bulk-action'), {
+            action: action,
+            ids: selectedIds
+        }, {
+            onSuccess: () => setSelectedIds([]),
+        });
+    };
 
     const handleViewChange = (newView) => {
         setView(newView);
@@ -63,7 +74,7 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
             header: 'Date',
             accessorKey: 'consultation_date',
             cell: ({ row }) => (
-                <div className="fw-extrabold text-pink-500 px-1 extra-small tracking-widest uppercase">{formatDateTime(row.original.consultation_date)}</div>
+                <TableCellSub>{formatDateTime(row.original.consultation_date)}</TableCellSub>
             )
         },
         {
@@ -71,10 +82,12 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
             accessorKey: 'patient_id',
             cell: ({ row }) => (
                 <div>
-                    <Link href={route('patients.show', row.original.patient_id)} className="text-decoration-none fw-bold text-pink-500 hover:text-pink-700 transition-colors">
-                        {row.original.patient.user.first_name} {row.original.patient.user.last_name}
+                    <Link href={route('patients.show', row.original.patient_id)} className="text-decoration-none">
+                        <TableCellPrimary className="text-pink-500">
+                            {row.original.patient.user.first_name} {row.original.patient.user.last_name}
+                        </TableCellPrimary>
                     </Link>
-                    <div className="extra-small text-muted font-bold text-uppercase tracking-widest opacity-75">ID: PAT-{row.original.patient_id}</div>
+                    <PatientIdLabel id={row.original.patient_id} />
                 </div>
             )
         },
@@ -82,19 +95,19 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
             header: 'Doctor',
             accessorKey: 'doctor_id',
             cell: ({ row }) => (
-                <div className="fw-semibold text-gray-800">
-                    Dr. {row.original.doctor.user.first_name} {row.original.doctor.user.last_name}
-                </div>
+                <TableCellStack
+                    primary={`Dr. ${row.original.doctor.user.first_name} ${row.original.doctor.user.last_name}`}
+                />
             )
         },
         {
             header: 'Diagnosis',
             accessorKey: 'diagnosis',
             cell: ({ row }) => (
-                <div>
-                    <div className="fw-bold text-gray-700">{row.original.diagnosis || 'Clinical Notes'}</div>
-                    <div className="extra-small text-muted line-clamp-1">{row.original.chief_complaint}</div>
-                </div>
+                <TableCellStack
+                    primary={row.original.diagnosis || 'Clinical notes'}
+                    secondary={row.original.chief_complaint}
+                />
             )
         },
         {
@@ -150,6 +163,11 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
         });
     };
 
+    const visitPrescription = (prescriptionId) => {
+        closeModal();
+        router.visit(route('prescriptions.show', prescriptionId));
+    };
+
     const getConsultationTabs = (cons) => {
         if (!cons) return [];
         
@@ -161,28 +179,28 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                 content: (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="space-y-4">
-                            <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">Chief Complaint</h4>
-                            <div className="bg-pink-50 p-6 rounded-2xl border border-pink-100 text-gray-800 font-medium leading-relaxed shadow-inner">
+                            <div className="nyl-content-box__title">Chief Complaint</div>
+                            <div className="nyl-content-box nyl-content-box--highlight fw-medium">
                                 {cons.chief_complaint}
                             </div>
                         </div>
                         
                         <div className="space-y-4">
-                            <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">Diagnosis & Notes</h4>
-                            <div className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm">
+                            <div className="nyl-content-box__title">Diagnosis & Notes</div>
+                            <div className="nyl-content-box">
                                 <h5 className="font-bold text-gray-900 mb-3">{cons.diagnosis || 'General Assessment'}</h5>
                                 <p className="text-gray-600 mb-0">{cons.clinical_notes || 'No detailed clinical notes provided.'}</p>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
-                                <div className="text-xs font-bold text-gray-400 uppercase mb-1">Doctor</div>
-                                <div className="font-bold text-gray-900">Dr. {cons.doctor.user.first_name} {cons.doctor.user.last_name}</div>
+                        <div className="nyl-meta-grid">
+                            <div className="nyl-meta-item">
+                                <div className="nyl-meta-item__label">Doctor</div>
+                                <div className="nyl-meta-item__value">Dr. {cons.doctor.user.first_name} {cons.doctor.user.last_name}</div>
                             </div>
-                            <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
-                                <div className="text-xs font-bold text-gray-400 uppercase mb-1">Date</div>
-                                <div className="font-bold text-gray-900">{cons.consultation_date}</div>
+                            <div className="nyl-meta-item">
+                                <div className="nyl-meta-item__label">Date</div>
+                                <div className="nyl-meta-item__value">{cons.consultation_date}</div>
                             </div>
                         </div>
                     </div>
@@ -194,16 +212,14 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                 icon: 'fa-clipboard-check',
                 content: (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">Management Strategy</h4>
-                        <div className="bg-blue-50 p-8 rounded-3xl border border-blue-100 shadow-inner">
-                            <p className="text-gray-800 font-medium leading-loose mb-0">
-                                {cons.treatment_plan || 'No treatment plan recorded.'}
-                            </p>
+                        <div className="nyl-content-box__title">Management Strategy</div>
+                        <div className="nyl-content-box nyl-content-box--info fw-medium leading-loose">
+                            {cons.treatment_plan || 'No treatment plan recorded.'}
                         </div>
                         
-                        <div className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm">
-                            <h5 className="text-xs font-bold text-gray-400 uppercase mb-4">Recommendations</h5>
-                            <ul className="space-y-3 ps-0 mb-0">
+                        <div className="nyl-content-box">
+                            <div className="nyl-content-box__title mb-4">Recommendations</div>
+                            <ul className="space-y-3 ps-0 mb-0 list-unstyled">
                                 <li className="flex gap-3 text-gray-700">
                                     <i className="fas fa-check-circle text-blue-500 mt-1"></i>
                                     <span className="fw-medium">Follow-up scheduled as per facility policy.</span>
@@ -259,7 +275,13 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                                                 </div>
                                                 <span className="font-bold text-gray-900">Prescription #{p.prescription_id}</span>
                                             </div>
-                                            <Link href={route('prescriptions.show', p.prescription_id)} className="btn btn-sm btn-light border fw-bold rounded-pill px-3">View</Link>
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-light border fw-bold rounded-pill px-3"
+                                                onClick={() => visitPrescription(p.prescription_id)}
+                                            >
+                                                View
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
@@ -284,56 +306,40 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
             <Head title="Consultations" />
 
             <UnifiedToolbar 
-                viewOptions={[
+                viewMode={view}
+                onViewModeChange={handleViewChange}
+                filterGroups={[
                     {
-                        label: 'LIST VIEW',
-                        icon: 'fa-list-ul',
-                        onClick: () => handleViewChange('list'),
-                        color: view === 'list' ? 'pink-500' : 'gray-400'
+                        id: 'status',
+                        label: 'Status',
+                        emptyLabel: 'All status',
+                        value: activeFilter,
+                        onChange: handleFilterChange,
+                        options: [
+                            { label: 'Pending', value: 'pending' },
+                            { label: 'In Progress', value: 'in_progress' },
+                            { label: 'Completed', value: 'completed' },
+                        ],
                     },
-                    { 
-                        label: 'GRID VIEW', 
-                        icon: 'fa-th-large', 
-                        onClick: () => handleViewChange('grid'),
-                        color: view === 'grid' ? 'pink-500' : 'gray-400'
-                    }
+                    {
+                        id: 'type',
+                        label: 'Type',
+                        emptyLabel: 'All consults',
+                        value: quickFilter,
+                        onChange: handleQuickFilterChange,
+                        options: [
+                            { label: 'In Progress', value: 'in_progress' },
+                            { label: 'Walk-ins', value: 'walk_in' },
+                        ],
+                    },
                 ]}
-                filters={
-                    <>
-                        <DashboardSelect 
-                            options={[
-                                { label: 'All Status', value: '' },
-                                { label: 'Pending', value: 'pending' },
-                                { label: 'In Progress', value: 'in_progress' },
-                                { label: 'Completed', value: 'completed' },
-                            ]}
-                            value={activeFilter}
-                            onChange={handleFilterChange}
-                            placeholder="Status..."
-                            theme="dark"
-                            dropup={true}
-                        />
-                        <DashboardSelect 
-                            options={[
-                                { label: 'All Consults', value: '' },
-                                { label: 'In Progress', value: 'in_progress' },
-                                { label: 'Walk-ins', value: 'walk_in' },
-                            ]}
-                            value={quickFilter}
-                            onChange={handleQuickFilterChange}
-                            placeholder="Type..."
-                            theme="dark"
-                            dropup={true}
-                        />
-                    </>
-                }
                 actions={[
                     auth.user.role !== 'patient' && { label: 'NEW RECORD', icon: 'fa-plus-circle', href: route('consultations.create') }
                 ]}
                 bulkActions={[
-                    { label: 'MARK COMPLETE', icon: 'fa-check-double', onClick: () => console.log('Complete', selectedIds) },
-                    { label: 'EXPORT NOTES', icon: 'fa-file-export', onClick: () => console.log('Export', selectedIds) },
-                    { label: 'DELETE', icon: 'fa-trash-alt', onClick: () => console.log('Delete', selectedIds), color: 'danger' }
+                    { label: 'MARK COMPLETE', icon: 'fa-check-double', onClick: () => handleBulkAction('complete') },
+                    { label: 'EXPORT NOTES', icon: 'fa-file-export', onClick: () => handleBulkAction('export') },
+                    { label: 'DELETE', icon: 'fa-trash-alt', onClick: () => handleBulkAction('delete'), color: 'danger' }
                 ]}
                 drafts={drafts.data}
                 selectionCount={selectedIds.length}
@@ -357,7 +363,7 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                                                         <h6 className="fw-extrabold mb-0 text-truncate text-gray-900" style={{ maxWidth: '140px' }}>
                                                             {draft.patient.user.first_name} {draft.patient.user.last_name}
                                                         </h6>
-                                                        <small className="text-muted extra-small font-bold text-uppercase tracking-widest opacity-50">ID: PAT-{draft.patient_id}</small>
+                                                        <PatientIdLabel id={draft.patient_id} />
                                                     </div>
                                                 </div>
                                                 <div className="text-end">
@@ -399,7 +405,9 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
 
                 {/* Content View */}
                 {view === 'list' ? (
-                    <DashboardTable 
+                    <RegistryTablePanel
+                        title="Consultation registry"
+                        icon="fa-stethoscope"
                         columns={columns}
                         data={consultations.data}
                         pagination={consultations}
@@ -426,7 +434,7 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                                                             <Link href={route('patients.show', cons.patient_id)} className="fw-extrabold text-gray-900 text-lg mb-0 text-decoration-none hover:text-pink-500 transition-colors tracking-tighter">
                                                                 {cons.patient.user.first_name} {cons.patient.user.last_name}
                                                             </Link>
-                                                            <div className="extra-small text-muted font-bold text-uppercase tracking-widest opacity-50">ID: PAT-{cons.patient_id}</div>
+                                                            <PatientIdLabel id={cons.patient_id} />
                                                         </div>
                                                     </div>
                                                     <StatusBadge status={cons.consultation_status || 'in_progress'} />
@@ -448,20 +456,10 @@ export default function Index({ consultations, drafts = [], filters, auth }) {
                                                     </div>
                                                 </div>
 
-                                                <div className="d-flex gap-2 border-top pt-4">
-                                                    <button 
-                                                        onClick={() => openModal(cons)}
-                                                        className="btn btn-light bg-gray-50 text-gray-700 rounded-xl flex-1 fw-extrabold border-0 py-3 hover-bg-gray-100 transition-all shadow-sm"
-                                                    >
-                                                        CLINICAL VIEW
-                                                    </button>
-                                                    <Link 
-                                                        href={route('consultations.show', cons.consultation_id)}
-                                                        className="btn btn-outline-primary rounded-xl px-4 border-2 d-flex align-items-center justify-content-center transition-all hover-translate-up shadow-sm"
-                                                    >
-                                                        <i className="fas fa-file-medical-alt"></i>
-                                                    </Link>
-                                                </div>
+                                                <GridCardActions actions={[
+                                                    { icon: 'fa-stethoscope', label: 'Clinical view', onClick: () => openModal(cons) },
+                                                    { icon: 'fa-file-medical-alt', label: 'Open record', href: route('consultations.show', cons.consultation_id) },
+                                                ]} />
                                             </div>
                                         </div>
                                     </div>

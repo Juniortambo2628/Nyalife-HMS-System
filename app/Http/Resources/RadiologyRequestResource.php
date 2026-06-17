@@ -32,6 +32,8 @@ class RadiologyRequestResource extends JsonResource
             'request_number' => $this->request_number,
             'patient_id' => $this->patient_id,
             'doctor_id' => $this->doctor_id,
+            'appointment_id' => $this->appointment_id,
+            'consultation_id' => $this->consultation_id,
             'scan_type' => $this->scan_type,
             'priority' => $this->priority,
             'status' => $this->status,

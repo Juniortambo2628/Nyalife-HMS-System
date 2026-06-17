@@ -4,11 +4,13 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState, useEffect, useMemo } from 'react';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import ViewToggle from '@/Components/ViewToggle';
 import UserAvatar from '@/Components/UserAvatar';
-import DashboardSelect from '@/Components/DashboardSelect';
 import TableActions from '@/Components/TableActions';
+import StatusBadge from '@/Components/StatusBadge';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import { TableCellPrimary, TableCellStack } from '@/Components/TableCells';
 
 export default function Index({ users, filters, roles, auth }) {
     const [viewMode, setViewMode] = useState('list');
@@ -23,6 +25,15 @@ export default function Index({ users, filters, roles, auth }) {
         window.addEventListener('toolbar-clear-selection', handleClear);
         return () => window.removeEventListener('toolbar-clear-selection', handleClear);
     }, []);
+
+    const handleBulkAction = (action) => {
+        router.post(route('users.bulk-action'), {
+            action: action,
+            ids: selectedIds
+        }, {
+            onSuccess: () => setSelectedIds([]),
+        });
+    };
 
     const handleSearch = (searchValue, quickFilterValue = filters?.quick_filter) => {
         const query = { search: searchValue };
@@ -56,13 +67,10 @@ export default function Index({ users, filters, roles, auth }) {
             header: 'User',
             accessorKey: 'first_name', // Sort key
             cell: info => (
-                <div className="d-flex align-items-center">
-                    <UserAvatar user={info.row.original} size="sm" className="me-3" showStatus={true} />
-                    <div>
-                        <div className="fw-bold text-gray-900">{info.row.original.first_name} {info.row.original.last_name}</div>
-                        <div className="text-muted extra-small font-bold opacity-75">@{info.row.original.username}</div>
-                    </div>
-                </div>
+                <TableCellStack
+                    primary={`${info.row.original.first_name} ${info.row.original.last_name}`}
+                    secondary={`@${info.row.original.username}`}
+                />
             ),
             enableSorting: true
         },
@@ -70,27 +78,22 @@ export default function Index({ users, filters, roles, auth }) {
             header: 'Role',
             accessorKey: 'role',
             cell: info => (
-                <span className="badge bg-soft-primary text-primary rounded-pill px-3 py-2 text-capitalize border border-primary-subtle fw-bold extra-small">
+                <TableCellPrimary className="text-uppercase">
                     {info.row.original.role?.replace('_', ' ') || info.row.original.role_relation?.role_name}
-                </span>
+                </TableCellPrimary>
             ),
             enableSorting: false
         },
         {
             header: 'Email',
             accessorKey: 'email',
-            cell: info => <span className="text-muted small fw-medium">{info.getValue()}</span>,
+            cell: info => <TableCellPrimary className="text-muted">{info.getValue()}</TableCellPrimary>,
             enableSorting: true
         },
         {
             header: 'Status',
             accessorKey: 'is_active',
-            cell: info => (
-                <span className={`badge rounded-pill px-3 py-2 fw-bold border extra-small ${info.getValue() ? 'bg-success-subtle text-success border-success-subtle' : 'bg-secondary-subtle text-secondary border-secondary-subtle'}`}>
-                    <i className={`fas fa-${info.getValue() ? 'check-circle' : 'times-circle'} me-1`}></i>
-                    {info.getValue() ? 'Active' : 'Inactive'}
-                </span>
-            ),
+            cell: info => <StatusBadge status={info.getValue() ? 'active' : 'inactive'} />,
             enableSorting: true
         },
         {
@@ -98,12 +101,10 @@ export default function Index({ users, filters, roles, auth }) {
             id: 'actions',
             headerClassName: 'pe-5 text-end',
             cell: info => (
-                <div className="pe-4">
-                    <TableActions actions={[
-                        { icon: 'fa-eye', label: 'View Profile', href: route('users.show', info.row.original.user_id) },
-                        { icon: 'fa-edit', label: 'Edit Permissions', href: route('users.edit', info.row.original.user_id) },
-                    ]} />
-                </div>
+                <TableActions actions={[
+                    { icon: 'fa-eye', label: 'View profile', href: route('users.show', info.row.original.user_id) },
+                    { icon: 'fa-edit', label: 'Edit permissions', href: route('users.edit', info.row.original.user_id) },
+                ]} />
             )
         }
     ], [sortBy, direction]);
@@ -116,27 +117,28 @@ export default function Index({ users, filters, roles, auth }) {
             <Head title="Users Registry" />
 
             <UnifiedToolbar 
-                viewOptions={[
-                    { label: 'LIST VIEW', icon: 'fa-list-ul', onClick: () => setViewMode('list'), color: viewMode === 'list' ? 'pink-500' : 'gray-400' },
-                    { label: 'GRID VIEW', icon: 'fa-th-large', onClick: () => setViewMode('grid'), color: viewMode === 'grid' ? 'pink-500' : 'gray-400' }
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                filterGroups={[
+                    {
+                        id: 'role',
+                        label: 'Role',
+                        emptyLabel: 'All roles',
+                        value: roleFilter,
+                        onChange: (val) => setRoleFilter(val || ''),
+                        options: roles.map((r) => ({
+                            label: r.role_name.replace('_', ' ').toUpperCase(),
+                            value: r.role_name,
+                        })),
+                    },
                 ]}
-                filters={
-                    <DashboardSelect 
-                        options={roles.map(r => ({ label: r.role_name.replace('_', ' ').toUpperCase(), value: r.role_name }))}
-                        value={roleFilter}
-                        onChange={val => setRoleFilter(val || '')}
-                        placeholder="Role..."
-                        theme="dark"
-                        dropup={true}
-                    />
-                }
                 actions={[
                     { label: 'CREATE USER', icon: 'fa-user-plus', href: route('users.create') }
                 ]}
                 bulkActions={[
-                    { label: 'ACTIVATE', icon: 'fa-check-circle', onClick: () => console.log('Activate', selectedIds) },
-                    { label: 'DEACTIVATE', icon: 'fa-user-slash', onClick: () => console.log('Deactivate', selectedIds), color: 'warning' },
-                    { label: 'DELETE', icon: 'fa-trash-alt', onClick: () => console.log('Delete', selectedIds), color: 'danger' }
+                    { label: 'ACTIVATE SELECTED', icon: 'fa-check-circle', onClick: () => handleBulkAction('activate') },
+                    { label: 'DEACTIVATE SELECTED', icon: 'fa-user-slash', onClick: () => handleBulkAction('deactivate'), color: 'warning' },
+                    { label: 'DELETE SELECTED', icon: 'fa-trash-alt', onClick: () => handleBulkAction('delete'), color: 'danger' }
                 ]}
                 selectionCount={selectedIds.length}
             />
@@ -158,7 +160,9 @@ export default function Index({ users, filters, roles, auth }) {
                 />
 
                 {viewMode === 'list' ? (
-                    <DashboardTable 
+                    <RegistryTablePanel
+                        title="Staff registry"
+                        icon="fa-user-md"
                         data={users.data}
                         columns={columns}
                         pagination={users}

@@ -1,7 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import DashboardSelect from '@/Components/DashboardSelect';
-import PageHeader from '@/Components/PageHeader';
 import FormSection from '@/Components/FormSection';
 import FormField from '@/Components/FormField';
 import FormSelect from '@/Components/FormSelect';
@@ -16,7 +15,7 @@ import { toLocalISO } from '@/Utils/dateUtils';
 const AUTOSAVE_KEY = 'nyalife_consultation_draft';
 const AUTOSAVE_INTERVAL = 15000; // 15 seconds
 
-    export default function Create({ patients, doctors, medical_procedures = [], lab_test_types = [], procedure_services = [], appointment_id, preselected_patient_id, preselected_patient_label, preselected_patient_gender, preselected_doctor_id, preselected_doctor_label, latest_height, priority = 'normal', auth, latest_vitals, ...props }) {
+    export default function Create({ patients, doctors, medical_procedures = [], lab_test_types = [], procedure_services = [], appointment_id, preselected_patient_id, preselected_patient_label, preselected_patient_gender, preselected_doctor_id, preselected_doctor_label, latest_height, priority = 'normal', auth, latest_vitals, history_prefill = null, patient_clinical = null, ...props }) {
     const consultationDrafts = props.drafts || { data: [] };
     console.log('Consultation Create Props:', { 
         appointment_id, 
@@ -45,6 +44,14 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
     }, [appointment_id, preselected_patient_id]);
 
     const initialDraft = useRef(loadDraft());
+    const prefill = initialDraft.current ? {} : (history_prefill || {});
+
+    const defaultMenstrualHistory = prefill.menstrual_history || {
+        last_period_date: '',
+        regularity: 'regular',
+        flow_duration: '',
+        dysmenorrhea: 'none',
+    };
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [quickPatientLabel, setQuickPatientLabel] = useState(initialDraft.current?.patient_label || preselected_patient_label || "");
@@ -94,28 +101,23 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
         history_present_illness: initialDraft.current?.history_present_illness || '',
         
         // Gynaecological History
-        menstrual_history: initialDraft.current?.menstrual_history || {
-            last_period_date: '',
-            regularity: 'regular',
-            flow_duration: '',
-            dysmenorrhea: 'none',
-        },
-        cervical_screening: initialDraft.current?.cervical_screening || '',
-        contraceptive_history: initialDraft.current?.contraceptive_history || '',
-        sexual_history: initialDraft.current?.sexual_history || '',
+        menstrual_history: initialDraft.current?.menstrual_history || defaultMenstrualHistory,
+        cervical_screening: initialDraft.current?.cervical_screening || prefill.cervical_screening || '',
+        contraceptive_history: initialDraft.current?.contraceptive_history || prefill.contraceptive_history || '',
+        sexual_history: initialDraft.current?.sexual_history || prefill.sexual_history || '',
         
         // Obstetric History
-        parity: initialDraft.current?.parity || '',
-        current_pregnancy: initialDraft.current?.current_pregnancy || '',
-        past_obstetric: initialDraft.current?.past_obstetric || [],
+        parity: initialDraft.current?.parity || prefill.parity || '',
+        current_pregnancy: initialDraft.current?.current_pregnancy || prefill.current_pregnancy || '',
+        past_obstetric: initialDraft.current?.past_obstetric || prefill.past_obstetric || [],
         
         // Medical & Surgical
-        past_medical_history: initialDraft.current?.past_medical_history || '',
-        surgical_history: initialDraft.current?.surgical_history || '',
+        past_medical_history: initialDraft.current?.past_medical_history || prefill.past_medical_history || '',
+        surgical_history: initialDraft.current?.surgical_history || prefill.surgical_history || '',
         
         // Family & Social
-        family_history: initialDraft.current?.family_history || '',
-        social_history: initialDraft.current?.social_history || '',
+        family_history: initialDraft.current?.family_history || prefill.family_history || '',
+        social_history: initialDraft.current?.social_history || prefill.social_history || '',
         
         // System Review & Examination
         review_of_systems: initialDraft.current?.review_of_systems || '',
@@ -308,18 +310,14 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header="New Consultation"
+            headerTitle="Record Consultation"
+            breadcrumbs={[
+                { label: 'Dashboard', url: route('dashboard') },
+                { label: 'Consultations', url: route('consultations.index') },
+                { label: 'New Record', active: true },
+            ]}
         >
             <Head title="New Consultation" />
-
-            <PageHeader 
-                title="Record Consultation"
-                breadcrumbs={[
-                    { label: 'Dashboard', url: route('dashboard') },
-                    { label: 'Consultations', url: route('consultations.index') },
-                    { label: 'New Record', active: true }
-                ]}
-            />
 
             <UnifiedToolbar 
                 autosaveStatus={autosaveStatus}
@@ -497,6 +495,28 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                 {/* 3. Medical & Surgical History */}
                 <div className="col-lg-6">
                     <FormSection title="Medical & Surgical History" className="h-100" headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
+                        {(patient_clinical?.allergies || patient_clinical?.chronic_diseases) && (
+                            <div className="alert alert-warning border-0 rounded-3 mb-3 py-3">
+                                <div className="extra-small fw-extrabold text-uppercase tracking-widest mb-2">
+                                    <i className="fas fa-exclamation-triangle me-1"></i> Patient Profile Alerts
+                                </div>
+                                {patient_clinical.allergies && (
+                                    <div className="small mb-1"><span className="fw-bold">Allergies:</span> {patient_clinical.allergies}</div>
+                                )}
+                                {patient_clinical.chronic_diseases && (
+                                    <div className="small mb-0"><span className="fw-bold">Chronic conditions:</span> {patient_clinical.chronic_diseases}</div>
+                                )}
+                            </div>
+                        )}
+                        {history_prefill?.source_consultation_date && !initialDraft.current && (
+                            <div className="alert alert-info border-0 rounded-3 mb-3 py-2 extra-small">
+                                <i className="fas fa-history me-1"></i>
+                                History prefilled from visit on {history_prefill.source_consultation_date}.
+                                {history_prefill.source_consultation_id && (
+                                    <Link href={route('consultations.show', history_prefill.source_consultation_id)} className="ms-1 fw-bold">View source</Link>
+                                )}
+                            </div>
+                        )}
                         <FormField label="Past Medical History" className="mb-3">
                             <textarea className="form-control" rows="2" value={data.past_medical_history} onChange={e => setData('past_medical_history', e.target.value)} placeholder="Chronic conditions, allergies, past illnesses..." />
                         </FormField>
@@ -833,7 +853,11 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                 show={isModalOpen} 
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={(patient) => {
-                    setData('patient_id', patient.value);
+                    setData(d => ({
+                        ...d,
+                        patient_id: patient.value,
+                        patient_label: patient.label,
+                    }));
                     setQuickPatientLabel(patient.label);
                     if (patient.gender) setPatientGender(patient.gender.toLowerCase());
                 }}

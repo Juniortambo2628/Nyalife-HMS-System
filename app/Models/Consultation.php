@@ -59,7 +59,6 @@ class Consultation extends Model
         'surgical_history',
         'cervical_screening',
         'created_by',
-        'updated_by'
     ];
 
     protected $casts = [
@@ -106,6 +105,11 @@ class Consultation extends Model
         return $this->hasMany(Invoice::class, 'consultation_id', 'consultation_id');
     }
 
+    public function followUps()
+    {
+        return $this->hasMany(FollowUp::class, 'consultation_id', 'consultation_id');
+    }
+
     public function scopeSearchByPatientOrDiagnosis($query, $search)
     {
         if (empty($search)) {
@@ -133,5 +137,57 @@ class Consultation extends Model
             return $query;
         }
         return $query->where('patient_id', $patientId);
+    }
+
+    public const HISTORY_PREFILL_FIELDS = [
+        'past_medical_history',
+        'surgical_history',
+        'family_history',
+        'social_history',
+        'menstrual_history',
+        'cervical_screening',
+        'contraceptive_history',
+        'sexual_history',
+        'parity',
+        'current_pregnancy',
+        'past_obstetric',
+        'obstetric_history',
+        'gynecological_history',
+    ];
+
+    public static function latestHistoryForPatient(int $patientId): ?self
+    {
+        return static::where('patient_id', $patientId)
+            ->where('consultation_status', '!=', 'in_progress')
+            ->latest('consultation_date')
+            ->first();
+    }
+
+    public function toHistoryPrefill(): array
+    {
+        $prefill = [];
+
+        foreach (self::HISTORY_PREFILL_FIELDS as $field) {
+            $value = $this->{$field};
+
+            if ($value === null || $value === '' || $value === []) {
+                continue;
+            }
+
+            $prefill[$field] = $value;
+        }
+
+        return $prefill;
+    }
+
+    public function toClinicalSummary(): array
+    {
+        $summary = $this->toHistoryPrefill();
+        $summary['consultation_id'] = $this->consultation_id;
+        $summary['consultation_date'] = $this->consultation_date instanceof \DateTimeInterface
+            ? $this->consultation_date->format('Y-m-d H:i')
+            : $this->consultation_date;
+
+        return $summary;
     }
 }

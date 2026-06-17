@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,6 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('invoices')) {
+            return;
+        }
+
+        $column = collect(DB::select("SHOW COLUMNS FROM invoices WHERE Field = 'status'"))->first();
+        if ($column && str_contains(strtolower($column->Type ?? ''), 'varchar(20)')) {
+            return;
+        }
+
         Schema::table('invoices', function (Blueprint $table) {
             $table->string('status', 20)->change();
         });

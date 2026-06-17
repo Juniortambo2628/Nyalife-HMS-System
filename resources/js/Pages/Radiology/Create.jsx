@@ -1,6 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import PageHeader from '@/Components/PageHeader';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import DashboardSelect from '@/Components/DashboardSelect';
 
@@ -36,17 +35,13 @@ export default function Create({ preselected_patient_id, preselected_patient_lab
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header="Create Radiology Request"
+            headerTitle="Radiology & Imaging Order"
+            breadcrumbs={[
+                { label: 'Radiology Registry', url: route('radiology.index') },
+                { label: 'New Request', active: true },
+            ]}
         >
             <Head title="New Radiology Request" />
-
-            <PageHeader 
-                title="Radiology & Imaging Order"
-                breadcrumbs={[
-                    { label: 'Radiology Registry', url: route('radiology.index') },
-                    { label: 'New Request', active: true }
-                ]}
-            />
 
             <UnifiedToolbar 
                 actions={[

@@ -115,7 +115,7 @@ class DashboardController extends Controller
                 ->with('patient.user')
                 ->get();
 
-            $walkInVitals = \App\Models\Vital::whereDate('measured_at', today())
+            $walkInVitals = \App\Models\Vital::where('measured_at', '>=', now()->subHours(24))
                 ->whereDoesntHave('patient.appointments', function($q) use ($staff) {
                     $q->whereDate('appointment_date', today())
                       ->where('doctor_id', $staff->staff_id);
@@ -195,7 +195,7 @@ class DashboardController extends Controller
 
     private function nurseDashboard($user)
     {
-        $walkinVitalsCount = \App\Models\Vital::whereDate('measured_at', today())
+        $walkinVitalsCount = \App\Models\Vital::where('measured_at', '>=', now()->subHours(24))
             ->whereDoesntHave('patient.appointments', function($q) {
                 $q->whereDate('appointment_date', today());
             })->distinct('patient_id')->count('patient_id');
@@ -219,7 +219,7 @@ class DashboardController extends Controller
                 ->with(['patient.user', 'doctor.user'])
                 ->get())
                 ->concat(
-                    \App\Models\Vital::whereDate('measured_at', today())
+                    \App\Models\Vital::where('measured_at', '>=', now()->subHours(24))
                         ->whereDoesntHave('patient.appointments', function($q) {
                             $q->whereDate('appointment_date', today());
                         })

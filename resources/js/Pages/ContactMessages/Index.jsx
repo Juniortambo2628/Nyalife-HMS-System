@@ -1,9 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
-import DashboardTable from '@/Components/DashboardTable';
+import { Head, router } from '@inertiajs/react';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import StatusBadge from '@/Components/StatusBadge';
 import TableActions from '@/Components/TableActions';
+import PatientTableCell from '@/Components/PatientTableCell';
+import { TableCellPrimary, TableCellStack } from '@/Components/TableCells';
+import { formatDateOnly, formatDateTime } from '@/Utils/dateUtils';
 import { useState } from 'react';
 
 export default function Index({ messages, auth }) {
@@ -25,58 +27,53 @@ export default function Index({ messages, auth }) {
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
-            header="Contact Messages"
+            headerTitle="Website Inquiries"
+            breadcrumbs={[
+                { label: 'Dashboard', url: route('dashboard') },
+                { label: 'Messages', active: true },
+            ]}
         >
             <Head title="Contact Messages" />
 
-            <PageHeader 
-                title="Website Inquiries"
-                breadcrumbs={[
-                    { label: 'Dashboard', url: route('dashboard') },
-                    { label: 'Messages', active: true }
-                ]}
-            />
-
             <div className="py-0">
-                <DashboardTable 
+                <RegistryTablePanel
+                    title="Contact messages"
+                    icon="fa-envelope"
                     data={messages}
                     columns={[
                         {
                             header: 'Status',
                             accessorKey: 'status',
-                            cell: info => (
-                                <StatusBadge status={info.getValue() === 'pending' ? 'pending' : 'completed'} />
-                            )
+                            cell: info => <StatusBadge status={info.getValue()} />,
                         },
                         {
                             header: 'From',
                             accessorKey: 'name',
                             cell: info => (
-                                <div>
-                                    <div className="text-gray-900">{info.getValue()}</div>
-                                    <div className="extra-small text-muted">{info.row.original.email}</div>
-                                </div>
-                            )
+                                <TableCellStack
+                                    primary={info.getValue()}
+                                    secondary={info.row.original.email}
+                                />
+                            ),
                         },
                         {
                             header: 'Message Preview',
                             accessorKey: 'message',
                             cell: info => (
-                                <div className="text-muted text-truncate" style={{ maxWidth: '300px' }}>
+                                <TableCellPrimary className="text-muted text-truncate" style={{ maxWidth: '300px' }}>
                                     {info.getValue()}
-                                </div>
-                            )
+                                </TableCellPrimary>
+                            ),
                         },
                         {
                             header: 'Received',
                             accessorKey: 'created_at',
                             cell: info => (
-                                <div className="text-muted small">
-                                    {new Date(info.getValue()).toLocaleDateString()}
-                                    <div className="extra-small">{new Date(info.getValue()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                                </div>
-                            )
+                                <TableCellStack
+                                    primary={formatDateOnly(info.getValue())}
+                                    secondary={formatDateTime(info.getValue())}
+                                />
+                            ),
                         },
                         {
                             header: 'Actions',

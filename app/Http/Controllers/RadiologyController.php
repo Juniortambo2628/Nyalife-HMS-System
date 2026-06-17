@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Services\ActivityLogger;
+use App\Support\PatientId;
+use App\Support\Permissions;
 
 class RadiologyController extends Controller
 {
@@ -59,9 +61,6 @@ class RadiologyController extends Controller
         return Inertia::render('Radiology/Index', [
             'requests' => RadiologyRequestResource::collection($query->latest()->paginate(15)),
             'filters' => (object) $request->only(['search', 'status', 'quick_filter']),
-            'auth' => [
-                'user' => Auth::user()
-            ]
         ]);
     }
 
@@ -74,7 +73,7 @@ class RadiologyController extends Controller
 
         return Inertia::render('Radiology/Create', [
             'preselected_patient_id' => $patientId,
-            'preselected_patient_label' => $patient ? ($patient->user->first_name . ' ' . $patient->user->last_name) : null,
+            'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
             'consultation_id' => $consultationId
         ]);
     }
@@ -115,10 +114,61 @@ class RadiologyController extends Controller
         return redirect()->route('radiology.index')->with('success', 'Radiology scan request created successfully.');
     }
 
+    public function edit($id)
+    {
+        $radRequest = RadiologyRequest::with('patient.user')->findOrFail($id);
+
+        if ($radRequest->status !== 'pending') {
+            return redirect()->route('radiology.show', $radRequest->request_id)
+                ->with('error', 'Only pending radiology requests can be edited.');
+        }
+
+        return Inertia::render('Radiology/Edit', [
+            'radRequest' => $radRequest,
+            'preselected_patient_id' => $radRequest->patient_id,
+            'preselected_patient_label' => PatientId::fromPatient($radRequest->patient) ?: null,
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $radRequest = RadiologyRequest::findOrFail($id);
+
+        if ($radRequest->status !== 'pending') {
+            return back()->with('error', 'Only pending radiology requests can be updated.');
+        }
+
+        $validated = $request->validate([
+            'scan_type' => 'required|string',
+            'priority' => 'required|string',
+            'clinical_indication' => 'nullable|string',
+            'scan_details' => 'nullable|string',
+        ]);
+
+        $radRequest->update($validated);
+
+        ActivityLogger::log(
+            'radiology',
+            "Radiology request updated: " . $radRequest->scan_type,
+            ['request_id' => $radRequest->request_id],
+            Auth::user(),
+            $radRequest,
+            [1]
+        );
+
+        return redirect()->route('radiology.show', $radRequest->request_id)
+            ->with('success', 'Radiology scan request updated successfully.');
+    }
+
     public function show($id)
     {
         $request = RadiologyRequest::with(['patient.user', 'doctor.user', 'requestedBy', 'assignedTo', 'verifiedBy', 'consultation'])
             ->findOrFail($id);
+
+        $this->requireStaffOrOwnPatient(
+            $request->patient_id,
+            Permissions::MANAGE_LAB
+        );
 
         return Inertia::render('Radiology/Show', [
             'request' => RadiologyRequestResource::make($request)
@@ -199,5 +249,75 @@ class RadiologyController extends Controller
         );
 
         return back()->with('success', 'Radiology request removed successfully.');
+    }
+
+    /**
+     * Handle bulk actions on radiology requests.
+     */
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:complete,cancel,delete',
+            'ids'    => 'required|array|min:1',
+            'ids.*'  => 'integer',
+        ]);
+
+        $ids    = $validated['ids'];
+        $action = $validated['action'];
+        $count  = count($ids);
+
+        switch ($action) {
+            case 'complete':
+                $radRequests = RadiologyRequest::whereIn('request_id', $ids)->get();
+                $updatedCount = 0;
+                foreach ($radRequests as $radReq) {
+                    if ($radReq->status !== 'completed' && $radReq->status !== 'cancelled') {
+                        $radReq->update([
+                            'status' => 'completed',
+                            'completed_at' => now(),
+                            'assigned_to' => Auth::id(),
+                        ]);
+                        ActivityLogger::log(
+                            'radiology',
+                            "Radiology request #{$radReq->request_id} bulk completed",
+                            ['request_id' => $radReq->request_id, 'status' => 'completed'],
+                            Auth::user(),
+                            $radReq,
+                            [$radReq->requested_by, $radReq->patient->user_id, 1]
+                        );
+                        $updatedCount++;
+                    }
+                }
+                return redirect()->back()->with('success', "{$updatedCount} radiology request(s) completed.");
+
+            case 'cancel':
+                $radRequests = RadiologyRequest::whereIn('request_id', $ids)->get();
+                $updatedCount = 0;
+                foreach ($radRequests as $radReq) {
+                    if ($radReq->status !== 'completed' && $radReq->status !== 'cancelled') {
+                        $radReq->update([
+                            'status' => 'cancelled',
+                        ]);
+                        ActivityLogger::log(
+                            'radiology',
+                            "Radiology request #{$radReq->request_id} bulk cancelled",
+                            ['request_id' => $radReq->request_id, 'status' => 'cancelled'],
+                            Auth::user(),
+                            $radReq,
+                            [$radReq->requested_by, $radReq->patient->user_id, 1]
+                        );
+                        $updatedCount++;
+                    }
+                }
+                return redirect()->back()->with('success', "{$updatedCount} radiology request(s) cancelled.");
+
+            case 'delete':
+                $deletedCount = RadiologyRequest::whereIn('request_id', $ids)
+                    ->where('status', '!=', 'completed')
+                    ->delete();
+                return redirect()->back()->with('success', "{$deletedCount} radiology request(s) deleted.");
+        }
+
+        return redirect()->back()->with('error', 'Unknown bulk action.');
     }
 }

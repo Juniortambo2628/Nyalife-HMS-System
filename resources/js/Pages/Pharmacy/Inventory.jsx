@@ -1,10 +1,13 @@
-import DashboardTable from '@/Components/DashboardTable';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import { useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, useForm } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import Modal from '@/Components/Modal';
 import DashboardSearch from '@/Components/DashboardSearch';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import TableActions from '@/Components/TableActions';
+import StatusBadge from '@/Components/StatusBadge';
+import { TableCellPrimary } from '@/Components/TableCells';
 
 export default function Inventory({ inventory, filters, auth }) {
     const [search, setSearch] = useState(filters?.search || '');
@@ -56,87 +59,80 @@ export default function Inventory({ inventory, filters, auth }) {
         {
             header: 'Medicine Name',
             accessorKey: 'medication_name',
-            cell: ({ row }) => <span className="fw-bold">{row.original.medication_name || 'N/A'}</span>
+            cell: ({ row }) => <TableCellPrimary>{row.original.medication_name || 'N/A'}</TableCellPrimary>,
         },
         {
             header: 'Type',
             accessorKey: 'medication_type',
-            cell: ({ row }) => <span className="text-muted">{row.original.medication_type || 'General'}</span>
+            cell: ({ row }) => <TableCellPrimary className="text-muted">{row.original.medication_type || 'General'}</TableCellPrimary>,
         },
         {
             header: 'Stock Level',
             accessorKey: 'stock_quantity',
-            cell: ({ row }) => <span className="fw-semibold">{row.original.stock_quantity ?? 0} {row.original.unit || 'units'}</span>
+            cell: ({ row }) => (
+                <TableCellPrimary>
+                    {row.original.stock_quantity ?? 0} {row.original.unit || 'units'}
+                </TableCellPrimary>
+            ),
         },
         {
             header: 'Expiry Date',
             accessorKey: 'expiry_date',
             cell: ({ row }) => {
                 const expiry = row.original.expiry_date;
-                if (!expiry) return <span className="text-muted">—</span>;
-                
+                if (!expiry) return <TableCellPrimary className="text-muted">—</TableCellPrimary>;
+
                 const expDate = new Date(expiry);
                 const today = new Date();
-                today.setHours(0,0,0,0);
-                expDate.setHours(0,0,0,0);
-                
-                const diffTime = expDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                let badgeClass = 'bg-soft-success text-success border border-success-subtle';
+                today.setHours(0, 0, 0, 0);
+                expDate.setHours(0, 0, 0, 0);
+
+                const diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
                 let label = expiry;
-                
-                if (diffDays < 0) {
-                    badgeClass = 'bg-soft-danger text-danger border border-danger-subtle';
-                    label = `${expiry} (Expired)`;
-                } else if (diffDays <= 90) {
-                    badgeClass = 'bg-soft-warning text-warning border border-warning-subtle';
-                    label = `${expiry} (${diffDays} days left)`;
-                }
-                
+                if (diffDays < 0) label = `${expiry} (Expired)`;
+                else if (diffDays <= 90) label = `${expiry} (${diffDays} days left)`;
+
                 return (
-                    <span className={`badge px-3 py-1 rounded-pill ${badgeClass}`} style={{ fontSize: '0.8rem' }}>
+                    <TableCellPrimary className={diffDays < 0 ? 'text-danger' : (diffDays <= 90 ? 'text-warning' : '')}>
                         {label}
-                    </span>
+                    </TableCellPrimary>
                 );
-            }
+            },
         },
         {
             header: 'Status',
             accessorKey: 'status',
             cell: ({ row }) => {
                 const isLow = (row.original.stock_quantity ?? 0) < 50;
-                return (
-                    <span className={`badge rounded-pill px-3 py-1 ${isLow ? 'bg-danger' : 'bg-success'}`}>
-                        {isLow ? 'Low Stock' : 'In Stock'}
-                    </span>
-                );
-            }
+                return <StatusBadge status={isLow ? 'low_stock' : 'in_stock'} />;
+            },
         },
         {
             header: 'Actions',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="text-end">
-                    <button onClick={() => openUpdateModal(row.original)} className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm transition-all hover-scale">Update Stock</button>
-                </div>
-            )
-        }
+                <TableActions actions={[
+                    {
+                        icon: 'fa-boxes',
+                        label: 'Update stock',
+                        onClick: () => openUpdateModal(row.original),
+                    },
+                ]} />
+            ),
+        },
     ], []);
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
-            header="Pharmacy Inventory"
+            headerTitle="Stock & Supply"
+            breadcrumbs={[
+                { label: 'Pharmacy', active: false },
+                { label: 'Inventory', active: true },
+            ]}
         >
             <Head title="Pharmacy Inventory" />
 
-            <PageHeader 
-                title="Stock & Supply"
-                breadcrumbs={[{ label: 'Pharmacy', active: true }, { label: 'Inventory', active: true }]}
-            />
-
-            <DashboardSearch 
+            <DashboardSearch
                 placeholder="Search inventory (e.g. Paracetamol, Cough Syrup...)" 
                 value={search}
                 onChange={setSearch}
@@ -149,7 +145,9 @@ export default function Inventory({ inventory, filters, auth }) {
             />
 
             <div className="py-0">
-                <DashboardTable 
+                <RegistryTablePanel
+                    title="Inventory registry"
+                    icon="fa-boxes"
                     columns={columns}
                     data={inventory.data || []}
                     pagination={inventory}

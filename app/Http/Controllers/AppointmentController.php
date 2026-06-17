@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Models\Role;
 use App\Services\ActivityLogger;
+use App\Support\PatientId;
+use App\Services\AppointmentQueryService;
 
 class AppointmentController extends Controller
 {
@@ -131,81 +133,56 @@ class AppointmentController extends Controller
             [1]
         );
 
-        return redirect()->back()->with('success', 'Appointment request received! We will contact you shortly to confirm.');
+        return redirect()->route('guest-appointments.confirmation')
+            ->with('guest_appointment_id', $appointment->appointment_id);
     }
+
+    public function guestConfirmation()
+    {
+        $appointmentId = session('guest_appointment_id');
+
+        if (!$appointmentId) {
+            return redirect()->route('welcome');
+        }
+
+        $appointment = Appointment::with(['patient.user', 'doctor.user'])
+            ->findOrFail($appointmentId);
+
+        return Inertia::render('Appointments/GuestConfirmation', [
+            'appointment' => [
+                'appointment_id' => $appointment->appointment_id,
+                'appointment_date' => $appointment->appointment_date,
+                'appointment_time' => $appointment->appointment_time,
+                'reason' => $appointment->reason,
+                'status' => $appointment->status,
+                'patient_name' => trim(($appointment->patient->user->first_name ?? '') . ' ' . ($appointment->patient->user->last_name ?? '')),
+                'patient_email' => $appointment->patient->user->email ?? null,
+            ],
+        ]);
+    }
+
     /**
      * Display a listing of appointments.
      */
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Appointment::with(['patient.user', 'doctor.user', 'consultations', 'prescriptions']);
-        
-        // Filter by role
-        if ($user->role === 'doctor') {
-            $staff = Staff::where('user_id', $user->user_id)->first();
-            if ($staff) {
-                $query->where('doctor_id', $staff->staff_id);
-            }
-        } elseif ($user->role === 'patient') {
-            $patient = Patient::where('user_id', $user->user_id)->first();
-            if ($patient) {
-                $query->where('patient_id', $patient->patient_id);
-            }
-        }
-        
-        // Apply filters
-        if ($request->has('status') && $request->status) {
-            $query->where('status', $request->status);
-        }
-        
-        if ($request->has('date') && $request->date) {
-            $query->whereDate('appointment_date', $request->date);
-        }
+        $query = AppointmentQueryService::scopedFor($user, [
+            'patient.user',
+            'doctor.user',
+            'consultations',
+            'prescriptions',
+            'labTestRequests.testType',
+        ]);
+        AppointmentQueryService::applyFilters($query, $request);
 
-        // Quick Filters
-        if ($request->has('quick_filter') && $request->quick_filter) {
-            switch ($request->quick_filter) {
-                case 'today':
-                    $query->whereDate('appointment_date', today());
-                    break;
-                case 'upcoming':
-                    $query->whereDate('appointment_date', '>', today());
-                    break;
-                case 'overdue':
-                    $query->where('status', 'scheduled')
-                          ->where(function($q) {
-                              $q->whereDate('appointment_date', '<', today())
-                                ->orWhere(function($sq) {
-                                    $sq->whereDate('appointment_date', today())
-                                       ->whereTime('appointment_time', '<', now());
-                                });
-                          });
-                    break;
-            }
-        }
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->whereHas('patient.user', function($pq) use ($search) {
-                    $pq->where('first_name', 'like', "%{$search}%")
-                       ->orWhere('last_name', 'like', "%{$search}%");
-                })->orWhereHas('doctor.user', function($dq) use ($search) {
-                    $dq->where('first_name', 'like', "%{$search}%")
-                       ->orWhere('last_name', 'like', "%{$search}%");
-                });
-            });
-        }
-        
         $appointments = $query->orderBy('appointment_date', 'desc')
-                              ->paginate(15)
-                              ->withQueryString();
-        
+            ->paginate(15)
+            ->withQueryString();
+
         return Inertia::render('Appointments/Index', [
             'appointments' => AppointmentResource::collection($appointments),
             'filters' => $request->only(['status', 'date', 'doctor_id', 'patient_id', 'quick_filter', 'search']),
-            // Note: doctors and patients lists removed from here; 
-            // the frontend should use searchable select or handle filtering differently
         ]);
     }
 
@@ -222,7 +199,7 @@ class AppointmentController extends Controller
 
         return Inertia::render('Appointments/Create', [
             'preselected_patient_id' => $patientId,
-            'preselected_patient_label' => $patient ? ($patient->user->first_name . ' ' . $patient->user->last_name) : null,
+            'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
             'preselected_doctor_id' => $doctorId,
             'preselected_doctor_label' => $doctor ? ("Dr. " . $doctor->user->first_name . " " . $doctor->user->last_name) : null,
         ]);
@@ -258,11 +235,12 @@ class AppointmentController extends Controller
     public function show($id)
     {
         $appointment = Appointment::with([
-            'patient.user', 
+            'patient.user',
             'doctor.user',
-            'prescriptions.items',
-            'labTestRequests',
-            'consultations'
+            'doctor.departmentRelation',
+            'prescriptions.items.medication',
+            'labTestRequests.testType',
+            'consultations.doctor.user',
         ])->findOrFail($id);
         
         return Inertia::render('Appointments/Show', [
@@ -351,5 +329,39 @@ class AppointmentController extends Controller
         return Inertia::render('Appointments/Calendar', [
             'appointments' => $appointments,
         ]);
+    }
+
+    /**
+     * Handle bulk actions on appointments.
+     */
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:confirm,cancel,delete',
+            'ids'    => 'required|array|min:1',
+            'ids.*'  => 'integer',
+        ]);
+
+        $ids    = $validated['ids'];
+        $action = $validated['action'];
+        $count  = count($ids);
+
+        switch ($action) {
+            case 'confirm':
+                Appointment::whereIn('appointment_id', $ids)
+                    ->update(['status' => 'confirmed']);
+                return redirect()->back()->with('success', "{$count} appointment(s) confirmed.");
+
+            case 'cancel':
+                Appointment::whereIn('appointment_id', $ids)
+                    ->update(['status' => 'cancelled']);
+                return redirect()->back()->with('success', "{$count} appointment(s) cancelled.");
+
+            case 'delete':
+                Appointment::whereIn('appointment_id', $ids)->delete();
+                return redirect()->back()->with('success', "{$count} appointment(s) deleted.");
+        }
+
+        return redirect()->back()->with('error', 'Unknown bulk action.');
     }
 }

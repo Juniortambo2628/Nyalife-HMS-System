@@ -19,9 +19,14 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             AdminUserSeeder::class,
+            SyncSpatieRolesSeeder::class,
+            RolePermissionsSeeder::class,
             CMSSettingsSeeder::class,
             ServiceTabSeeder::class,
             BlogSeeder::class,
         ]);
+
+        // For a full demo clinic dataset (appointments, labs, billing, etc.):
+        // php artisan db:seed --class=DemoEnvironmentSeeder
     }
 }

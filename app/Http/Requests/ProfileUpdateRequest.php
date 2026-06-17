@@ -3,11 +3,19 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use App\Models\Department;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('department_id') && $this->department_id === '') {
+            $this->merge(['department_id' => null]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -24,7 +32,7 @@ class ProfileUpdateRequest extends FormRequest
                 'lowercase',
                 'email',
                 'max:255',
-                Rule::unique(User::class)->ignore($this->user()->user_id, 'user_id'),
+                Rule::unique(User::class, 'email')->ignore($this->user()),
             ],
             'phone' => ['nullable', 'string', 'max:20'],
             'gender' => ['nullable', 'string', 'in:male,female,other'],
@@ -33,6 +41,7 @@ class ProfileUpdateRequest extends FormRequest
             
             // Staff professional fields (optional, only updated if user is staff)
             'specialization' => ['nullable', 'string', 'max:255'],
+            'department_id' => ['nullable', 'integer', 'exists:departments,department_id'],
             'department' => ['nullable', 'string', 'max:255'],
             'license_number' => ['nullable', 'string', 'max:255'],
         ];

@@ -1,11 +1,14 @@
 import DashboardTable from '@/Components/DashboardTable';
-import StatCard from '@/Components/StatCard';
+import TableActions from '@/Components/TableActions';
+import { TableCellPrimary, TableCellStack } from '@/Components/TableCells';
+import DashboardPanel from '@/Components/DashboardPanel';
+import PatientTableCell from '@/Components/PatientTableCell';
+import RoleDashboardShell from '@/Components/RoleDashboardShell';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import { formatDateTime } from '@/Utils/dateUtils';
-import DashboardHero from '@/Components/DashboardHero';
 
 export default function Pharmacist({ auth, stats }) {
     const columns = useMemo(() => [
@@ -13,97 +16,94 @@ export default function Pharmacist({ auth, stats }) {
             header: 'Patient',
             accessorKey: 'patient',
             cell: ({ row }) => (
-                <div>
-                    <div className="fw-bold text-gray-900">{row.original.patient.user.first_name} {row.original.patient.user.last_name}</div>
-                    <div className="extra-small text-muted fw-bold text-uppercase opacity-75">ID: PAT-{row.original.patient_id}</div>
-                </div>
+                <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
             )
         },
         {
-            header: 'Prescribing Physician',
+            header: 'Prescribing physician',
             accessorKey: 'doctor',
             cell: ({ row }) => (
-                <div className="small text-muted fw-medium">
-                    Dr. {row.original.doctor.first_name} {row.original.doctor.last_name}
-                </div>
+                <TableCellStack
+                    primary={`Dr. ${row.original.doctor?.user?.first_name || row.original.doctor?.first_name || ''} ${row.original.doctor?.user?.last_name || row.original.doctor?.last_name || ''}`.trim()}
+                />
             )
         },
         {
-            header: 'Prescription Date',
+            header: 'Prescription date',
             accessorKey: 'prescription_date',
-            cell: ({ row }) => <span className="extra-small fw-bold text-gray-500 text-uppercase">{formatDateTime(row.original.prescription_date)}</span>
+            cell: ({ row }) => (
+                <TableCellPrimary className="text-muted">{formatDateTime(row.original.prescription_date)}</TableCellPrimary>
+            )
         },
         {
             header: 'Action',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="text-end">
-                    <Link href={route('prescriptions.show', row.original.prescription_id)} className="btn btn-sm btn-success rounded-pill px-4 fw-bold shadow-sm hover-scale">
-                        Dispense Meds
-                    </Link>
-                </div>
+                <TableActions actions={[
+                    {
+                        icon: 'fa-prescription-bottle',
+                        label: 'Dispense meds',
+                        href: route('prescriptions.show', row.original.prescription_id),
+                        color: 'success',
+                    },
+                ]} />
             )
         }
     ], []);
 
     const statItems = [
-        { label: 'Pending Dispensing', value: stats.pending_prescriptions || 0, icon: 'fa-prescription', color: 'warning' },
-        { label: 'Dispensed Today', value: stats.dispensed_today || 14, icon: 'fa-check-circle', color: 'success' },
-        { label: 'Low Stock Alerts', value: stats.low_stock || 5, icon: 'fa-exclamation-triangle', color: 'danger' }
+        { label: 'Pending dispensing', value: stats.pending_prescriptions || 0, icon: 'fa-prescription', color: 'warning' },
+        { label: 'Dispensed today', value: stats.dispensed_today || 14, icon: 'fa-check-circle', color: 'success' },
+        { label: 'Low stock alerts', value: stats.low_stock || 5, icon: 'fa-exclamation-triangle', color: 'danger' }
     ];
 
     return (
-        <AuthenticatedLayout 
-            header="Pharmacy Dashboard"
-            toolbarActions={
-                <div className="d-flex align-items-center gap-2">
-                    <Link href={route('pharmacy.inventory')} className="btn btn-light border rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                        <i className="fas fa-boxes me-1"></i> Inventory
-                    </Link>
-                    <Link href={route('pharmacy.medicines')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                        <i className="fas fa-pills me-1"></i> Medicine Registry
-                    </Link>
-                </div>
-            }
+        <AuthenticatedLayout
+            headerTitle={`Dispensing station — ${auth.user.first_name}`}
+            breadcrumbs={[{ label: 'Dashboard', active: true }]}
         >
             <Head title="Pharmacy Dashboard" />
 
-            <PageHeader 
-                title={`Dispensing Station - ${auth.user.first_name}`}
-                breadcrumbs={[{ label: 'Dashboard', active: true }]}
-                showBack={false}
+            <UnifiedToolbar
+                actions={[
+                    {
+                        label: 'Inventory',
+                        icon: 'fa-boxes',
+                        href: route('pharmacy.inventory'),
+                        color: 'gray',
+                    },
+                    {
+                        label: 'Medicine registry',
+                        icon: 'fa-pills',
+                        href: route('pharmacy.medicines'),
+                    },
+                ]}
             />
 
-            <div className="px-0">
-                <DashboardHero 
-                    title="Pharmacy Management Station"
-                    subtitle={`Oversee prescriptions and inventory. You have ${stats.pending_prescriptions || 0} pending orders awaiting dispensing.`}
-                    icon="fa-pills"
-                />
-
-
-                <div className="row g-4 mb-4">
-                    {statItems.map((s, i) => (
-                        <div key={i} className="col-md-4">
-                            <StatCard {...s} />
-                        </div>
-                    ))}
-                </div>
-
-                <div className="card shadow-sm border-0 rounded-2xl mb-4 bg-white overflow-hidden shadow-hover">
-                    <div className="card-header bg-white py-4 px-4 border-bottom-0 d-flex justify-content-between align-items-center">
-                        <h6 className="mb-0 fw-extrabold text-gray-900"><i className="fas fa-history text-pink-500 me-2"></i>Active Prescription Queue</h6>
-                        <Link href={route('prescriptions.index')} className="btn btn-light btn-sm rounded-pill px-3 fw-bold border text-muted">Full Registry</Link>
-                    </div>
-                    <div className="card-body p-0">
-                        <DashboardTable 
-                            columns={columns}
-                            data={stats.recent_prescriptions || []}
-                            emptyMessage="No pending prescriptions in the queue."
-                        />
-                    </div>
-                </div>
-            </div>
+            <RoleDashboardShell
+                hero={{
+                    title: 'Pharmacy management station',
+                    subtitle: `Oversee prescriptions and inventory. You have ${stats.pending_prescriptions || 0} pending orders awaiting dispensing.`,
+                    icon: 'fa-pills',
+                }}
+                statItems={statItems}
+                statCols={3}
+            >
+                <DashboardPanel
+                    title="Active prescription queue"
+                    icon="fa-history"
+                    className="mb-4"
+                    actions={
+                        <Link href={route('prescriptions.index')} className="btn btn-light btn-sm rounded-pill px-3 fw-bold border text-muted">Full registry</Link>
+                    }
+                >
+                    <DashboardTable 
+                        columns={columns}
+                        data={stats.recent_prescriptions || []}
+                        emptyMessage="No pending prescriptions in the queue."
+                    />
+                </DashboardPanel>
+            </RoleDashboardShell>
         </AuthenticatedLayout>
     );
 }

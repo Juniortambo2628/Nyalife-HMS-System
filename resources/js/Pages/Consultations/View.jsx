@@ -1,9 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
-import { formatDateTime } from '@/Utils/dateUtils';
+import { PatientIdLabel } from '@/Components/PatientTableCell';
+import { formatDateTime, formatDateOnly } from '@/Utils/dateUtils';
 import { useState } from 'react';
 import InfoModalComp from '@/Components/InfoModal';
+import StatusBadge from '@/Components/StatusBadge';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function View({ consultation, auth }) {
@@ -119,7 +120,7 @@ export default function View({ consultation, auth }) {
                     </div>
                     <div className="d-flex justify-content-between border-bottom border-gray-50 pb-2">
                         <span className="extra-small fw-bold text-muted text-uppercase">Certified On</span>
-                        <span className="fw-extrabold text-gray-900 small">{lab.completed_at ? new Date(lab.completed_at).toLocaleString() : 'N/A'}</span>
+                        <span className="fw-extrabold text-gray-900 small">{lab.completed_at ? formatDateTime(lab.completed_at) : 'N/A'}</span>
                     </div>
                     <div className="d-flex justify-content-between border-bottom border-gray-50 pb-2">
                         <span className="extra-small fw-bold text-muted text-uppercase">Performed By</span>
@@ -134,16 +135,14 @@ export default function View({ consultation, auth }) {
 
 
     return (
-        <AuthenticatedLayout header="Consultation Record">
+        <AuthenticatedLayout
+            headerTitle="Clinical Narrative"
+            breadcrumbs={[
+                { label: 'Consultations', url: route('consultations.index') },
+                { label: `Record #${consultation.consultation_id}`, active: true },
+            ]}
+        >
             <Head title={`Consultation - ${consultation.patient.user.first_name}`} />
-
-            <PageHeader 
-                title="Clinical Narrative"
-                breadcrumbs={[
-                    { label: 'Consultations', url: route('consultations.index') },
-                    { label: `Record #${consultation.consultation_id}`, active: true }
-                ]}
-            />
 
             <div className="container-fluid consultations-page px-0 pb-5">
                 <div className="row g-4">
@@ -155,7 +154,11 @@ export default function View({ consultation, auth }) {
                                     {consultation.patient.user.first_name.charAt(0)}
                                 </div>
                                 <h5 className="mb-1 text-white fw-extrabold tracking-tighter">{consultation.patient.user.first_name} {consultation.patient.user.last_name}</h5>
-                                <div className="extra-small font-bold text-white opacity-50 tracking-widest uppercase">PAT-ID: {consultation.patient_id}</div>
+                                <PatientIdLabel
+                                    id={consultation.patient_id}
+                                    variant="pat-id"
+                                    className="extra-small font-bold text-white opacity-50 tracking-widest uppercase"
+                                />
                             </div>
                             <div className="card-body p-4 text-start">
                                 <div className="space-y-4">
@@ -232,7 +235,7 @@ export default function View({ consultation, auth }) {
                                     <div className="card border-0 shadow-sm rounded-3xl bg-white shadow-hover">
                                         <div className="card-header bg-white py-4 px-5 d-flex justify-content-between align-items-center border-bottom-0">
                                             <h6 className="mb-0 fw-extrabold text-pink-500 extra-small text-uppercase tracking-widest">Initial Assessment</h6>
-                                            {auth.user.role === 'doctor' && consultation.consultation_status === 'open' && (
+                                            {auth.user.role === 'doctor' && consultation.consultation_status !== 'cancelled' && (
                                                 <Link href={route('consultations.edit', consultation.consultation_id)} className="btn btn-sm btn-outline-pink rounded-pill px-3 fw-bold extra-small">
                                                     <i className="fas fa-edit me-1"></i>EDIT RECORD
                                                 </Link>
@@ -425,7 +428,27 @@ export default function View({ consultation, auth }) {
                                                     <div>
                                                         <div className="extra-small fw-bold text-success mb-1 uppercase tracking-widest">Follow-up</div>
                                                         <p className="small fw-extrabold text-gray-900">{safeText(consultation.follow_up_instructions)}</p>
+                                                        {['admin', 'doctor', 'nurse'].includes(auth.user.role) && (
+                                                            <Link href={route('follow-ups.create', { consultation_id: consultation.consultation_id })} className="btn btn-sm btn-success rounded-pill mt-2 fw-bold extra-small">
+                                                                <i className="fas fa-calendar-plus me-1"></i> Schedule Follow-up
+                                                            </Link>
+                                                        )}
                                                     </div>
+                                                    {(consultation.follow_ups?.length > 0) && (
+                                                        <div className="mt-2">
+                                                            <div className="extra-small fw-bold text-muted mb-2 uppercase tracking-widest">Scheduled</div>
+                                                            <ul className="list-unstyled mb-0">
+                                                                {consultation.follow_ups.map((fu) => (
+                                                                    <li key={fu.follow_up_id} className="d-flex justify-content-between align-items-center py-1 border-bottom border-gray-100">
+                                                                        <Link href={route('follow-ups.show', fu.follow_up_id)} className="small fw-bold text-primary text-decoration-none">
+                                                                            {fu.follow_up_date}
+                                                                        </Link>
+                                                                        <StatusBadge status={fu.status} />
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
                                                     <div>
                                                         <div className="extra-small fw-bold text-warning mb-1 uppercase tracking-widest">Internal Notes</div>
                                                         <p className="small text-muted font-medium italic">{safeText(consultation.notes)}</p>
@@ -463,7 +486,7 @@ export default function View({ consultation, auth }) {
                                                             >
                                                                 <i className={`fas ${lab.status === 'completed' ? 'fa-check-double' : 'fa-clock'} flex-shrink-0`}></i>
                                                                 <span className="text-truncate fw-extrabold extra-small">{lab.test_type?.test_name || 'Lab Test'}</span>
-                                                                {lab.status === 'completed' && <i className="fas fa-external-link-alt ms-1 flex-shrink-0" style={{ fontSize: '0.6rem' }}></i>}
+                                                                {lab.status === 'completed' && <i className="fas fa-external-link-alt ms-1 flex-shrink-0 extra-small"></i>}
                                                             </button>
                                                         ))}
                                                     </div>
@@ -532,13 +555,18 @@ export default function View({ consultation, auth }) {
                 show={!!selectedLabRequest}
                 onClose={() => setSelectedLabRequest(null)}
                 title={selectedLabRequest?.test_type?.test_name || 'Laboratory Analysis'}
-                subtitle={`Certified on ${selectedLabRequest?.completed_at ? new Date(selectedLabRequest.completed_at).toLocaleDateString() : 'Pending verification'}`}
+                subtitle={`Certified on ${selectedLabRequest?.completed_at ? formatDateOnly(selectedLabRequest.completed_at) : 'Pending verification'}`}
                 icon="fa-flask"
                 tabs={getLabResultTabs(selectedLabRequest)}
             />
 
             <UnifiedToolbar 
                 actions={[
+                    !['patient', 'receptionist', 'lab_technician'].includes(auth.user.role) && {
+                        label: 'PRINT RECORD',
+                        icon: 'fa-print',
+                        onClick: () => window.open(route('consultations.print', consultation.consultation_id), '_blank'),
+                    },
                     ['doctor', 'admin'].includes(auth.user.role) && { 
                         label: 'ADD PRESCRIPTION', 
                         icon: 'fa-prescription', 
@@ -555,6 +583,13 @@ export default function View({ consultation, auth }) {
                             consultation_id: consultation.consultation_id 
                         }),
                         color: 'success'
+                    },
+                    ['doctor', 'nurse', 'admin'].includes(auth.user.role) && { 
+                        label: 'SCHEDULE FOLLOW-UP', 
+                        icon: 'fa-calendar-check', 
+                        href: route('follow-ups.create', { 
+                            consultation_id: consultation.consultation_id 
+                        }),
                     },
                     ['doctor', 'nurse', 'admin'].includes(auth.user.role) && { 
                         label: 'ADD LAB REQUEST', 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\LabTestRequestResource;
 use App\Models\LabTestRequest;
 use App\Models\LabTestType;
 use App\Models\Patient;
@@ -10,33 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Services\ActivityLogger;
+use App\Support\PatientId;
 
 class LabTestRequestController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = LabTestRequest::with(['patient.user', 'testType', 'doctor']);
-
-        if ($request->search) {
-            $search = $request->search;
-            $query->whereHas('patient.user', function($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->status) {
-            $query->where('status', $request->status);
-        }
-
-        $requests = $query->latest()->paginate(15);
-
-        return Inertia::render('Lab/Index', [
-            'requests' => LabTestRequestResource::collection($requests),
-            'filters' => $request->only(['search', 'status'])
-        ]);
-    }
-
     public function create(Request $request)
     {
         $patientId = $request->query('patient_id');
@@ -47,7 +23,7 @@ class LabTestRequestController extends Controller
         return Inertia::render('Lab/Create', [
             'testTypes' => LabTestType::where('is_active', true)->get(),
             'preselected_patient_id' => $patientId,
-            'preselected_patient_label' => $patient ? ($patient->user->first_name . ' ' . $patient->user->last_name) : null,
+            'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
             'consultation_id' => $consultationId
         ]);
     }
@@ -83,14 +59,6 @@ class LabTestRequestController extends Controller
         );
 
         return redirect()->route('lab.index')->with('success', 'Lab test request created successfully.');
-    }
-
-    public function show($id)
-    {
-        $request = LabTestRequest::with(['patient.user', 'testType', 'doctor', 'labTechnician.user'])->findOrFail($id);
-        return Inertia::render('Lab/Show', [
-            'request' => LabTestRequestResource::make($request)
-        ]);
     }
 
     public function destroy($id)

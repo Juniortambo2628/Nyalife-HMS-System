@@ -1,102 +1,105 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
-
+import { Head } from '@inertiajs/react';
 import DashboardHero from '@/Components/DashboardHero';
+import QuickActionCard from '@/Components/QuickActionCard';
+import RoleDashboardShell from '@/Components/RoleDashboardShell';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Dashboard({ auth }) {
     const user = auth?.user || {};
-    
+    const roleLabel = user.role?.replace(/_/g, ' ').toUpperCase() || 'GENERAL';
+
+    const quickActions = [
+        {
+            label: 'Appointments',
+            sub: 'View and manage upcoming visits',
+            icon: 'fa-calendar-check',
+            color: 'info',
+            url: route('appointments.index'),
+        },
+        ...(user.role !== 'receptionist'
+            ? [
+                {
+                    label: 'Prescriptions',
+                    sub: 'Medications and therapeutic plans',
+                    icon: 'fa-file-prescription',
+                    color: 'primary',
+                    url: route('prescriptions.index'),
+                },
+                {
+                    label: 'Lab results',
+                    sub: 'Diagnostic tests and reports',
+                    icon: 'fa-flask',
+                    color: 'success',
+                    url: route('lab.results'),
+                },
+            ]
+            : [
+                {
+                    label: 'Patient records',
+                    sub: 'Register and manage demographics',
+                    icon: 'fa-users',
+                    color: 'primary',
+                    url: route('patients.index'),
+                },
+            ]),
+        {
+            label: 'Patient registry',
+            sub: 'Search and open patient records',
+            icon: 'fa-user-injured',
+            color: 'pink',
+            url: route('patients.index'),
+        },
+    ];
+
     return (
-        <AuthenticatedLayout 
+        <AuthenticatedLayout
             headerTitle={`Welcome back, ${user.first_name || 'User'}!`}
             breadcrumbs={[{ label: 'Dashboard', active: true }]}
         >
             <Head title="Dashboard" />
 
-            <UnifiedToolbar 
+            <UnifiedToolbar
                 actions={[
-                    { 
-                        label: 'VIEW SCHEDULE', 
-                        icon: 'fa-calendar-alt', 
-                        href: '/appointments' 
+                    {
+                        label: 'View schedule',
+                        icon: 'fa-calendar-alt',
+                        href: route('appointments.index'),
                     },
-                    { 
-                        label: 'PATIENT REGISTRY', 
-                        icon: 'fa-users', 
-                        href: '/patients',
-                        color: 'pink'
-                    }
+                    {
+                        label: 'Patient registry',
+                        icon: 'fa-users',
+                        href: route('patients.index'),
+                        color: 'pink',
+                    },
                 ]}
             />
 
-            <div className="px-0">
-                <DashboardHero 
-                    title={`Hello, ${user.first_name}!`}
-                    subtitle={`Welcome to the Nyalife HMS Command Center. Your access level: ${user.role?.replace('_', ' ').toUpperCase() || 'GENERAL'}`}
-                    icon="fa-hospital"
-                />
-
-
-                <div className="card shadow-sm border-0 rounded-2xl bg-white p-5 shadow-hover">
-                    <div className="d-flex align-items-center gap-4 mb-5">
-                        <div className="avatar-xl bg-primary-subtle text-primary rounded-2xl d-flex align-items-center justify-content-center flex-shrink-0 shadow-inner">
-                            <i className="fas fa-hand-sparkles fa-3x"></i>
+            <RoleDashboardShell
+                hero={{
+                    title: `Hello, ${user.first_name}!`,
+                    subtitle: `Welcome to the Nyalife HMS command center. Access level: ${roleLabel}`,
+                    icon: 'fa-hospital',
+                }}
+            >
+                <div className="card shadow-sm border-0 rounded-2xl bg-white p-4 p-md-5 shadow-hover">
+                    <div className="d-flex align-items-center gap-3 mb-4">
+                        <div className="avatar-lg bg-primary-subtle text-primary rounded-2xl d-flex align-items-center justify-content-center flex-shrink-0">
+                            <i className="fas fa-hand-sparkles fa-2x" />
                         </div>
                         <div>
-                            <h2 className="fw-extrabold text-gray-900 mb-1">Getting Started</h2>
-                            <p className="text-muted mb-0 fw-medium">Use the quick access modules below to navigate the system.</p>
+                            <h2 className="fw-extrabold text-gray-900 mb-1">Quick access</h2>
+                            <p className="text-muted mb-0 small">Jump to the modules you use most.</p>
                         </div>
                     </div>
 
-                    <div className="row g-4">
-                        <div className="col-md-4">
-                            <Link href="/appointments" className="card border border-gray-100 bg-blue-50 p-5 rounded-2xl h-100 text-decoration-none shadow-hover transition-all">
-                                <div className="bg-white rounded-xl p-3 avatar-lg d-flex align-items-center justify-content-center shadow-sm mb-4">
-                                    <i className="fas fa-calendar-check text-info"></i>
-                                </div>
-                                <h5 className="fw-extrabold text-gray-900 mb-2">Appointments</h5>
-                                <p className="small text-muted mb-0 fw-medium">View and manage upcoming medical consultations and patient visits.</p>
-                            </Link>
-                        </div>
-                        
-                        {user.role !== 'receptionist' && (
-                            <>
-                                <div className="col-md-4">
-                                    <Link href="/prescriptions" className="card border border-gray-100 bg-pink-50 p-5 rounded-2xl h-100 text-decoration-none shadow-hover transition-all">
-                                        <div className="bg-white rounded-xl p-3 avatar-lg d-flex align-items-center justify-content-center shadow-sm mb-4">
-                                            <i className="fas fa-file-prescription text-primary"></i>
-                                        </div>
-                                        <h5 className="fw-extrabold text-gray-900 mb-2">Prescriptions</h5>
-                                        <p className="small text-muted mb-0 fw-medium">Access and manage prescribed medications and therapeutic plans.</p>
-                                    </Link>
-                                </div>
-                                <div className="col-md-4">
-                                    <Link href="/lab-results" className="card border border-gray-100 bg-green-50 p-5 rounded-2xl h-100 text-decoration-none shadow-hover transition-all">
-                                        <div className="bg-white rounded-xl p-3 avatar-lg d-flex align-items-center justify-content-center shadow-sm mb-4">
-                                            <i className="fas fa-flask text-success"></i>
-                                        </div>
-                                        <h5 className="fw-extrabold text-gray-900 mb-2">Lab Results</h5>
-                                        <p className="small text-muted mb-0 fw-medium">Monitor the status of diagnostic tests and review clinical reports.</p>
-                                    </Link>
-                                </div>
-                            </>
-                        )}
-                        
-                        {user.role === 'receptionist' && (
-                            <div className="col-md-4">
-                                <Link href="/patients" className="card border border-gray-100 bg-pink-50 p-5 rounded-2xl h-100 text-decoration-none shadow-hover transition-all">
-                                    <div className="bg-white rounded-xl p-3 avatar-lg d-flex align-items-center justify-content-center shadow-sm mb-4">
-                                        <i className="fas fa-users text-primary"></i>
-                                    </div>
-                                    <h5 className="fw-extrabold text-gray-900 mb-2">Patient Records</h5>
-                                    <p className="small text-muted mb-0 fw-medium">Register new patients and manage demographic information records.</p>
-                                </Link>
-                            </div>
-                        )}
+                    <div className="d-grid gap-2">
+                        {quickActions.map((action) => (
+                            <QuickActionCard key={action.label} {...action} />
+                        ))}
                     </div>
                 </div>
-            </div>
+            </RoleDashboardShell>
         </AuthenticatedLayout>
     );
 }

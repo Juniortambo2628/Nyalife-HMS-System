@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import DashboardSelect from '@/Components/DashboardSelect';
 import Modal from '@/Components/Modal';
 import QuickPatientModal from '@/Components/QuickPatientModal';
+import { formatPatientSelectLabel } from '@/Components/PatientTableCell';
 import axios from 'axios';
 import { useState } from 'react';
 
@@ -60,8 +61,11 @@ export default function Create({ preselected_patient_id, preselected_patient_lab
                                             <DashboardSelect 
                                                 asyncUrl="/patients/search"
                                                 value={data.patient_id}
-                                                onChange={val => setData('patient_id', val)}
-                                                initialLabel={quickPatientLabel || (data.patient_id ? `PAT-${data.patient_id}` : '')}
+                                                onChange={(val, opt) => {
+                                                    setData('patient_id', val);
+                                                    setQuickPatientLabel(opt?.label || formatPatientSelectLabel('', val));
+                                                }}
+                                                initialLabel={quickPatientLabel || formatPatientSelectLabel(preselected_patient_label, data.patient_id)}
                                                 placeholder="Search Patients..."
                                                 className={errors.patient_id ? 'is-invalid' : ''}
                                             />

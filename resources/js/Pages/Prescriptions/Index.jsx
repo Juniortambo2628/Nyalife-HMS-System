@@ -1,11 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
-import DashboardTable from '@/Components/DashboardTable';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import StatusBadge from '@/Components/StatusBadge';
-import DashboardSelect from '@/Components/DashboardSelect';
-import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import TableActions from '@/Components/TableActions';
+import { RefBadge, TableCellPrimary, TableCellStack, TableCellSub } from '@/Components/TableCells';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import PatientTableCell from '@/Components/PatientTableCell';
 import { useState, useMemo, useEffect } from 'react';
 
 export default function Index({ prescriptions, filters, auth }) {
@@ -18,6 +19,15 @@ export default function Index({ prescriptions, filters, auth }) {
         window.addEventListener('toolbar-clear-selection', handleClear);
         return () => window.removeEventListener('toolbar-clear-selection', handleClear);
     }, []);
+
+    const handleBulkAction = (action) => {
+        router.post(route('prescriptions.bulk-action'), {
+            action: action,
+            ids: selectedIds
+        }, {
+            onSuccess: () => setSelectedIds([]),
+        });
+    };
 
     const applyFilters = (searchValue, statusValue = status, quickFilterValue = filters?.quick_filter) => {
         router.get(route('prescriptions.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {
@@ -39,35 +49,36 @@ export default function Index({ prescriptions, filters, auth }) {
         {
             header: 'RX ID',
             accessorKey: 'prescription_id',
-            cell: ({ row }) => <span className="badge bg-light text-pink-500 fw-extrabold extra-small tracking-widest p-2 border border-pink-100 shadow-sm">RX-{String(row.original.prescription_id).padStart(5, '0')}</span>
+            cell: ({ row }) => (
+                <RefBadge>RX-{String(row.original.prescription_id).padStart(5, '0')}</RefBadge>
+            )
         },
         {
             header: 'Date',
             accessorKey: 'prescription_date',
-            cell: ({ row }) => <span className="extra-small fw-bold text-gray-500 text-uppercase">{row.original.prescription_date}</span>
+            cell: ({ row }) => (
+                <TableCellSub>{row.original.prescription_date}</TableCellSub>
+            )
         },
         {
             header: 'Patient',
             accessorKey: 'patient_id',
             cell: ({ row }) => (
-                <div>
-                    <div className="fw-bold text-gray-900">
-                        {row.original.patient?.user?.first_name} {row.original.patient?.user?.last_name}
-                    </div>
-                    <div className="extra-small text-muted fw-bold text-uppercase opacity-75">ID: PAT-{row.original.patient_id}</div>
-                </div>
+                <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
             )
         },
         {
             header: 'Medications',
             accessorKey: 'items',
             cell: ({ row }) => (
-                <div>
-                    <div className="text-truncate" style={{ maxWidth: '300px' }}>
-                        {row.original.items?.map(i => i.medication?.medication_name || 'Unknown').join(', ') || 'No items'}
-                    </div>
-                    <small className="text-muted">{row.original.items?.length || 0} items</small>
-                </div>
+                <TableCellStack
+                    primary={
+                        <span className="text-truncate d-inline-block nyl-text-constrained">
+                            {row.original.items?.map(i => i.medication?.medication_name || 'Unknown').join(', ') || 'No items'}
+                        </span>
+                    }
+                    secondary={`${row.original.items?.length || 0} items`}
+                />
             )
         },
         {
@@ -81,19 +92,19 @@ export default function Index({ prescriptions, filters, auth }) {
             header: 'Actions',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="d-flex justify-content-end gap-2">
-                    <Link href={route('prescriptions.show', row.original.prescription_id)} className="btn btn-sm btn-light border text-pink-500 rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center" title="View Details">
-                        <i className="fas fa-eye extra-small"></i>
-                    </Link>
-                    {auth.user.role === 'pharmacist' && row.original.status === 'pending' && (
-                        <button 
-                            className="btn btn-sm btn-light border text-success rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center"
-                            title="Dispense Medication"
-                        >
-                            <i className="fas fa-check-circle extra-small"></i>
-                        </button>
-                    )}
-                </div>
+                <TableActions actions={[
+                    {
+                        label: 'View details',
+                        icon: 'fa-eye',
+                        href: route('prescriptions.show', row.original.prescription_id),
+                    },
+                    auth.user.role === 'pharmacist' && row.original.status === 'pending' && {
+                        label: 'Dispense medication',
+                        icon: 'fa-check-circle',
+                        href: route('prescriptions.show', row.original.prescription_id),
+                        color: 'success',
+                    },
+                ].filter(Boolean)} />
             )
         }
     ], []);
@@ -106,42 +117,35 @@ export default function Index({ prescriptions, filters, auth }) {
             <Head title={auth.user.role === 'patient' ? 'My Prescriptions' : 'Pharmacy'} />
 
             <UnifiedToolbar 
-                viewOptions={[
-                    { label: 'LIST VIEW', icon: 'fa-list-ul', onClick: () => {} },
-                    { label: 'GRID VIEW', icon: 'fa-th-large', onClick: () => {} }
+                filterGroups={[
+                    {
+                        id: 'status',
+                        label: 'Status',
+                        emptyLabel: 'All statuses',
+                        value: status,
+                        onChange: handleStatusChange,
+                        options: [
+                            { label: 'Pending', value: 'pending' },
+                            { label: 'Dispensed', value: 'dispensed' },
+                            { label: 'Cancelled', value: 'cancelled' },
+                        ],
+                    },
+                    {
+                        id: 'patient_type',
+                        label: 'Patient type',
+                        emptyLabel: 'All RX',
+                        value: filters?.quick_filter || '',
+                        onChange: handleQuickFilterChange,
+                        options: [
+                            { label: 'Inpatient', value: 'inpatient' },
+                            { label: 'Outpatient', value: 'outpatient' },
+                        ],
+                    },
                 ]}
-                filters={
-                    <>
-                        <DashboardSelect 
-                            options={[
-                                { label: 'Pending', value: 'pending' },
-                                { label: 'Dispensed', value: 'dispensed' },
-                                { label: 'Cancelled', value: 'cancelled' },
-                            ]}
-                            value={status}
-                            onChange={handleStatusChange}
-                            placeholder="Status..."
-                            theme="dark"
-                            dropup={true}
-                        />
-                        <DashboardSelect 
-                            options={[
-                                { label: 'All RX', value: '' },
-                                { label: 'Inpatient', value: 'inpatient' },
-                                { label: 'Outpatient', value: 'outpatient' },
-                            ]}
-                            value={filters?.quick_filter}
-                            onChange={handleQuickFilterChange}
-                            placeholder="Patient Type..."
-                            theme="dark"
-                            dropup={true}
-                        />
-                    </>
-                }
                 bulkActions={[
-                    auth.user.role === 'pharmacist' && { label: 'DISPENSE ALL', icon: 'fa-check-double', onClick: () => console.log('Dispense', selectedIds) },
-                    { label: 'PRINT BATCH', icon: 'fa-print', onClick: () => console.log('Print', selectedIds) },
-                    { label: 'CANCEL SELECTED', icon: 'fa-times-circle', onClick: () => console.log('Cancel', selectedIds), color: 'danger' }
+                    auth.user.role === 'pharmacist' && { label: 'DISPENSE SELECTED', icon: 'fa-check-double', onClick: () => handleBulkAction('dispense') },
+                    { label: 'VOID SELECTED', icon: 'fa-ban', onClick: () => handleBulkAction('void'), color: 'danger' },
+                    { label: 'DELETE SELECTED', icon: 'fa-trash-alt', onClick: () => handleBulkAction('delete'), color: 'danger' }
                 ]}
                 selectionCount={selectedIds.length}
             />
@@ -160,7 +164,9 @@ export default function Index({ prescriptions, filters, auth }) {
                     ]}
                 />
 
-                <DashboardTable 
+                <RegistryTablePanel
+                    title="Prescription registry"
+                    icon="fa-pills"
                     columns={columns}
                     data={prescriptions.data}
                     pagination={prescriptions}

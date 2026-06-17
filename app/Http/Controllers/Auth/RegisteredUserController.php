@@ -8,7 +8,6 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -53,7 +52,7 @@ class RegisteredUserController extends Controller
                 'last_name' => $input['last_name'],
                 'username' => $input['username'],
                 'phone' => $input['phone'],
-                'password' => Hash::make($input['password']),
+                'password' => $input['password'],
                 'status' => 'active',
                 'is_active' => true,
             ]);
@@ -69,7 +68,7 @@ class RegisteredUserController extends Controller
                 'username' => $input['username'],
                 'email' => $input['email'],
                 'phone' => $input['phone'],
-                'password' => Hash::make($input['password']),
+                'password' => $input['password'],
                 'role_id' => 1, // Default to patient
                 'status' => 'active',
                 'is_active' => true,

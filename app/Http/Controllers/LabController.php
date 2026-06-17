@@ -7,6 +7,7 @@ use App\Http\Resources\LabTestRequestResource;
 use App\Models\LabTestRequest;
 use App\Models\LabTestType;
 use App\Models\Patient;
+use App\Support\Permissions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -14,10 +15,12 @@ use App\Services\ActivityLogger;
 
 class LabController extends Controller
 {
-    public function requests(Request $request)
+    /**
+     * Base query scoped to the authenticated user's lab access.
+     */
+    private function scopedRequestsQuery(?\App\Models\User $user)
     {
-        $user = Auth::user();
-        $query = LabTestRequest::with(['patient.user', 'doctor.user', 'testType']);
+        $query = LabTestRequest::query();
 
         if ($user && $user->role === 'patient') {
             $patient = Patient::where('user_id', $user->user_id)->first();
@@ -25,9 +28,34 @@ class LabController extends Controller
                 $query->where('patient_id', $patient->patient_id);
             }
         } elseif ($user && $user->role === 'doctor') {
-            // Lab requests are tracked by the user who requested them
             $query->where('requested_by', $user->user_id);
         }
+
+        return $query;
+    }
+
+    private function labRequestStats(?\App\Models\User $user): array
+    {
+        $base = $this->scopedRequestsQuery($user);
+
+        return [
+            'pending' => (clone $base)->where('status', 'pending')->count(),
+            'processing' => (clone $base)->where('status', 'processing')->count(),
+            'completed' => (clone $base)->whereIn('status', ['verified', 'completed'])->count(),
+            'urgent' => (clone $base)->where('priority', 'urgent')->whereIn('status', ['pending', 'processing'])->count(),
+        ];
+    }
+
+    public function requests(Request $request)
+    {
+        $user = Auth::user();
+        $query = $this->scopedRequestsQuery($user)->with([
+            'patient.user',
+            'doctor.user',
+            'testType',
+            'assignedTo',
+            'verifiedBy',
+        ]);
 
         if ($request->has('consultation_id')) {
             $query->where('consultation_id', $request->consultation_id);
@@ -62,9 +90,7 @@ class LabController extends Controller
         return Inertia::render('Lab/Index', [
             'requests' => LabTestRequestResource::collection($query->latest()->paginate(15)),
             'filters' => (object) $request->only(['search', 'status', 'quick_filter']),
-            'auth' => [
-                'user' => Auth::user()
-            ]
+            'stats' => $this->labRequestStats($user),
         ]);
     }
 
@@ -100,48 +126,120 @@ class LabController extends Controller
             'tests' => $query->paginate(10)->withQueryString(),
             'filters' => $request->only(['search', 'sort', 'direction']),
             'categories' => $labCategories,
-            'auth' => [
-                'user' => Auth::user()
-            ]
         ]);
     }
 
     public function manage(Request $request)
     {
-        $query = LabTestType::query();
+        return redirect()->route('lab.tests', $request->query());
+    }
 
-        if ($request->has('search') && $request->search) {
-            $query->where('test_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('category', 'like', '%' . $request->search . '%');
+    public function results(Request $request)
+    {
+        $user = Auth::user();
+        $query = LabTestRequest::with(['patient.user', 'testType', 'doctor.user'])
+            ->whereIn('status', ['verified', 'completed']);
+
+        if ($user && $user->role === 'patient') {
+            $patient = Patient::where('user_id', $user->user_id)->first();
+            abort_unless($patient, 403);
+            $query->where('patient_id', $patient->patient_id);
+        } elseif ($user && $user->role === 'doctor') {
+            $query->where('requested_by', $user->user_id);
         }
 
-        return Inertia::render('Lab/Tests/Index', [
-            'tests' => $query->latest()->get(),
-            'filters' => $request->only(['search'])
+        $results = $query
+            ->searchByPatientName($request->search)
+            ->when($request->request_number, fn ($q) => $q->where('request_number', 'like', '%' . $request->request_number . '%'))
+            ->latest('completed_at')
+            ->latest('request_id')
+            ->paginate(15)
+            ->withQueryString();
+
+        return Inertia::render('LabResults/Index', [
+            'results' => LabTestRequestResource::collection($results),
+            'filters' => $request->only(['search', 'request_number']),
         ]);
     }
 
-    public function results()
+    public function resultShow($id)
     {
-        return Inertia::render('LabResults/Index');
+        $labRequest = LabTestRequest::with(['patient.user', 'testType', 'doctor.user', 'verifiedBy'])
+            ->findOrFail($id);
+
+        $this->authorizeLabResultAccess($labRequest);
+        abort_unless(in_array($labRequest->status, ['verified', 'completed']), 404, 'Results not yet available.');
+
+        return Inertia::render('LabResults/Show', [
+            'request' => LabTestRequestResource::make($labRequest),
+        ]);
+    }
+
+    public function resultDownload($id)
+    {
+        $labRequest = LabTestRequest::findOrFail($id);
+        $this->authorizeLabResultAccess($labRequest);
+        abort_unless(in_array($labRequest->status, ['verified', 'completed']), 404);
+
+        return redirect()->route('lab.print', $labRequest->request_id);
+    }
+
+    private function authorizeLabResultAccess(LabTestRequest $labRequest): void
+    {
+        $user = Auth::user();
+
+        if ($user?->hasAnyPermission([
+            Permissions::MANAGE_LAB,
+            Permissions::MANAGE_PATIENTS,
+            Permissions::MANAGE_APPOINTMENTS,
+        ])) {
+            return;
+        }
+
+        if ($user?->can(Permissions::MANAGE_CONSULTATIONS)) {
+            abort_unless(
+                $labRequest->requested_by === $user->user_id
+                || ($labRequest->doctor && $labRequest->doctor->user_id === $user->user_id),
+                403
+            );
+
+            return;
+        }
+
+        $this->requireStaffOrOwnPatient($labRequest->patient_id);
+
+        if ($this->isPatientPortalUser()) {
+            abort_unless(in_array($labRequest->status, ['verified', 'completed'], true), 403);
+        }
     }
 
     public function show($id)
     {
-        $request = LabTestRequest::with(['patient.user', 'doctor.user', 'testType', 'consultation'])
-            ->findOrFail($id);
+        $request = LabTestRequest::with([
+            'patient.user',
+            'doctor.user',
+            'testType',
+            'consultation',
+            'requestedBy',
+            'assignedTo',
+            'verifiedBy',
+        ])->findOrFail($id);
+
+        $this->requireStaffOrOwnPatient(
+            $request->patient_id,
+            Permissions::MANAGE_LAB,
+            Permissions::MANAGE_PATIENTS,
+            Permissions::MANAGE_APPOINTMENTS
+        );
 
         return Inertia::render('Lab/Show', [
             'request' => LabTestRequestResource::make($request)
         ]);
     }
 
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(UpdateLabRequestStatusRequest $request, $id)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:pending,processing,pending_verification,verified,completed,cancelled',
-            'results' => 'nullable|array'
-        ]);
+        $validated = $request->validated();
 
         $labRequest = LabTestRequest::findOrFail($id);
         
@@ -197,5 +295,75 @@ class LabController extends Controller
             'clinic_address' => 'Nairobi, Kenya',
             'clinic_phone' => '+254 700 000 000'
         ]);
+    }
+
+    /**
+     * Handle bulk actions on lab requests.
+     */
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:complete,cancel,delete',
+            'ids'    => 'required|array|min:1',
+            'ids.*'  => 'integer',
+        ]);
+
+        $ids    = $validated['ids'];
+        $action = $validated['action'];
+        $count  = count($ids);
+
+        switch ($action) {
+            case 'complete':
+                $labRequests = LabTestRequest::whereIn('request_id', $ids)->get();
+                $updatedCount = 0;
+                foreach ($labRequests as $labReq) {
+                    if ($labReq->status !== 'completed' && $labReq->status !== 'cancelled') {
+                        $labReq->update([
+                            'status' => 'completed',
+                            'completed_at' => now(),
+                            'assigned_to' => Auth::id(),
+                        ]);
+                        ActivityLogger::log(
+                            'lab',
+                            "Lab request #{$labReq->request_id} bulk completed",
+                            ['request_id' => $labReq->request_id, 'status' => 'completed'],
+                            Auth::user(),
+                            $labReq,
+                            [$labReq->requested_by, $labReq->patient->user_id, 1]
+                        );
+                        $updatedCount++;
+                    }
+                }
+                return redirect()->back()->with('success', "{$updatedCount} lab request(s) completed.");
+
+            case 'cancel':
+                $labRequests = LabTestRequest::whereIn('request_id', $ids)->get();
+                $updatedCount = 0;
+                foreach ($labRequests as $labReq) {
+                    if ($labReq->status !== 'completed' && $labReq->status !== 'cancelled') {
+                        $labReq->update([
+                            'status' => 'cancelled',
+                        ]);
+                        ActivityLogger::log(
+                            'lab',
+                            "Lab request #{$labReq->request_id} bulk cancelled",
+                            ['request_id' => $labReq->request_id, 'status' => 'cancelled'],
+                            Auth::user(),
+                            $labReq,
+                            [$labReq->requested_by, $labReq->patient->user_id, 1]
+                        );
+                        $updatedCount++;
+                    }
+                }
+                return redirect()->back()->with('success', "{$updatedCount} lab request(s) cancelled.");
+
+            case 'delete':
+                $deletedCount = LabTestRequest::whereIn('request_id', $ids)
+                    ->where('status', '!=', 'completed')
+                    ->delete();
+                return redirect()->back()->with('success', "{$deletedCount} lab request(s) deleted.");
+        }
+
+        return redirect()->back()->with('error', 'Unknown bulk action.');
     }
 }

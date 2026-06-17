@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('lab_test_requests') || Schema::hasColumn('lab_test_requests', 'doctor_id')) {
+            return;
+        }
+
         Schema::table('lab_test_requests', function (Blueprint $table) {
             $table->integer('doctor_id')->nullable()->after('patient_id');
         });

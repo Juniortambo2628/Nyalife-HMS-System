@@ -19,7 +19,14 @@ class PrescriptionItem extends Model
         'frequency',
         'quantity',
         'duration',
-        'instructions'
+        'instructions',
+        'status',
+        'dispensed_by',
+        'dispensed_at',
+    ];
+
+    protected $casts = [
+        'dispensed_at' => 'datetime',
     ];
 
     public function prescription()

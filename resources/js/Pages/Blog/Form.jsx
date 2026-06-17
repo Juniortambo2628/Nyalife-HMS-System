@@ -1,10 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
+import { resolvePublicImageUrl } from '@/Utils/imageUtils';
 
 export default function Form({ blog = null }) {
     const isEditing = !!blog;
@@ -31,18 +31,14 @@ export default function Form({ blog = null }) {
 
     return (
         <AuthenticatedLayout
-            header={isEditing ? 'Edit Blog Post' : 'Create Blog Post'}
+            headerTitle={isEditing ? 'Update Article' : 'Write New Article'}
+            breadcrumbs={[
+                { label: 'Admin', url: '/dashboard' },
+                { label: 'Blogs', url: route('blog.manage') },
+                { label: isEditing ? 'Edit' : 'Create', active: true },
+            ]}
         >
             <Head title={isEditing ? 'Edit Post' : 'New Post'} />
-
-            <PageHeader 
-                title={isEditing ? 'Update Article' : 'Write New Article'}
-                breadcrumbs={[
-                    { label: 'Admin', url: '/dashboard' }, 
-                    { label: 'Blogs', url: route('blog.manage') },
-                    { label: isEditing ? 'Edit' : 'Create', active: true }
-                ]}
-            />
 
             <div className="py-0">
                 <div className="card shadow-sm border-0 rounded-2xl overflow-hidden bg-white p-5">
@@ -99,7 +95,7 @@ export default function Form({ blog = null }) {
                             {blog?.image_path && (
                                 <div className="mt-2 p-2 border rounded-xl bg-light">
                                     <small className="text-muted d-block mb-1">Current Image:</small>
-                                    <img src={`/storage/${blog.image_path}`} className="rounded shadow-sm" style={{ maxHeight: '100px' }} />
+                                    <img src={resolvePublicImageUrl(blog.image_path)} className="rounded shadow-sm" style={{ maxHeight: '100px' }} />
                                 </div>
                             )}
                             <InputError message={errors.image} className="mt-2" />

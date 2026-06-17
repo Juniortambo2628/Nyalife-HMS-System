@@ -39,3 +39,39 @@ export const formatDateTime = (dateString, options = {}) => {
 export const formatDateOnly = (dateString) => {
     return formatDateTime(dateString, { hour: undefined, minute: undefined });
 };
+
+/**
+ * Long-form date, e.g. Monday, 25 May 2026
+ */
+export const formatDateLong = (dateString, locale = 'en-KE') => {
+    if (!dateString) return '—';
+
+    try {
+        return new Intl.DateTimeFormat(locale, {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        }).format(new Date(dateString));
+    } catch {
+        return dateString;
+    }
+};
+
+/**
+ * Time only, e.g. 10:45 AM
+ */
+export const formatTime = (dateString, options = {}) => {
+    if (!dateString) return '—';
+
+    try {
+        return new Intl.DateTimeFormat('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+            ...options,
+        }).format(new Date(dateString));
+    } catch {
+        return dateString;
+    }
+};

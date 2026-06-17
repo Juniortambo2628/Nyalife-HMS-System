@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,6 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('lab_test_requests')) {
+            return;
+        }
+
+        $priority = collect(DB::select("SHOW COLUMNS FROM lab_test_requests WHERE Field = 'priority'"))->first();
+        if ($priority && str_contains(strtolower($priority->Type ?? ''), 'varchar(20)')) {
+            return;
+        }
+
         Schema::table('lab_test_requests', function (Blueprint $table) {
             $table->string('priority', 20)->default('normal')->change();
             $table->string('status', 20)->default('pending')->change();

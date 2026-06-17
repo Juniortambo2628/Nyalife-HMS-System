@@ -19,8 +19,12 @@ class StaffResource extends JsonResource
             'user_id' => $this->user_id,
             'specialization' => $this->specialization,
             'department' => $this->department,
+            'department_id' => $this->department_id,
+            'department_name' => $this->departmentRelation?->department_name ?? $this->department,
             'license_number' => $this->license_number,
+            'position' => $this->position,
             'user' => $this->whenLoaded('user', fn () => new UserResource($this->user)),
+            'department_relation' => $this->whenLoaded('departmentRelation', fn () => DepartmentResource::make($this->departmentRelation)),
         ];
     }
 }

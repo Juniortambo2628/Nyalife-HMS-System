@@ -1,0 +1,1 @@
+function u({total:e,totalLabel:r="Total",totalIcon:l="fa-chart-bar",totalColor:t="primary",byKey:c={},labelFormatter:o=a=>a.replace(/_/g," "),icon:i="fa-circle",color:n="info"}={}){const a=[{label:r,value:e,icon:l,color:t}];return Object.entries(c).forEach(([b,s])=>{a.push({label:o(b),value:s,icon:i,color:n})}),a}export{u as b};

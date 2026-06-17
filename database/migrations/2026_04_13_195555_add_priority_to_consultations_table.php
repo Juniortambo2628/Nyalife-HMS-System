@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('consultations') || Schema::hasColumn('consultations', 'priority')) {
+            return;
+        }
+
         Schema::table('consultations', function (Blueprint $table) {
             $table->enum('priority', ['normal', 'emergency'])->default('normal')->after('consultation_status');
         });

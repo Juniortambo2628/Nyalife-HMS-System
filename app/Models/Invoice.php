@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
+use Illuminate\Database\Eloquent\Builder;
+
 class Invoice extends Model
 {
     use HasFactory, LogsActivity;
@@ -24,6 +26,7 @@ class Invoice extends Model
     protected $fillable = [
         'patient_id',
         'consultation_id',
+        'doctor_id',
         'invoice_number',
         'invoice_date',
         'due_date',
@@ -33,8 +36,39 @@ class Invoice extends Model
         'status',
         'payment_method',
         'notes',
-        'created_by'
+        'created_by',
+        'insurance_claim_id',
+        'insurance_coverage',
+        'patient_responsibility',
+        'is_voided',
+        'void_reason',
+        'voided_by',
+        'voided_at'
     ];
+
+    protected $casts = [
+        'invoice_date' => 'date',
+        'due_date' => 'date',
+        'total_amount' => 'decimal:2',
+        'discount' => 'decimal:2',
+        'tax' => 'decimal:2',
+        'insurance_coverage' => 'decimal:2',
+        'patient_responsibility' => 'decimal:2',
+        'voided_at' => 'datetime',
+        'is_voided' => 'boolean',
+    ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope('not_voided', function (Builder $builder) {
+            $builder->where('is_voided', false);
+        });
+    }
+
+    public function voidedBy()
+    {
+        return $this->belongsTo(User::class, 'voided_by', 'user_id');
+    }
 
     public function patient()
     {
@@ -51,7 +85,12 @@ class Invoice extends Model
         return $this->belongsTo(Consultation::class, 'consultation_id', 'consultation_id');
     }
 
-    public function scopeSearchByPatientOrNumber($query, $search)
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'invoice_id', 'invoice_id');
+    }
+
+    public function scopeSearchByPatientOrNumber(Builder $query, ?string $search): Builder
     {
         if (empty($search)) {
             return $query;
@@ -64,7 +103,7 @@ class Invoice extends Model
         });
     }
 
-    public function scopeStatus($query, $status)
+    public function scopeStatus(Builder $query, ?string $status): Builder
     {
         if (empty($status)) {
             return $query;

@@ -1,6 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import DashboardSelect from '@/Components/DashboardSelect';
 import QuickMedicationModal from '@/Components/QuickMedicationModal';
@@ -41,16 +40,14 @@ export default function Create({ preselected_patient_id, preselected_patient_lab
     };
 
     return (
-        <AuthenticatedLayout header="New Prescription">
+        <AuthenticatedLayout
+            headerTitle="Prescription Form"
+            breadcrumbs={[
+                { label: 'Pharmacy', url: route('prescriptions.index') },
+                { label: 'New Prescription', active: true },
+            ]}
+        >
             <Head title="Create Prescription" />
-
-            <PageHeader 
-                title="Prescription Form"
-                breadcrumbs={[
-                    { label: 'Pharmacy', url: route('prescriptions.index') },
-                    { label: 'New Prescription', active: true }
-                ]}
-            />
 
             <div className="container-fluid px-0">
                 <form onSubmit={submit} className="row g-4">

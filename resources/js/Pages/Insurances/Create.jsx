@@ -1,6 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import { FilePond, registerPlugin } from 'react-filepond';
 import 'filepond/dist/filepond.min.css';
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
@@ -23,17 +22,15 @@ export default function Create() {
     };
 
     return (
-        <AuthenticatedLayout>
+        <AuthenticatedLayout
+            headerTitle="Add Insurance Provider"
+            breadcrumbs={[
+                { label: 'Dashboard', url: '/dashboard' },
+                { label: 'Insurances', url: route('insurances.index') },
+                { label: 'Add New', active: true },
+            ]}
+        >
             <Head title="Add Insurance Provider" />
-            
-            <PageHeader 
-                title="Add Insurance Provider"
-                breadcrumbs={[
-                    { label: 'Dashboard', url: '/dashboard' },
-                    { label: 'Insurances', url: route('insurances.index') },
-                    { label: 'Add New', active: true }
-                ]}
-            />
 
             <div className="container-fluid pb-5">
                 <div className="row justify-content-center">

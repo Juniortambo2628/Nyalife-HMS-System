@@ -1,5 +1,7 @@
 import { Link, Head } from '@inertiajs/react';
 import React from 'react';
+import { resolvePublicImageUrl } from '@/Utils/imageUtils';
+import { formatDateOnly } from '@/Utils/dateUtils';
 
 export default function Show({ blog }) {
     return (
@@ -25,7 +27,7 @@ export default function Show({ blog }) {
                 <div className="bg-white border-bottom mb-10 overflow-hidden" style={{ maxHeight: '500px' }}>
                     <div className="container px-0 mx-auto">
                         <img 
-                            src={blog.image_path ? (blog.image_path.includes('/assets/img/') || blog.image_path.startsWith('http') ? blog.image_path : `/storage/${blog.image_path.replace(/^\//, '')}`) : '/assets/img/logo/Logo2-transparent.png'} 
+                            src={resolvePublicImageUrl(blog.image_path, '/assets/img/logo/Logo2-transparent.png')} 
                             alt={blog.title}
                             className={`w-100 h-100 ${blog.image_path ? 'object-fit-cover' : 'object-fit-contain p-20 bg-light'}`}
                             style={{ minHeight: '400px' }}
@@ -36,7 +38,7 @@ export default function Show({ blog }) {
 
                 <div className="container px-4 mx-auto">
                     <div className="max-w-4xl mx-auto">
-                        <div className="card border-0 shadow-lg rounded-3xl mt-n10 position-relative bg-white p-6 p-md-10">
+                        <div className="card border-0 shadow-lg rounded-3xl mt-n10 position-relative bg-white p-4 p-md-5">
                             <div className="mb-4 d-flex flex-wrap gap-2">
                                 {blog.tags?.map(tag => (
                                     <span key={tag} className="badge bg-pink-100 text-pink-600 px-3 py-2 rounded-pill font-bold">
@@ -54,7 +56,7 @@ export default function Show({ blog }) {
                                 <div>
                                     <div className="fw-bold text-gray-900">{blog.author?.first_name} {blog.author?.last_name}</div>
                                     <div className="text-muted small">
-                                        <i className="far fa-calendar-alt me-1"></i> {new Date(blog.published_at || blog.created_at).toLocaleDateString()}
+                                        <i className="far fa-calendar-alt me-1"></i> {formatDateOnly(blog.published_at || blog.created_at)}
                                     </div>
                                 </div>
                             </div>
@@ -71,9 +73,9 @@ export default function Show({ blog }) {
                                 </Link>
                                 <div className="d-flex gap-3">
                                     <span className="small text-muted me-2">Share:</span>
-                                    <a href="#" className="text-primary"><i className="fab fa-facebook fa-lg"></i></a>
-                                    <a href="#" className="text-info"><i className="fab fa-twitter fa-lg"></i></a>
-                                    <a href="#" className="text-danger"><i className="fas fa-envelope fa-lg"></i></a>
+                                    <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="text-primary"><i className="fab fa-facebook fa-lg"></i></a>
+                                    <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(blog.title)}`} target="_blank" rel="noopener noreferrer" className="text-info"><i className="fab fa-twitter fa-lg"></i></a>
+                                    <a href={`mailto:?subject=${encodeURIComponent(blog.title)}&body=${encodeURIComponent(window.location.href)}`} className="text-danger"><i className="fas fa-envelope fa-lg"></i></a>
                                 </div>
                             </div>
                         </div>

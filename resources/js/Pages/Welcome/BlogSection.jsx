@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
+import { resolvePublicImageUrl } from '@/Utils/imageUtils';
 
 export default function BlogSection({ blogs }) {
     return (
@@ -17,7 +18,7 @@ export default function BlogSection({ blogs }) {
                             <div className="card h-100 border-0 shadow-sm rounded-2xl overflow-hidden transition-all hover-lift">
                                 <div className="position-relative bg-light h-[220px]">
                                     <img 
-                                        src={blog.image_path ? (blog.image_path.includes('/assets/img/') || blog.image_path.startsWith('http') ? blog.image_path : `/storage/${blog.image_path.replace(/^\//, '')}`) : '/assets/img/logo/Logo2-transparent.png'} 
+                                        src={resolvePublicImageUrl(blog.image_path, '/assets/img/logo/Logo2-transparent.png')} 
                                         className={`w-100 h-100 ${blog.image_path ? 'object-fit-cover' : 'object-fit-contain p-5'}`}
                                         alt={blog.title}
                                         onError={(e) => { e.target.src = '/assets/img/logo/Logo2-transparent.png'; e.target.className = 'w-100 h-100 object-fit-contain p-5 opacity-50'; }}

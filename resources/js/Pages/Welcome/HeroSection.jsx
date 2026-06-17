@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
+import { resolvePublicImageUrl } from '@/Utils/imageUtils';
 
 export default function HeroSection({ cms, isLoggedIn }) {
     const slides = [
@@ -16,15 +17,6 @@ export default function HeroSection({ cms, isLoggedIn }) {
         { title: 'Pharmacy', icon: 'fa-pills' }
     ];
 
-    const getImageUrl = (path) => {
-        if (!path) return '';
-        if (path.startsWith('cms/') || !path.startsWith('/')) {
-            const cleanPath = path.replace(/^\/storage\//, '').replace(/^cms\//, 'cms/');
-            return `/storage/${cleanPath}`;
-        }
-        return path;
-    };
-
     return (
         <section className="hero-modern min-vh-50 w-100 position-relative d-flex align-items-center section-rhythm-sm">
             {/* Background Slides with Stronger Overlay */}
@@ -34,7 +26,7 @@ export default function HeroSection({ cms, isLoggedIn }) {
                         key={`slide-${idx}`} 
                         className={`hero-slide position-absolute w-100 h-100 ${idx === 0 ? 'active' : ''}`}
                         style={{ 
-                            backgroundImage: `url(${getImageUrl(slide)})`,
+                            backgroundImage: `url(${resolvePublicImageUrl(slide)})`,
                         }}
                     ></div>
                 ))}

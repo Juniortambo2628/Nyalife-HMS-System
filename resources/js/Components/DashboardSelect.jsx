@@ -92,8 +92,10 @@ export default function DashboardSelect({
     const triggerTextColor = (isOpen || value) ? 'text-pink-500' : 'text-pink-500';
     const triggerBgColor = (isOpen || value) ? 'bg-white' : (isDark ? 'bg-white bg-opacity-20 hover-bg-opacity-30' : 'bg-white');
 
+    const hasValue = !!value;
+
     return (
-        <div className={`dashboard-select-container position-relative ${className}`} ref={dropdownRef} style={style}>
+        <div className={`dashboard-select-container position-relative ${isOpen ? 'is-open' : ''} ${hasValue ? 'has-value' : ''} ${className}`} ref={dropdownRef} style={style}>
             {/* Trigger Area */}
             <div 
                 className={`form-control border-0 rounded-pill py-2 px-4 d-flex justify-content-between align-items-center cursor-pointer transition-all shadow-sm nyl-select-trigger ${isOpen ? 'ring-2 ring-primary ring-opacity-20' : ''} ${triggerBgColor} ${triggerTextColor} ${!isDark && !isOpen && !value ? 'border' : ''}`}

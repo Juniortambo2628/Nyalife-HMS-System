@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Modal from '@/Components/Modal';
+import { formatPatientSelectLabel } from '@/Components/PatientTableCell';
 
 export default function QuickPatientModal({ show, onClose, onSuccess }) {
     const [formData, setFormData] = useState({
@@ -27,7 +28,7 @@ export default function QuickPatientModal({ show, onClose, onSuccess }) {
             if (response.data.success) {
                 onSuccess({
                     value: response.data.patient_id,
-                    label: response.data.full_name,
+                    label: response.data.select_label || formatPatientSelectLabel(response.data.full_name, response.data.patient_id),
                     gender: response.data.gender
                 });
                 onClose();

@@ -104,6 +104,34 @@ class CMSSettingsSeeder extends Seeder
                 'label' => 'Clinic Physical Address'
             ],
             [
+                'key' => 'contact_hours',
+                'value' => 'Mon – Sat: 8:00 AM – 6:00 PM',
+                'type' => 'text',
+                'group' => 'contact',
+                'label' => 'Clinic Hours'
+            ],
+            [
+                'key' => 'contact_maps_url',
+                'value' => 'https://maps.google.com/?q=Nyalife+Women%27s+Clinic+Athi+River',
+                'type' => 'text',
+                'group' => 'contact',
+                'label' => 'Google Maps Directions URL'
+            ],
+            [
+                'key' => 'instagram_url',
+                'value' => 'https://www.instagram.com/nyalife_womenshealth',
+                'type' => 'text',
+                'group' => 'contact',
+                'label' => 'Instagram Profile URL'
+            ],
+            [
+                'key' => 'linkedin_url',
+                'value' => 'https://www.linkedin.com/company/nyalife-women-s-health/',
+                'type' => 'text',
+                'group' => 'contact',
+                'label' => 'LinkedIn Profile URL'
+            ],
+            [
                 'key' => 'contact_bg_image',
                 'value' => '/assets/img/slider/footer-bg1.jpg',
                 'type' => 'image',

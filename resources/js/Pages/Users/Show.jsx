@@ -1,23 +1,19 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import { formatDateOnly } from '@/Utils/dateUtils';
 
 export default function Show({ user }) {
     return (
         <AuthenticatedLayout
-            header="User Profile"
+            headerTitle={`${user.first_name} ${user.last_name}`}
+            breadcrumbs={[
+                { label: 'Admin', url: route('dashboard') },
+                { label: 'Users Registry', url: route('users.index') },
+                { label: 'Staff Profile', active: true },
+            ]}
         >
             <Head title={`User: ${user.first_name || 'Profile'}`} />
-
-            <PageHeader 
-                title={`${user.first_name} ${user.last_name}`}
-                breadcrumbs={[
-                    { label: 'Admin', url: route('dashboard') },
-                    { label: 'Users Registry', url: route('users.index') },
-                    { label: 'Staff Profile', active: true }
-                ]}
-            />
 
             <div className="py-4 h-auto">
                 <div className="row g-4">
@@ -41,7 +37,7 @@ export default function Show({ user }) {
                                 </div>
                                 <div className="col-6">
                                     <small className="text-gray-400 font-bold uppercase text-xs d-block mb-1">Joined Date</small>
-                                    <p className="fw-medium">{new Date(user.created_at).toLocaleDateString()}</p>
+                                    <p className="fw-medium">{formatDateOnly(user.created_at)}</p>
                                 </div>
                             </div>
                         </div>

@@ -3,12 +3,15 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState, useMemo, useEffect } from 'react';
 import InfoModal from '@/Components/InfoModal';
 import ViewToggle from '@/Components/ViewToggle';
-import DashboardSelect from '@/Components/DashboardSelect';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import StatusBadge from '@/Components/StatusBadge';
 import TableActions from '@/Components/TableActions';
+import { RefBadge, TableCellStack, TableDateTimeCell, TableDoctorCell } from '@/Components/TableCells';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import GridCardActions from '@/Components/GridCardActions';
+import { PatientIdLabel } from '@/Components/PatientTableCell';
 
 export default function Index({ appointments, filters, auth }) {
     const [view, setView] = useState(() => localStorage.getItem('appointments_view') || 'list');
@@ -51,6 +54,15 @@ export default function Index({ appointments, filters, auth }) {
         localStorage.setItem('appointments_view', newView);
     };
 
+    const handleBulkAction = (action) => {
+        router.post(route('appointments.bulk-action'), {
+            action: action,
+            ids: selectedIds
+        }, {
+            onSuccess: () => setSelectedIds([]),
+        });
+    };
+
     const handleAsyncChange = (name, val) => {
         const newData = { ...filterData, [name]: val };
         setFilterData(newData);
@@ -89,10 +101,10 @@ export default function Index({ appointments, filters, auth }) {
             header: 'Date & Time',
             accessorKey: 'appointment_date',
             cell: ({ row }) => (
-                <div className="px-1">
-                    <div className="fw-bold text-gray-900">{row.original.appointment_date}</div>
-                    <small className="text-muted font-bold extra-small text-uppercase opacity-75">{row.original.appointment_time || 'N/A'}</small>
-                </div>
+                <TableDateTimeCell
+                    date={row.original.appointment_date}
+                    time={row.original.appointment_time || 'N/A'}
+                />
             )
         },
         {
@@ -110,7 +122,7 @@ export default function Index({ appointments, filters, auth }) {
                             {row.original.patient?.user?.first_name || 'Unknown'} {row.original.patient?.user?.last_name || 'Patient'}
                             {age !== null && <span className="text-muted fw-normal ms-1 small">({age}Y)</span>}
                         </div>
-                        <div className="extra-small text-muted font-bold text-uppercase opacity-75">ID: PAT-{row.original.patient_id}</div>
+                        <PatientIdLabel id={row.original.patient_id} />
                     </div>
                 );
             }
@@ -119,12 +131,7 @@ export default function Index({ appointments, filters, auth }) {
             header: 'Doctor',
             accessorKey: 'doctor_id',
             cell: ({ row }) => (
-                <div>
-                    <div className="fw-bold text-gray-800 small">
-                        Dr. {row.original.doctor?.user?.first_name || 'Unknown'} {row.original.doctor?.user?.last_name || 'Doctor'}
-                    </div>
-                    <div className="extra-small text-muted font-bold text-uppercase opacity-50 tracking-tight">{row.original.doctor?.specialization || 'Clinical'}</div>
-                </div>
+                <TableDoctorCell doctor={row.original.doctor} fallback="Doctor" />
             )
         },
         {
@@ -160,6 +167,11 @@ export default function Index({ appointments, filters, auth }) {
             show: false,
             appointment: null,
         });
+    };
+
+    const visitPrescription = (prescriptionId) => {
+        closeModal();
+        router.visit(route('prescriptions.show', prescriptionId));
     };
 
     const getAppointmentTabs = (apt) => {
@@ -204,7 +216,7 @@ export default function Index({ appointments, filters, auth }) {
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                        <div className="nyl-content-box nyl-content-box--muted">
                             <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3">Reason for Visit</h4>
                             <p className="text-gray-800 font-medium mb-0">{apt.reason || 'Not specified'}</p>
                         </div>
@@ -291,7 +303,13 @@ export default function Index({ appointments, filters, auth }) {
                                                 <div className="text-xs text-gray-500">{p.prescription_date}</div>
                                             </div>
                                         </div>
-                                        <Link href={route('prescriptions.show', p.prescription_id)} className="btn btn-sm btn-light border text-primary font-bold px-3 py-1 rounded-lg">View</Link>
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm btn-light border text-primary font-bold px-3 py-1 rounded-lg"
+                                            onClick={() => visitPrescription(p.prescription_id)}
+                                        >
+                                            View
+                                        </button>
                                     </div>
                                 ))}
                             </div>
@@ -313,87 +331,71 @@ export default function Index({ appointments, filters, auth }) {
         <AuthenticatedLayout
             headerTitle="Appointments Ledger"
             breadcrumbs={[{ label: 'Appointments', active: true }]}
-            headerActions={auth.user.role !== 'patient' && (
-                <div className="d-flex gap-2">
-                    <Link href={route('appointments.calendar')} className="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                        <i className="fas fa-calendar-alt me-2"></i> Calendar
-                    </Link>
-                </div>
-            )}
         >
             <Head title="Appointments" />
 
 
 
             <UnifiedToolbar 
-                viewOptions={[
-                    { 
-                        label: 'LIST VIEW', 
-                        icon: 'fa-list-ul', 
-                        onClick: () => handleViewChange('list'),
-                        color: view === 'list' ? 'pink-500' : 'gray-400'
+                viewMode={view}
+                onViewModeChange={handleViewChange}
+                filterGroups={[
+                    {
+                        id: 'status',
+                        label: 'Status',
+                        emptyLabel: 'All status',
+                        value: filterData.status,
+                        onChange: (val) => handleAsyncChange('status', val),
+                        options: [
+                            { label: 'Scheduled', value: 'scheduled' },
+                            { label: 'Confirmed', value: 'confirmed' },
+                            { label: 'Arrived', value: 'arrived' },
+                            { label: 'Completed', value: 'completed' },
+                            { label: 'Cancelled', value: 'cancelled' },
+                            { label: 'No Show', value: 'no_show' },
+                        ],
                     },
-                    { 
-                        label: 'GRID VIEW', 
-                        icon: 'fa-th-large', 
-                        onClick: () => handleViewChange('grid'),
-                        color: view === 'grid' ? 'pink-500' : 'gray-400'
-                    }
+                    {
+                        id: 'type',
+                        label: 'Type',
+                        emptyLabel: 'All types',
+                        value: filterData.quick_filter,
+                        onChange: handleQuickFilterChange,
+                        options: [
+                            { label: 'Consultation', value: 'consultation' },
+                            { label: 'Follow-up', value: 'followup' },
+                            { label: 'Procedure', value: 'procedure' },
+                        ],
+                    },
                 ]}
-                filters={
-                    <>
-                        <DashboardSelect 
-                            options={[
-                                { label: 'All Status', value: '' },
-                                { label: 'Scheduled', value: 'scheduled' },
-                                { label: 'Confirmed', value: 'confirmed' },
-                                { label: 'Arrived', value: 'arrived' },
-                                { label: 'Completed', value: 'completed' },
-                                { label: 'Cancelled', value: 'cancelled' },
-                                { label: 'No Show', value: 'no_show' }
-                            ]}
-                            value={filterData.status} 
-                            onChange={val => handleAsyncChange('status', val)}
-                            placeholder="Status..."
-                            theme="dark"
-                            dropup={true}
-                        />
-                        <DashboardSelect 
-                            options={[
-                                { label: 'Consultation', value: 'consultation' },
-                                { label: 'Follow-up', value: 'followup' },
-                                { label: 'Procedure', value: 'procedure' },
-                            ]}
-                            value={filterData.quick_filter}
-                            onChange={handleQuickFilterChange}
-                            placeholder="Type..."
-                            theme="dark"
-                            dropup={true}
-                        />
-                    </>
-                }
                 actions={[
-                    auth.user.role !== 'patient' && { 
-                        label: 'BOOK VISIT', 
-                        icon: 'fa-plus', 
-                        href: route('appointments.create') 
-                    }
-                ]}
+                    auth.user.role !== 'patient' && {
+                        label: 'Calendar view',
+                        icon: 'fa-calendar-alt',
+                        href: route('appointments.calendar'),
+                        color: 'light',
+                    },
+                    auth.user.role !== 'patient' && {
+                        label: 'Book visit',
+                        icon: 'fa-plus',
+                        href: route('appointments.create'),
+                    },
+                ].filter(Boolean)}
                 bulkActions={[
                     { 
                         label: 'CONFIRM BATCH', 
                         icon: 'fa-check-circle', 
-                        onClick: () => console.log('Batch confirm', selectedIds) 
-                    },
-                    { 
-                        label: 'PRINT CARDS', 
-                        icon: 'fa-print', 
-                        onClick: () => console.log('Batch print', selectedIds) 
+                        onClick: () => handleBulkAction('confirm') 
                     },
                     { 
                         label: 'CANCEL', 
+                        icon: 'fa-ban', 
+                        onClick: () => handleBulkAction('cancel') 
+                    },
+                    { 
+                        label: 'DELETE', 
                         icon: 'fa-trash-alt', 
-                        onClick: () => console.log('Batch cancel', selectedIds),
+                        onClick: () => handleBulkAction('delete'),
                         color: 'danger'
                     }
                 ]}
@@ -416,7 +418,9 @@ export default function Index({ appointments, filters, auth }) {
 
                 {/* View Content */}
                 {view === 'list' ? (
-                    <DashboardTable 
+                    <RegistryTablePanel
+                        title="Appointment registry"
+                        icon="fa-calendar-check"
                         columns={columns}
                         data={appointments.data}
                         pagination={appointments}
@@ -454,7 +458,11 @@ export default function Index({ appointments, filters, auth }) {
                                                                     <span className="text-muted fw-normal ms-1 fs-6">({calculateAge(apt.patient?.date_of_birth || apt.patient?.user?.date_of_birth)}Y)</span>
                                                                 )}
                                                             </h5>
-                                                            <span className="extra-small text-muted font-bold text-uppercase tracking-widest">PAT-{apt.patient_id}</span>
+                                                            <PatientIdLabel
+                                                                id={apt.patient_id}
+                                                                variant="short"
+                                                                className="extra-small text-muted font-bold text-uppercase tracking-widest"
+                                                            />
                                                         </div>
                                                     </div>
                                                     {(() => {
@@ -480,20 +488,10 @@ export default function Index({ appointments, filters, auth }) {
                                                     )}
                                                 </div>
 
-                                                <div className="d-flex gap-2 border-top pt-4">
-                                                    <button 
-                                                        onClick={() => openModal(apt)}
-                                                        className="btn btn-light bg-gray-50 text-gray-700 rounded-xl flex-1 fw-extrabold extra-small border-0 py-2.5"
-                                                    >
-                                                        QUICK VIEW
-                                                    </button>
-                                                    <Link 
-                                                        href={route('appointments.show', apt.appointment_id)}
-                                                        className="btn btn-outline-primary rounded-xl px-4 border-2"
-                                                    >
-                                                        <i className="fas fa-external-link-alt"></i>
-                                                    </Link>
-                                                </div>
+                                                <GridCardActions actions={[
+                                                    { icon: 'fa-eye', label: 'Quick view', onClick: () => openModal(apt) },
+                                                    { icon: 'fa-external-link-alt', label: 'View full record', href: route('appointments.show', apt.appointment_id) },
+                                                ]} />
                                             </div>
                                         </div>
                                     </div>

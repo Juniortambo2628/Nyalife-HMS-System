@@ -17,6 +17,8 @@ registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType);
 
 import SectionOrder from './Partials/SectionOrder';
 import ServiceTabsManager from './Partials/ServiceTabsManager';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import { resolvePublicImageUrl } from '@/Utils/imageUtils';
 
 export default function Settings({ settings, serviceTabs }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -51,17 +53,18 @@ export default function Settings({ settings, serviceTabs }) {
         <AuthenticatedLayout
             headerTitle="Landing Page Configuration"
             breadcrumbs={[{ label: 'Admin', url: '/dashboard' }, { label: 'CMS', active: true }]}
-            toolbarActions={
-                <button 
-                    onClick={handleSubmit}
-                    className="btn btn-primary rounded-pill px-4 py-2 fw-bold small" 
-                    disabled={processing}
-                >
-                    <i className="fas fa-save me-1"></i> Save CMS Configuration
-                </button>
-            }
         >
             <Head title="CMS Settings" />
+
+            <UnifiedToolbar
+                actions={[
+                    {
+                        label: 'SAVE CMS CONFIGURATION',
+                        icon: 'fa-save',
+                        onClick: handleSubmit,
+                    },
+                ]}
+            />
 
 
 
@@ -129,7 +132,7 @@ export default function Settings({ settings, serviceTabs }) {
                                                             <div className="mt-2 p-3 border rounded-2xl bg-light d-flex align-items-center gap-3 shadow-sm">
                                                                 <div className="flex-shrink-0">
                                                                     <img 
-                                                                        src={data.settings[item.key].startsWith('cms/') || !data.settings[item.key].startsWith('/') ? `/storage/${data.settings[item.key].replace(/^\/storage\//, '')}` : data.settings[item.key]} 
+                                                                        src={resolvePublicImageUrl(data.settings[item.key], '/assets/img/slider/footer-bg1.jpg')} 
                                                                         className="rounded-xl shadow-sm border-2 border-white" 
                                                                         style={{ height: '80px', width: '80px', objectFit: 'cover' }} 
                                                                         alt="Current" 

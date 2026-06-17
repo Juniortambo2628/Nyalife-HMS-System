@@ -39,6 +39,8 @@ class ContactMessageController extends Controller
             ]);
         }
 
+        $contactMessage->load('replier');
+
         return Inertia::render('ContactMessages/Show', [
             'message' => $contactMessage
         ]);
@@ -58,5 +60,32 @@ class ContactMessageController extends Controller
     {
         $contactMessage->delete();
         return back()->with('success', 'Message deleted successfully');
+    }
+
+    public function reply(Request $request, ContactMessage $contactMessage)
+    {
+        $request->validate([
+            'reply_message' => 'required|string|min:5',
+        ]);
+
+        $contactMessage->update([
+            'reply' => $request->reply_message,
+            'replied_at' => now(),
+            'replied_by' => auth()->id(),
+            'status' => 'replied',
+        ]);
+
+        // Send email if configured
+        try {
+            \Illuminate\Support\Facades\Mail::raw($request->reply_message, function ($mail) use ($contactMessage) {
+                $mail->to($contactMessage->email)
+                    ->subject('Re: Your Inquiry — Nyalife Hospital');
+            });
+        } catch (\Exception $e) {
+            // Log but don't fail — email delivery is best-effort
+            \Log::warning('Contact reply email failed: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Reply sent successfully to ' . $contactMessage->email);
     }
 }

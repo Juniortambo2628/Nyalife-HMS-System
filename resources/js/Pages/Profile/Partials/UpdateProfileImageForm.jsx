@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
-import PrimaryButton from '@/Components/PrimaryButton';
 import InputError from '@/Components/InputError';
+import DashboardPanel from '@/Components/DashboardPanel';
+import UserAvatar from '@/Components/UserAvatar';
 
 export default function UpdateProfileImageForm({ className = '' }) {
     const user = usePage().props.auth.user;
@@ -17,9 +18,7 @@ export default function UpdateProfileImageForm({ className = '' }) {
         if (file) {
             setData('image', file);
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreviewUrl(reader.result);
-            };
+            reader.onloadend = () => setPreviewUrl(reader.result);
             reader.readAsDataURL(file);
         }
     };
@@ -35,9 +34,7 @@ export default function UpdateProfileImageForm({ className = '' }) {
         });
     };
 
-    const triggerFileInput = () => {
-        fileInputRef.current.click();
-    };
+    const triggerFileInput = () => fileInputRef.current?.click();
 
     const clearPreview = () => {
         setPreviewUrl(null);
@@ -46,96 +43,83 @@ export default function UpdateProfileImageForm({ className = '' }) {
     };
 
     return (
-        <section className={`${className} bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:shadow-md`}>
-            <header className="flex items-center gap-4 mb-10">
-                <div className="p-3 bg-pink-50 dark:bg-pink-900/20 rounded-xl text-pink-600 dark:text-pink-400 shadow-sm border border-pink-100/50">
-                    <i className="fas fa-camera fa-lg"></i>
-                </div>
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Profile Photo</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Manage your profile visibility and identity.</p>
-                </div>
-            </header>
-
-            <form onSubmit={submit} className="flex flex-col items-center gap-8">
-                <div className="relative group">
-                    <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-xl relative group-hover:border-pink-100 transition-all duration-300">
+        <DashboardPanel
+            title="Profile photo"
+            icon="fa-camera"
+            headerVariant="section"
+            className={`nyl-detail-panel ${className}`.trim()}
+            bodyClassName="p-4"
+        >
+            <form onSubmit={submit}>
+                <div className="d-flex flex-column flex-md-row align-items-center gap-4">
+                    <div className="position-relative flex-shrink-0">
                         {previewUrl ? (
-                            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-500" />
-                        ) : user.profile_image ? (
-                            <img src={`/storage/${user.profile_image}`} alt={user.first_name} className="w-full h-full object-cover" />
+                            <div
+                                className="avatar-xxl rounded-circle overflow-hidden border border-3 border-white shadow-lg"
+                                style={{ width: '120px', height: '120px' }}
+                            >
+                                <img src={previewUrl} alt="Preview" className="w-100 h-100 object-fit-cover" />
+                            </div>
                         ) : (
-                            <div className="w-full h-full bg-pink-50 dark:bg-gray-700 flex items-center justify-center text-pink-200 dark:text-gray-500">
-                                <i className="fas fa-user fa-4x"></i>
+                            <UserAvatar user={user} size="2xl" className="shadow-lg" />
+                        )}
+                        {previewUrl && (
+                            <button
+                                type="button"
+                                onClick={clearPreview}
+                                className="btn btn-danger btn-sm rounded-circle position-absolute top-0 end-0 shadow-sm"
+                                style={{ width: '28px', height: '28px', padding: 0 }}
+                            >
+                                <i className="fas fa-times extra-small" />
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="flex-grow-1 text-center text-md-start">
+                        <p className="text-muted small mb-3 mb-md-2">
+                            Upload a square JPG or PNG, maximum 2 MB. This photo appears across the system.
+                        </p>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="d-none"
+                            accept="image/*"
+                        />
+                        <div className="d-flex flex-wrap justify-content-center justify-content-md-start gap-2">
+                            <button
+                                type="button"
+                                onClick={triggerFileInput}
+                                className="btn btn-outline-primary btn-sm rounded-pill fw-bold"
+                            >
+                                <i className="fas fa-upload me-2" />
+                                Choose photo
+                            </button>
+                            {previewUrl && (
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="btn btn-primary btn-sm rounded-pill fw-bold"
+                                >
+                                    {processing ? (
+                                        <span className="spinner-border spinner-border-sm me-2" />
+                                    ) : (
+                                        <i className="fas fa-save me-2" />
+                                    )}
+                                    Save photo
+                                </button>
+                            )}
+                        </div>
+                        <InputError message={errors.image} className="mt-2" />
+                        {recentlySuccessful && (
+                            <div className="text-success extra-small fw-bold mt-2">
+                                <i className="fas fa-check-circle me-1" />
+                                Photo updated successfully.
                             </div>
                         )}
-                        
-                        <div 
-                            onClick={triggerFileInput}
-                            className="absolute inset-0 bg-pink-600/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center cursor-pointer backdrop-blur-[2px]"
-                        >
-                            <i className="fas fa-camera text-white mb-2 fa-2x"></i>
-                            <span className="text-white text-xs font-bold uppercase tracking-tighter">Change Photo</span>
-                        </div>
-                    </div>
-
-                    {previewUrl && (
-                        <button
-                            type="button"
-                            onClick={clearPreview}
-                            className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-colors"
-                        >
-                            <i className="fas fa-times fa-xs"></i>
-                        </button>
-                    )}
-                </div>
-
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept="image/*"
-                />
-
-                <div className="text-center">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 uppercase tracking-wider font-semibold">
-                        Recommended: Square JPG or PNG, max 2MB
-                    </p>
-                    
-                    <div className="flex items-center justify-center gap-4">
-                        <button
-                            type="button"
-                            onClick={triggerFileInput}
-                            className="px-6 py-3 text-sm font-bold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/20 border border-pink-100 dark:border-pink-800 rounded-xl hover:bg-pink-100 dark:hover:bg-pink-900/40 transition-all flex items-center gap-2 shadow-sm"
-                        >
-                            <i className="fas fa-upload"></i>
-                            Choose New File
-                        </button>
-
-                        {previewUrl && (
-                            <PrimaryButton disabled={processing} className="relative !py-2.5 !px-6 overflow-hidden">
-                                <span className={processing ? 'opacity-0' : 'opacity-100'}>Update Avatar</span>
-                                {processing && (
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    </div>
-                                )}
-                            </PrimaryButton>
-                        )}
                     </div>
                 </div>
-
-                <InputError message={errors.image} className="mt-2" />
-
-                {recentlySuccessful && (
-                    <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-lg flex items-center gap-2 text-emerald-600 dark:text-emerald-400 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <p className="text-sm font-medium">Avatar updated successfully!</p>
-                    </div>
-                )}
             </form>
-        </section>
+        </DashboardPanel>
     );
 }
-

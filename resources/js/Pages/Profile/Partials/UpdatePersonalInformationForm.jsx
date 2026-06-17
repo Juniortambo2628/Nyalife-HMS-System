@@ -1,9 +1,10 @@
 import React from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage, Link } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import FormField from '@/Components/FormField';
+import DashboardPanel from '@/Components/DashboardPanel';
 
 export default function UpdatePersonalInformationForm({ mustVerifyEmail, status, className = '' }) {
     const user = usePage().props.auth.user;
@@ -20,159 +21,134 @@ export default function UpdatePersonalInformationForm({ mustVerifyEmail, status,
 
     const submit = (e) => {
         e.preventDefault();
-        patch(route('profile.update'), {
-            preserveScroll: true,
-        });
+        patch(route('profile.update'), { preserveScroll: true });
     };
 
     return (
-        <section className={`${className} bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700`}>
-            <header className="flex items-center gap-4 mb-10">
-                <div className="p-3 bg-pink-50 dark:bg-pink-900/20 rounded-xl text-pink-600 dark:text-pink-400 shadow-sm border border-pink-100/50">
-                    <i className="fas fa-user fa-lg"></i>
+        <DashboardPanel
+            title="Personal details"
+            icon="fa-user"
+            headerVariant="gradient"
+            className={`nyl-detail-panel ${className}`.trim()}
+            bodyClassName="p-4"
+        >
+            <p className="text-muted small mb-4">
+                Keep your personal information up to date for accurate clinical records and communications.
+            </p>
+
+            {mustVerifyEmail && user.email_verified_at === null && (
+                <div className="nyl-content-box nyl-content-box--muted mb-4">
+                    <div className="nyl-content-box__title mb-2">Email verification required</div>
+                    <p className="small text-muted mb-2">
+                        Your email address is not verified. Check your inbox or request a new link.
+                    </p>
+                    <Link
+                        href={route('verification.send')}
+                        method="post"
+                        as="button"
+                        className="btn btn-sm btn-outline-primary rounded-pill fw-bold"
+                    >
+                        Resend verification email
+                    </Link>
+                    {status === 'verification-link-sent' && (
+                        <p className="text-success extra-small fw-bold mt-2 mb-0">
+                            A new verification link has been sent.
+                        </p>
+                    )}
                 </div>
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Personal Details</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Keep your personal information up to date for accurate clinical records.</p>
-                </div>
-            </header>
+            )}
 
-            <form onSubmit={submit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <InputLabel htmlFor="first_name" value="First Name" className="text-gray-700 font-bold mb-2 ml-1" />
-                        <div className="relative group">
-                            <TextInput
-                                id="first_name"
-                                className="block w-full pl-12 h-14 bg-white border-gray-200 focus:bg-white transition-all text-black"
-                                value={data.first_name}
-                                onChange={(e) => setData('first_name', e.target.value)}
-                                required
-                                placeholder="Enter first name"
-                            />
-                            <i className="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
-                        </div>
-                        <InputError className="mt-2" message={errors.first_name} />
-                    </div>
+            <form onSubmit={submit}>
+                <div className="row g-4">
+                    <FormField label="First name" error={errors.first_name} required>
+                        <TextInput
+                            id="first_name"
+                            className="form-control bg-light border-0 rounded-xl"
+                            value={data.first_name}
+                            onChange={(e) => setData('first_name', e.target.value)}
+                            required
+                        />
+                    </FormField>
 
-                    <div>
-                        <InputLabel htmlFor="last_name" value="Last Name" className="text-gray-700 font-bold mb-2 ml-1" />
-                        <div className="relative group">
-                            <TextInput
-                                id="last_name"
-                                className="block w-full pl-12 h-14 bg-white border-gray-200 focus:bg-white transition-all text-black"
-                                value={data.last_name}
-                                onChange={(e) => setData('last_name', e.target.value)}
-                                required
-                                placeholder="Enter last name"
-                            />
-                            <i className="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
-                        </div>
-                        <InputError className="mt-2" message={errors.last_name} />
-                    </div>
-                </div>
+                    <FormField label="Last name" error={errors.last_name} required>
+                        <TextInput
+                            id="last_name"
+                            className="form-control bg-light border-0 rounded-xl"
+                            value={data.last_name}
+                            onChange={(e) => setData('last_name', e.target.value)}
+                            required
+                        />
+                    </FormField>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <InputLabel htmlFor="email" value="Email Address" className="text-gray-700 font-bold mb-2 ml-1" />
-                        <div className="relative group">
-                            <TextInput
-                                id="email"
-                                type="email"
-                                className="block w-full pl-12 h-14 bg-white border-gray-200 focus:bg-white transition-all text-black"
-                                value={data.email}
-                                onChange={(e) => setData('email', e.target.value)}
-                                required
-                                placeholder="name@example.com"
-                            />
-                            <i className="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
-                        </div>
-                        <InputError className="mt-2" message={errors.email} />
-                    </div>
+                    <FormField label="Email address" error={errors.email} required>
+                        <TextInput
+                            id="email"
+                            type="email"
+                            className="form-control bg-light border-0 rounded-xl"
+                            value={data.email}
+                            onChange={(e) => setData('email', e.target.value)}
+                            required
+                        />
+                    </FormField>
 
-                    <div>
-                        <InputLabel htmlFor="phone" value="Phone Number" className="text-gray-700 font-bold mb-2 ml-1" />
-                        <div className="relative group">
-                            <TextInput
-                                id="phone"
-                                className="block w-full pl-12 h-14 bg-white border-gray-200 focus:bg-white transition-all text-black"
-                                value={data.phone}
-                                onChange={(e) => setData('phone', e.target.value)}
-                                placeholder="+1 (555) 000-0000"
-                            />
-                            <i className="fas fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
-                        </div>
-                        <InputError className="mt-2" message={errors.phone} />
-                    </div>
-                </div>
+                    <FormField label="Phone number" error={errors.phone}>
+                        <TextInput
+                            id="phone"
+                            className="form-control bg-light border-0 rounded-xl"
+                            value={data.phone}
+                            onChange={(e) => setData('phone', e.target.value)}
+                            placeholder="+254 …"
+                        />
+                    </FormField>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <InputLabel htmlFor="gender" value="Gender" className="text-gray-700 font-bold mb-2 ml-1" />
+                    <FormField label="Gender" error={errors.gender}>
                         <select
                             id="gender"
-                            className="mt-1 block w-full h-14 pl-4 bg-white border-gray-200 dark:border-gray-700 dark:bg-white text-black dark:text-black focus:border-pink-500 dark:focus:border-pink-600 focus:ring-4 focus:ring-pink-500/20 focus:bg-white transition-all rounded-xl shadow-sm"
+                            className="form-select bg-light border-0 rounded-xl"
                             value={data.gender}
                             onChange={(e) => setData('gender', e.target.value)}
                         >
-                            <option value="">Select Gender</option>
+                            <option value="">Select gender</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                             <option value="other">Other</option>
                         </select>
-                        <InputError className="mt-2" message={errors.gender} />
-                    </div>
+                    </FormField>
 
-                    <div>
-                        <InputLabel htmlFor="date_of_birth" value="Date of Birth" className="text-gray-700 font-bold mb-2 ml-1" />
-                        <div className="relative group">
-                            <TextInput
-                                id="date_of_birth"
-                                type="date"
-                                className="block w-full pl-12 h-14 bg-white border-gray-200 focus:bg-white transition-all text-black"
-                                value={data.date_of_birth}
-                                onChange={(e) => setData('date_of_birth', e.target.value)}
-                            />
-                            <i className="fas fa-calendar-alt absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
-                        </div>
-                        <InputError className="mt-2" message={errors.date_of_birth} />
-                    </div>
-                </div>
+                    <FormField label="Date of birth" error={errors.date_of_birth}>
+                        <TextInput
+                            id="date_of_birth"
+                            type="date"
+                            className="form-control bg-light border-0 rounded-xl"
+                            value={data.date_of_birth}
+                            onChange={(e) => setData('date_of_birth', e.target.value)}
+                        />
+                    </FormField>
 
-                <div>
-                    <InputLabel htmlFor="address" value="Home Address" className="text-gray-700 font-bold mb-2 ml-1" />
-                    <div className="relative group">
+                    <FormField label="Home address" error={errors.address} className="col-12">
                         <textarea
                             id="address"
-                            className="block w-full pl-12 pt-4 border-gray-200 dark:border-gray-700 dark:bg-white bg-white text-black dark:text-black focus:border-pink-500 dark:focus:border-pink-600 focus:ring-4 focus:ring-pink-500/20 focus:bg-white transition-all rounded-xl shadow-sm min-h-[120px]"
+                            className="form-control bg-light border-0 rounded-xl"
+                            rows="3"
                             value={data.address}
                             onChange={(e) => setData('address', e.target.value)}
-                            placeholder="Enter your street address, city, and state"
-                        ></textarea>
-                        <i className="fas fa-map-marker-alt absolute left-4 top-4 text-gray-400 group-focus-within:text-pink-500 transition-colors"></i>
-                    </div>
-                    <InputError className="mt-2" message={errors.address} />
+                            placeholder="Street, city, region"
+                        />
+                    </FormField>
                 </div>
 
-                <div className="flex items-center gap-6 pt-6 border-t border-gray-50 dark:border-gray-700">
-                    <PrimaryButton disabled={processing} className="relative !py-4 !px-10 !rounded-xl text-lg font-bold">
-                        <span className={processing ? 'opacity-0' : 'opacity-100'}>Save Changes</span>
-                        {processing && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                            </div>
-                        )}
+                <div className="d-flex flex-wrap align-items-center gap-3 pt-4 mt-2 border-top">
+                    <PrimaryButton disabled={processing} className="rounded-pill px-4 fw-bold">
+                        {processing ? 'Saving…' : 'Save changes'}
                     </PrimaryButton>
-
                     {recentlySuccessful && (
-                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium animate-in fade-in slide-in-from-right-4 duration-500">
-                            <i className="fas fa-check-circle"></i>
-                            <span>Saved successfully!</span>
-                        </div>
+                        <span className="text-success extra-small fw-bold">
+                            <i className="fas fa-check-circle me-1" />
+                            Saved successfully
+                        </span>
                     )}
                 </div>
             </form>
-        </section>
+        </DashboardPanel>
     );
 }
-

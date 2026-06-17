@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use App\Services\ActivityLogger;
+use App\Support\PatientId;
+use App\Support\Permissions;
 
 class ConsultationController extends Controller
 {
@@ -24,7 +26,12 @@ class ConsultationController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Consultation::with(['patient.user', 'doctor.user', 'prescriptions', 'labTestRequests']);
+        $query = Consultation::with([
+            'patient.user',
+            'doctor.user',
+            'prescriptions',
+            'labTestRequests.testType',
+        ]);
 
         if ($user && $user->role === 'patient') {
             $patient = Patient::where('user_id', $user->user_id)->first();
@@ -135,9 +142,12 @@ class ConsultationController extends Controller
 
         $latestVitals = null;
         $latestHeight = null;
+        $historyPrefill = null;
+        $patientClinical = null;
+
         if ($patientId) {
             $latestVitals = \App\Models\Vital::where('patient_id', $patientId)
-                ->whereDate('measured_at', today())
+                ->where('measured_at', '>=', now()->subHours(24))
                 ->latest('measured_at')
                 ->first();
             
@@ -146,12 +156,26 @@ class ConsultationController extends Controller
                 ->whereNotNull('height')
                 ->latest('measured_at')
                 ->value('height');
+
+            $previousConsultation = Consultation::latestHistoryForPatient((int) $patientId);
+            if ($previousConsultation) {
+                $historyPrefill = $previousConsultation->toHistoryPrefill();
+                $historyPrefill['source_consultation_id'] = $previousConsultation->consultation_id;
+                $historyPrefill['source_consultation_date'] = $previousConsultation->consultation_date?->format('Y-m-d');
+            }
+
+            if ($patient) {
+                $patientClinical = [
+                    'allergies' => $patient->allergies,
+                    'chronic_diseases' => $patient->chronic_diseases,
+                ];
+            }
         }
 
         return Inertia::render('Consultations/Create', [
             'appointment_id' => $appointmentId,
             'preselected_patient_id' => $patientId,
-            'preselected_patient_label' => $patient ? ($patient->user->first_name . ' ' . $patient->user->last_name) : null,
+            'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
             'preselected_patient_gender' => $patient ? $patient->user->gender : null,
             'preselected_doctor_id' => $doctorId,
             'latest_height' => $latestHeight,
@@ -177,6 +201,8 @@ class ConsultationController extends Controller
                 'Consultation', 'Antenatal', 'Family Planning', 'Immunization'
             ])->where('is_active', true)->orderBy('category')->orderBy('test_name')->get(),
             'latest_vitals' => $latestVitals,
+            'history_prefill' => $historyPrefill,
+            'patient_clinical' => $patientClinical,
         ]);
     }
 
@@ -348,8 +374,6 @@ class ConsultationController extends Controller
      */
     public function show($id)
     {
-        $user = Auth::user();
-        
         $consultation = Consultation::with([
             'patient.user', 
             'doctor.user', 
@@ -357,19 +381,38 @@ class ConsultationController extends Controller
             'prescriptions.items.medication',
             'labTestRequests.testType',
             'labTestRequests.assignedTo',
-            'invoices.items' // Used to infer services and procedures
+            'invoices.items',
+            'invoices.payments',
+            'followUps',
         ])->findOrFail($id);
 
-        // Ownership check for patients
-        if ($user && $user->role === 'patient') {
-            $patient = Patient::where('user_id', $user->user_id)->first();
-            if (!$patient || $consultation->patient_id !== $patient->patient_id) {
-                abort(403, 'You are not authorized to view this consultation.');
-            }
-        }
+        $this->requireStaffOrOwnPatient(
+            $consultation->patient_id,
+            Permissions::MANAGE_CONSULTATIONS
+        );
             
         return Inertia::render('Consultations/View', [
             'consultation' => ConsultationResource::make($consultation)
+        ]);
+    }
+
+    public function print($id)
+    {
+        $consultation = Consultation::with(['patient.user', 'doctor.user'])
+            ->findOrFail($id);
+
+        $this->requireStaffOrOwnPatient(
+            $consultation->patient_id,
+            Permissions::MANAGE_CONSULTATIONS
+        );
+
+        $settings = \App\Models\Setting::whereIn('key', [
+            'contact_address', 'contact_email', 'contact_phone',
+        ])->pluck('value', 'key');
+
+        return Inertia::render('Consultations/Print', [
+            'consultation' => ConsultationResource::make($consultation),
+            'clinic_settings' => $settings,
         ]);
     }
 
@@ -611,5 +654,38 @@ class ConsultationController extends Controller
             })
             ->latest()
             ->get();
+    }
+
+    /**
+     * Handle bulk actions on consultations.
+     */
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:mark_complete,delete,export',
+            'ids'    => 'required|array|min:1',
+            'ids.*'  => 'integer',
+        ]);
+
+        $ids    = $validated['ids'];
+        $action = $validated['action'];
+        $count  = count($ids);
+
+        switch ($action) {
+            case 'mark_complete':
+                Consultation::whereIn('consultation_id', $ids)
+                    ->update(['consultation_status' => 'completed']);
+                return redirect()->back()->with('success', "{$count} consultation(s) marked as complete.");
+
+            case 'delete':
+                Consultation::whereIn('consultation_id', $ids)->delete();
+                return redirect()->back()->with('success', "{$count} consultation(s) deleted.");
+
+            case 'export':
+                // Handled client-side; backend fallback
+                return redirect()->back()->with('success', "{$count} records flagged for export.");
+        }
+
+        return redirect()->back()->with('error', 'Unknown bulk action.');
     }
 }

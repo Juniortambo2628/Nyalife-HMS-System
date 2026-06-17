@@ -33,6 +33,12 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'permissions' => $request->user()
+                    ? $request->user()->getAllPermissions()->pluck('name')->values()->all()
+                    : [],
+                'roles' => $request->user()
+                    ? $request->user()->getRoleNames()->values()->all()
+                    : [],
                 'unread_notifications_count' => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
                 'module_notifications' => $request->user() ? $request->user()->unreadNotifications->groupBy(function($n) {
                     return $n->data['module'] ?? 'general';

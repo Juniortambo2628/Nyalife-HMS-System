@@ -12,28 +12,7 @@ class LabTestTypeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = LabTestType::query();
-
-        if ($request->has('search') && $request->search) {
-            $query->where('test_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('category', 'like', '%' . $request->search . '%');
-        }
-
-        if ($request->has('quick_filter') && $request->quick_filter) {
-            switch ($request->quick_filter) {
-                case 'active':
-                    $query->where('is_active', true);
-                    break;
-                case 'inactive':
-                    $query->where('is_active', false);
-                    break;
-            }
-        }
-
-        return Inertia::render('Lab/Tests/Index', [
-            'tests' => $query->latest()->get(),
-            'filters' => $request->only(['search', 'quick_filter'])
-        ]);
+        return redirect()->route('lab.tests', $request->query());
     }
 
     public function create()
@@ -46,7 +25,7 @@ class LabTestTypeController extends Controller
         $validated = $request->validated();
         LabTestType::create($validated);
 
-        return redirect()->route('lab-tests.index')->with('success', 'Lab test type created successfully.');
+        return redirect()->route('lab.tests')->with('success', 'Lab test type created successfully.');
     }
 
     public function edit($id)
@@ -63,7 +42,7 @@ class LabTestTypeController extends Controller
         $validated = $request->validated();
         $test->update($validated);
 
-        return redirect()->route('lab-tests.index')->with('success', 'Lab test type updated successfully.');
+        return redirect()->route('lab.tests')->with('success', 'Lab test type updated successfully.');
     }
 
     public function destroy($id)
@@ -76,6 +55,6 @@ class LabTestTypeController extends Controller
         // Let's just toggle is_active for safety.
         $test->update(['is_active' => !$test->is_active]);
 
-        return redirect()->route('lab-tests.index')->with('success', 'Lab test status toggled.');
+        return redirect()->route('lab.tests')->with('success', 'Lab test status toggled.');
     }
 }

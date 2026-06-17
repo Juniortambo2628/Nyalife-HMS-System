@@ -1,10 +1,16 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
-import PageHeader from '@/Components/PageHeader';
 import DashboardTable from '@/Components/DashboardTable';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import ViewToggle from '@/Components/ViewToggle';
+import TableActions from '@/Components/TableActions';
+import GridCardActions from '@/Components/GridCardActions';
+import StatusBadge from '@/Components/StatusBadge';
+import { formatDateOnly } from '@/Utils/dateUtils';
+import { TableCellPrimary, TableCellStack } from '@/Components/TableCells';
+import { resolvePublicImageUrl } from '@/Utils/imageUtils';
 
 export default function Index({ blogs }) {
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
@@ -15,26 +21,31 @@ export default function Index({ blogs }) {
         }
     };
 
-    const getImageUrl = (path) => {
-        if (!path) return '/assets/img/logo/Logo2-transparent.png';
-        if (path.includes('/assets/img/') || path.startsWith('http')) return path;
-        return `/storage/${path.replace(/^\//, '')}`;
-    };
+    const getImageUrl = (path) => resolvePublicImageUrl(path, '/assets/img/logo/Logo2-transparent.png');
 
     return (
         <AuthenticatedLayout
-            header="Blog Management"
+            headerTitle="Hospital Blog Posts"
+            breadcrumbs={[
+                { label: 'Admin', url: '/dashboard' },
+                { label: 'Blogs', active: true },
+            ]}
         >
             <Head title="Manage Blogs" />
 
-            <PageHeader 
-                title="Hospital Blog Posts"
-                breadcrumbs={[{ label: 'Admin', url: '/dashboard' }, { label: 'Blogs', active: true }]}
+            <UnifiedToolbar
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                actions={[
+                    { label: 'NEW POST', icon: 'fa-plus', href: route('blog.create') },
+                ]}
             />
 
             <div className="py-0">
                 {viewMode === 'list' ? (
-                    <DashboardTable 
+                    <RegistryTablePanel
+                        title="Blog posts"
+                        icon="fa-blog"
                         data={blogs}
                         columns={[
                             {
@@ -69,7 +80,7 @@ export default function Index({ blogs }) {
                                 cell: info => (
                                     <div>
                                         <div className="small"><i className="fas fa-user-circle me-1 text-muted"></i> {info.row.original.author?.first_name} {info.row.original.author?.last_name}</div>
-                                        <div className="extra-small text-muted"><i className="fas fa-calendar-alt me-1"></i> {new Date(info.row.original.created_at).toLocaleDateString()}</div>
+                                        <div className="extra-small text-muted"><i className="fas fa-calendar-alt me-1"></i> {formatDateOnly(info.row.original.created_at)}</div>
                                     </div>
                                 )
                             },
@@ -77,28 +88,28 @@ export default function Index({ blogs }) {
                                 header: 'Status',
                                 accessorKey: 'is_published',
                                 cell: info => (
-                                    <span className={`badge rounded-pill px-3 py-2 ${info.getValue() ? 'bg-soft-success text-success' : 'bg-soft-secondary text-secondary'}`}>
-                                        <i className={`fas fa-${info.getValue() ? 'check-circle' : 'clock'} me-1`}></i>
-                                        {info.getValue() ? 'Published' : 'Draft'}
-                                    </span>
-                                )
+                                    <StatusBadge status={info.getValue() ? 'published' : 'draft'} />
+                                ),
                             },
                             {
                                 header: 'Actions',
                                 id: 'actions',
                                 cell: info => (
-                                    <div className="text-end">
-                                        <div className="d-flex justify-content-end gap-2">
-                                            <Link href={route('blog.edit', info.row.original.id)} className="btn btn-sm btn-icon btn-outline-primary hover-lift">
-                                                <i className="fas fa-edit"></i>
-                                            </Link>
-                                            <button onClick={() => handleDelete(info.row.original.id)} className="btn btn-sm btn-icon btn-outline-danger hover-lift">
-                                                <i className="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                )
-                            }
+                                    <TableActions actions={[
+                                        {
+                                            icon: 'fa-edit',
+                                            label: 'Edit post',
+                                            href: route('blog.edit', info.row.original.id),
+                                        },
+                                        {
+                                            icon: 'fa-trash',
+                                            label: 'Delete post',
+                                            color: 'danger',
+                                            onClick: () => handleDelete(info.row.original.id),
+                                        },
+                                    ]} />
+                                ),
+                            },
                         ]}
                         emptyMessage="No blog posts found."
                     />
@@ -132,21 +143,11 @@ export default function Index({ blogs }) {
                                             <p className="small text-muted mb-4 line-clamp-3">
                                                 {post.excerpt || (post.content?.substring(0, 100) + '...')}
                                             </p>
-                                            <div className="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
-                                                <div className="d-flex align-items-center">
-                                                    <div className="avatar-xs bg-pink-100 text-pink-500 rounded-circle d-flex align-items-center justify-content-center me-2" style={{width: '24px', height: '24px', fontSize: '10px'}}>
-                                                        {post.author?.first_name?.charAt(0)}
-                                                    </div>
-                                                    <span className="extra-small font-bold">{post.author?.first_name}</span>
-                                                </div>
-                                                <div className="d-flex gap-2">
-                                                    <Link href={route('blog.edit', post.id)} className="btn btn-sm btn-icon btn-soft-primary rounded-circle">
-                                                        <i className="fas fa-edit"></i>
-                                                    </Link>
-                                                    <button onClick={() => handleDelete(post.id)} className="btn btn-sm btn-icon btn-soft-danger rounded-circle">
-                                                        <i className="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
+                                            <div className="mt-auto pt-3 border-top d-flex justify-content-end">
+                                                <GridCardActions actions={[
+                                                    { icon: 'fa-edit', label: 'Edit post', href: route('blog.edit', post.id) },
+                                                    { icon: 'fa-trash', label: 'Delete post', color: 'danger', onClick: () => handleDelete(post.id) },
+                                                ]} className="border-0 pt-0 w-100" />
                                             </div>
                                         </div>
                                     </div>
@@ -162,17 +163,6 @@ export default function Index({ blogs }) {
                         )}
                     </div>
                 )}
-
-                <UnifiedToolbar 
-                    actions={
-                        <div className="d-flex align-items-center gap-2">
-                            <ViewToggle view={viewMode} setView={setViewMode} />
-                            <Link href={route('blog.create')} className="btn btn-primary rounded-pill px-3 py-2 fw-bold small">
-                                <i className="fas fa-plus me-1"></i> New Post
-                            </Link>
-                        </div>
-                    }
-                />
             </div>
 
             <style>{`

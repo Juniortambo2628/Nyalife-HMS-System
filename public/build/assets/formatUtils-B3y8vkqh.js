@@ -1,0 +1,1 @@
+function e(r,{maximumFractionDigits:n=0}={}){return new Intl.NumberFormat("en-KE",{style:"currency",currency:"KES",maximumFractionDigits:n}).format(r||0)}function t(r){return new Intl.NumberFormat("en-KE").format(r||0)}export{t as a,e as f};

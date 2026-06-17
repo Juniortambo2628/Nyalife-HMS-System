@@ -11,26 +11,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('lab_test_types', function (Blueprint $table) {
-            $table->json('template')->nullable()->after('units');
-        });
+        if (Schema::hasTable('lab_test_types') && ! Schema::hasColumn('lab_test_types', 'template')) {
+            Schema::table('lab_test_types', function (Blueprint $table) {
+                $table->json('template')->nullable()->after('units');
+            });
+        }
 
-        Schema::table('lab_test_requests', function (Blueprint $table) {
-            $table->json('results')->nullable()->after('status');
-        });
+        if (Schema::hasTable('lab_test_requests') && ! Schema::hasColumn('lab_test_requests', 'results')) {
+            Schema::table('lab_test_requests', function (Blueprint $table) {
+                $table->json('results')->nullable()->after('status');
+            });
+        }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('lab_test_types', function (Blueprint $table) {
-            $table->dropColumn('template');
-        });
+        if (Schema::hasTable('lab_test_types') && Schema::hasColumn('lab_test_types', 'template')) {
+            Schema::table('lab_test_types', function (Blueprint $table) {
+                $table->dropColumn('template');
+            });
+        }
 
-        Schema::table('lab_test_requests', function (Blueprint $table) {
-            $table->dropColumn('results');
-        });
+        if (Schema::hasTable('lab_test_requests') && Schema::hasColumn('lab_test_requests', 'results')) {
+            Schema::table('lab_test_requests', function (Blueprint $table) {
+                $table->dropColumn('results');
+            });
+        }
     }
 };

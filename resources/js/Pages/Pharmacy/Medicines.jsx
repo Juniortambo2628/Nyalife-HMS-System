@@ -1,10 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, useForm } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import Pagination from '@/Components/Pagination';
 import Modal from '@/Components/Modal';
 import DashboardSearch from '@/Components/DashboardSearch';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { useState } from 'react';
+import { formatCurrency } from '@/Utils/formatUtils';
 
 export default function Medicines({ medicines, filters, auth }) {
     const [search, setSearch] = useState(filters?.search || '');
@@ -76,22 +77,25 @@ export default function Medicines({ medicines, filters, auth }) {
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
-            header="Medicine List"
+            headerTitle="Medication Catalog"
+            breadcrumbs={[
+                { label: 'Pharmacy', url: route('pharmacy.inventory') },
+                { label: 'Medicines', active: true },
+            ]}
         >
             <Head title="Medicines" />
 
-            <PageHeader 
-                title="Medication Catalog"
-                breadcrumbs={[{ label: 'Pharmacy', url: route('pharmacy.inventory') }, { label: 'Medicines', active: true }]}
-                actions={
-                    <button onClick={openCreateModal} className="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
-                        <i className="fas fa-plus me-2"></i>Add Medicine
-                    </button>
-                }
+            <UnifiedToolbar
+                actions={[
+                    {
+                        label: 'ADD MEDICINE',
+                        icon: 'fa-plus',
+                        onClick: openCreateModal,
+                    },
+                ]}
             />
 
-            <DashboardSearch 
+            <DashboardSearch
                 placeholder="Search medication catalog..." 
                 value={search}
                 onChange={setSearch}
@@ -118,7 +122,7 @@ export default function Medicines({ medicines, filters, auth }) {
                                     <p className="text-gray-400 font-bold uppercase text-xs mb-2">{med.medication_type || 'General'}</p>
                                     <div className="mt-auto">
                                         <small className="text-muted d-block mb-2">{med.strength} {med.unit}</small>
-                                        <div className="text-primary fw-bold mb-2">Ksh {med.price_per_unit || 0}</div>
+                                        <div className="text-primary fw-bold mb-2">{formatCurrency(med.price_per_unit || 0)}</div>
                                         <div className="d-flex gap-2">
                                             <button onClick={() => openEditModal(med)} className="btn btn-sm btn-light w-100 rounded-pill font-bold border">Edit</button>
                                             <button onClick={() => deleteMed(med.medication_id)} className="btn btn-sm btn-light w-100 rounded-pill font-bold border text-danger">Delete</button>

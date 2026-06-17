@@ -1,11 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import DashboardSelect from '@/Components/DashboardSelect';
 import FormSection from '@/Components/FormSection';
 import FormField from '@/Components/FormField';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import QuickPatientModal from '@/Components/QuickPatientModal';
+import { formatPatientSelectLabel } from '@/Components/PatientTableCell';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -51,26 +51,24 @@ export default function Record({ preselected_patient_id, preselected_patient_lab
         });
     };
 
-    const handleQuickSuccess = (newPatient) => {
+    const handleQuickSuccess = (patient) => {
         setData(d => ({
             ...d,
-            patient_id: newPatient.patient_id,
-            patient_label: `${newPatient.first_name} ${newPatient.last_name}`
+            patient_id: patient.value,
+            patient_label: patient.label,
         }));
     };
 
     return (
-        <AuthenticatedLayout user={auth.user} header="Clinical Assessment">
+        <AuthenticatedLayout
+            headerTitle="Record Clinical Vitals"
+            breadcrumbs={[
+                { label: 'Dashboard', url: route('dashboard') },
+                { label: 'Vitals Ledger', url: route('vitals.index') },
+                { label: 'Capture New', active: true },
+            ]}
+        >
             <Head title="Capture Vital Signs" />
-
-            <PageHeader 
-                title="Record Clinical Vitals"
-                breadcrumbs={[
-                    { label: 'Dashboard', url: route('dashboard') },
-                    { label: 'Vitals Ledger', url: route('vitals.index') },
-                    { label: 'Capture New', active: true }
-                ]}
-            />
 
             <div className="row justify-content-center pb-5">
                 <div className="col-lg-10 col-xl-9">
@@ -96,10 +94,10 @@ export default function Record({ preselected_patient_id, preselected_patient_lab
                                             setData(d => ({
                                                 ...d,
                                                 patient_id: val,
-                                                patient_label: opt ? opt.label : ''
+                                                patient_label: opt?.label || formatPatientSelectLabel('', val),
                                             }));
                                         }}
-                                        initialLabel={data.patient_label || preselected_patient_label}
+                                        initialLabel={data.patient_label || formatPatientSelectLabel(preselected_patient_label, data.patient_id)}
                                         placeholder="Scan catalog or search by name/ID..."
                                         onAddNew={() => setShowQuickModal(true)}
                                         addNewLabel="Quick Register New Patient"

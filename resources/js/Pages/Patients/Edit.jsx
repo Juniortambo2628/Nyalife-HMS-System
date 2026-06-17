@@ -1,7 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
-
 export default function Edit({ patient, auth }) {
     const { data, setData, put, processing, errors } = useForm({
         first_name: patient.user?.first_name || '',
@@ -12,6 +10,14 @@ export default function Edit({ patient, auth }) {
         gender: patient.gender || 'male',
         address: patient.address || '',
         blood_group: patient.blood_group || 'Unknown',
+        height: patient.height ?? '',
+        weight: patient.weight ?? '',
+        allergies: patient.allergies || '',
+        chronic_diseases: patient.chronic_diseases || '',
+        marital_status: patient.marital_status || '',
+        occupation: patient.occupation || '',
+        insurance_provider: patient.insurance_provider || '',
+        insurance_id: patient.insurance_id || '',
         emergency_name: patient.emergency_name || '',
         emergency_contact: patient.emergency_contact || '',
     });
@@ -24,20 +30,14 @@ export default function Edit({ patient, auth }) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header="Edit Patient Profile"
+            headerTitle="Edit Patient Profile"
+            breadcrumbs={[
+                { label: 'Patients', url: route('patients.index') },
+                { label: patient.user?.first_name, url: route('patients.show', patient.patient_id) },
+                { label: 'Edit', active: true },
+            ]}
         >
             <Head title={`Edit Patient - ${patient.user?.first_name}`} />
-
-            <PageHeader 
-                title="Edit Patient Profile"
-                breadcrumbs={[
-                    { label: 'Patients', href: route('patients.index') },
-                    { label: patient.user?.first_name, href: route('patients.show', patient.patient_id) },
-                    { label: 'Edit', active: true }
-                ]}
-                showBack={true}
-                backUrl={route('patients.show', patient.patient_id)}
-            />
 
             <div className="container-fluid patients-page px-0">
                 <div className="row justify-content-center">
@@ -157,6 +157,49 @@ export default function Edit({ patient, auth }) {
                                                 rows="2"
                                             />
                                             {errors.address && <div className="invalid-feedback">{errors.address}</div>}
+                                        </div>
+                                    </div>
+
+                                    <h5 className="mb-4 border-bottom pb-2 text-primary">Clinical Profile & Insurance</h5>
+                                    <div className="row g-3 mb-4">
+                                        <div className="col-md-3">
+                                            <label className="form-label fw-bold">Height (cm)</label>
+                                            <input type="number" step="0.1" className={`form-control ${errors.height ? 'is-invalid' : ''}`} value={data.height} onChange={e => setData('height', e.target.value)} />
+                                            {errors.height && <div className="invalid-feedback">{errors.height}</div>}
+                                        </div>
+                                        <div className="col-md-3">
+                                            <label className="form-label fw-bold">Weight (kg)</label>
+                                            <input type="number" step="0.1" className={`form-control ${errors.weight ? 'is-invalid' : ''}`} value={data.weight} onChange={e => setData('weight', e.target.value)} />
+                                            {errors.weight && <div className="invalid-feedback">{errors.weight}</div>}
+                                        </div>
+                                        <div className="col-md-3">
+                                            <label className="form-label fw-bold">Marital status</label>
+                                            <select className={`form-select ${errors.marital_status ? 'is-invalid' : ''}`} value={data.marital_status} onChange={e => setData('marital_status', e.target.value)}>
+                                                <option value="">Not specified</option>
+                                                {['single', 'married', 'divorced', 'widowed', 'other'].map(s => (
+                                                    <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="col-md-3">
+                                            <label className="form-label fw-bold">Occupation</label>
+                                            <input type="text" className={`form-control ${errors.occupation ? 'is-invalid' : ''}`} value={data.occupation} onChange={e => setData('occupation', e.target.value)} />
+                                        </div>
+                                        <div className="col-md-6">
+                                            <label className="form-label fw-bold">Known allergies</label>
+                                            <textarea className={`form-control ${errors.allergies ? 'is-invalid' : ''}`} rows="2" value={data.allergies} onChange={e => setData('allergies', e.target.value)} />
+                                        </div>
+                                        <div className="col-md-6">
+                                            <label className="form-label fw-bold">Chronic conditions</label>
+                                            <textarea className={`form-control ${errors.chronic_diseases ? 'is-invalid' : ''}`} rows="2" value={data.chronic_diseases} onChange={e => setData('chronic_diseases', e.target.value)} />
+                                        </div>
+                                        <div className="col-md-6">
+                                            <label className="form-label fw-bold">Insurance provider</label>
+                                            <input type="text" className={`form-control ${errors.insurance_provider ? 'is-invalid' : ''}`} value={data.insurance_provider} onChange={e => setData('insurance_provider', e.target.value)} />
+                                        </div>
+                                        <div className="col-md-6">
+                                            <label className="form-label fw-bold">Insurance member ID</label>
+                                            <input type="text" className={`form-control ${errors.insurance_id ? 'is-invalid' : ''}`} value={data.insurance_id} onChange={e => setData('insurance_id', e.target.value)} />
                                         </div>
                                     </div>
 

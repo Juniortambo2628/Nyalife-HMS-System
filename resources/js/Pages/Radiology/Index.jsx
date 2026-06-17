@@ -1,9 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
-import DashboardTable from '@/Components/DashboardTable';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import StatusBadge from '@/Components/StatusBadge';
-import DashboardSelect from '@/Components/DashboardSelect';
+import PatientTableCell from '@/Components/PatientTableCell';
+import PriorityBadge from '@/Components/PriorityBadge';
+import TableActions from '@/Components/TableActions';
+import { RefBadge, TableCellPrimary, TableCellSub } from '@/Components/TableCells';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { useState, useMemo, useEffect } from 'react';
 
@@ -18,6 +21,15 @@ export default function RadiologyRequestsIndex({ requests, filters, auth }) {
         window.addEventListener('toolbar-clear-selection', handleClear);
         return () => window.removeEventListener('toolbar-clear-selection', handleClear);
     }, []);
+
+    const handleBulkAction = (action) => {
+        router.post(route('radiology.bulk-action'), {
+            action: action,
+            ids: selectedIds
+        }, {
+            onSuccess: () => setSelectedIds([]),
+        });
+    };
 
     const applyFilters = (searchValue, statusValue = status, quickFilterValue = quickFilter) => {
         router.get(route('radiology.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {
@@ -59,23 +71,18 @@ export default function RadiologyRequestsIndex({ requests, filters, auth }) {
             header: 'Order Ref',
             accessorKey: 'request_number',
             cell: ({ row }) => (
-                <span className="badge bg-light text-pink-500 fw-extrabold extra-small tracking-widest p-2 border border-pink-100 shadow-sm">
-                    {row.original.request_number}
-                </span>
+                <RefBadge>{row.original.request_number}</RefBadge>
             )
         },
         {
             header: 'Patient',
             accessorKey: 'patient',
             cell: ({ row }) => (
-                <div>
-                    <div className="fw-bold text-gray-900">
-                        {row.original.patient?.user?.first_name} {row.original.patient?.user?.last_name}
-                    </div>
-                    <div className="extra-small text-muted fw-bold text-uppercase opacity-75">
-                        PATID: PAT-{row.original.patient_id}
-                    </div>
-                </div>
+                <PatientTableCell
+                    patient={row.original.patient}
+                    patientId={row.original.patient_id}
+                    idVariant="patid"
+                />
             )
         },
         {
@@ -83,11 +90,11 @@ export default function RadiologyRequestsIndex({ requests, filters, auth }) {
             accessorKey: 'scan_type',
             cell: ({ row }) => (
                 <div>
-                    <span className="fw-semibold text-gray-700">{row.original.scan_type}</span>
+                    <TableCellPrimary>{row.original.scan_type}</TableCellPrimary>
                     {row.original.clinical_indication && (
-                        <div className="extra-small text-muted text-truncate" style={{ maxWidth: '250px' }}>
+                        <TableCellSub className="text-truncate nyl-text-constrained">
                             {row.original.clinical_indication}
-                        </div>
+                        </TableCellSub>
                     )}
                 </div>
             )
@@ -95,19 +102,7 @@ export default function RadiologyRequestsIndex({ requests, filters, auth }) {
         {
             header: 'Priority',
             accessorKey: 'priority',
-            cell: ({ row }) => {
-                const p = (row.original.priority || 'routine').toLowerCase();
-                const colors = {
-                    emergency: 'bg-danger text-white border-danger animate-pulse-custom',
-                    urgent: 'bg-orange-subtle text-orange-600 border-orange-200',
-                    routine: 'bg-info-subtle text-info border-info-subtle'
-                };
-                return (
-                    <span className={`badge rounded-pill px-3 py-2 fw-bold border nyl-badge-sm ${colors[p] || colors.routine}`}>
-                        <i className="fas fa-bolt me-1"></i>{p.toUpperCase()}
-                    </span>
-                );
-            }
+            cell: ({ row }) => <PriorityBadge priority={row.original.priority} />
         },
         {
             header: 'Status',
@@ -118,38 +113,33 @@ export default function RadiologyRequestsIndex({ requests, filters, auth }) {
             header: 'Ordered By',
             accessorKey: 'requestedBy',
             cell: ({ row }) => (
-                <div className="small text-muted fw-medium">
+                <TableCellSub>
                     Dr. {row.original.requestedBy?.last_name || 'System'}
-                </div>
+                </TableCellSub>
             )
         },
         {
             header: 'Actions',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="d-flex justify-content-end gap-2">
-                    <Link href={route('radiology.show', row.original.request_id)} className="btn btn-sm btn-light border text-pink-500 rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center" title="View & Process Results">
-                        <i className="fas fa-eye extra-small"></i>
-                    </Link>
-                    {(auth.user.role === 'lab_technician' || auth.user.role === 'admin') && row.original.status === 'pending' && (
-                        <button 
-                            onClick={() => handleProcess(row.original.request_id)}
-                            className="btn btn-sm btn-light border text-info rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center"
-                            title="Start Scan Processing"
-                        >
-                            <i className="fas fa-play extra-small"></i>
-                        </button>
-                    )}
-                    {(auth.user.role === 'admin' || auth.user.role === 'doctor') && row.original.status === 'pending' && (
-                        <button 
-                            onClick={() => handleDelete(row.original.request_id)}
-                            className="btn btn-sm btn-light border text-danger rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center"
-                            title="Delete Request"
-                        >
-                            <i className="fas fa-trash extra-small"></i>
-                        </button>
-                    )}
-                </div>
+                <TableActions actions={[
+                    {
+                        label: 'View & process',
+                        icon: 'fa-eye',
+                        href: route('radiology.show', row.original.request_id),
+                    },
+                    (auth.user.role === 'lab_technician' || auth.user.role === 'admin') && row.original.status === 'pending' && {
+                        label: 'Start processing',
+                        icon: 'fa-play',
+                        onClick: () => handleProcess(row.original.request_id),
+                    },
+                    (auth.user.role === 'admin' || auth.user.role === 'doctor') && row.original.status === 'pending' && {
+                        label: 'Delete request',
+                        icon: 'fa-trash',
+                        onClick: () => handleDelete(row.original.request_id),
+                        color: 'danger',
+                    },
+                ].filter(Boolean)} />
             )
         }
     ], [auth.user.role]);
@@ -166,40 +156,34 @@ export default function RadiologyRequestsIndex({ requests, filters, auth }) {
             <Head title={auth.user.role === 'patient' ? 'My Radiology Scans' : 'Radiology & Imaging'} />
 
             <UnifiedToolbar 
-                viewOptions={[
-                    { label: 'LIST VIEW', icon: 'fa-list-ul', onClick: () => {} },
-                    { label: 'GRID VIEW', icon: 'fa-th-large', onClick: () => {} }
+                filterGroups={[
+                    {
+                        id: 'status',
+                        label: 'Status',
+                        emptyLabel: 'All statuses',
+                        value: status,
+                        onChange: handleStatusChange,
+                        options: [
+                            { label: 'Pending', value: 'pending' },
+                            { label: 'Processing', value: 'processing' },
+                            { label: 'Pending Verification', value: 'pending_verification' },
+                            { label: 'Verified', value: 'verified' },
+                            { label: 'Completed', value: 'completed' },
+                            { label: 'Cancelled', value: 'cancelled' },
+                        ],
+                    },
+                    {
+                        id: 'priority',
+                        label: 'Priority',
+                        emptyLabel: 'All priorities',
+                        value: quickFilter,
+                        onChange: handleQuickFilterChange,
+                        options: [
+                            { label: 'Urgent', value: 'urgent' },
+                            { label: 'Routine', value: 'routine' },
+                        ],
+                    },
                 ]}
-                filters={
-                    <>
-                        <DashboardSelect 
-                            options={[
-                                { label: 'Pending', value: 'pending' },
-                                { label: 'Processing', value: 'processing' },
-                                { label: 'Pending Verification', value: 'pending_verification' },
-                                { label: 'Verified', value: 'verified' },
-                                { label: 'Completed', value: 'completed' },
-                                { label: 'Cancelled', value: 'cancelled' },
-                            ]}
-                            value={status}
-                            onChange={handleStatusChange}
-                            placeholder="Status..."
-                            theme="dark"
-                            dropup={true}
-                        />
-                        <DashboardSelect 
-                            options={[
-                                { label: 'Urgent', value: 'urgent' },
-                                { label: 'Routine', value: 'routine' },
-                            ]}
-                            value={quickFilter}
-                            onChange={handleQuickFilterChange}
-                            placeholder="Priority..."
-                            theme="dark"
-                            dropup={true}
-                        />
-                    </>
-                }
                 actions={[
                     (auth.user.role === 'doctor' || auth.user.role === 'admin') && { 
                         label: 'ORDER SCAN', 
@@ -209,17 +193,9 @@ export default function RadiologyRequestsIndex({ requests, filters, auth }) {
                     }
                 ].filter(Boolean)}
                 bulkActions={[
-                    { 
-                        label: 'CANCEL SELECTED', 
-                        icon: 'fa-times-circle', 
-                        onClick: () => { 
-                            if(confirm(`Cancel ${selectedIds.length} requests?`)) { 
-                                selectedIds.forEach(id => router.post(route('radiology.update-status', id), { status: 'cancelled' }, { preserveScroll: true })); 
-                                setSelectedIds([]); 
-                            } 
-                        }, 
-                        color: 'danger' 
-                    }
+                    { label: 'MARK COMPLETE', icon: 'fa-check-circle', onClick: () => handleBulkAction('complete') },
+                    { label: 'CANCEL SELECTED', icon: 'fa-times-circle', onClick: () => handleBulkAction('cancel'), color: 'danger' },
+                    { label: 'DELETE SELECTED', icon: 'fa-trash-alt', onClick: () => handleBulkAction('delete'), color: 'danger' }
                 ]}
                 selectionCount={selectedIds.length}
             />
@@ -239,7 +215,9 @@ export default function RadiologyRequestsIndex({ requests, filters, auth }) {
                     ]}
                 />
 
-                <DashboardTable 
+                <RegistryTablePanel
+                    title="Radiology request registry"
+                    icon="fa-x-ray"
                     columns={columns}
                     data={requests.data}
                     pagination={requests}

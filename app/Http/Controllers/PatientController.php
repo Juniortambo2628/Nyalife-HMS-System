@@ -6,8 +6,10 @@ use App\Http\Requests\QuickStorePatientRequest;
 use App\Http\Requests\StorePatientRequest;
 use App\Http\Requests\UpdatePatientRequest;
 use App\Http\Resources\PatientResource;
+use App\Models\Consultation;
 use App\Models\Patient;
 use App\Models\User;
+use App\Support\PatientId;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -94,6 +96,14 @@ class PatientController extends Controller
             'gender' => $validated['gender'],
             'address' => $validated['address'] ?? null,
             'blood_group' => $validated['blood_group'] ?? null,
+            'height' => $validated['height'] ?? null,
+            'weight' => $validated['weight'] ?? null,
+            'allergies' => $validated['allergies'] ?? null,
+            'chronic_diseases' => $validated['chronic_diseases'] ?? null,
+            'marital_status' => $validated['marital_status'] ?? null,
+            'occupation' => $validated['occupation'] ?? null,
+            'insurance_provider' => $validated['insurance_provider'] ?? null,
+            'insurance_id' => $validated['insurance_id'] ?? null,
             'emergency_name' => $validated['emergency_name'] ?? null,
             'emergency_contact' => $validated['emergency_contact'] ?? null,
             'patient_number' => 'PAT-' . date('Ymd') . '-' . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
@@ -111,20 +121,32 @@ class PatientController extends Controller
         $user = Auth::user();
 
         $with = [
-            'user', 
-            'appointments.doctor.user',
-            'vitals',
+            'user',
+            'appointments' => fn ($q) => $q->with('doctor.user')->latest('appointment_date'),
+            'vitals' => fn ($q) => $q->latest('measured_at'),
         ];
 
+        if ($user && in_array($user->role, ['doctor', 'admin', 'nurse'])) {
+            $with['consultations'] = fn ($q) => $q->with('doctor.user')->latest('consultation_date');
+        }
+
         if ($user && in_array($user->role, ['doctor', 'admin'])) {
-            $with[] = 'consultations.doctor.user';
-            $with[] = 'prescriptions.items';
+            $with['prescriptions'] = fn ($q) => $q->with('items.medication')->latest('prescription_date');
         }
 
         $patient = Patient::with($with)->findOrFail($id);
+
+        $clinicalSummary = null;
+        if ($user && in_array($user->role, ['doctor', 'admin', 'nurse'])) {
+            $latestConsultation = Consultation::latestHistoryForPatient((int) $id);
+            if ($latestConsultation) {
+                $clinicalSummary = $latestConsultation->toClinicalSummary();
+            }
+        }
         
         return Inertia::render('Patients/Show', [
             'patient' => PatientResource::make($patient),
+            'clinical_summary' => $clinicalSummary,
         ]);
     }
 
@@ -165,6 +187,14 @@ class PatientController extends Controller
             'gender',
             'date_of_birth',
             'blood_group',
+            'height',
+            'weight',
+            'allergies',
+            'chronic_diseases',
+            'marital_status',
+            'occupation',
+            'insurance_provider',
+            'insurance_id',
             'emergency_name',
             'emergency_contact',
         ]);
@@ -211,6 +241,7 @@ class PatientController extends Controller
             'success' => true,
             'patient_id' => $patient->patient_id,
             'full_name' => $user->first_name . ' ' . $user->last_name,
+            'select_label' => PatientId::fromPatient($patient),
             'gender' => $patient->gender,
             'message' => 'Patient created successfully.'
         ]);
@@ -235,7 +266,7 @@ class PatientController extends Controller
         return response()->json($patients->map(function($p) {
             return [
                 'value' => $p->patient_id,
-                'label' => $p->user->first_name . ' ' . $p->user->last_name . ' (PAT-' . $p->patient_id . ')',
+                'label' => PatientId::fromPatient($p),
                 'id' => $p->patient_id
             ];
         }));
@@ -342,5 +373,80 @@ class PatientController extends Controller
         }
 
         return redirect()->back()->with('success', "CSV Import completed. Imported: {$importedCount}, Skipped (Duplicates): {$skippedCount}.");
+    }
+
+    /**
+     * Export selected patients as a CSV file.
+     */
+    public function export(Request $request)
+    {
+        $ids = $request->ids ? explode(',', $request->ids) : [];
+
+        $query = Patient::with('user');
+        if (!empty($ids)) {
+            $query->whereIn('patient_id', $ids);
+        }
+        $patients = $query->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="patients-export-' . date('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function () use ($patients) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
+            fputcsv($handle, ['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Gender', 'Date of Birth', 'Blood Group', 'Address', 'Registered']);
+            foreach ($patients as $p) {
+                fputcsv($handle, [
+                    'PAT-' . $p->patient_id,
+                    $p->user->first_name ?? '',
+                    $p->user->last_name ?? '',
+                    $p->user->email ?? '',
+                    $p->user->phone ?? '',
+                    $p->gender ?? '',
+                    $p->date_of_birth ?? '',
+                    $p->blood_group ?? '',
+                    $p->address ?? '',
+                    $p->created_at?->format('Y-m-d') ?? '',
+                ]);
+            }
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Display printable ID cards for selected patients.
+     */
+    public function printCards(Request $request)
+    {
+        $ids = $request->ids ? explode(',', $request->ids) : [];
+
+        $query = Patient::with('user');
+        if (!empty($ids)) {
+            $query->whereIn('patient_id', $ids);
+        }
+        $patients = $query->get();
+
+        return Inertia::render('Patients/PrintCards', [
+            'patients' => $patients,
+        ]);
+    }
+
+    /**
+     * Handle bulk actions on patients.
+     */
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:export,print_cards',
+            'ids'    => 'required|array|min:1',
+            'ids.*'  => 'integer',
+        ]);
+
+        // Client-side print/export is handled in the browser; this is a fallback.
+        return redirect()->back()->with('success', count($validated['ids']) . ' patient records processed.');
     }
 }

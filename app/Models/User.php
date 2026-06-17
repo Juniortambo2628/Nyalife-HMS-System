@@ -5,13 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasRoles, Notifiable, LogsActivity;
+    use HasFactory, HasRoles, HasApiTokens, Notifiable, LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -87,6 +88,27 @@ class User extends Authenticatable
     public function getRoleAttribute()
     {
         return $this->roleRelation?->role_name ?? 'patient';
+    }
+
+    /**
+     * Admins inherit full access (matches sidebar + Permissions::roleMap).
+     */
+    public function hasPermissionTo($permission, $guardName = null): bool
+    {
+        if ($this->role === 'admin') {
+            return true;
+        }
+
+        return parent::hasPermissionTo($permission, $guardName);
+    }
+
+    public function hasAnyPermission(...$permissions): bool
+    {
+        if ($this->role === 'admin') {
+            return true;
+        }
+
+        return parent::hasAnyPermission(...$permissions);
     }
 
     /**

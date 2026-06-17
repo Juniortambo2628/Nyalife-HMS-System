@@ -16,7 +16,15 @@ class PatientResource extends JsonResource
             'gender' => $this->gender ?? ($this->user?->gender),
             'date_of_birth' => $this->date_of_birth ?? ($this->user?->date_of_birth),
             'address' => $this->address ?? ($this->user?->address),
-            'blood_group' => $this->blood_group ?? $this->blood_type,
+            'blood_group' => $this->blood_group,
+            'height' => $this->height,
+            'weight' => $this->weight,
+            'allergies' => $this->allergies,
+            'chronic_diseases' => $this->chronic_diseases,
+            'marital_status' => $this->marital_status,
+            'occupation' => $this->occupation,
+            'insurance_provider' => $this->insurance_provider,
+            'insurance_id' => $this->insurance_id,
             'emergency_contact' => $this->emergency_contact,
             'age' => $this->age,
             'emergency_name' => $this->emergency_name ?? null,
@@ -26,7 +34,7 @@ class PatientResource extends JsonResource
             'appointments' => $this->whenLoaded('appointments', fn () => AppointmentResource::collection($this->appointments)),
             'consultations' => $this->whenLoaded('consultations', fn () => ConsultationResource::collection($this->consultations)),
             'prescriptions' => $this->whenLoaded('prescriptions', fn () => PrescriptionResource::collection($this->prescriptions)),
-            'vitals' => $this->whenLoaded('vitals', fn () => $this->vitals->toArray()),
+            'vitals' => $this->whenLoaded('vitals', fn () => VitalResource::collection($this->vitals)),
         ];
     }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\VitalResource;
 use App\Http\Requests\StoreVitalRequest;
 use App\Models\Vital;
 use App\Models\Patient;
+use App\Support\PatientId;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -35,7 +37,7 @@ class VitalController extends Controller
 
         return Inertia::render('Vitals/Record', [
             'preselected_patient_id' => $patientId,
-            'preselected_patient_label' => $patient ? ($patient->user->first_name . ' ' . $patient->user->last_name) : null,
+            'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
             'latest_height' => $latestHeight,
         ]);
     }
@@ -57,13 +59,61 @@ class VitalController extends Controller
         Vital::create(array_merge($validated, [
             'bmi' => $bmi,
             'priority' => $priority,
-            'measured_at' => now(),
+            'measured_at' => $validated['measured_at'] ?? now(),
             'recorded_by' => Auth::id(),
         ]));
 
         $role = Auth::user()->role;
         return redirect()->route('dashboard', ['role' => $role])
                          ->with('success', 'Patient vitals recorded successfully. Patient is ready for doctor consultation.');
+    }
+
+    public function edit(Vital $vital)
+    {
+        $vital->load('patient.user');
+
+        return Inertia::render('Vitals/Edit', [
+            'vital' => VitalResource::make($vital),
+        ]);
+    }
+
+    public function update(StoreVitalRequest $request, Vital $vital)
+    {
+        $validated = $request->validated();
+        $priority = $request->input('priority', 'normal');
+        
+        // Calculate BMI if both height (cm) and weight (kg) are provided
+        $bmi = null;
+        if (!empty($validated['weight']) && !empty($validated['height'])) {
+            $heightInMeters = $validated['height'] / 100;
+            if ($heightInMeters > 0) {
+                $bmi = round($validated['weight'] / ($heightInMeters * $heightInMeters), 2);
+            }
+        }
+
+        $vital->update(array_merge($validated, [
+            'bmi' => $bmi,
+            'priority' => $priority,
+        ]));
+
+        return redirect()->route('patients.show', $vital->patient_id)
+                         ->with('success', 'Patient vitals updated successfully.');
+    }
+
+    public function destroy(Request $request, Vital $vital)
+    {
+        $request->validate([
+            'void_reason' => 'required|string|max:255'
+        ]);
+
+        $vital->update([
+            'is_voided' => true,
+            'void_reason' => $request->void_reason,
+            'voided_by' => Auth::id(),
+            'voided_at' => now(),
+        ]);
+
+        return back()->with('success', 'Vitals record has been voided.');
     }
 
     public function latest($patientId)

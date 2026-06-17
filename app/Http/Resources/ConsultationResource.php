@@ -21,6 +21,7 @@ class ConsultationResource extends JsonResource
             'appointment_id' => $this->appointment_id,
             'consultation_date' => $this->consultation_date instanceof \DateTimeInterface ? $this->consultation_date->format(\DateTimeInterface::ATOM) : $this->consultation_date,
             'consultation_status' => $this->consultation_status,
+            'priority' => $this->priority,
             'is_walk_in' => $this->is_walk_in,
             'chief_complaint' => $this->chief_complaint,
             'history_present_illness' => $this->history_present_illness,
@@ -51,7 +52,6 @@ class ConsultationResource extends JsonResource
             'surgical_history' => $this->surgical_history,
             'cervical_screening' => $this->cervical_screening,
             'created_by' => $this->created_by,
-            'updated_by' => $this->updated_by,
             'created_at' => $this->created_at instanceof \DateTimeInterface ? $this->created_at->format(\DateTimeInterface::ATOM) : $this->created_at,
             'updated_at' => $this->updated_at instanceof \DateTimeInterface ? $this->updated_at->format(\DateTimeInterface::ATOM) : $this->updated_at,
             'patient' => $this->whenLoaded('patient', fn () => new PatientResource($this->patient)),
@@ -59,7 +59,8 @@ class ConsultationResource extends JsonResource
             'appointment' => $this->whenLoaded('appointment', fn () => new AppointmentResource($this->appointment)),
             'prescriptions' => $this->whenLoaded('prescriptions', fn () => PrescriptionResource::collection($this->prescriptions)),
             'lab_test_requests' => $this->whenLoaded('labTestRequests', fn () => LabTestRequestResource::collection($this->labTestRequests)),
-            'invoices' => $this->whenLoaded('invoices', fn () => $this->invoices), // Using array/object directly is fine for this context
+            'invoices' => $this->whenLoaded('invoices', fn () => InvoiceResource::collection($this->invoices)),
+            'follow_ups' => $this->whenLoaded('followUps', fn () => FollowUpResource::collection($this->followUps)),
         ];
     }
 }

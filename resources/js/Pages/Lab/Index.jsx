@@ -1,13 +1,17 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
-import DashboardTable from '@/Components/DashboardTable';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import StatusBadge from '@/Components/StatusBadge';
-import DashboardSelect from '@/Components/DashboardSelect';
+import StatCardGrid from '@/Components/StatCardGrid';
+import TableActions from '@/Components/TableActions';
+import PriorityBadge from '@/Components/PriorityBadge';
+import { RefBadge, TableCellPrimary, TableCellSub } from '@/Components/TableCells';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import PatientTableCell from '@/Components/PatientTableCell';
 import { useState, useMemo, useEffect } from 'react';
 
-export default function LabRequestsIndex({ requests, filters, auth }) {
+export default function LabRequestsIndex({ requests, filters, stats = {}, auth }) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [quickFilter, setQuickFilter] = useState(filters.quick_filter || '');
@@ -18,6 +22,15 @@ export default function LabRequestsIndex({ requests, filters, auth }) {
         window.addEventListener('toolbar-clear-selection', handleClear);
         return () => window.removeEventListener('toolbar-clear-selection', handleClear);
     }, []);
+
+    const handleBulkAction = (action) => {
+        router.post(route('lab.bulk-action'), {
+            action: action,
+            ids: selectedIds
+        }, {
+            onSuccess: () => setSelectedIds([]),
+        });
+    };
 
     const applyFilters = (searchValue, statusValue = status, quickFilterValue = quickFilter) => {
         router.get(route('lab.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {
@@ -51,44 +64,27 @@ export default function LabRequestsIndex({ requests, filters, auth }) {
             header: 'Req ID',
             accessorKey: 'request_id',
             cell: ({ row }) => (
-                <span className="badge bg-light text-pink-500 fw-extrabold extra-small tracking-widest p-2 border border-pink-100 shadow-sm">LAB-{row.original.request_id}</span>
+                <RefBadge>LAB-{row.original.request_id}</RefBadge>
             )
         },
         {
             header: 'Patient',
             accessorKey: 'patient_id',
             cell: ({ row }) => (
-                <div>
-                    <div className="fw-bold text-gray-900">
-                        {row.original.patient?.user?.first_name} {row.original.patient?.user?.last_name}
-                    </div>
-                    <div className="extra-small text-muted fw-bold text-uppercase opacity-75">ID: PAT-{row.original.patient_id}</div>
-                </div>
+                <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
             )
         },
         {
             header: 'Test Type',
             accessorKey: 'test_type.test_name',
-            cell: ({ row }) => <span className="fw-semibold text-gray-700">{row.original.test_type?.test_name || 'N/A'}</span>
+            cell: ({ row }) => (
+                <TableCellPrimary>{row.original.test_type?.test_name || 'N/A'}</TableCellPrimary>
+            )
         },
         {
             header: 'Priority',
             accessorKey: 'priority',
-            cell: ({ row }) => {
-                const p = (row.original.priority || 'normal').toLowerCase();
-                const colors = {
-                    urgent: 'bg-danger-subtle text-danger border-danger-subtle',
-                    stat: 'bg-dark text-white border-dark',
-                    emergency: 'bg-danger text-white border-danger animate-pulse-custom',
-                    high: 'bg-orange-subtle text-orange-600 border-orange-200',
-                    normal: 'bg-info-subtle text-info border-info-subtle'
-                };
-                return (
-                    <span className={`badge rounded-pill px-3 py-2 fw-bold border nyl-badge-sm ${colors[p] || colors.normal}`}>
-                        <i className="fas fa-bolt me-1"></i>{p.toUpperCase()}
-                    </span>
-                );
-            }
+            cell: ({ row }) => <PriorityBadge priority={row.original.priority} />
         },
         {
             header: 'Status',
@@ -99,32 +95,41 @@ export default function LabRequestsIndex({ requests, filters, auth }) {
             header: 'Requested By',
             accessorKey: 'doctor.user.last_name',
             cell: ({ row }) => (
-                <div className="small text-muted fw-medium">
+                <TableCellSub>
                     Dr. {row.original.doctor?.user?.last_name || 'System'}
-                </div>
+                </TableCellSub>
             )
         },
         {
             header: 'Actions',
             id: 'actions',
-            cell: ({ row }) => (
-                <div className="d-flex justify-content-end gap-2">
-                    <Link href={route('lab.show', row.original.request_id)} className="btn btn-sm btn-light border text-pink-500 rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center" title="View Details">
-                        <i className="fas fa-eye extra-small"></i>
-                    </Link>
-                    {auth.user.role === 'lab_technician' && row.original.status === 'pending' && (
-                        <button 
-                            onClick={() => handleProcess(row.original.request_id)}
-                            className="btn btn-sm btn-light border text-info rounded-circle p-2 shadow-sm avatar-sm d-flex align-items-center justify-content-center"
-                            title="Start Processing"
-                        >
-                            <i className="fas fa-vial extra-small"></i>
-                        </button>
-                    )}
-                </div>
-            )
+            cell: ({ row }) => {
+                const actions = [
+                    {
+                        label: 'View details',
+                        icon: 'fa-eye',
+                        href: route('lab.show', row.original.request_id),
+                    },
+                    auth.user.role === 'lab_technician' && row.original.status === 'pending' && {
+                        label: 'Start processing',
+                        icon: 'fa-vial',
+                        onClick: () => handleProcess(row.original.request_id),
+                    },
+                ].filter(Boolean);
+
+                return <TableActions actions={actions} />;
+            }
         }
-    ], []);
+    ], [auth.user.role]);
+
+    const statItems = useMemo(() => [
+        { label: 'Pending', value: stats.pending || 0, icon: 'fa-clock', color: 'warning' },
+        { label: 'Processing', value: stats.processing || 0, icon: 'fa-vial', color: 'info' },
+        { label: 'Completed', value: stats.completed || 0, icon: 'fa-check-circle', color: 'success' },
+        { label: 'Urgent', value: stats.urgent || 0, icon: 'fa-bolt', color: 'danger' },
+    ], [stats]);
+
+    const showStats = auth.user.role !== 'patient';
 
     return (
         <AuthenticatedLayout 
@@ -138,53 +143,61 @@ export default function LabRequestsIndex({ requests, filters, auth }) {
             <Head title={auth.user.role === 'patient' ? 'My Labs' : 'Laboratory'} />
 
             <UnifiedToolbar 
-                viewOptions={[
-                    { label: 'LIST VIEW', icon: 'fa-list-ul', onClick: () => {} },
-                    { label: 'GRID VIEW', icon: 'fa-th-large', onClick: () => {} }
+                filterGroups={[
+                    {
+                        id: 'status',
+                        label: 'Status',
+                        emptyLabel: 'All statuses',
+                        value: status,
+                        onChange: handleStatusChange,
+                        options: [
+                            { label: 'Pending', value: 'pending' },
+                            { label: 'Processing', value: 'processing' },
+                            { label: 'Completed', value: 'completed' },
+                            { label: 'Cancelled', value: 'cancelled' },
+                        ],
+                    },
+                    {
+                        id: 'priority',
+                        label: 'Priority',
+                        emptyLabel: 'All priorities',
+                        value: quickFilter,
+                        onChange: handleQuickFilterChange,
+                        options: [
+                            { label: 'Urgent', value: 'urgent' },
+                            { label: 'Normal', value: 'normal' },
+                        ],
+                    },
                 ]}
-                filters={
-                    <>
-                        <DashboardSelect 
-                            options={[
-                                { label: 'Pending', value: 'pending' },
-                                { label: 'Processing', value: 'processing' },
-                                { label: 'Completed', value: 'completed' },
-                                { label: 'Cancelled', value: 'cancelled' },
-                            ]}
-                            value={status}
-                            onChange={handleStatusChange}
-                            placeholder="Status..."
-                            theme="dark"
-                            dropup={true}
-                        />
-                        <DashboardSelect 
-                            options={[
-                                { label: 'Urgent', value: 'urgent' },
-                                { label: 'Normal', value: 'normal' },
-                            ]}
-                            value={quickFilter}
-                            onChange={handleQuickFilterChange}
-                            placeholder="Priority..."
-                            theme="dark"
-                            dropup={true}
-                        />
-                    </>
-                }
                 actions={[
-                    auth.user.role === 'lab_technician' && { 
-                        label: 'TEST CATALOG', 
-                        icon: 'fa-vials', 
-                        href: route('lab.tests') 
-                    }
-                ]}
+                    ['admin', 'lab_technician', 'nurse'].includes(auth.user.role) && {
+                        label: 'REGISTER SAMPLE',
+                        icon: 'fa-vial',
+                        href: route('lab.samples.register'),
+                        color: 'success',
+                    },
+                    ['admin', 'lab_technician'].includes(auth.user.role) && {
+                        label: 'LAB RESULTS',
+                        icon: 'fa-file-medical-alt',
+                        href: route('lab.results'),
+                    },
+                    auth.user.role === 'lab_technician' && {
+                        label: 'TEST CATALOG',
+                        icon: 'fa-vials',
+                        href: route('lab.tests'),
+                    },
+                ].filter(Boolean)}
                 bulkActions={[
-                    { label: 'MARK COMPLETE', icon: 'fa-check-circle', onClick: () => { if(confirm(`Complete ${selectedIds.length} requests?`)) { selectedIds.forEach(id => router.post(route('lab.update-status', id), { status: 'completed' }, { preserveScroll: true })); setSelectedIds([]); } } },
-                    { label: 'CANCEL SELECTED', icon: 'fa-times-circle', onClick: () => console.log('Cancel', selectedIds), color: 'danger' }
+                    { label: 'MARK COMPLETE', icon: 'fa-check-circle', onClick: () => handleBulkAction('complete') },
+                    { label: 'CANCEL SELECTED', icon: 'fa-times-circle', onClick: () => handleBulkAction('cancel'), color: 'danger' },
+                    { label: 'DELETE SELECTED', icon: 'fa-trash-alt', onClick: () => handleBulkAction('delete'), color: 'danger' }
                 ]}
                 selectionCount={selectedIds.length}
             />
 
             <div className="px-0">
+                {showStats && <StatCardGrid items={statItems} />}
+
                 <DashboardSearch 
                     placeholder="Search by patient name or request ID..." 
                     value={search}
@@ -198,7 +211,9 @@ export default function LabRequestsIndex({ requests, filters, auth }) {
                     ]}
                 />
 
-                <DashboardTable 
+                <RegistryTablePanel
+                    title="Lab request registry"
+                    icon="fa-flask"
                     columns={columns}
                     data={requests.data}
                     pagination={requests}
@@ -208,7 +223,6 @@ export default function LabRequestsIndex({ requests, filters, auth }) {
                     onSelectionChange={setSelectedIds}
                     idField="request_id"
                 />
-
             </div>
         </AuthenticatedLayout>
     );

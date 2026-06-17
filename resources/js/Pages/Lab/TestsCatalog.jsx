@@ -1,17 +1,27 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import DashboardSearch from '@/Components/DashboardSearch';
 import DashboardTable from '@/Components/DashboardTable';
-import ViewToggle from '@/Components/ViewToggle';
-import DashboardSelect from '@/Components/DashboardSelect';
-import { useState, useMemo } from 'react';
+import RegistryTablePanel from '@/Components/RegistryTablePanel';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
+import TableActions from '@/Components/TableActions';
+import GridCardActions from '@/Components/GridCardActions';
+import StatusBadge from '@/Components/StatusBadge';
+import { TableCellPrimary, TableCellStack } from '@/Components/TableCells';
+import { formatNumber } from '@/Utils/formatUtils';
+import { useState, useMemo, useEffect } from 'react';
 
 export default function TestsCatalog({ tests, auth, filters, categories }) {
     const [search, setSearch] = useState(filters.search || '');
     const [quickFilter, setQuickFilter] = useState(filters.category || '');
     const [viewMode, setViewMode] = useState(() => localStorage.getItem('lab_tests_view') || 'list'); 
     const [selectedTests, setSelectedTests] = useState([]);
+
+    useEffect(() => {
+        const handleClear = () => setSelectedTests([]);
+        window.addEventListener('toolbar-clear-selection', handleClear);
+        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
+    }, []);
 
     const isAdmin = auth.user.role === 'admin' || auth.user.role === 'lab_technician';
 
@@ -83,7 +93,7 @@ export default function TestsCatalog({ tests, auth, filters, categories }) {
                 enableSorting: true,
                 cell: ({ row }) => (
                     <div className="d-flex align-items-center">
-                        <div className="avatar-xs bg-pink-50 text-pink-500 rounded-circle d-flex align-items-center justify-content-center me-3 border border-pink-100 shadow-sm" style={{ width: '36px', height: '36px' }}>
+                        <div className="avatar-36 bg-pink-50 text-pink-500 rounded-circle d-flex align-items-center justify-content-center me-3 border border-pink-100 shadow-sm">
                             <i className="fas fa-flask text-xs"></i>
                         </div>
                         <div>
@@ -105,7 +115,7 @@ export default function TestsCatalog({ tests, auth, filters, categories }) {
                 cell: ({ row }) => (
                     <div className="fw-bold text-gray-900">
                         <span className="text-muted extra-small me-1">Ksh.</span>
-                        {new Intl.NumberFormat('en-KE').format(row.original.price || 0)}
+                        {formatNumber(row.original.price || 0)}
                     </div>
                 )
             },
@@ -114,10 +124,7 @@ export default function TestsCatalog({ tests, auth, filters, categories }) {
                 accessorKey: 'is_active',
                 enableSorting: true,
                 cell: ({ row }) => (
-                    <span className={`badge rounded-pill px-3 py-2 fw-bold border ${row.original.is_active ? 'bg-success-subtle text-success border-success-subtle' : 'bg-secondary-subtle text-secondary border-secondary-subtle'}`} style={{ fontSize: '0.7rem' }}>
-                        <i className={`fas fa-${row.original.is_active ? 'check-circle' : 'times-circle'} me-1`}></i>
-                        {row.original.is_active ? 'Active' : 'Inactive'}
-                    </span>
+                    <StatusBadge status={row.original.is_active ? 'active' : 'inactive'} />
                 )
             }
         ];
@@ -127,44 +134,27 @@ export default function TestsCatalog({ tests, auth, filters, categories }) {
                 header: 'Actions',
                 id: 'actions',
                 cell: ({ row }) => (
-                    <div className="dropdown">
-                        <button className="btn btn-sm btn-light border-0 rounded-circle shadow-none p-2" data-bs-toggle="dropdown" style={{ width: '32px', height: '32px' }}>
-                            <i className="fas fa-ellipsis-v text-muted"></i>
-                        </button>
-                        <ul className="dropdown-menu dropdown-menu-end shadow-2xl border-0 rounded-2xl py-2 mt-2 animate-in fade-in zoom-in-95 duration-200" style={{ borderRadius: '0' }}>
-                            <li>
-                                <Link className="dropdown-item py-2 px-3 d-flex align-items-center gap-3" href={route('lab-tests.edit', row.original.test_type_id)}>
-                                    <div className="bg-primary-subtle text-primary rounded-lg p-2 d-flex align-items-center justify-content-center" style={{width: '32px', height: '32px'}}>
-                                        <i className="fas fa-edit text-xs"></i>
-                                    </div>
-                                    <span className="fw-bold text-gray-700">Edit Protocol</span>
-                                </Link>
-                            </li>
-                            <li>
-                                <button 
-                                    onClick={() => handleToggleStatus(row.original.test_type_id)}
-                                    className="dropdown-item py-2 px-3 d-flex align-items-center gap-3"
-                                >
-                                    <div className={`bg-${row.original.is_active ? 'danger' : 'success'}-subtle text-${row.original.is_active ? 'danger' : 'success'} rounded-lg p-2 d-flex align-items-center justify-content-center`} style={{width: '32px', height: '32px'}}>
-                                        <i className={`fas fa-${row.original.is_active ? 'eye-slash' : 'eye'} text-xs`}></i>
-                                    </div>
-                                    <span className={`fw-bold text-${row.original.is_active ? 'danger' : 'success'}`}>
-                                        {row.original.is_active ? 'Deactivate' : 'Activate'}
-                                    </span>
-                                </button>
-                            </li>
-                            <li><hr className="dropdown-divider opacity-10 mx-3" /></li>
-                            <li>
-                                <Link className="dropdown-item py-2 px-3 d-flex align-items-center gap-3" href={route('lab.tests')}>
-                                    <div className="bg-info-subtle text-info rounded-lg p-2 d-flex align-items-center justify-content-center" style={{width: '32px', height: '32px'}}>
-                                        <i className="fas fa-history text-xs"></i>
-                                    </div>
-                                    <span className="fw-bold text-gray-700">Audit Logs</span>
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-                )
+                    <TableActions actions={[
+                        {
+                            icon: 'fa-edit',
+                            label: 'Edit protocol',
+                            href: route('lab-tests.edit', row.original.test_type_id),
+                        },
+                        {
+                            icon: row.original.is_active ? 'fa-eye-slash' : 'fa-eye',
+                            label: row.original.is_active ? 'Deactivate' : 'Activate',
+                            onClick: () => handleToggleStatus(row.original.test_type_id),
+                            color: row.original.is_active ? 'danger' : 'success',
+                        },
+                        { isDivider: true },
+                        {
+                            icon: 'fa-history',
+                            label: 'Audit logs',
+                            href: route('lab.tests'),
+                            color: 'info',
+                        },
+                    ]} />
+                ),
             });
         }
 
@@ -178,36 +168,43 @@ export default function TestsCatalog({ tests, auth, filters, categories }) {
 
     return (
         <AuthenticatedLayout
-            header="Laboratory Tests"
-            toolbarFilters={
-                <div className="d-flex align-items-center gap-2">
-                    <DashboardSelect 
-                        options={categories.map(c => ({ label: c, value: c }))}
-                        value={quickFilter}
-                        onChange={handleCategoryChange}
-                        placeholder="Category..."
-                        theme="dark"
-                        dropup={true}
-                        style={{ width: '180px' }}
-                    />
-                </div>
-            }
-            toolbarActions={
-                <div className="d-flex align-items-center gap-2">
-                    <ViewToggle view={viewMode} setView={handleViewChange} />
-                    {isAdmin && (
-                        <Link href={route('lab-tests.create')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                            <i className="fas fa-plus me-1"></i> New Protocol
-                        </Link>
-                    )}
-                </div>
-            }
+            headerTitle="Laboratory Test Catalog"
+            breadcrumbs={[{ label: 'Lab', url: route('lab.index') }, { label: 'Tests', active: true }]}
         >
             <Head title="Lab Tests" />
 
-            <PageHeader 
-                title="Laboratory Test Catalog"
-                breadcrumbs={[{ label: 'Lab', url: route('lab.index') }, { label: 'Tests', active: true }]}
+            <UnifiedToolbar
+                viewMode={viewMode}
+                onViewModeChange={handleViewChange}
+                filterGroups={[
+                    {
+                        id: 'category',
+                        label: 'Category',
+                        emptyLabel: 'All categories',
+                        value: quickFilter,
+                        onChange: handleCategoryChange,
+                        options: categories.map((c) => ({ label: c, value: c })),
+                    },
+                ]}
+                actions={[
+                    isAdmin && {
+                        label: 'NEW PROTOCOL',
+                        icon: 'fa-plus',
+                        href: route('lab-tests.create'),
+                    },
+                    {
+                        label: 'LAB REQUESTS',
+                        icon: 'fa-vial',
+                        href: route('lab.index'),
+                        color: 'gray',
+                    },
+                ].filter(Boolean)}
+                bulkActions={[
+                    { label: 'PRINT BATCH', icon: 'fa-print', onClick: () => {} },
+                    { label: 'UPDATE PRICES', icon: 'fa-tag', onClick: () => {} },
+                    { label: 'REMOVE SELECTED', icon: 'fa-trash-alt', onClick: () => {}, color: 'danger' },
+                ]}
+                selectionCount={selectedTests.length}
             />
 
             <div className="container-fluid px-0">
@@ -220,33 +217,10 @@ export default function TestsCatalog({ tests, auth, filters, categories }) {
                     filters={categories.map(c => ({ label: c, value: c }))}
                 />
                 
-                {selectedTests.length > 0 && (
-                    <div className="bulk-actions-bar animate-in fade-in slide-in-from-top-2 bg-primary-gradient text-white p-3 rounded-2xl mb-4 d-flex justify-content-between align-items-center shadow-lg border border-white border-opacity-10">
-                        <div className="d-flex align-items-center gap-4 ps-2">
-                            <div className="bg-white bg-opacity-20 rounded-xl p-2 d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px' }}>
-                                <i className="fas fa-check-double fs-4 text-white"></i>
-                            </div>
-                            <div>
-                                <span className="fw-bold fs-5">{selectedTests.length} tests selected</span>
-                                <div className="extra-small opacity-75 font-bold text-uppercase tracking-wider">Bulk management active</div>
-                            </div>
-                        </div>
-                        <div className="d-flex gap-2">
-                            <button className="btn btn-white btn-sm rounded-pill px-4 py-2 fw-bold shadow-sm transition-all hover-translate-up">
-                                <i className="fas fa-print me-2"></i> Print Batch
-                            </button>
-                            <button className="btn btn-white btn-sm rounded-pill px-4 py-2 fw-bold shadow-sm transition-all hover-translate-up">
-                                <i className="fas fa-tag me-2"></i> Update Prices
-                            </button>
-                            <button className="btn btn-danger btn-sm rounded-pill px-4 py-2 fw-bold shadow-sm transition-all hover-translate-up border border-white border-opacity-20">
-                                <i className="fas fa-trash-alt me-2"></i> Remove
-                            </button>
-                        </div>
-                    </div>
-                )}
-
                 {viewMode === 'list' ? (
-                    <DashboardTable 
+                    <RegistryTablePanel
+                        title="Test catalog"
+                        icon="fa-vials"
                         columns={columns}
                         data={tests.data}
                         pagination={tests}
@@ -272,7 +246,7 @@ export default function TestsCatalog({ tests, auth, filters, categories }) {
                                                     />
                                                 </div>
                                                 <div className="d-flex align-items-center mb-4">
-                                                    <div className="flex-shrink-0 avatar-sm bg-pink-50 text-pink-500 rounded-2xl d-flex align-items-center justify-content-center me-3 shadow-inner border border-pink-100" style={{ width: '52px', height: '52px' }}>
+                                                    <div className="flex-shrink-0 avatar-sm bg-pink-50 text-pink-500 rounded-2xl d-flex align-items-center justify-content-center me-3 shadow-inner border border-pink-100 nyl-test-type-icon">
                                                         <i className="fas fa-flask fa-lg"></i>
                                                     </div>
                                                     <div>
@@ -286,9 +260,11 @@ export default function TestsCatalog({ tests, auth, filters, categories }) {
                                                 <div className="d-flex justify-content-between align-items-center mt-auto pt-2">
                                                     <div className="d-flex flex-column">
                                                         <span className="extra-small text-muted font-bold text-uppercase tracking-wider">Protocol Fee</span>
-                                                        <span className="fw-bold text-gray-900 fs-5">Ksh. {new Intl.NumberFormat('en-KE').format(test.price || 0)}</span>
+                                                        <span className="fw-bold text-gray-900 fs-5">Ksh. {formatNumber(test.price || 0)}</span>
                                                     </div>
-                                                    <Link href={route('lab-tests.edit', test.test_type_id)} className="btn btn-light border fw-bold rounded-pill px-4">Edit</Link>
+                                                    <GridCardActions actions={[
+                                                        { icon: 'fa-edit', label: 'Edit protocol', href: route('lab-tests.edit', test.test_type_id) },
+                                                    ]} className="border-0 pt-2" />
                                                 </div>
                                             </div>
                                         </div>
@@ -320,23 +296,9 @@ export default function TestsCatalog({ tests, auth, filters, categories }) {
             <style>{`
                 .extra-small { font-size: 0.7rem; }
                 .hover-lift:hover { transform: translateY(-5px); }
-                .shadow-hover:hover { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important; }
-                .bulk-actions-bar {
-                    background: linear-gradient(135deg, #e91e63 0%, #d81b60 100%);
-                }
-                .btn-white {
-                    background: white;
-                    color: #e91e63;
-                    border: none;
-                }
-                .btn-white:hover {
-                    background: #f8f9fa;
-                    color: #d81b60;
-                }
                 .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); }
                 .ring-primary { --tw-ring-color: #e91e63; }
                 .ring-2 { box-shadow: 0 0 0 2px var(--tw-ring-color); }
-                .hover-translate-up:hover { transform: translateY(-2px); }
                 .line-clamp-2 {
                     display: -webkit-box;
                     -webkit-line-clamp: 2;

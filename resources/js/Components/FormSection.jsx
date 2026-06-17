@@ -1,18 +1,62 @@
-import React from 'react';
+import DashboardPanel from '@/Components/DashboardPanel';
 
-export default function FormSection({ title, icon, children, actions, className = "", headerClassName = "bg-primary text-white", bodyClassName = "p-4" }) {
+function normalizeIcon(icon) {
+    if (!icon) return undefined;
+    const match = String(icon).match(/fa-[a-z0-9-]+/i);
+    return match ? match[0] : icon;
+}
+
+function inferHeaderVariant(headerClassName = '') {
+    const h = headerClassName || '';
+
+    if (h.includes('bg-gradient') || (h.includes('text-white') && (h.includes('bg-primary') || h.includes('gradient')))) {
+        return 'gradient';
+    }
+    if (h.includes('bg-pink-500') || (h.includes('text-white') && !h.includes('bg-white'))) {
+        return 'pink';
+    }
+    if (h.includes('success-subtle') || h.includes('success-emphasis')) {
+        return 'subtle-success';
+    }
+    if (h.includes('bg-blue-50') || h.includes('text-blue')) {
+        return 'subtle-info';
+    }
+    if (h.includes('bg-purple-50') || h.includes('text-purple')) {
+        return 'subtle-purple';
+    }
+    if (h.includes('bg-white') || h.includes('border-bottom')) {
+        return 'section';
+    }
+
+    return 'section';
+}
+
+/**
+ * Form section card — uses the same DashboardPanel shell as registry tables.
+ */
+export default function FormSection({
+    title,
+    icon,
+    children,
+    actions,
+    className = '',
+    headerClassName = '',
+    bodyClassName = '',
+    headerVariant,
+}) {
+    const variant = headerVariant || inferHeaderVariant(headerClassName);
+
     return (
-        <div className={`card border-0 shadow-sm rounded-4 mb-4 ${className}`}>
-            <div className={`card-header ${headerClassName} rounded-top-4 p-3 d-flex justify-content-between align-items-center`}>
-                <h6 className="mb-0 fw-bold">
-                    {icon && <i className={`${icon} me-2`}></i>}
-                    {title}
-                </h6>
-                {actions && <div>{actions}</div>}
-            </div>
-            <div className={`card-body ${bodyClassName}`}>
-                {children}
-            </div>
-        </div>
+        <DashboardPanel
+            title={title}
+            icon={normalizeIcon(icon)}
+            headerVariant={variant}
+            actions={actions}
+            className={`nyl-form-section mb-4 ${className}`}
+            bodyClassName={bodyClassName}
+            headerClassName={headerClassName}
+        >
+            {children}
+        </DashboardPanel>
     );
 }

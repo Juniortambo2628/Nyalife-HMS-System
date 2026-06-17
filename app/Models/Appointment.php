@@ -26,6 +26,7 @@ class Appointment extends Model
         'doctor_id',
         'appointment_date',
         'appointment_time',
+        'end_time',
         'appointment_type',
         'status', // scheduled, confirmed, completed, cancelled, no_show, pending
         'reason',

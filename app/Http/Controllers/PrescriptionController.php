@@ -15,13 +15,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use App\Services\ActivityLogger;
+use App\Support\PatientId;
+use App\Support\Permissions;
 
 class PrescriptionController extends Controller
 {
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Prescription::with(['patient.user', 'items.medication']);
+        $query = Prescription::with(['patient.user', 'doctor', 'items.medication']);
         
         if ($user && $user->role === 'patient') {
             $patient = Patient::where('user_id', $user->user_id)->first();
@@ -70,7 +72,7 @@ class PrescriptionController extends Controller
 
         return Inertia::render('Prescriptions/Create', [
             'preselected_patient_id' => $patientId,
-            'preselected_patient_label' => $patient ? ($patient->user->first_name . ' ' . $patient->user->last_name) : null,
+            'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
             'consultation_id' => $consultationId
         ]);
     }
@@ -175,9 +177,237 @@ class PrescriptionController extends Controller
     public function show($id)
     {
         $prescription = Prescription::with(['patient.user', 'items.medication', 'doctor'])->findOrFail($id);
+
+        $this->requireStaffOrOwnPatient(
+            $prescription->patient_id,
+            Permissions::MANAGE_PRESCRIPTIONS,
+            Permissions::MANAGE_PHARMACY
+        );
+
         return Inertia::render('Prescriptions/Show', [
             'prescription' => PrescriptionResource::make($prescription)
         ]);
+    }
+
+    public function print($id)
+    {
+        $prescription = Prescription::with(['patient.user', 'items.medication', 'doctor'])->findOrFail($id);
+
+        $this->requireStaffOrOwnPatient(
+            $prescription->patient_id,
+            Permissions::MANAGE_PRESCRIPTIONS,
+            Permissions::MANAGE_PHARMACY
+        );
+
+        $settings = \App\Models\Setting::whereIn('key', [
+            'contact_address', 'contact_email', 'contact_phone',
+        ])->pluck('value', 'key');
+
+        return Inertia::render('Prescriptions/Print', [
+            'prescription' => PrescriptionResource::make($prescription),
+            'clinic_settings' => $settings,
+        ]);
+    }
+
+    public function dispense(Request $request, $id)
+    {
+        $prescription = Prescription::findOrFail($id);
+        
+        if ($prescription->status !== 'pending') {
+            return back()->withErrors(['error' => 'Prescription is already dispensed or cancelled.']);
+        }
+
+        $prescription->update([
+            'status' => 'dispensed',
+            'dispensed_by' => Auth::id(),
+            'dispensed_at' => now(),
+        ]);
+
+        $rxLabel = $prescription->prescription_number
+            ?? ('RX-' . str_pad((string) $prescription->prescription_id, 6, '0', STR_PAD_LEFT));
+
+        ActivityLogger::log(
+            'pharmacy',
+            "Prescription {$rxLabel} dispensed",
+            ['prescription_id' => $prescription->prescription_id],
+            Auth::user(),
+            $prescription,
+            [$prescription->patient->user_id, 1]
+        );
+
+        return back()->with('success', 'Prescription marked as dispensed.');
+    }
+
+    public function edit($id)
+    {
+        $prescription = Prescription::with(['patient.user', 'items.medication', 'doctor'])->findOrFail($id);
+
+        if ($prescription->status !== 'pending') {
+            return back()->with('error', 'Only pending prescriptions can be edited.');
+        }
+
+        return Inertia::render('Prescriptions/Edit', [
+            'prescription' => PrescriptionResource::make($prescription),
+            'preselected_patient_id' => $prescription->patient_id,
+            'preselected_patient_label' => PatientId::fromPatient($prescription->patient) ?: null,
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $prescription = Prescription::findOrFail($id);
+
+        if ($prescription->status !== 'pending') {
+            return back()->with('error', 'Only pending prescriptions can be updated.');
+        }
+
+        $validated = $request->validate([
+            'prescription_date' => 'required|date',
+            'notes' => 'nullable|string',
+            'items' => 'required|array|min:1',
+            'items.*.medication_id' => 'nullable|exists:medications,medication_id',
+            'items.*.dosage' => 'required|string',
+            'items.*.frequency' => 'required|string',
+            'items.*.duration' => 'required|string',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $prescription->update([
+                'prescription_date' => $validated['prescription_date'],
+                'notes' => $validated['notes'] ?? null,
+            ]);
+
+            // Delete old items and re-create
+            $prescription->items()->delete();
+
+            foreach ($validated['items'] as $item) {
+                $prescription->items()->create([
+                    'medication_id' => $item['medication_id'] ?? null,
+                    'dosage' => $item['dosage'],
+                    'frequency' => $item['frequency'],
+                    'duration' => $item['duration'],
+                ]);
+            }
+
+            DB::commit();
+
+            ActivityLogger::log(
+                'pharmacy',
+                "Prescription {$prescription->prescription_number} updated",
+                ['prescription_id' => $prescription->prescription_id],
+                Auth::user(),
+                $prescription,
+                [$prescription->patient->user_id, 1]
+            );
+
+            return redirect()->route('prescriptions.show', $prescription->prescription_id)
+                ->with('success', 'Prescription updated successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Failed to update prescription: ' . $e->getMessage()]);
+        }
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $request->validate([
+            'void_reason' => 'required|string|max:255'
+        ]);
+
+        $prescription = Prescription::findOrFail($id);
+
+        $prescription->update([
+            'is_voided' => true,
+            'void_reason' => $request->void_reason,
+            'voided_by' => Auth::id(),
+            'voided_at' => now(),
+        ]);
+
+        ActivityLogger::log(
+            'pharmacy',
+            "Prescription {$prescription->prescription_number} voided: {$request->void_reason}",
+            ['prescription_id' => $prescription->prescription_id],
+            Auth::user(),
+            $prescription,
+            [$prescription->patient->user_id, 1]
+        );
+
+        return redirect()->route('prescriptions.index')->with('success', 'Prescription has been voided.');
+    }
+
+    /**
+     * Handle bulk actions on prescriptions.
+     */
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:dispense,void,delete',
+            'ids'    => 'required|array|min:1',
+            'ids.*'  => 'integer',
+        ]);
+
+        $ids    = $validated['ids'];
+        $action = $validated['action'];
+        $count  = count($ids);
+
+        switch ($action) {
+            case 'dispense':
+                $prescriptions = Prescription::whereIn('prescription_id', $ids)->get();
+                $dispensedCount = 0;
+                foreach ($prescriptions as $prescription) {
+                    if ($prescription->status !== 'dispensed' && !$prescription->is_voided) {
+                        $prescription->update([
+                            'status' => 'dispensed',
+                            'dispensed_by' => Auth::id(),
+                            'dispensed_at' => now(),
+                        ]);
+                        ActivityLogger::log(
+                            'pharmacy',
+                            "Prescription {$prescription->prescription_number} bulk dispensed",
+                            ['prescription_id' => $prescription->prescription_id],
+                            Auth::user(),
+                            $prescription,
+                            [$prescription->patient->user_id, 1]
+                        );
+                        $dispensedCount++;
+                    }
+                }
+                return redirect()->back()->with('success', "{$dispensedCount} prescription(s) dispensed.");
+
+            case 'void':
+                $prescriptions = Prescription::whereIn('prescription_id', $ids)->get();
+                $voidedCount = 0;
+                foreach ($prescriptions as $prescription) {
+                    if (!$prescription->is_voided && $prescription->status !== 'dispensed') {
+                        $prescription->update([
+                            'is_voided' => true,
+                            'void_reason' => 'Bulk voided via toolbar',
+                            'voided_by' => Auth::id(),
+                            'voided_at' => now(),
+                        ]);
+                        ActivityLogger::log(
+                            'pharmacy',
+                            "Prescription {$prescription->prescription_number} bulk voided",
+                            ['prescription_id' => $prescription->prescription_id],
+                            Auth::user(),
+                            $prescription,
+                            [$prescription->patient->user_id, 1]
+                        );
+                        $voidedCount++;
+                    }
+                }
+                return redirect()->back()->with('success', "{$voidedCount} prescription(s) voided.");
+
+            case 'delete':
+                $deletedCount = Prescription::whereIn('prescription_id', $ids)
+                    ->where('status', '!=', 'dispensed')
+                    ->delete();
+                return redirect()->back()->with('success', "{$deletedCount} prescription(s) deleted.");
+        }
+
+        return redirect()->back()->with('error', 'Unknown bulk action.');
     }
 
     /**

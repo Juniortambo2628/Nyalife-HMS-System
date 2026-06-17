@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Department;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,8 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
-            'staff' => $request->user()->staff,
+            'staff' => $request->user()->staff?->load('departmentRelation'),
+            'departments' => Department::active()->orderBy('department_name')->get(['department_id', 'department_name']),
         ]);
     }
 
@@ -42,9 +44,20 @@ class ProfileController extends Controller
         $user->save();
 
         // Update staff details if user is staff
-        $staffFields = ['specialization', 'department', 'license_number'];
+        $staffFields = ['specialization', 'department', 'department_id', 'license_number'];
         if ($user->staff && count(array_intersect($staffFields, array_keys($validated))) > 0) {
-            $user->staff->update($request->only($staffFields));
+            $staffData = $request->only($staffFields);
+
+            if (! empty($staffData['department_id'])) {
+                $department = Department::find($staffData['department_id']);
+                if ($department) {
+                    $staffData['department'] = $department->department_name;
+                }
+            } elseif (array_key_exists('department_id', $staffData) && empty($staffData['department_id'])) {
+                $staffData['department'] = null;
+            }
+
+            $user->staff->update($staffData);
         }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');

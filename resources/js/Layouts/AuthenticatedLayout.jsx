@@ -7,66 +7,87 @@ import UserAvatar from '@/Components/UserAvatar';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import PageHeader from '@/Components/PageHeader';
 
+// Shared staff/patient portal permissions for sidebar
+const P = {
+    appts: ['manage-appointments', 'view-own-records'],
+    consults: ['manage-consultations', 'view-own-records'],
+    rx: ['manage-prescriptions', 'view-own-records'],
+    invoices: ['manage-invoices', 'view-own-records'],
+    labResults: ['manage-lab', 'view-own-records'],
+};
+
 // Role-based sidebar menu items matching legacy system
 const sidebarMenus = {
     admin: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'appointments', text: 'Appointments', url: '/appointments', icon: 'fas fa-calendar-alt' },
-        { id: 'patients', text: 'Patients', url: '/patients', icon: 'fas fa-users' },
-        { id: 'consultations', text: 'Consultations', url: '/consultations', icon: 'fas fa-stethoscope' },
-        { id: 'lab-requests', text: 'Lab Requests', url: route('lab.index'), icon: 'fas fa-flask' },
-        { id: 'prescriptions', text: 'Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription' },
-        { id: 'invoices', text: 'Invoices', url: '/invoices', icon: 'fas fa-file-invoice' },
-        { id: 'users', text: 'Users', url: '/users', icon: 'fas fa-user-cog' },
-        { id: 'lab-catalog', text: 'Lab Catalog', url: route('lab.tests'), icon: 'fas fa-vials' },
-        { id: 'reports', text: 'Reports', url: '/reports', icon: 'fas fa-chart-bar' },
-        { id: 'blog-manage', text: 'Manage Blogs', url: route('blog.manage'), icon: 'fas fa-blog' },
-        { id: 'cms-manage', text: 'Landing CMS', url: route('cms.index'), icon: 'fas fa-laptop-code' },
-        { id: 'insurance-manage', text: 'Accepted Insurances', url: route('insurances.index'), icon: 'fas fa-shield-alt' },
-        { id: 'mail-templates', text: 'Email Templates', url: route('mail-templates.index'), icon: 'fas fa-envelope-open-text' },
-        { id: 'contact-messages', text: 'Website Messages', url: route('admin.messages.index'), icon: 'fas fa-envelope-open-text' },
+        { id: 'appointments', text: 'Appointments', url: '/appointments', icon: 'fas fa-calendar-alt', permissionAny: P.appts },
+        { id: 'patients', text: 'Patients', url: '/patients', icon: 'fas fa-users', permission: 'manage-patients' },
+        { id: 'consultations', text: 'Consultations', url: '/consultations', icon: 'fas fa-stethoscope', permissionAny: P.consults },
+        { id: 'follow-ups', text: 'Follow-ups', url: '/follow-ups', icon: 'fas fa-calendar-check', permission: 'manage-follow-ups' },
+        { id: 'lab-requests', text: 'Lab Requests', url: route('lab.index'), icon: 'fas fa-flask', permission: 'manage-lab' },
+        { id: 'lab-results', text: 'Lab Results', url: route('lab.results'), icon: 'fas fa-file-medical-alt', permissionAny: P.labResults },
+        { id: 'lab-samples', text: 'Samples', url: route('lab.samples.index'), icon: 'fas fa-vial', permission: 'manage-lab' },
+        { id: 'prescriptions', text: 'Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription', permissionAny: P.rx },
+        { id: 'invoices', text: 'Invoices', url: '/invoices', icon: 'fas fa-file-invoice', permissionAny: P.invoices },
+        { id: 'payments', text: 'Payments', url: '/payments', icon: 'fas fa-money-bill-wave', permission: 'manage-payments' },
+        { id: 'departments', text: 'Departments', url: '/departments', icon: 'fas fa-building', permission: 'manage-departments' },
+        { id: 'users', text: 'Users', url: '/users', icon: 'fas fa-user-cog', permission: 'manage-users' },
+        { id: 'lab-catalog', text: 'Lab Catalog', url: route('lab.tests'), icon: 'fas fa-vials', permission: 'manage-lab-catalog' },
+        { id: 'reports', text: 'Reports', url: '/reports', icon: 'fas fa-chart-bar', permission: 'view-reports' },
+        { id: 'void-audit', text: 'Void Audit', url: route('admin.void-audit.index'), icon: 'fas fa-ban', permission: 'view-reports' },
+        { id: 'blog-manage', text: 'Manage Blogs', url: route('blog.manage'), icon: 'fas fa-blog', permission: 'manage-system' },
+        { id: 'cms-manage', text: 'Landing CMS', url: route('cms.index'), icon: 'fas fa-laptop-code', permission: 'manage-system' },
+        { id: 'admin-settings', text: 'System Settings', url: route('admin.settings.index'), icon: 'fas fa-cogs', permission: 'manage-settings' },
+        { id: 'insurance-manage', text: 'Accepted Insurances', url: route('insurances.index'), icon: 'fas fa-shield-alt', permissionAny: ['manage-system', 'manage-insurance'] },
+        { id: 'mail-templates', text: 'Email Templates', url: route('mail-templates.index'), icon: 'fas fa-envelope-open-text', permission: 'manage-system' },
+        { id: 'contact-messages', text: 'Website Messages', url: route('admin.messages.index'), icon: 'fas fa-envelope-open-text', permission: 'manage-system' },
     ],
     doctor: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'appointments', text: 'My Appointments', url: '/appointments', icon: 'fas fa-calendar-alt' },
-        { id: 'consultations', text: 'Consultations', url: '/consultations', icon: 'fas fa-stethoscope' },
-        { id: 'patients', text: 'View Patients', url: '/patients', icon: 'fas fa-users' },
-        { id: 'lab-requests', text: 'Lab Requests', url: route('lab.index'), icon: 'fas fa-flask' },
-        { id: 'prescriptions', text: 'Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription' },
-        { id: 'schedule', text: 'My Schedule', url: '/appointments/calendar', icon: 'fas fa-clock' },
+        { id: 'appointments', text: 'My Appointments', url: '/appointments', icon: 'fas fa-calendar-alt', permissionAny: P.appts },
+        { id: 'consultations', text: 'Consultations', url: '/consultations', icon: 'fas fa-stethoscope', permissionAny: P.consults },
+        { id: 'follow-ups', text: 'Follow-ups', url: '/follow-ups', icon: 'fas fa-calendar-check', permission: 'manage-follow-ups' },
+        { id: 'patients', text: 'View Patients', url: '/patients', icon: 'fas fa-users', permission: 'manage-patients' },
+        { id: 'lab-requests', text: 'Lab Requests', url: route('lab.index'), icon: 'fas fa-flask', permission: 'manage-lab' },
+        { id: 'prescriptions', text: 'Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription', permissionAny: P.rx },
+        { id: 'schedule', text: 'My Schedule', url: '/appointments/calendar', icon: 'fas fa-clock', permission: 'manage-appointments' },
     ],
     nurse: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'appointments', text: 'Appointments', url: '/appointments', icon: 'fas fa-calendar-alt' },
-        { id: 'consultations', text: 'Consultations', url: '/consultations', icon: 'fas fa-stethoscope' },
-        { id: 'patients', text: 'View Patients', url: '/patients', icon: 'fas fa-users' },
-        { id: 'vitals', text: 'Record Vitals', url: '/vitals', icon: 'fas fa-heartbeat' },
+        { id: 'appointments', text: 'Appointments', url: '/appointments', icon: 'fas fa-calendar-alt', permission: 'manage-appointments' },
+        { id: 'consultations', text: 'Consultations', url: '/consultations', icon: 'fas fa-stethoscope', permission: 'manage-consultations' },
+        { id: 'follow-ups', text: 'Follow-ups', url: '/follow-ups', icon: 'fas fa-calendar-check', permission: 'manage-follow-ups' },
+        { id: 'patients', text: 'View Patients', url: '/patients', icon: 'fas fa-users', permission: 'manage-patients' },
+        { id: 'vitals', text: 'Record Vitals', url: '/vitals', icon: 'fas fa-heartbeat', permission: 'manage-vitals' },
     ],
     lab_technician: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'lab-requests', text: 'Lab Requests', url: route('lab.index'), icon: 'fas fa-flask' },
-        { id: 'lab-catalog', text: 'Test Catalog', url: route('lab.tests'), icon: 'fas fa-vial' },
+        { id: 'lab-requests', text: 'Lab Requests', url: route('lab.index'), icon: 'fas fa-flask', permission: 'manage-lab' },
+        { id: 'lab-results', text: 'Lab Results', url: route('lab.results'), icon: 'fas fa-file-medical-alt', permission: 'manage-lab' },
+        { id: 'lab-samples', text: 'Samples', url: route('lab.samples.index'), icon: 'fas fa-vial', permission: 'manage-lab' },
+        { id: 'lab-catalog', text: 'Test Catalog', url: route('lab.tests'), icon: 'fas fa-vial', permission: 'manage-lab' },
     ],
     pharmacist: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'prescriptions', text: 'Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription' },
-        { id: 'inventory', text: 'Inventory', url: '/pharmacy/inventory', icon: 'fas fa-boxes' },
-        { id: 'medicines', text: 'Medicines', url: '/pharmacy/medicines', icon: 'fas fa-pills' },
+        { id: 'prescriptions', text: 'Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription', permissionAny: P.rx },
+        { id: 'inventory', text: 'Inventory', url: '/pharmacy/inventory', icon: 'fas fa-boxes', permission: 'manage-pharmacy' },
+        { id: 'medicines', text: 'Medicines', url: '/pharmacy/medicines', icon: 'fas fa-pills', permission: 'manage-pharmacy' },
     ],
     receptionist: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'appointments', text: 'Appointments', url: '/appointments', icon: 'fas fa-calendar-alt' },
-        { id: 'patients', text: 'Patients', url: '/patients', icon: 'fas fa-users' },
-        { id: 'invoices', text: 'Invoices', url: '/invoices', icon: 'fas fa-file-invoice' },
-        { id: 'insurance-manage', text: 'Health Insurances', url: route('insurances.index'), icon: 'fas fa-shield-alt' },
+        { id: 'appointments', text: 'Appointments', url: '/appointments', icon: 'fas fa-calendar-alt', permission: 'manage-appointments' },
+        { id: 'patients', text: 'Patients', url: '/patients', icon: 'fas fa-users', permission: 'manage-patients' },
+        { id: 'invoices', text: 'Invoices', url: '/invoices', icon: 'fas fa-file-invoice', permission: 'manage-invoices' },
+        { id: 'payments', text: 'Payments', url: '/payments', icon: 'fas fa-money-bill-wave', permission: 'manage-payments' },
+        { id: 'insurance-manage', text: 'Health Insurances', url: route('insurances.index'), icon: 'fas fa-shield-alt', permission: 'manage-insurance' },
     ],
     patient: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'appointments', text: 'My Appointments', url: '/appointments', icon: 'fas fa-calendar-alt' },
-        { id: 'consultations', text: 'My Consultations', url: '/consultations', icon: 'fas fa-stethoscope' },
-        { id: 'lab-results', text: 'My Lab Results', url: '/lab/requests', icon: 'fas fa-flask' },
-        { id: 'prescriptions', text: 'My Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription' },
-        { id: 'billing', text: 'Billing & Invoices', url: '/invoices', icon: 'fas fa-file-invoice-dollar' },
+        { id: 'appointments', text: 'My Appointments', url: '/appointments', icon: 'fas fa-calendar-alt', permission: 'view-own-records' },
+        { id: 'consultations', text: 'My Consultations', url: '/consultations', icon: 'fas fa-stethoscope', permission: 'view-own-records' },
+        { id: 'lab-results', text: 'My Lab Results', url: route('lab.results'), icon: 'fas fa-file-medical-alt', permission: 'view-own-records' },
+        { id: 'prescriptions', text: 'My Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription', permission: 'view-own-records' },
+        { id: 'billing', text: 'Billing & Invoices', url: '/invoices', icon: 'fas fa-file-invoice-dollar', permission: 'view-own-records' },
         { id: 'profile', text: 'My Profile', url: '/profile', icon: 'fas fa-user' },
     ],
 };
@@ -83,16 +104,30 @@ export default function AuthenticatedLayout({
     drafts = [],
     headerTitle,
     breadcrumbs,
-    headerActions
 }) {
     const page = usePage();
     const { auth } = page.props;
     const currentUrl = page.url;
     const user = auth?.user || {};
     const userRole = user.role || 'patient';
-    
-    // Get menu items for current user role
-    const menuItems = sidebarMenus[userRole] || sidebarMenus.patient;
+    const permissions = auth?.permissions ?? [];
+    const hasPermission = (item) => {
+        // Admins always see the full staff menu; Spatie permissions gate route access.
+        if (userRole === 'admin') {
+            return true;
+        }
+        if (item.permissionAny?.length) {
+            return item.permissionAny.some((p) => permissions.includes(p));
+        }
+        if (item.permission) {
+            return permissions.includes(item.permission);
+        }
+        return true;
+    };
+
+    // Get menu items for current user role, filtered by Spatie permissions
+    const menuItems = (sidebarMenus[userRole] || sidebarMenus.patient)
+        .filter((item) => hasPermission(item));
     
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
         const saved = localStorage.getItem('sidebarCollapsed');
@@ -159,17 +194,6 @@ export default function AuthenticatedLayout({
             document.body.classList.remove('sidebar-collapsed');
         }
         
-        // Ensure dropdowns are initialized when the component mounts or updates
-        const initDropdowns = () => {
-             const dropdownElementList = document.querySelectorAll('[data-bs-toggle="dropdown"]');
-             if (window.bootstrap) {
-                 dropdownElementList.forEach(el => {
-                     new window.bootstrap.Dropdown(el);
-                 });
-             }
-        };
-        
-        initDropdowns();
     }, [sidebarCollapsed]);
 
     // Get display name (safely)
@@ -289,7 +313,7 @@ export default function AuthenticatedLayout({
                             {header && <div className="page-title mb-0 fs-5 fw-bold text-gray-800">{header}</div>}
                         </div>
                         <div className="d-flex align-items-center gap-2 gap-md-3 ms-auto">
-                            {auth.user.role !== 'patient' && (
+                            {auth.user.role !== 'patient' && permissions.includes('manage-appointments') && (
                                 <Link 
                                     href={route('appointments.create')} 
                                     className="btn btn-sm text-white rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-2 shadow-sm border-0" 
@@ -362,7 +386,7 @@ export default function AuthenticatedLayout({
                                     ) : (
                                         <li className="p-4 text-center text-muted small">
                                             <i className="fas fa-bell mb-2 d-block fa-2x opacity-20"></i>
-                                            No new notifications.
+                                            {auth.unread_notifications_count > 0 ? `You have ${auth.unread_notifications_count} unread notifications.` : 'No new notifications.'}
                                         </li>
                                     )}
                                 </ul>
@@ -418,7 +442,6 @@ export default function AuthenticatedLayout({
                         <PageHeader 
                             title={headerTitle}
                             breadcrumbs={breadcrumbs}
-                            actions={headerActions}
                         />
                     )}
                     {children}

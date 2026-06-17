@@ -1,6 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import { FilePond, registerPlugin } from 'react-filepond';
 import 'filepond/dist/filepond.min.css';
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
@@ -26,17 +25,15 @@ export default function Edit({ insurance }) {
     };
 
     return (
-        <AuthenticatedLayout>
+        <AuthenticatedLayout
+            headerTitle="Edit Insurance Provider"
+            breadcrumbs={[
+                { label: 'Dashboard', url: '/dashboard' },
+                { label: 'Insurances', url: route('insurances.index') },
+                { label: 'Edit Provider', active: true },
+            ]}
+        >
             <Head title={`Edit ${insurance.name}`} />
-            
-            <PageHeader 
-                title="Edit Insurance Provider"
-                breadcrumbs={[
-                    { label: 'Dashboard', url: '/dashboard' },
-                    { label: 'Insurances', url: route('insurances.index') },
-                    { label: 'Edit Provider', active: true }
-                ]}
-            />
 
             <div className="container-fluid pb-5">
                 <div className="row justify-content-center">

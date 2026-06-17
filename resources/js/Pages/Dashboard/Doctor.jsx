@@ -1,11 +1,17 @@
-import DashboardHero from '@/Components/DashboardHero';
-import StatCard from '@/Components/StatCard';
+import StatCardGrid from '@/Components/StatCardGrid';
 import QuickActionCard from '@/Components/QuickActionCard';
+import DashboardPanel from '@/Components/DashboardPanel';
+import PatientTableCell from '@/Components/PatientTableCell';
+import RoleDashboardShell from '@/Components/RoleDashboardShell';
+import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import DashboardTable from '@/Components/DashboardTable';
+import TableActions from '@/Components/TableActions';
+import StatusBadge from '@/Components/StatusBadge';
+import { TableCellPrimary } from '@/Components/TableCells';
+import { formatTime } from '@/Utils/dateUtils';
 
 export default function Doctor({ auth, stats }) {
     const [activeTab, setActiveTab] = useState('start'); // 'start', 'waiting', 'completed'
@@ -27,36 +33,36 @@ export default function Doctor({ auth, stats }) {
         {
             header: 'Time',
             accessorKey: 'appointment_time',
-            cell: ({ row }) => <span className="fw-bold text-gray-900">{row.original.appointment_time || 'Walk-in'}</span>
+            cell: ({ row }) => <TableCellPrimary>{row.original.appointment_time || 'Walk-in'}</TableCellPrimary>
         },
         {
             header: 'Patient',
             accessorKey: 'patient',
             cell: ({ row }) => (
-                <div>
-                    <div className="fw-bold text-gray-900">{row.original.patient.user.first_name} {row.original.patient.user.last_name}</div>
-                    <div className="extra-small text-muted fw-bold text-uppercase opacity-75">ID: PAT-{row.original.patient_id}</div>
-                </div>
+                <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
             )
         },
         {
             header: 'Type',
             accessorKey: 'appointment_type',
             cell: ({ row }) => (
-                <span className="badge rounded-pill bg-light text-dark border px-3 py-1 fw-bold extra-small text-capitalize">
-                    {row.original.appointment_type}
-                </span>
+                <StatusBadge status={row.original.appointment_type || 'scheduled'} className="text-capitalize" />
             )
         },
         {
             header: 'Action',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="text-end">
-                    <Link href={route('consultations.create', { appointment_id: row.original.appointment_id, patient_id: row.original.patient_id })} className="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm hover-scale">
-                        Start Assessment
-                    </Link>
-                </div>
+                <TableActions actions={[
+                    {
+                        icon: 'fa-stethoscope',
+                        label: 'Start assessment',
+                        href: route('consultations.create', {
+                            appointment_id: row.original.appointment_id,
+                            patient_id: row.original.patient_id,
+                        }),
+                    },
+                ]} />
             )
         }
     ], []);
@@ -67,30 +73,28 @@ export default function Doctor({ auth, stats }) {
             header: 'Patient',
             accessorKey: 'patient',
             cell: ({ row }) => (
-                <div>
-                    <div className="fw-bold text-gray-900">{row.original.patient?.user?.first_name} {row.original.patient?.user?.last_name}</div>
-                    <div className="extra-small text-muted fw-bold text-uppercase opacity-75">ID: PAT-{row.original.patient_id}</div>
-                </div>
+                <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
             )
         },
         {
             header: 'Status',
             accessorKey: 'consultation_status',
             cell: ({ row }) => (
-                <span className={`badge rounded-pill px-3 py-1 fw-bold extra-small ${row.original.type === 'lab_ready' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}`}>
-                    {row.original.type === 'lab_ready' ? 'Labs Released' : 'In Progress Draft'}
-                </span>
+                <StatusBadge status={row.original.type === 'lab_ready' ? 'verified' : 'in_progress'} />
             )
         },
         {
             header: 'Action',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="text-end">
-                    <Link href={route('consultations.edit', row.original.consultation_id)} className="btn btn-sm btn-warning text-dark rounded-pill px-4 fw-bold shadow-sm hover-scale">
-                        Resume Assessment
-                    </Link>
-                </div>
+                <TableActions actions={[
+                    {
+                        icon: 'fa-edit',
+                        label: 'Resume assessment',
+                        href: route('consultations.edit', row.original.consultation_id),
+                        color: 'warning',
+                    },
+                ]} />
             )
         }
     ], []);
@@ -100,32 +104,35 @@ export default function Doctor({ auth, stats }) {
         {
             header: 'Time Completed',
             accessorKey: 'updated_at',
-            cell: ({ row }) => <span className="fw-bold text-gray-900">{new Date(row.original.updated_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            cell: ({ row }) => <span className="fw-bold text-gray-900">{formatTime(row.original.updated_at)}</span>
         },
         {
             header: 'Patient',
             accessorKey: 'patient',
             cell: ({ row }) => (
-                <div>
-                    <div className="fw-bold text-gray-900">{row.original.patient?.user?.first_name} {row.original.patient?.user?.last_name}</div>
-                    <div className="extra-small text-muted fw-bold text-uppercase opacity-75">ID: PAT-{row.original.patient_id}</div>
-                </div>
+                <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
             )
         },
         {
-            header: 'Diagnosis Summary',
+            header: 'Diagnosis summary',
             accessorKey: 'diagnosis_summary',
-            cell: ({ row }) => <span className="small text-muted">{row.original.diagnosis_summary || 'No summary recorded'}</span>
+            cell: ({ row }) => (
+                <TableCellPrimary className="text-muted">
+                    {row.original.diagnosis_summary || 'No summary recorded'}
+                </TableCellPrimary>
+            )
         },
         {
             header: 'Action',
             id: 'actions',
             cell: ({ row }) => (
-                <div className="text-end">
-                    <Link href={route('consultations.show', row.original.consultation_id)} className="btn btn-sm btn-light border rounded-pill px-4 fw-bold shadow-sm hover-scale">
-                        View Records
-                    </Link>
-                </div>
+                <TableActions actions={[
+                    {
+                        icon: 'fa-eye',
+                        label: 'View records',
+                        href: route('consultations.show', row.original.consultation_id),
+                    },
+                ]} />
             )
         }
     ], []);
@@ -138,117 +145,100 @@ export default function Doctor({ auth, stats }) {
     }, [stats.in_progress_consultations, stats.released_labs]);
 
     return (
-        <AuthenticatedLayout 
-            header="Clinician Dashboard"
-            auth={auth}
-            toolbarActions={
-                <div className="d-flex align-items-center gap-2">
-                    <Link href={route('patients.index')} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
-                        <i className="fas fa-search me-1"></i> Registry
-                    </Link>
-                </div>
-            }
+        <AuthenticatedLayout
+            headerTitle={`Medical center — Dr. ${auth.user.first_name}`}
+            breadcrumbs={[{ label: 'Dashboard', active: true }]}
         >
             <Head title="Doctor Dashboard" />
 
-            <PageHeader 
-                title={`Medical Center - Dr. ${auth.user.first_name}`}
-                breadcrumbs={[{ label: 'Dashboard', active: true }]}
-                showBack={false}
+            <UnifiedToolbar
+                viewOptions={[
+                    {
+                        label: `Start assessment (${stats.today_appointments?.length || 0})`,
+                        icon: 'fa-user-md',
+                        onClick: () => setActiveTab('start'),
+                        color: activeTab === 'start' ? 'pink-500' : 'gray-400',
+                    },
+                    {
+                        label: `Waiting investigation (${waitingList.length})`,
+                        icon: 'fa-hourglass-half',
+                        onClick: () => setActiveTab('waiting'),
+                        color: activeTab === 'waiting' ? 'pink-500' : 'gray-400',
+                    },
+                    {
+                        label: `Completed (${stats.completed_today?.length || 0})`,
+                        icon: 'fa-check-double',
+                        onClick: () => setActiveTab('completed'),
+                        color: activeTab === 'completed' ? 'pink-500' : 'gray-400',
+                    },
+                ]}
+                actions={[
+                    {
+                        label: 'Patient registry',
+                        icon: 'fa-search',
+                        href: route('patients.index'),
+                    },
+                ]}
             />
 
-            <div className="px-0">
-                <DashboardHero 
-                    title="Clinician Command Center"
-                    subtitle={`Manage your patients and reviews. You have ${stats.today_appointments?.length || 0} consultations scheduled for today.`}
-                    icon="fa-user-md"
-                />
-
-                <div className="row g-4 mb-4">
-                    {statItems.map((s, i) => (
-                        <div key={i} className="col-md-4">
-                            <StatCard {...s} />
-                        </div>
-                    ))}
-                </div>
-
+            <RoleDashboardShell
+                hero={{
+                    title: 'Clinician command center',
+                    subtitle: `Manage your patients and reviews. You have ${stats.today_appointments?.length || 0} consultations scheduled for today.`,
+                    icon: 'fa-user-md',
+                }}
+                statItems={statItems}
+                statCols={3}
+            >
                 <div className="row g-4">
                     <div className="col-lg-8">
-                        <div className="card shadow-sm border-0 rounded-2xl mb-4 bg-white overflow-hidden shadow-hover">
-                            <div className="card-header bg-white py-3 px-4 border-bottom-0 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
-                                <h6 className="mb-0 fw-extrabold text-gray-900">
-                                    <i className="fas fa-calendar-alt text-pink-500 me-2"></i>Patient Schedule Tracker
-                                </h6>
-                                
-                                {/* Premium Tabs */}
-                                <ul className="nav nav-pills bg-light p-1 rounded-pill" style={{ fontSize: '0.8rem' }}>
-                                    <li className="nav-item">
-                                        <button 
-                                            className={`nav-link rounded-pill px-3 py-1.5 fw-bold ${activeTab === 'start' ? 'active bg-primary text-white shadow-sm' : 'text-muted'}`}
-                                            onClick={() => setActiveTab('start')}
-                                        >
-                                            Start Assessment ({stats.today_appointments?.length || 0})
-                                        </button>
-                                    </li>
-                                    <li className="nav-item">
-                                        <button 
-                                            className={`nav-link rounded-pill px-3 py-1.5 fw-bold ${activeTab === 'waiting' ? 'active bg-primary text-white shadow-sm' : 'text-muted'}`}
-                                            onClick={() => setActiveTab('waiting')}
-                                        >
-                                            Waiting Investigation ({waitingList.length})
-                                        </button>
-                                    </li>
-                                    <li className="nav-item">
-                                        <button 
-                                            className={`nav-link rounded-pill px-3 py-1.5 fw-bold ${activeTab === 'completed' ? 'active bg-primary text-white shadow-sm' : 'text-muted'}`}
-                                            onClick={() => setActiveTab('completed')}
-                                        >
-                                            Completed ({stats.completed_today?.length || 0})
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
-                            
-                            <div className="card-body p-0">
-                                {activeTab === 'start' && (
-                                    <DashboardTable 
-                                        columns={startColumns}
-                                        data={stats.today_appointments || []}
-                                        emptyMessage="No appointments scheduled for today."
-                                    />
-                                )}
-                                {activeTab === 'waiting' && (
-                                    <DashboardTable 
-                                        columns={waitingColumns}
-                                        data={waitingList}
-                                        emptyMessage="No patients currently waiting on investigations or drafts."
-                                    />
-                                )}
-                                {activeTab === 'completed' && (
-                                    <DashboardTable 
-                                        columns={completedColumns}
-                                        data={stats.completed_today || []}
-                                        emptyMessage="No consultations completed today."
-                                    />
-                                )}
-                            </div>
-                        </div>
+                        <DashboardPanel
+                            title="Patient schedule tracker"
+                            icon="fa-calendar-alt"
+                            className="mb-4"
+                        >
+                            {activeTab === 'start' && (
+                                <DashboardTable 
+                                    columns={startColumns}
+                                    data={stats.today_appointments || []}
+                                    emptyMessage="No appointments scheduled for today."
+                                    headerBgClassName="bg-pink-500"
+                                />
+                            )}
+                            {activeTab === 'waiting' && (
+                                <DashboardTable 
+                                    columns={waitingColumns}
+                                    data={waitingList}
+                                    emptyMessage="No patients currently waiting on investigations or drafts."
+                                    headerBgClassName="bg-pink-500"
+                                />
+                            )}
+                            {activeTab === 'completed' && (
+                                <DashboardTable 
+                                    columns={completedColumns}
+                                    data={stats.completed_today || []}
+                                    emptyMessage="No consultations completed today."
+                                    headerBgClassName="bg-pink-500"
+                                />
+                            )}
+                        </DashboardPanel>
                     </div>
-                    
+
                     <div className="col-lg-4">
-                        <div className="card shadow-sm border-0 rounded-2xl mb-4 bg-white h-100 shadow-hover">
-                            <div className="card-header bg-white py-4 px-4 border-bottom-0">
-                                <h6 className="mb-0 fw-extrabold text-gray-900"><i className="fas fa-bolt text-warning me-2"></i>Quick Clinical Actions</h6>
-                            </div>
-                            <div className="card-body p-4 pt-0 d-grid gap-3">
-                                {quickActions.map((a, i) => (
-                                    <QuickActionCard key={i} {...a} />
-                                ))}
-                            </div>
-                        </div>
+                        <DashboardPanel
+                            title="Quick clinical actions"
+                            icon="fa-bolt"
+                            iconClassName="text-warning"
+                            className="mb-4 h-100"
+                            bodyClassName="p-4 pt-0 d-grid gap-3"
+                        >
+                            {quickActions.map((a, i) => (
+                                <QuickActionCard key={i} {...a} />
+                            ))}
+                        </DashboardPanel>
                     </div>
                 </div>
-            </div>
+            </RoleDashboardShell>
         </AuthenticatedLayout>
     );
 }

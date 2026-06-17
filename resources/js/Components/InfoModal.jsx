@@ -170,7 +170,6 @@ export default function InfoModal({ show, onClose, title, subtitle, icon, tabs =
 
     const contentStyle = {
         flex: 1,
-        padding: '2rem 3rem',
         overflowY: 'auto',
         backgroundColor: 'white',
     };
@@ -229,7 +228,7 @@ export default function InfoModal({ show, onClose, title, subtitle, icon, tabs =
                     </div>
 
                     {/* Content area */}
-                    <div style={contentStyle}>
+                    <div className="nyl-info-modal-content flex-grow-1 overflow-y-auto bg-white">
                         {tabs.find(t => t.id === activeTab)?.content}
                     </div>
                 </div>

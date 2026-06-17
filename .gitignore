@@ -22,10 +22,13 @@
 /node_modules
 /vendor
 
-# Build output
-# /public/build (Uncommented for shared hosting deployment)
+# Build output — committed for production (no npm on server)
+# /public/build
 /public/hot
 /public/storage
+
+# Local archive of removed legacy files (not tracked)
+/deprecated
 
 # Storage keys
 /storage/*.key

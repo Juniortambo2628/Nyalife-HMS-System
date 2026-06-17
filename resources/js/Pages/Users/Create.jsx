@@ -1,6 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react';
-import PageHeader from '@/Components/PageHeader';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
 export default function Create({ roles }) {
@@ -20,18 +19,14 @@ export default function Create({ roles }) {
 
     return (
         <AuthenticatedLayout
-            header="Create User"
+            headerTitle="Create User"
+            breadcrumbs={[
+                { label: 'Dashboard', url: route('dashboard') },
+                { label: 'Users', url: route('users.index') },
+                { label: 'Create User', active: true },
+            ]}
         >
             <Head title="Create User" />
-
-            <PageHeader
-                title="Create User"
-                breadcrumbs={[
-                    { label: 'Dashboard', url: route('dashboard') },
-                    { label: 'Users', url: route('users.index') },
-                    { label: 'Create User', active: true }
-                ]}
-            />
 
             <div className="py-4 max-w-2xl mx-auto">
                 <div className="card shadow-sm border-0 rounded-2xl bg-white overflow-hidden">

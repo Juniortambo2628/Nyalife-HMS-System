@@ -1,4 +1,4 @@
-import { Link, Head, useForm } from '@inertiajs/react';
+import { Link, Head, useForm, usePage } from '@inertiajs/react';
 import React, { useEffect } from 'react';
 import HeroSection from './Welcome/HeroSection';
 import AppointmentSection from './Welcome/AppointmentSection';
@@ -6,10 +6,12 @@ import AboutSection from './Welcome/AboutSection';
 import ServicesSection from './Welcome/ServicesSection';
 import BlogSection from './Welcome/BlogSection';
 import ContactSection from './Welcome/ContactSection';
+import FooterSection from './Welcome/FooterSection';
 import InsuranceCarousel from '@/Components/InsuranceCarousel';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 
 export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], cms = {}, serviceTabs = [] }) {
+    const { flash } = usePage().props;
     const sectionOrder = (cms.landing_page_order || 'hero,appointment,about,services,blog,contact').split(',');
     const displayBlogs = blogs.slice(0, 3);
     
@@ -17,6 +19,10 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
         document.body.classList.add('landing');
         return () => document.body.classList.remove('landing');
     }, []);
+
+    useEffect(() => {
+        if (flash?.success) toast.success(flash.success);
+    }, [flash?.success]);
     
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -27,18 +33,21 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
         reason: '',
     });
 
-    const [showSuccessModal, setShowSuccessModal] = React.useState(false);
-    const [guestData, setGuestData] = React.useState(null);
-
     const handleSubmit = (e) => {
         e.preventDefault();
-        const submittedData = { ...data };
-        post(route('appointments.guest.store'), {
-            onSuccess: () => {
-                reset();
-                setGuestData(submittedData);
-                setShowSuccessModal(true);
-            },
+        post(route('appointments.guest.store'));
+    };
+
+    const newsletterForm = useForm({
+        email: '',
+        name: '',
+    });
+
+    const handleNewsletterSubmit = (e) => {
+        e.preventDefault();
+        newsletterForm.post(route('newsletter.subscribe'), {
+            preserveScroll: true,
+            onSuccess: () => newsletterForm.reset(),
         });
     };
 
@@ -150,107 +159,12 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
                 </div>
             </main>
 
-            {/* Success Modal */}
-            {showSuccessModal && (
-                <div className="modal show d-block landing-modal-backdrop">
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content border-0 rounded-4 shadow-2xl p-4 overflow-hidden position-relative">
-                            <div className="modal-body text-center py-5 position-relative z-10">
-                                <div className="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-5 shadow-sm border border-success-subtle w-[100px] h-[100px]">
-                                    <i className="fas fa-check-circle fa-3x"></i>
-                                </div>
-                                <h3 className="fw-bold text-gray-900 mb-3 h2">Request Transmitted!</h3>
-                                <p className="text-muted mb-5 leading-relaxed font-medium">
-                                    Our clinical coordinators will contact you at <span className="text-primary fw-bold">{guestData?.email}</span> to finalize your consultation schedule.
-                                </p>
-                                <div className="d-grid gap-3">
-                                    <Link 
-                                        href={`/register?name=${encodeURIComponent(guestData?.name)}&email=${encodeURIComponent(guestData?.email)}&phone=${encodeURIComponent(guestData?.phone)}`} 
-                                        className="btn btn-primary btn-lg rounded-pill fw-semibold py-3 shadow-lg"
-                                    >
-                                        <i className="fas fa-user-plus me-2"></i>Complete Profile Registration
-                                    </Link>
-                                    <button type="button" className="btn btn-light btn-lg rounded-pill text-muted fw-medium py-3" onClick={() => setShowSuccessModal(false)}>Dismiss</button>
-                                </div>
-                            </div>
-                            <div className="position-absolute top-0 end-0 p-5 opacity-5">
-                                <i className="fas fa-calendar-check fa-10x"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Footer */}
-            <footer className="footer-elegant py-24 text-white overflow-hidden" style={{ minHeight: '600px' }}>
-                <div className="container pb-5">
-                    <div className="row g-5 mb-16">
-                        <div className="col-lg-4 pe-lg-16">
-                            <div className="bg-white rounded-2xl p-2 d-inline-block shadow-sm mb-5">
-                                <img src="/assets/img/logo/Logo2-transparent.png" alt="Logo" height="50" />
-                            </div>
-                            <p className="opacity-75 mb-8 leading-relaxed font-medium">
-                                Delivering specialized healthcare with clinical excellence and compassionate innovation. Your wellness journey, guided by expertise.
-                            </p>
-                                <div className="d-flex gap-3">
-                                    <a href="https://www.instagram.com/nyalife_womenshealth" target="_blank" rel="noopener noreferrer" className="social-link"><i className="fab fa-instagram"></i></a>
-                                    <a href="https://www.linkedin.com/company/nyalife-women-s-health/" target="_blank" rel="noopener noreferrer" className="social-link"><i className="fab fa-linkedin-in"></i></a>
-                                </div>
-                            </div>
-                        
-                        <div className="col-lg-2 col-md-6">
-                            <h6 className="fw-extrabold mb-5 extra-small text-uppercase tracking-widest opacity-50">CLINICAL SERVICES</h6>
-                            <ul className="list-unstyled footer-links space-y-3">
-                                <li><a href="#services">Prenatal Diagnostics</a></li>
-                                <li><a href="#services">Gynaecological Care</a></li>
-                                <li><a href="#services">Family Planning</a></li>
-                                <li><a href="#services">Fertility Solutions</a></li>
-                            </ul>
-                        </div>
-
-                        <div className="col-lg-2 col-md-6">
-                            <h6 className="fw-extrabold mb-5 extra-small text-uppercase tracking-widest opacity-50">DIGITAL PORTAL</h6>
-                            <ul className="list-unstyled footer-links space-y-3">
-                                <li><Link href={route('login.patient')}>Patient Access</Link></li>
-                                <li><Link href={route('login.staff')}>Staff Registry</Link></li>
-                                <li><Link href={route('privacy-policy')}>Privacy & Data</Link></li>
-                                <li><Link href={route('terms-of-service')}>Terms of Care</Link></li>
-                            </ul>
-                        </div>
-
-                        <div className="col-lg-4 col-md-12">
-                            <h6 className="fw-extrabold mb-5 extra-small text-uppercase tracking-widest opacity-50">COORDINATION CENTER</h6>
-                            <div className="space-y-6">
-                                <div>
-                                    <div className="extra-small fw-bold opacity-50 mb-2 uppercase tracking-widest">Electronic Reach</div>
-                                    <p className="mb-1 font-bold">info@nyalifewomensclinic.net</p>
-                                    <p className="mb-0 font-bold">nyalifewomenshealth@gmail.com</p>
-                                </div>
-                                <div>
-                                    <div className="extra-small fw-bold opacity-50 mb-2 uppercase tracking-widest">Clinic Contact</div>
-                                    <p className="mb-0 h5 fw-extrabold tracking-tighter">0746 516514</p>
-                                </div>
-                                <div>
-                                    <div className="extra-small fw-bold opacity-50 mb-2 uppercase tracking-widest">Primary Facility</div>
-                                    <p className="mb-0 small fw-medium opacity-75">A104, Mlolongo, Mombasa Road, Jempark Complex, Athi River, Kenya</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div className="pt-10 border-top border-white border-opacity-10 d-flex flex-column flex-md-row justify-content-between align-items-center gap-4">
-                        <p className="extra-small fw-bold text-uppercase tracking-widest opacity-50 mb-0">© {new Date().getFullYear()} NYALIFE WOMEN'S CLINIC. SYSTEM CLOUD v2.0</p>
-                        <a href="https://www.okjtech.co.ke" target="_blank" className="d-flex align-items-center gap-3 text-white text-decoration-none opacity-50 hover-opacity-100 transition-all">
-                            <span className="extra-small fw-bold text-uppercase tracking-widest">Engineered by</span>
-                            <img 
-                                src="/assets/img/OKJTechLogo-White_Transparent.png" 
-                                alt="OKJTech" 
-                                className="footer-logo-fixed"
-                            />
-                        </a>
-                    </div>
-                </div>
-            </footer>
+            <FooterSection
+                cms={cms}
+                serviceTabs={serviceTabs}
+                newsletterForm={newsletterForm}
+                onNewsletterSubmit={handleNewsletterSubmit}
+            />
         </div>
     );
 }

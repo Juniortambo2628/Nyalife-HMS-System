@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import Modal from '@/Components/Modal';
+import { PatientIdLabel } from '@/Components/PatientTableCell';
 import { formatDateTime } from '@/Utils/dateUtils';
 
 export default function ConsultationDraftSwitcher({ drafts = [], isOpen: propIsOpen, onClose: propOnClose }) {
@@ -57,9 +58,10 @@ export default function ConsultationDraftSwitcher({ drafts = [], isOpen: propIsO
                                                     {draft.patient?.user?.first_name} {draft.patient?.user?.last_name}
                                                 </h4>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                        ID: PAT-{draft.patient_id}
-                                                    </span>
+                                                    <PatientIdLabel
+                                                        id={draft.patient_id}
+                                                        className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0"
+                                                    />
                                                     <span className="h-1 w-1 rounded-full bg-gray-200"></span>
                                                     <span className="text-[10px] font-bold text-pink-500">
                                                         {formatDateTime(draft.updated_at || draft.consultation_date)}

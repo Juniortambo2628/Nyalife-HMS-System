@@ -11,6 +11,10 @@ return new class extends Migration
      */
      public function up(): void
     {
+        if (! Schema::hasTable('lab_test_requests')) {
+            return;
+        }
+
         Schema::table('lab_test_requests', function (Blueprint $table) {
             if (!Schema::hasColumn('lab_test_requests', 'priority')) {
                  // Check if we can use an 'after' column that definitely exists

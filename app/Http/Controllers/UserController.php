@@ -18,7 +18,8 @@ class UserController extends Controller
         $sort = $request->sort ?? 'created_at';
         $direction = $request->direction ?? 'desc';
 
-        $query = User::with(['roleRelation', 'staff.departmentRelation'])
+        $query = User::whereHas('roleRelation', fn ($r) => $r->where('role_name', '!=', 'patient'))
+            ->with(['roleRelation', 'staff.departmentRelation'])
             ->search($request->search)
             ->when($request->role, fn ($q) => $q->whereHas('roleRelation', fn ($r) => $r->where('role_name', $request->role)))
             ->when($request->quick_filter, function ($q, $filter) {
@@ -41,15 +42,15 @@ class UserController extends Controller
         $users->through(fn ($user) => (new UserResource($user))->resolve());
 
         $stats = [
-            'total' => User::count(),
-            'active' => User::where('is_active', true)->count(),
-            'inactive' => User::where('is_active', false)->count(),
+            'total' => User::whereHas('roleRelation', fn ($r) => $r->where('role_name', '!=', 'patient'))->count(),
+            'active' => User::whereHas('roleRelation', fn ($r) => $r->where('role_name', '!=', 'patient'))->where('is_active', true)->count(),
+            'inactive' => User::whereHas('roleRelation', fn ($r) => $r->where('role_name', '!=', 'patient'))->where('is_active', false)->count(),
         ];
 
         return Inertia::render('Users/Index', [
             'users' => $users,
             'filters' => (object) $request->only(['search', 'role', 'sort', 'direction', 'quick_filter']),
-            'roles' => Role::all(),
+            'roles' => Role::where('role_name', '!=', 'patient')->get(),
             'stats' => $stats,
         ]);
     }

@@ -8,8 +8,18 @@ set -e
 echo "📂 Navigating to application directory..."
 cd /home1/nyalifew/nyalife_core
 
-echo "📦 Installing Composer dependencies..."
-composer install --no-dev --optimize-autoloader --no-interaction 2>&1
+if ! command -v composer &> /dev/null; then
+    echo "⚠️ Global composer command not found. Checking for local composer.phar..."
+    if [ ! -f "composer.phar" ]; then
+        echo "📥 Downloading Composer installer..."
+        curl -sS https://getcomposer.org/installer | php
+    fi
+    COMPOSER_CMD="php composer.phar"
+else
+    COMPOSER_CMD="composer"
+fi
+
+$COMPOSER_CMD install --no-dev --optimize-autoloader --no-interaction 2>&1
 
 echo "🗄️ Running migrations..."
 php artisan migrate --force

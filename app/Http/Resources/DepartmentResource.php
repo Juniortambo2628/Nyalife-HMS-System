@@ -20,7 +20,7 @@ class DepartmentResource extends JsonResource
             'head_name' => $this->head_name,
             'head_position' => $this->head_position,
             'head_image' => $this->head_image,
-            'staff_count' => $this->when(isset($this->staff_count), $this->staff_count),
+            'staff_count' => $this->when(isset($this->staff_members_count), $this->staff_members_count),
             'created_at' => $this->created_at instanceof \DateTimeInterface
                 ? $this->created_at->format(\DateTimeInterface::ATOM)
                 : $this->created_at,

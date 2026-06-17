@@ -43,9 +43,14 @@ return new class extends Migration
             });
         }
 
-        if (Schema::hasTable('staff') && ! Schema::hasColumn('staff', 'department_id')) {
+        if (Schema::hasTable('staff')) {
             Schema::table('staff', function (Blueprint $table) {
-                $table->unsignedBigInteger('department_id')->nullable()->after('department');
+                if (! Schema::hasColumn('staff', 'department_id')) {
+                    $table->unsignedBigInteger('department_id')->nullable()->after('department');
+                }
+                if (! Schema::hasColumn('staff', 'license_number')) {
+                    $table->string('license_number', 100)->nullable()->after('position');
+                }
             });
         }
 

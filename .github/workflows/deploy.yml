@@ -34,7 +34,7 @@ jobs:
 
   deploy:
     name: 🚀 Deploy to cPanel
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build
     steps:
       - name: Checkout code

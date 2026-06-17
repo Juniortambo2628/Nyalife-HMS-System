@@ -7500,12 +7500,12 @@ th:hover .sort-icon {
     color: inherit;
 }
 .nyl-table-td {
-    font-size: 0.875rem;
+    font-size: 0.8rem;
 }
 .nyl-table-cell-primary {
     font-weight: 700;
     color: #111827;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     line-height: 1.35;
 }
 .nyl-table-cell-sub {
@@ -7760,4 +7760,68 @@ th:hover .sort-icon {
     .nyl-meta-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* ----------------------------------------------------------------
+   COMPACT TABLE DENSITY — tighter rows, smaller type
+   ---------------------------------------------------------------- */
+.table.table-hover.align-middle .nyl-table-head-row th.nyl-table-th {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+}
+.table.table-hover.align-middle .nyl-table-row td.nyl-table-td {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.78rem;
+    line-height: 1.3;
+}
+.nyl-table-cell-primary {
+    font-size: 0.78rem !important;
+    line-height: 1.25 !important;
+}
+.nyl-table-cell-sub {
+    font-size: 0.65rem !important;
+    margin-top: 0.1rem !important;
+}
+.nyl-status-badge {
+    padding: 0.25rem 0.6rem !important;
+    font-size: 0.65rem !important;
+}
+.nyl-ref-badge {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.65rem !important;
+}
+.nyl-table-actions-toggle {
+    width: 28px !important;
+    height: 28px !important;
+}
+.nyl-table-actions-icon {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.7rem !important;
+}
+.nyl-table-actions-item {
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.8rem;
+}
+
+/* ----------------------------------------------------------------
+   COMPACT SEARCH INPUT
+   ---------------------------------------------------------------- */
+.dashboard-search-container {
+    margin-bottom: 0.75rem !important;
+}
+.dashboard-search-container .card {
+    padding: 0.15rem !important;
+}
+.dashboard-search-container .input-group-text {
+    padding: 0.35rem 0.5rem 0.35rem 0.75rem !important;
+}
+.dashboard-search-container .nyl-search-input {
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.85rem !important;
+}
+.dashboard-search-container .nyl-search-btn {
+    padding: 0.3rem 0.85rem !important;
+    font-size: 0.8rem !important;
 }

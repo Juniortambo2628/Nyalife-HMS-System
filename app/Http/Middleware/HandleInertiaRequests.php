@@ -40,10 +40,37 @@ class HandleInertiaRequests extends Middleware
                     ? $request->user()->getRoleNames()->values()->all()
                     : [],
                 'unread_notifications_count' => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
+                // Recent notifications for dropdown preview (both read & unread, most recent first)
+                'notifications' => $request->user() ? $request->user()->notifications()->latest()->limit(5)->get()->map(function($n) {
+                    return [
+                        'id' => $n->id,
+                        'data' => $n->data,
+                        'message' => $n->data['message'] ?? $n->data['title'] ?? 'New notification',
+                        'type' => $n->data['type'] ?? $n->data['module'] ?? 'info',
+                        'created_at_human' => $n->created_at->diffForHumans(),
+                        'read_at' => $n->read_at,
+                    ];
+                }) : [],
                 'module_notifications' => $request->user() ? $request->user()->unreadNotifications->groupBy(function($n) {
                     return $n->data['module'] ?? 'general';
                 })->map->count() : [],
                 'unread_messages_count' => $request->user() ? \App\Models\Message::where('receiver_id', $request->user()->user_id)->whereNull('read_at')->count() : 0,
+                // Recent messages for dropdown preview (both read & unread, most recent first)
+                'recent_messages' => $request->user() ? \App\Models\Message::with('sender')
+                    ->where('receiver_id', $request->user()->user_id)
+                    ->orderBy('created_at', 'desc')
+                    ->limit(5)
+                    ->get()
+                    ->map(function($m) {
+                        return [
+                            'message_id' => $m->message_id ?? $m->id,
+                            'message_text' => \Illuminate\Support\Str::limit($m->content, 80),
+                            'sender_name' => $m->sender ? trim($m->sender->first_name . ' ' . $m->sender->last_name) : 'System',
+                            'sender_avatar' => $m->sender?->profile_image,
+                            'created_at_human' => $m->created_at->diffForHumans(),
+                            'read_at' => $m->read_at,
+                        ];
+                    }) : [],
             ],
         ];
     }

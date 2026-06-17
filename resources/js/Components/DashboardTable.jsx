@@ -86,7 +86,7 @@ export default function DashboardTable({
                                     return (
                                         <th 
                                             key={header.id} 
-                                            className={`nyl-table-th px-4 py-3 border-0 ${header.id === 'selection' ? 'text-center' : 'text-start'} ${isSortable ? 'cursor-pointer' : ''} ${isPinkHeader ? 'nyl-table-th--inverse' : ''}`}
+                                            className={`nyl-table-th px-3 py-2 border-0 ${header.id === 'selection' ? 'text-center' : 'text-start'} ${isSortable ? 'cursor-pointer' : ''} ${isPinkHeader ? 'nyl-table-th--inverse' : ''}`}
                                             onClick={isSortable && onSort ? () => onSort(header.column.id) : undefined}
                                         >
                                             <div className={`d-flex align-items-center gap-2 ${header.id === 'selection' ? 'justify-content-center' : ''}`}>
@@ -125,7 +125,7 @@ export default function DashboardTable({
                             table.getRowModel().rows.map(row => (
                                 <tr key={row.id} className="nyl-table-row border-bottom border-light">
                                     {row.getVisibleCells().map(cell => (
-                                        <td key={cell.id} className={`nyl-table-td px-4 py-3 border-0 ${cell.column.id === 'selection' ? 'text-center' : 'text-start'} align-middle`}>
+                                        <td key={cell.id} className={`nyl-table-td px-3 py-2 border-0 ${cell.column.id === 'selection' ? 'text-center' : 'text-start'} align-middle`}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </td>
                                     ))}

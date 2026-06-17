@@ -339,15 +339,39 @@ export default function AuthenticatedLayout({
                                         </span>
                                     )}
                                 </button>
-                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-2xl border-0 rounded-2xl overflow-hidden mt-3 animate-in fade-in zoom-in-95 duration-200" style={{ width: '280px', maxWidth: '90vw' }}>
+                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-2xl border-0 rounded-2xl overflow-hidden mt-3 animate-in fade-in zoom-in-95 duration-200" style={{ width: '320px', maxWidth: '90vw' }}>
                                     <li className="px-4 py-3 bg-white border-b border-gray-100 d-flex justify-content-between align-items-center">
                                         <span className="fw-bold text-gray-900">Recent Messages</span>
                                         <Link href="/messages" className="text-xs text-pink-500 hover:underline">View All</Link>
                                     </li>
-                                    <li className="p-4 text-center text-muted small">
-                                        <i className="fas fa-comments mb-2 d-block fa-2x opacity-20"></i>
-                                        {auth.unread_messages_count > 0 ? `You have ${auth.unread_messages_count} unread messages.` : 'No new messages.'}
-                                    </li>
+                                    {auth.recent_messages && auth.recent_messages.length > 0 ? (
+                                        auth.recent_messages.map((message, idx) => (
+                                            <li key={idx} className="px-4 py-3 border-bottom border-light d-flex align-items-start gap-3 hover-bg-gray-50 transition-colors cursor-pointer">
+                                                <div className="flex-shrink-0 mt-1">
+                                                    <div className="avatar-xs rounded-circle bg-pink-100 text-pink-500 d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+                                                        {message.sender_avatar ? (
+                                                            <img src={message.sender_avatar} alt="" className="rounded-circle" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        ) : (
+                                                            <i className="fas fa-user text-xs"></i>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="flex-grow-1 overflow-hidden">
+                                                    <div className="d-flex justify-content-between align-items-center">
+                                                        <span className="fw-bold text-gray-800 small">{message.sender_name}</span>
+                                                        {!message.read_at && <span className="badge bg-danger rounded-circle p-1" style={{ width: '6px', height: '6px' }}></span>}
+                                                    </div>
+                                                    <div className="text-muted text-truncate extra-small mt-1">{message.message_text}</div>
+                                                    <div className="extra-small text-muted opacity-75 mt-1">{message.created_at_human}</div>
+                                                </div>
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <li className="p-4 text-center text-muted small">
+                                            <i className="fas fa-comments mb-2 d-block fa-2x opacity-20"></i>
+                                            {auth.unread_messages_count > 0 ? `You have ${auth.unread_messages_count} unread messages.` : 'No new messages.'}
+                                        </li>
+                                    )}
                                 </ul>
                             </div>
 
@@ -360,33 +384,47 @@ export default function AuthenticatedLayout({
                                     aria-expanded="false"
                                 >
                                     <i className="fas fa-bell fa-lg"></i>
-                                    {(auth.unread_notifications_count > 0 || (auth.notifications && auth.notifications.length > 0)) && (
+                                    {auth.unread_notifications_count > 0 && (
                                         <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style={{ fontSize: '0.6rem' }}>
-                                            {auth.unread_notifications_count || auth.notifications?.length || 0}
+                                            {auth.unread_notifications_count}
                                         </span>
                                     )}
                                 </button>
-                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-2xl border-0 rounded-2xl overflow-hidden mt-3 animate-in fade-in zoom-in-95 duration-200" style={{ width: '320px', maxWidth: '90vw' }}>
+                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-2xl border-0 rounded-2xl overflow-hidden mt-3 animate-in fade-in zoom-in-95 duration-200" style={{ width: '340px', maxWidth: '90vw' }}>
                                     <li className="px-4 py-3 bg-white border-b border-gray-100 d-flex justify-content-between align-items-center">
                                         <span className="fw-bold text-gray-900">Notifications</span>
                                         <Link href="/notifications" className="text-xs text-pink-500 hover:underline">View All</Link>
                                     </li>
                                     {auth.notifications && auth.notifications.length > 0 ? (
-                                        auth.notifications.slice(0, 5).map((notification, idx) => (
-                                            <li key={idx} className="px-4 py-3 border-bottom border-light d-flex align-items-start gap-3 hover-bg-gray-50 transition-colors cursor-pointer">
-                                                <div className="avatar-xs rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0 mt-1">
-                                                    <i className="fas fa-info-circle text-xs"></i>
-                                                </div>
-                                                <div className="flex-grow-1 overflow-hidden">
-                                                    <div className="fw-bold text-gray-800 small text-truncate">{notification.data?.message || notification.message || 'New notification'}</div>
-                                                    <div className="extra-small text-muted opacity-75">{notification.created_at_human || 'Just now'}</div>
-                                                </div>
-                                            </li>
-                                        ))
+                                        auth.notifications.slice(0, 5).map((notification, idx) => {
+                                            const iconMap = {
+                                                appointment: 'fa-calendar-check',
+                                                lab: 'fa-flask',
+                                                message: 'fa-comment',
+                                                prescription: 'fa-prescription',
+                                                payment: 'fa-credit-card',
+                                                alert: 'fa-exclamation-triangle',
+                                                info: 'fa-info-circle',
+                                            };
+                                            const nIcon = iconMap[notification.type] || 'fa-bell';
+                                            const isUnread = !notification.read_at;
+                                            return (
+                                                <li key={idx} className={`px-4 py-3 border-bottom border-light d-flex align-items-start gap-3 transition-colors cursor-pointer ${isUnread ? 'bg-primary-subtle bg-opacity-10' : 'hover-bg-gray-50'}`}>
+                                                    <div className={`avatar-xs rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-1 ${isUnread ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}`} style={{ width: '32px', height: '32px', minWidth: '32px' }}>
+                                                        <i className={`fas ${nIcon}`} style={{ fontSize: '0.7rem' }}></i>
+                                                    </div>
+                                                    <div className="flex-grow-1 overflow-hidden">
+                                                        <div className={`small text-truncate ${isUnread ? 'fw-bold text-gray-900' : 'fw-medium text-gray-600'}`}>{notification.data?.message || notification.message || 'New notification'}</div>
+                                                        <div className="extra-small text-muted opacity-75">{notification.created_at_human || 'Just now'}</div>
+                                                    </div>
+                                                    {isUnread && <span className="rounded-circle bg-primary flex-shrink-0 mt-2" style={{ width: '7px', height: '7px', minWidth: '7px' }}></span>}
+                                                </li>
+                                            );
+                                        })
                                     ) : (
                                         <li className="p-4 text-center text-muted small">
-                                            <i className="fas fa-bell mb-2 d-block fa-2x opacity-20"></i>
-                                            {auth.unread_notifications_count > 0 ? `You have ${auth.unread_notifications_count} unread notifications.` : 'No new notifications.'}
+                                            <i className="fas fa-bell-slash mb-2 d-block fa-2x opacity-20"></i>
+                                            No notifications yet.
                                         </li>
                                     )}
                                 </ul>

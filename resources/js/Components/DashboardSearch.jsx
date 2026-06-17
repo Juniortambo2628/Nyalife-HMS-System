@@ -35,25 +35,25 @@ export default function DashboardSearch({
 
     return (
         <div className={`dashboard-search-container mb-4 ${className}`}>
-            <form onSubmit={handleSubmit} className="card border-0 shadow-sm rounded-2xl bg-white p-1 shadow-hover transition-all">
-                <div className="input-group input-group-lg">
-                    <span className="input-group-text bg-transparent border-0 ps-4 pe-2 py-3">
-                        <i className="fas fa-search text-gray-300 fs-4"></i>
+            <form onSubmit={handleSubmit} className="card border-0 shadow-sm rounded-2xl bg-white p-0.5 shadow-hover transition-all">
+                <div className="input-group">
+                    <span className="input-group-text bg-transparent border-0 ps-3 pe-2 py-2">
+                        <i className="fas fa-search text-gray-300 fs-5"></i>
                     </span>
                     <input 
                         type="text" 
-                        className="form-control border-0 bg-transparent fs-5 ps-2 py-3 shadow-none no-focus-outline nyl-search-input" 
+                        className="form-control border-0 bg-transparent fs-6 ps-2 py-2 shadow-none no-focus-outline nyl-search-input" 
                         placeholder={placeholder}
                         value={localValue}
                         onChange={handleChange}
                     />
-                    <div className="p-2 d-flex align-items-center">
+                    <div className="p-1.5 d-flex align-items-center">
                         <button 
                             type="submit" 
-                            className="btn btn-primary rounded-xl px-5 h-100 fw-bold shadow-sm d-flex align-items-center gap-3 hover-scale nyl-search-btn"
+                            className="btn btn-primary rounded-xl px-4 h-100 fw-bold shadow-sm d-flex align-items-center gap-2 hover-scale nyl-search-btn"
                         >
-                            <span className="fs-5">Search</span>
-                            <i className="fas fa-arrow-right opacity-50"></i>
+                            <span className="fs-6">Search</span>
+                            <i className="fas fa-arrow-right opacity-50 text-xs"></i>
                         </button>
                     </div>
                 </div>

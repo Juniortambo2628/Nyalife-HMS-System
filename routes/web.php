@@ -91,14 +91,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/medications/search', [\App\Http\Controllers\PharmacyController::class, 'searchAjax'])->name('medications.search');
     
     // Consultations
+    Route::middleware('permission:' . Permissions::MANAGE_CONSULTATIONS)->group(function () {
+        Route::get('/consultations/create', [\App\Http\Controllers\ConsultationController::class, 'create'])->name('consultations.create');
+        Route::post('/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])->name('consultations.store');
+    });
+
     Route::middleware('role_or_permission:' . Permissions::staffOrPatient(Permissions::MANAGE_CONSULTATIONS))->group(function () {
         Route::get('/consultations', [\App\Http\Controllers\ConsultationController::class, 'index'])->name('consultations.index');
         Route::get('/consultations/{consultation}', [\App\Http\Controllers\ConsultationController::class, 'show'])->name('consultations.show');
         Route::get('/consultations/{id}/print', [\App\Http\Controllers\ConsultationController::class, 'print'])->name('consultations.print');
     });
+
     Route::middleware('permission:' . Permissions::MANAGE_CONSULTATIONS)->group(function () {
-        Route::get('/consultations/create', [\App\Http\Controllers\ConsultationController::class, 'create'])->name('consultations.create');
-        Route::post('/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])->name('consultations.store');
         Route::get('/consultations/{consultation}/edit', [\App\Http\Controllers\ConsultationController::class, 'edit'])->name('consultations.edit');
         Route::put('/consultations/{consultation}', [\App\Http\Controllers\ConsultationController::class, 'update'])->name('consultations.update');
         Route::patch('/consultations/{consultation}', [\App\Http\Controllers\ConsultationController::class, 'update']);

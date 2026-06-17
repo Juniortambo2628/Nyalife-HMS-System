@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import {
     Dialog,
     DialogPanel,
@@ -27,15 +28,16 @@ export default function Modal({
     }[maxWidth];
 
     return (
-        <Transition show={show} leave="duration-200">
+        <Transition show={show} leave="duration-200" as={Fragment}>
             <Dialog
                 as="div"
                 id="nyalife-modal"
-                className={`fixed inset-0 flex transform items-center overflow-y-auto px-4 py-6 transition-all sm:px-0 ${show ? 'show' : ''}`}
+                className={`fixed inset-0 flex transform items-center justify-center overflow-y-auto px-4 py-6 transition-all sm:px-0 ${show ? 'show' : ''}`}
                 style={{ zIndex: 999999 }}
                 onClose={close}
             >
                 <TransitionChild
+                    as={Fragment}
                     enter="ease-out duration-300"
                     enterFrom="opacity-0"
                     enterTo="opacity-100"
@@ -51,6 +53,7 @@ export default function Modal({
                 </TransitionChild>
 
                 <TransitionChild
+                    as={Fragment}
                     enter="ease-out duration-300"
                     enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                     enterTo="opacity-100 translate-y-0 sm:scale-100"

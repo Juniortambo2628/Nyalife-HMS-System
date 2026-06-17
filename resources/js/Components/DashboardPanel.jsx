@@ -13,9 +13,10 @@ export default function DashboardPanel({
     className = '',
     bodyClassName = 'p-0',
     headerClassName = '',
+    overflowHidden = true,
 }) {
     return (
-        <div className={`card shadow-sm border-0 rounded-2xl bg-white overflow-hidden shadow-hover ${className}`}>
+        <div className={`card shadow-sm border-0 rounded-2xl bg-white ${overflowHidden ? 'overflow-hidden' : ''} shadow-hover ${className}`}>
             <DashboardCardHeader
                 title={title}
                 icon={icon}

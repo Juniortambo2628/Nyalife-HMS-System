@@ -43,6 +43,7 @@ export default function FormSection({
     headerClassName = '',
     bodyClassName = '',
     headerVariant,
+    overflowHidden = false,
 }) {
     const variant = headerVariant || inferHeaderVariant(headerClassName);
 
@@ -55,6 +56,7 @@ export default function FormSection({
             className={`nyl-form-section mb-4 ${className}`}
             bodyClassName={bodyClassName}
             headerClassName={headerClassName}
+            overflowHidden={overflowHidden}
         >
             {children}
         </DashboardPanel>

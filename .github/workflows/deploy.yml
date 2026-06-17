@@ -40,6 +40,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: 🔍 Verify runner environment
+        shell: pwsh
+        run: |
+          Write-Host "Git version:"
+          git --version
+          Write-Host "SSH available:"
+          Get-Command ssh -ErrorAction SilentlyContinue
+          Write-Host "PHP version:"
+          php --version
+          Write-Host "Composer version:"
+          composer --version
+
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:

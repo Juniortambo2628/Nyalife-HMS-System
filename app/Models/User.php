@@ -12,7 +12,11 @@ use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasRoles, HasApiTokens, Notifiable, LogsActivity;
+    use HasFactory, HasApiTokens, Notifiable, LogsActivity;
+    use HasRoles {
+        hasPermissionTo as traitHasPermissionTo;
+        hasAnyPermission as traitHasAnyPermission;
+    }
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -99,7 +103,7 @@ class User extends Authenticatable
             return true;
         }
 
-        return parent::hasPermissionTo($permission, $guardName);
+        return $this->traitHasPermissionTo($permission, $guardName);
     }
 
     public function hasAnyPermission(...$permissions): bool
@@ -108,7 +112,7 @@ class User extends Authenticatable
             return true;
         }
 
-        return parent::hasAnyPermission(...$permissions);
+        return $this->traitHasAnyPermission(...$permissions);
     }
 
     /**

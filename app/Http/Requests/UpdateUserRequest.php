@@ -20,6 +20,7 @@ class UpdateUserRequest extends FormRequest
             'last_name' => 'required|string|max:255',
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($id, 'user_id')],
             'role' => 'nullable|string',
+            'department_id' => 'nullable|integer|exists:departments,department_id',
         ];
     }
 }

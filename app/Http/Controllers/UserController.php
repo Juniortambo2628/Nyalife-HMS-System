@@ -18,7 +18,7 @@ class UserController extends Controller
         $sort = $request->sort ?? 'created_at';
         $direction = $request->direction ?? 'desc';
 
-        $query = User::with('roleRelation')
+        $query = User::with(['roleRelation', 'staff.departmentRelation'])
             ->search($request->search)
             ->when($request->role, fn ($q) => $q->whereHas('roleRelation', fn ($r) => $r->where('role_name', $request->role)))
             ->when($request->quick_filter, function ($q, $filter) {
@@ -57,7 +57,8 @@ class UserController extends Controller
     public function create()
     {
         return Inertia::render('Users/Create', [
-            'roles' => Role::all()
+            'roles' => Role::all(),
+            'departments' => \App\Models\Department::all(),
         ]);
     }
 
@@ -93,6 +94,21 @@ class UserController extends Controller
             $user->assignRole($roleName);
         }
 
+        if ($roleName !== 'patient') {
+            $deptId = $request->input('department_id');
+            $departmentName = null;
+            if ($deptId) {
+                $departmentName = \App\Models\Department::where('department_id', $deptId)->value('department_name');
+            }
+            \App\Models\Staff::create([
+                'user_id' => $user->user_id,
+                'department_id' => $deptId,
+                'department' => $departmentName,
+                'employee_id' => strtoupper($user->username) . '-001',
+                'join_date' => now()->toDateString(),
+            ]);
+        }
+
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
 
@@ -105,9 +121,11 @@ class UserController extends Controller
 
     public function edit($id)
     {
+        $user = User::with('staff')->findOrFail($id);
         return Inertia::render('Users/Edit', [
-            'user' => UserResource::make(User::findOrFail($id)),
-            'roles' => Role::all()
+            'user' => UserResource::make($user),
+            'roles' => Role::all(),
+            'departments' => \App\Models\Department::all(),
         ]);
     }
 
@@ -129,6 +147,26 @@ class UserController extends Controller
         }
 
         $user->update($validated);
+
+        $roleName = $user->role;
+        if ($roleName === 'patient') {
+            \App\Models\Staff::where('user_id', $user->user_id)->delete();
+        } else {
+            $deptId = $request->input('department_id');
+            $departmentName = null;
+            if ($deptId) {
+                $departmentName = \App\Models\Department::where('department_id', $deptId)->value('department_name');
+            }
+            \App\Models\Staff::updateOrCreate(
+                ['user_id' => $user->user_id],
+                [
+                    'department_id' => $deptId,
+                    'department' => $departmentName,
+                    'employee_id' => $user->staff?->employee_id ?? (strtoupper($user->username) . '-001'),
+                    'join_date' => $user->staff?->join_date ?? now()->toDateString(),
+                ]
+            );
+        }
 
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }

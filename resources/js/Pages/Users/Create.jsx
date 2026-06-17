@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
-export default function Create({ roles }) {
+export default function Create({ roles, departments }) {
     const { data, setData, post, processing, errors } = useForm({
         first_name: '',
         last_name: '',
@@ -10,6 +10,7 @@ export default function Create({ roles }) {
         password: '',
         password_confirmation: '',
         role: '',
+        department_id: '',
     });
 
     const handleSubmit = (e) => {
@@ -94,7 +95,14 @@ export default function Create({ roles }) {
                                 <select 
                                     className="form-select border-0 bg-light rounded-xl"
                                     value={data.role}
-                                    onChange={e => setData('role', e.target.value)}
+                                    onChange={e => {
+                                        const r = e.target.value;
+                                        setData(d => ({
+                                            ...d,
+                                            role: r,
+                                            department_id: r === 'patient' ? '' : d.department_id
+                                        }));
+                                    }}
                                 >
                                     <option value="">Select a role...</option>
                                     {roles.map(r => (
@@ -102,6 +110,23 @@ export default function Create({ roles }) {
                                     ))}
                                 </select>
                             </div>
+
+                            {data.role && data.role !== 'patient' && (
+                                <div className="mt-4">
+                                    <label className="form-label font-bold text-gray-500">Department</label>
+                                    <select 
+                                        className={`form-select border-0 bg-light rounded-xl ${errors.department_id ? 'is-invalid' : ''}`}
+                                        value={data.department_id}
+                                        onChange={e => setData('department_id', e.target.value)}
+                                    >
+                                        <option value="">Select a department...</option>
+                                        {departments.map(d => (
+                                            <option key={d.department_id} value={d.department_id}>{d.department_name}</option>
+                                        ))}
+                                    </select>
+                                    {errors.department_id && <div className="invalid-feedback">{errors.department_id}</div>}
+                                </div>
+                            )}
 
                             <div className="mt-5 text-end">
                                 <button type="submit" className="btn btn-primary rounded-pill px-5 py-2 font-bold shadow-lg" disabled={processing}>

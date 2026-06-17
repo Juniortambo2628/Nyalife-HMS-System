@@ -1,1 +1,0 @@
-import{j as e}from"./app-yDrX8TaN.js";import{S as n}from"./StatusBadge-dp0B1zOc.js";const s=new Set(["urgent","routine","emergency","stat","high","normal"]);function i({priority:o="normal"}){const t=(o||"normal").toLowerCase(),r=s.has(t)?t:"normal";return e.jsx(n,{status:r})}export{i as P};

@@ -33,6 +33,8 @@ class UserResource extends JsonResource
             'updated_at' => $this->updated_at instanceof \DateTimeInterface ? $this->updated_at->format(\DateTimeInterface::ATOM) : $this->updated_at,
             'role' => $this->role,
             'role_relation' => $this->whenLoaded('roleRelation'),
+            'department_id' => $this->staff?->department_id,
+            'department_name' => $this->staff?->departmentRelation?->department_name ?? $this->staff?->department,
         ];
     }
 }

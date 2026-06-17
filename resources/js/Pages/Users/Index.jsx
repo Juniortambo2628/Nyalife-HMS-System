@@ -107,6 +107,12 @@ export default function Index({ users, filters, roles, auth, stats }) {
             enableSorting: false
         },
         {
+            header: 'Department',
+            accessorKey: 'department_name',
+            cell: info => <TableCellPrimary className="text-muted">{info.row.original.department_name || '—'}</TableCellPrimary>,
+            enableSorting: false
+        },
+        {
             header: 'Email',
             accessorKey: 'email',
             cell: info => <TableCellPrimary className="text-muted">{info.getValue()}</TableCellPrimary>,
@@ -220,10 +226,15 @@ export default function Index({ users, filters, roles, auth, stats }) {
                                             </div>
                                             <h5 className="fw-bold text-gray-900 mb-1">{user.first_name} {user.last_name}</h5>
                                             <p className="text-muted extra-small font-bold uppercase tracking-widest opacity-50 mb-3">@{user.username}</p>
-                                            <div className="mb-3">
+                                            <div className="mb-3 d-flex flex-column gap-1 align-items-center">
                                                 <span className="badge bg-soft-primary text-primary rounded-pill px-3 py-2 text-capitalize border border-primary-subtle fw-bold extra-small">
                                                     {user.role?.replace('_', ' ') || user.role_relation?.role_name}
                                                 </span>
+                                                {user.department_name && (
+                                                    <span className="small text-muted font-bold mt-1" style={{ fontSize: '0.75rem' }}>
+                                                        {user.department_name}
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="small text-muted mb-4 text-truncate px-2">{user.email}</div>
                                             <div className="mt-auto pt-2">

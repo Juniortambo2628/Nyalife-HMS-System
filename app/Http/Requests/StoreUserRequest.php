@@ -21,6 +21,7 @@ class StoreUserRequest extends FormRequest
             'role_id' => 'nullable|exists:roles,role_id',
             'role' => 'nullable|string|exists:roles,role_name',
             'password' => 'nullable|string|min:8|confirmed',
+            'department_id' => 'nullable|integer|exists:departments,department_id',
         ];
     }
 }

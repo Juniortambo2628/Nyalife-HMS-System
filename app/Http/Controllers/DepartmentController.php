@@ -47,9 +47,21 @@ class DepartmentController extends Controller
     {
         $this->authorizeAdmin();
 
+        $staffUsers = \App\Models\User::whereHas('roleRelation', function ($q) {
+            $q->where('role_name', '!=', 'patient');
+        })->with('staff')->get()->map(function ($user) {
+            return [
+                'user_id' => $user->user_id,
+                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'role' => $user->role,
+                'department_id' => $user->staff?->department_id,
+            ];
+        });
+
         return Inertia::render('Departments/Form', [
             'department' => null,
             'departmentTypes' => Department::TYPES,
+            'staffUsers' => $staffUsers,
         ]);
     }
 
@@ -62,6 +74,22 @@ class DepartmentController extends Controller
             'type' => $validated['type'] ?? 'clinical',
             'is_active' => $validated['is_active'] ?? true,
         ]);
+
+        $assignedUserIds = $request->input('assigned_user_ids', []);
+        foreach ($assignedUserIds as $userId) {
+            $user = \App\Models\User::find($userId);
+            if ($user) {
+                \App\Models\Staff::updateOrCreate(
+                    ['user_id' => $userId],
+                    [
+                        'department_id' => $department->department_id,
+                        'department' => $department->department_name,
+                        'employee_id' => $user->staff?->employee_id ?? (strtoupper($user->username) . '-001'),
+                        'join_date' => $user->staff?->join_date ?? now()->toDateString(),
+                    ]
+                );
+            }
+        }
 
         ActivityLogger::log(
             'admin',
@@ -91,11 +119,23 @@ class DepartmentController extends Controller
     {
         $this->authorizeAdmin();
 
-        $department = Department::findOrFail($id);
+        $department = Department::with('staffMembers.user')->findOrFail($id);
+
+        $staffUsers = \App\Models\User::whereHas('roleRelation', function ($q) {
+            $q->where('role_name', '!=', 'patient');
+        })->with('staff')->get()->map(function ($user) {
+            return [
+                'user_id' => $user->user_id,
+                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'role' => $user->role,
+                'department_id' => $user->staff?->department_id,
+            ];
+        });
 
         return Inertia::render('Departments/Form', [
             'department' => DepartmentResource::make($department),
             'departmentTypes' => Department::TYPES,
+            'staffUsers' => $staffUsers,
         ]);
     }
 
@@ -112,6 +152,32 @@ class DepartmentController extends Controller
         // Keep legacy text field in sync for assigned staff
         if ($department->wasChanged('department_name')) {
             $department->staffMembers()->update(['department' => $department->department_name]);
+        }
+
+        $assignedUserIds = $request->input('assigned_user_ids', []);
+        
+        // Dissociate staff no longer assigned to this department
+        \App\Models\Staff::where('department_id', $department->department_id)
+            ->whereNotIn('user_id', $assignedUserIds)
+            ->update([
+                'department_id' => null,
+                'department' => null,
+            ]);
+
+        // Associate assigned staff
+        foreach ($assignedUserIds as $userId) {
+            $user = \App\Models\User::find($userId);
+            if ($user) {
+                \App\Models\Staff::updateOrCreate(
+                    ['user_id' => $userId],
+                    [
+                        'department_id' => $department->department_id,
+                        'department' => $department->department_name,
+                        'employee_id' => $user->staff?->employee_id ?? (strtoupper($user->username) . '-001'),
+                        'join_date' => $user->staff?->join_date ?? now()->toDateString(),
+                    ]
+                );
+            }
         }
 
         ActivityLogger::log(

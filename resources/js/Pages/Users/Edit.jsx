@@ -1,11 +1,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react';
-export default function Edit({ user, roles }) {
+
+export default function Edit({ user, roles, departments }) {
     const { data, setData, put, processing, errors } = useForm({
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
         role: user.role || '',
+        department_id: user.department_id || '',
     });
 
     const handleSubmit = (e) => {
@@ -67,7 +69,14 @@ export default function Edit({ user, roles }) {
                                 <select 
                                     className="form-select border-0 bg-light rounded-xl"
                                     value={data.role}
-                                    onChange={e => setData('role', e.target.value)}
+                                    onChange={e => {
+                                        const r = e.target.value;
+                                        setData(d => ({
+                                            ...d,
+                                            role: r,
+                                            department_id: r === 'patient' ? '' : d.department_id
+                                        }));
+                                    }}
                                 >
                                     <option value="">Select a role...</option>
                                     {roles.map(r => (
@@ -75,6 +84,23 @@ export default function Edit({ user, roles }) {
                                     ))}
                                 </select>
                             </div>
+
+                            {data.role && data.role !== 'patient' && (
+                                <div className="mt-4">
+                                    <label className="form-label font-bold text-gray-500">Department</label>
+                                    <select 
+                                        className={`form-select border-0 bg-light rounded-xl ${errors.department_id ? 'is-invalid' : ''}`}
+                                        value={data.department_id}
+                                        onChange={e => setData('department_id', e.target.value)}
+                                    >
+                                        <option value="">Select a department...</option>
+                                        {departments.map(d => (
+                                            <option key={d.department_id} value={d.department_id}>{d.department_name}</option>
+                                        ))}
+                                    </select>
+                                    {errors.department_id && <div className="invalid-feedback">{errors.department_id}</div>}
+                                </div>
+                            )}
 
                             <div className="mt-5 d-flex justify-content-end gap-2">
                                 <Link href={route('users.index')} className="btn btn-light rounded-pill px-4 py-2 font-bold">

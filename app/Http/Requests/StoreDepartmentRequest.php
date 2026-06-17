@@ -24,6 +24,8 @@ class StoreDepartmentRequest extends FormRequest
             'head_name' => 'nullable|string|max:100',
             'head_position' => 'nullable|string|max:100',
             'is_active' => 'nullable|boolean',
+            'assigned_user_ids' => 'nullable|array',
+            'assigned_user_ids.*' => 'integer|exists:users,user_id',
         ];
     }
 }

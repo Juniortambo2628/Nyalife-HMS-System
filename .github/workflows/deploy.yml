@@ -98,6 +98,7 @@ jobs:
       - name: 🔧 Run post-deploy commands via SSH
         shell: cmd
         run: |
-          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "cd /home1/nyalifew/nyalife_core && composer install --no-dev --optimize-autoloader --no-interaction && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan event:cache && chmod -R 775 storage && chmod -R 775 bootstrap/cache && echo '✅ Deployment complete!'"
+          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "bash -l -c \"cd /home1/nyalifew/nyalife_core && composer install --no-dev --optimize-autoloader --no-interaction && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan event:cache && chmod -R 775 storage && chmod -R 775 bootstrap/cache\""
+
 
 

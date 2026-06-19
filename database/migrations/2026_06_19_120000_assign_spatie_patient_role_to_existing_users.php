@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $patientRoleId = DB::table('roles')->where('name', 'patient')->where('guard_name', 'web')->value('id');
+        $patientRoleId = DB::table('spatie_roles')->where('name', 'patient')->where('guard_name', 'web')->value('id');
         if (! $patientRoleId) {
             return;
         }
@@ -34,14 +34,14 @@ return new class extends Migration
             $exists = DB::table('model_has_roles')
                 ->where('role_id', $patientRoleId)
                 ->where('model_type', 'App\\Models\\User')
-                ->where('model_id', $userId)
+                ->where('user_id', $userId)
                 ->exists();
 
             if (! $exists) {
                 DB::table('model_has_roles')->insert([
                     'role_id' => $patientRoleId,
                     'model_type' => 'App\\Models\\User',
-                    'model_id' => $userId,
+                    'user_id' => $userId,
                 ]);
             }
         }

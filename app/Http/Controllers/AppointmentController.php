@@ -22,6 +22,7 @@ use App\Support\PatientId;
 use App\Services\AppointmentQueryService;
 use App\Mail\TelehealthInvitation;
 use Illuminate\Support\Facades\Mail;
+use App\Support\Permissions;
 
 class AppointmentController extends Controller
 {
@@ -92,7 +93,20 @@ class AppointmentController extends Controller
                 'patient_number' => 'NYA' . date('Y') . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
             ]);
             
-            // TODO: Send email with credentials
+            // Send guest credentials email
+            try {
+                Mail::to($user->email)->send(new \App\Mail\GuestCredentialsEmail([
+                    'patient_name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'password' => $password,
+                    'login_url' => rtrim(config('app.url'), '/') . '/login',
+                ]));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Guest credentials email failed: ' . $e->getMessage());
+            }
+
+            // Assign Spatie patient role
+            $user->assignRole('patient');
         }
 
         // 3. Get Patient ID
@@ -309,6 +323,12 @@ class AppointmentController extends Controller
             'labTestRequests.testType',
             'consultations.doctor.user',
         ])->findOrFail($id);
+
+        // Patients may only view their own appointments
+        $this->requireStaffOrOwnPatient(
+            $appointment->patient_id,
+            Permissions::MANAGE_APPOINTMENTS
+        );
         
         return Inertia::render('Appointments/Show', [
             'appointment' => AppointmentResource::make($appointment),

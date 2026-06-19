@@ -60,6 +60,11 @@ class RegisteredUserController extends Controller
                 'status' => 'active',
                 'is_active' => true,
             ]);
+
+            // Ensure Spatie patient role is assigned
+            if (! $user->hasRole('patient')) {
+                $user->assignRole('patient');
+            }
         } else {
             // Check unique username for new users
             if (User::where('username', $input['username'])->exists()) {
@@ -79,9 +84,28 @@ class RegisteredUserController extends Controller
                 'status' => 'active',
                 'is_active' => true,
             ]);
+
+            // Assign Spatie patient role
+            $user->assignRole('patient');
+
+            // Create Patient record if missing
+            \App\Models\Patient::firstOrCreate(
+                ['user_id' => $user->user_id],
+                ['patient_number' => 'NYA' . date('Y') . str_pad($user->user_id, 4, '0', STR_PAD_LEFT)]
+            );
         }
 
         event(new Registered($user));
+
+        // Send welcome email
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\WelcomeEmail([
+                'user_name' => $user->first_name . ' ' . $user->last_name,
+                'clinic_name' => config('app.name', "Nyalife Women's Clinic"),
+            ]));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Welcome email failed: ' . $e->getMessage());
+        }
 
         Auth::login($user);
 

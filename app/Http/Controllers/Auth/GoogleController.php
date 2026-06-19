@@ -146,7 +146,7 @@ class GoogleController extends Controller
             'google_token' => $googleData['token'],
             'google_refresh_token' => $googleData['refresh_token'],
             'password' => bcrypt(Str::random(16)),
-            'role_id' => 7, // Default to Patient
+            'role_id' => 1, // Patient
             'gender' => $request->gender,
             'date_of_birth' => $request->date_of_birth,
             'phone' => $request->phone,
@@ -154,6 +154,15 @@ class GoogleController extends Controller
             'status' => 'active',
             'username' => strtolower($request->first_name . '.' . $request->last_name . Str::random(4)),
         ]);
+
+        // Assign Spatie patient role
+        $user->assignRole('patient');
+
+        // Create Patient record
+        \App\Models\Patient::firstOrCreate(
+            ['user_id' => $user->user_id],
+            ['patient_number' => 'NYA' . date('Y') . str_pad($user->user_id, 4, '0', STR_PAD_LEFT)]
+        );
 
         Auth::login($user);
         session()->forget('google_user');

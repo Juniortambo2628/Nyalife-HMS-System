@@ -15,7 +15,7 @@ return new class extends Migration
         });
 
         Schema::table('telehealth_consents', function (Blueprint $table) {
-            $table->unsignedBigInteger('appointment_id')->nullable()->after('patient_id');
+            $table->unsignedInteger('appointment_id')->nullable()->after('patient_id');
             $table->foreign('appointment_id')->references('appointment_id')->on('appointments')->onDelete('set null');
         });
     }

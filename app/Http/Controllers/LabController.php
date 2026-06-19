@@ -96,7 +96,7 @@ class LabController extends Controller
 
     public function tests(Request $request)
     {
-        $query = LabTestType::query();
+        $query = LabTestType::labTests();
 
         // Search
         if ($request->has('search') && $request->search) {
@@ -116,11 +116,6 @@ class LabController extends Controller
         } else {
             $query->orderBy('test_name', 'asc');
         }
-
-        $labCategories = [
-            'Hematology', 'Chemistry', 'Reproductive', 'Serology', 
-            'Microbiology', 'Pathology', 'Parasitology', 'Biochemistry', 'Toxicology', 'General'
-        ];
 
         $stats = [
             'total' => LabTestType::count(),

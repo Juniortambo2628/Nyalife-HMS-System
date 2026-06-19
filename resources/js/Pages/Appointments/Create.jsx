@@ -7,13 +7,13 @@ import { formatPatientSelectLabel } from '@/Components/PatientTableCell';
 import axios from 'axios';
 import { useState } from 'react';
 
-export default function Create({ preselected_patient_id, preselected_patient_label, preselected_doctor_id, preselected_doctor_label, auth }) {
+export default function Create({ preselected_patient_id, preselected_patient_label, preselected_doctor_id, preselected_doctor_label, preselected_type, auth }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         patient_id: preselected_patient_id || '',
         doctor_id: preselected_doctor_id || '',
         appointment_date: new Date().toISOString().split('T')[0],
         appointment_time: '08:00',
-        appointment_type: 'consultation',
+        appointment_type: preselected_type || 'consultation',
         status: 'scheduled',
         reason: '',
         notes: '',
@@ -118,6 +118,7 @@ export default function Create({ preselected_patient_id, preselected_patient_lab
                                                 required
                                             >
                                                 <option value="consultation">Consultation</option>
+                                                <option value="telehealth">Telehealth / Online</option>
                                                 <option value="follow_up">Follow Up</option>
                                                 <option value="emergency">Emergency</option>
                                                 <option value="routine_checkup">Routine Checkup</option>
@@ -166,6 +167,20 @@ export default function Create({ preselected_patient_id, preselected_patient_lab
                                             />
                                             {errors.notes && <div className="invalid-feedback">{errors.notes}</div>}
                                         </div>
+
+                                        {data.appointment_type === 'telehealth' && (
+                                            <div className="col-12">
+                                                <div className="alert alert-info border-0 rounded-3 shadow-sm">
+                                                    <div className="d-flex align-items-center">
+                                                        <i className="fas fa-video me-3 fa-lg"></i>
+                                                        <div>
+                                                            <strong className="d-block">Telehealth / Online Consultation</strong>
+                                                            <p className="mb-0 small">A secure Jitsi meeting link will be generated upon confirmation. The patient will receive the link via their registered contact details.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
 
                                         <div className="col-12 mt-4 d-flex justify-content-end gap-2">
                                             <button type="button" onClick={() => reset()} className="btn btn-outline-secondary px-4">Clear</button>

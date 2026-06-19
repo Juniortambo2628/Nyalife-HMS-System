@@ -89,6 +89,7 @@ export default function Edit({
         parity: consultation.parity || '',
         current_pregnancy: consultation.current_pregnancy || '',
         past_obstetric: consultation.past_obstetric || [],
+        obstetric_history: consultation.obstetric_history || '',
         
         past_medical_history: consultation.past_medical_history || '',
         surgical_history: consultation.surgical_history || '',
@@ -585,6 +586,53 @@ export default function Edit({
                                 <FormField label="Parity (Para X+Y)" className="col-md-4"><input type="text" className="form-control" placeholder="e.g. 2+0" value={data.parity} onChange={e => setData('parity', e.target.value)} /></FormField>
                                 <FormField label="Current Pregnancy Notes" className="col-md-8"><input type="text" className="form-control" value={data.current_pregnancy} onChange={e => setData('current_pregnancy', e.target.value)} /></FormField>
                             </div>
+                            <div className="mb-4">
+                                <FormField label="Obstetric History Notes">
+                                    <textarea className="form-control" rows="2" placeholder="Additional obstetric history notes..." value={data.obstetric_history} onChange={e => setData('obstetric_history', e.target.value)} />
+                                </FormField>
+                            </div>
+                            <h6 className="text-secondary small fw-bold text-uppercase border-bottom pb-2 mb-3">
+                                Past Pregnancies
+                                <button type="button" onClick={addObstetricRecord} className="btn btn-sm btn-outline-primary ms-3 rounded-pill">
+                                    <i className="fas fa-plus me-1"></i> Add Record
+                                </button>
+                            </h6>
+                            {data.past_obstetric.length === 0 && (
+                                <p className="text-muted small italic">No past pregnancy records added.</p>
+                            )}
+                            {data.past_obstetric.map((rec, idx) => (
+                                <div key={idx} className="bg-light p-3 rounded mb-3 position-relative border">
+                                    <button type="button" onClick={() => removeObstetricRecord(idx)} className="btn btn-sm btn-light text-danger position-absolute top-0 end-0 m-2 rounded-circle" title="Remove">
+                                        <i className="fas fa-times"></i>
+                                    </button>
+                                    <div className="row g-2">
+                                        <div className="col-md-2">
+                                            <input type="text" className="form-control form-control-sm" placeholder="Year" value={rec.year} onChange={e => updateObstetricRecord(idx, 'year', e.target.value)} />
+                                        </div>
+                                        <div className="col-md-3">
+                                            <input type="text" className="form-control form-control-sm" placeholder="Place of Birth" value={rec.place_of_birth} onChange={e => updateObstetricRecord(idx, 'place_of_birth', e.target.value)} />
+                                        </div>
+                                        <div className="col-md-2">
+                                            <input type="text" className="form-control form-control-sm" placeholder="Duration" value={rec.duration} onChange={e => updateObstetricRecord(idx, 'duration', e.target.value)} />
+                                        </div>
+                                        <div className="col-md-3">
+                                            <input type="text" className="form-control form-control-sm" placeholder="Mode of Delivery" value={rec.mode_of_delivery} onChange={e => updateObstetricRecord(idx, 'mode_of_delivery', e.target.value)} />
+                                        </div>
+                                        <div className="col-md-2">
+                                            <input type="text" className="form-control form-control-sm" placeholder="Outcome" value={rec.outcome} onChange={e => updateObstetricRecord(idx, 'outcome', e.target.value)} />
+                                        </div>
+                                        <div className="col-md-2">
+                                            <input type="text" className="form-control form-control-sm" placeholder="Sex" value={rec.sex} onChange={e => updateObstetricRecord(idx, 'sex', e.target.value)} />
+                                        </div>
+                                        <div className="col-md-2">
+                                            <input type="text" className="form-control form-control-sm" placeholder="Weight" value={rec.weight} onChange={e => updateObstetricRecord(idx, 'weight', e.target.value)} />
+                                        </div>
+                                        <div className="col-md-8">
+                                            <input type="text" className="form-control form-control-sm" placeholder="Complications" value={rec.complications} onChange={e => updateObstetricRecord(idx, 'complications', e.target.value)} />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </FormSection>
                     </div>
                     </>

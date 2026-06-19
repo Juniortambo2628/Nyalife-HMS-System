@@ -27,4 +27,29 @@ class LabTestType extends Model
         'template' => 'array',
         'is_active' => 'boolean'
     ];
+
+    const LAB_CATEGORIES = [
+        'Hematology', 'Chemistry', 'Biochemistry', 'Microbiology',
+        'Parasitology', 'Pathology', 'Reproductive', 'Serology', 'Laboratory'
+    ];
+
+    const SERVICE_CATEGORIES = [
+        'Procedure', 'Imaging', 'General Services', 'Delivery',
+        'Consultation', 'Antenatal', 'Family Planning', 'Immunization'
+    ];
+
+    public function scopeLabTests($query)
+    {
+        return $query->whereIn('category', static::LAB_CATEGORIES);
+    }
+
+    public function scopeServices($query)
+    {
+        return $query->whereIn('category', static::SERVICE_CATEGORIES);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }

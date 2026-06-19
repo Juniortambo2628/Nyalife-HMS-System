@@ -30,6 +30,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
         phone: '',
         date: '',
         time: '',
+        type: 'in_person',
         reason: '',
     });
 

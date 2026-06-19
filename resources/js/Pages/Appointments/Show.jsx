@@ -328,6 +328,17 @@ export default function Show({ appointment, auth }) {
                                         {appointment.notes || 'No triage or internal notes recorded.'}
                                     </div>
                                 </div>
+                                {appointment.appointment_type === 'telehealth' && (
+                                    <div className="col-12 mt-3">
+                                        <div className="alert alert-info d-flex align-items-center gap-3 rounded-4 py-3 px-4 mb-0">
+                                            <i className="fas fa-video fa-lg"></i>
+                                            <div>
+                                                <strong className="d-block">Telehealth Appointment</strong>
+                                                <span className="small">A Jitsi meeting link was generated for this visit. The link is stored in the appointment notes above. Share it with the patient before the scheduled time.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="nyl-meta-grid mt-4">

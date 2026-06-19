@@ -21,7 +21,7 @@ class LabTestRequestController extends Controller
         $patient = $patientId ? Patient::with('user')->find($patientId) : null;
 
         return Inertia::render('Lab/Create', [
-            'testTypes' => LabTestType::where('is_active', true)->get(),
+            'testTypes' => LabTestType::labTests()->active()->get(),
             'preselected_patient_id' => $patientId,
             'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
             'consultation_id' => $consultationId

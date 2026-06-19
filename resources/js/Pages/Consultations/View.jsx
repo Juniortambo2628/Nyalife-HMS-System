@@ -176,6 +176,19 @@ export default function View({ consultation, auth }) {
                                             {consultation.consultation_status}
                                         </span>
                                     </div>
+                                    {consultation.consultation_type === 'telehealth' && (
+                                        <div className="d-flex justify-content-between align-items-center border-top border-gray-50 pt-2 mt-2">
+                                            <span className="extra-small fw-bold text-muted text-uppercase"><i className="fas fa-video text-info me-1"></i>Telehealth</span>
+                                            <a
+                                                href={consultation.meeting_link || '#'}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="btn btn-sm btn-outline-info rounded-pill px-3 fw-bold extra-small"
+                                            >
+                                                JOIN MEETING
+                                            </a>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="d-grid mt-5">
                                     <Link href={route('patients.show', consultation.patient_id)} className="btn btn-outline-primary btn-sm rounded-pill fw-bold tracking-widest extra-small py-2.5">
@@ -339,6 +352,13 @@ export default function View({ consultation, auth }) {
                                                         <div className="fw-extrabold text-gray-900">{safeText(consultation.current_pregnancy)}</div>
                                                     </div>
                                                 </div>
+
+                                                {consultation.obstetric_history && (
+                                                    <div className="mb-4">
+                                                        <div className="extra-small text-muted mb-1">Obstetric History Notes</div>
+                                                        <div className="fw-medium text-gray-900 bg-gray-50 p-3 rounded-2xl">{consultation.obstetric_history}</div>
+                                                    </div>
+                                                )}
                                                 
                                                 {consultation.past_obstetric?.length > 0 ? (
                                                     <div className="table-responsive rounded-2xl border border-gray-100 overflow-hidden shadow-inner">
@@ -590,6 +610,15 @@ export default function View({ consultation, auth }) {
                         href: route('follow-ups.create', { 
                             consultation_id: consultation.consultation_id 
                         }),
+                    },
+                    ['receptionist', 'admin', 'doctor'].includes(auth.user.role) && { 
+                        label: 'BOOK FOLLOW-UP VISIT', 
+                        icon: 'fa-calendar-plus', 
+                        href: route('appointments.create', { 
+                            patient_id: consultation.patient_id,
+                            doctor_id: consultation.doctor_id
+                        }),
+                        color: 'primary'
                     },
                     ['doctor', 'nurse', 'admin'].includes(auth.user.role) && { 
                         label: 'ADD LAB REQUEST', 

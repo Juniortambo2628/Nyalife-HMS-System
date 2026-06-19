@@ -40,6 +40,13 @@ class StoreConsultationRequest extends FormRequest
             'requested_procedures' => 'nullable|array',
             'requested_labs' => 'nullable|array',
             'requested_service_items' => 'nullable|array',
+            'parity' => 'nullable|string',
+            'current_pregnancy' => 'nullable|string',
+            'contraceptive_history' => 'nullable|string',
+            'sexual_history' => 'nullable|string',
+            'past_medical_history' => 'nullable|string',
+            'surgical_history' => 'nullable|string',
+            'physical_examination' => 'nullable|string',
         ];
     }
 }

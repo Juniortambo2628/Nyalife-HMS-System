@@ -79,14 +79,44 @@ export default function Print({ consultation, clinic_settings = {} }) {
                 </div>
             </Section>
 
-            {(consultation.parity || consultation.current_pregnancy || consultation.contraceptive_history) && (
+            {(consultation.parity || consultation.current_pregnancy || consultation.contraceptive_history || consultation.obstetric_history || consultation.past_obstetric?.length > 0) && (
                 <Section title="Reproductive History">
                     <Field label="Parity" value={consultation.parity} />
                     <Field label="Current Pregnancy" value={consultation.current_pregnancy} />
                     <Field label="Contraceptive History" value={consultation.contraceptive_history} />
                     <Field label="Cervical Screening" value={consultation.cervical_screening} />
+                    {consultation.obstetric_history && (
+                        <Field label="Obstetric History Notes" value={consultation.obstetric_history} />
+                    )}
                     {menstrual.last_period_date && (
                         <Field label="LMP" value={`${menstrual.last_period_date} (${menstrual.regularity || '—'})`} />
+                    )}
+                    {consultation.past_obstetric?.length > 0 && (
+                        <>
+                            <div className="extra-small fw-bold text-uppercase mb-1">Past Pregnancies</div>
+                            <table className="table table-bordered table-sm small mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Place</th>
+                                        <th>Duration</th>
+                                        <th>Mode</th>
+                                        <th>Outcome</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {consultation.past_obstetric.map((rec, i) => (
+                                        <tr key={i}>
+                                            <td>{rec.year}</td>
+                                            <td>{rec.place_of_birth}</td>
+                                            <td>{rec.duration}</td>
+                                            <td>{rec.mode_of_delivery}</td>
+                                            <td>{rec.outcome}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </>
                     )}
                 </Section>
             )}

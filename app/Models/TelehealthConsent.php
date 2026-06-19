@@ -22,6 +22,7 @@ class TelehealthConsent extends Model
 
     protected $fillable = [
         'patient_id',
+        'appointment_id',
         'patient_name',
         'patient_email',
         'patient_phone',
@@ -41,5 +42,10 @@ class TelehealthConsent extends Model
     public function patient()
     {
         return $this->belongsTo(Patient::class, 'patient_id', 'patient_id');
+    }
+
+    public function appointment()
+    {
+        return $this->belongsTo(Appointment::class, 'appointment_id', 'appointment_id');
     }
 }

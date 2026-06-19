@@ -51,6 +51,7 @@ Route::post('/check-guest-data', [App\Http\Controllers\CheckGuestDataController:
 // Telehealth
 Route::get('/telehealth', [App\Http\Controllers\TelehealthController::class, 'index'])->name('telehealth.index');
 Route::post('/telehealth/consent', [App\Http\Controllers\TelehealthController::class, 'store'])->name('telehealth.store');
+Route::get('/telehealth/meeting/{meetingId}', [App\Http\Controllers\TelehealthController::class, 'meetingRoom'])->name('telehealth.meeting');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard

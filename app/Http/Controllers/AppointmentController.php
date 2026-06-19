@@ -20,6 +20,8 @@ use App\Models\Role;
 use App\Services\ActivityLogger;
 use App\Support\PatientId;
 use App\Services\AppointmentQueryService;
+use App\Mail\TelehealthInvitation;
+use Illuminate\Support\Facades\Mail;
 
 class AppointmentController extends Controller
 {
@@ -113,16 +115,42 @@ class AppointmentController extends Controller
                 });
             })->first();
 
+        $appointment_type = ($validated['type'] ?? '') === 'telehealth' ? 'telehealth' : 'consultation';
+
         $appointment = Appointment::create([
             'patient_id' => $patient->patient_id,
             'doctor_id' => $doctor ? $doctor->staff_id : 1, // Fallback to 1 if no doctor found (risky but needed)
             'appointment_date' => $validated['date'],
             'appointment_time' => $validated['time'],
-            'appointment_type' => 'consultation', // Standard for guest requests
+            'appointment_type' => $appointment_type,
             'reason' => $validated['reason'],
             'status' => 'pending', // Guest appointments start as pending
             'created_by' => $user->user_id, // Self-created
         ]);
+
+        // Generate Jitsi meeting link for telehealth guest appointments
+        if ($appointment_type === 'telehealth') {
+            $meetingId = 'nyalife-' . strtolower(\Illuminate\Support\Str::random(12));
+            $appUrl = rtrim(config('app.url'), '/');
+            $link = "{$appUrl}/telehealth/meeting/{$meetingId}";
+            $appointment->notes = "Meeting Link: {$link}";
+            $appointment->save();
+
+            // Send telehealth invitation email
+            try {
+                if ($user->email) {
+                    Mail::to($user->email)->send(new TelehealthInvitation([
+                        'patient_name' => $validated['name'],
+                        'meeting_link' => $link,
+                        'appointment_date' => $validated['date'],
+                        'appointment_time' => $validated['time'],
+                        'doctor_name' => 'Clinic Physician',
+                    ]));
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Telehealth invitation email failed: ' . $e->getMessage());
+            }
+        }
 
         ActivityLogger::log(
             'appointments',
@@ -153,10 +181,12 @@ class AppointmentController extends Controller
                 'appointment_id' => $appointment->appointment_id,
                 'appointment_date' => $appointment->appointment_date,
                 'appointment_time' => $appointment->appointment_time,
+                'appointment_type' => $appointment->appointment_type,
                 'reason' => $appointment->reason,
                 'status' => $appointment->status,
                 'patient_name' => trim(($appointment->patient->user->first_name ?? '') . ' ' . ($appointment->patient->user->last_name ?? '')),
                 'patient_email' => $appointment->patient->user->email ?? null,
+                'patient_phone' => $appointment->patient->user->phone ?? null,
             ],
         ]);
     }
@@ -202,6 +232,7 @@ class AppointmentController extends Controller
     {
         $patientId = $request->query('patient_id');
         $doctorId = $request->query('doctor_id');
+        $appointmentType = $request->query('type');
 
         $patient = $patientId ? Patient::with('user')->find($patientId) : null;
         $doctor = $doctorId ? Staff::with('user')->find($doctorId) : null;
@@ -211,6 +242,7 @@ class AppointmentController extends Controller
             'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
             'preselected_doctor_id' => $doctorId,
             'preselected_doctor_label' => $doctor ? ("Dr. " . $doctor->user->first_name . " " . $doctor->user->last_name) : null,
+            'preselected_type' => $appointmentType,
         ]);
     }
 
@@ -224,6 +256,32 @@ class AppointmentController extends Controller
         $validated['created_by'] = Auth::id();
         
         $appointment = Appointment::create($validated);
+
+        // Generate Jitsi meeting link for telehealth appointments
+        if (($validated['appointment_type'] ?? '') === 'telehealth') {
+            $meetingId = 'nyalife-' . strtolower(\Illuminate\Support\Str::random(12));
+            $appUrl = rtrim(config('app.url'), '/');
+            $link = "{$appUrl}/telehealth/meeting/{$meetingId}";
+            $appointment->notes = ($appointment->notes ?? '') . "\nMeeting Link: {$link}";
+            $appointment->save();
+
+            // Send telehealth invitation email
+            try {
+                $patientEmail = $appointment->patient->user->email ?? null;
+                if ($patientEmail) {
+                    Mail::to($patientEmail)->send(new TelehealthInvitation([
+                        'patient_name' => trim(($appointment->patient->user->first_name ?? '') . ' ' . ($appointment->patient->user->last_name ?? '')),
+                        'meeting_link' => $link,
+                        'appointment_date' => $appointment->appointment_date,
+                        'appointment_time' => $appointment->appointment_time,
+                        'doctor_name' => 'Clinic Physician',
+                    ]));
+                }
+            } catch (\Exception $e) {
+                // Log but don't break the flow if email fails
+                \Illuminate\Support\Facades\Log::warning('Telehealth invitation email failed: ' . $e->getMessage());
+            }
+        }
 
         ActivityLogger::log(
             'appointments',

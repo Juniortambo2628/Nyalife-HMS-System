@@ -26,6 +26,7 @@ class StoreAppointmentRequest extends FormRequest
             'doctor_id' => 'required|exists:staff,staff_id',
             'appointment_date' => 'required|date',
             'appointment_time' => 'required',
+            'appointment_type' => 'nullable|string|in:general,follow_up,telehealth,emergency',
             'reason' => 'nullable|string|max:500',
             'notes' => 'nullable|string',
         ];

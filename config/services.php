@@ -41,4 +41,8 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'jitsi' => [
+        'domain' => env('JITSI_DOMAIN', 'meet.jit.si'),
+    ],
+
 ];

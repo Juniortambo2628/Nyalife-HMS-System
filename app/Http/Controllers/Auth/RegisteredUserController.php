@@ -35,6 +35,8 @@ class RegisteredUserController extends Controller
             'username' => 'required|string|max:255|unique:'.User::class.',username,'.($request->username_id ?? 'NULL').',user_id',
             'email' => 'required|string|lowercase|email|max:255',
             'phone' => 'required|string|max:20',
+            'gender' => 'nullable|string|in:male,female,other',
+            'date_of_birth' => 'nullable|date',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -52,6 +54,8 @@ class RegisteredUserController extends Controller
                 'last_name' => $input['last_name'],
                 'username' => $input['username'],
                 'phone' => $input['phone'],
+                'gender' => $input['gender'] ?? $user->gender,
+                'date_of_birth' => $input['date_of_birth'] ?? $user->date_of_birth,
                 'password' => $input['password'],
                 'status' => 'active',
                 'is_active' => true,
@@ -68,6 +72,8 @@ class RegisteredUserController extends Controller
                 'username' => $input['username'],
                 'email' => $input['email'],
                 'phone' => $input['phone'],
+                'gender' => $input['gender'] ?? null,
+                'date_of_birth' => $input['date_of_birth'] ?? null,
                 'password' => $input['password'],
                 'role_id' => 1, // Default to patient
                 'status' => 'active',

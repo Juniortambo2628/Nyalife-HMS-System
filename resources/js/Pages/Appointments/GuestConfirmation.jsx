@@ -44,6 +44,16 @@ export default function GuestConfirmation({ appointment }) {
                                                 <span className="badge bg-warning-subtle text-warning-emphasis text-capitalize">{appointment.status}</span>
                                             </div>
                                             <div className="col-sm-6">
+                                                <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">Appointment Type</div>
+                                                <span className="fw-medium">
+                                                    {appointment.appointment_type === 'telehealth' ? (
+                                                        <><i className="fas fa-video text-info me-1"></i> Telehealth</>
+                                                    ) : (
+                                                        <><i className="fas fa-building me-1"></i> In-Person</>
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <div className="col-sm-6">
                                                 <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">Preferred Date</div>
                                                 <div className="fw-medium">{dateStr}</div>
                                             </div>
@@ -62,7 +72,7 @@ export default function GuestConfirmation({ appointment }) {
 
                                     <div className="d-grid gap-3 d-sm-flex justify-content-sm-center">
                                         <Link
-                                            href={`/register?name=${encodeURIComponent(appointment.patient_name)}&email=${encodeURIComponent(appointment.patient_email || '')}`}
+                                            href={`/register?name=${encodeURIComponent(appointment.patient_name)}&email=${encodeURIComponent(appointment.patient_email || '')}&phone=${encodeURIComponent(appointment.patient_phone || '')}`}
                                             className="btn btn-primary btn-lg rounded-pill fw-semibold px-4"
                                         >
                                             <i className="fas fa-user-plus me-2"></i>

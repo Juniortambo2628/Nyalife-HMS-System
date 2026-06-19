@@ -23,6 +23,20 @@ class TelehealthController extends Controller
     }
 
     /**
+     * Jitsi Meeting Room page.
+     */
+    public function meetingRoom($meetingId)
+    {
+        $jitsiDomain = config('services.jitsi.domain', 'meet.jit.si');
+
+        return Inertia::render('Telehealth/MeetingRoom', [
+            'meetingId' => $meetingId,
+            'jitsiDomain' => $jitsiDomain,
+            'user' => Auth::user(),
+        ]);
+    }
+
+    /**
      * Public/Patient submission of consent form.
      */
     public function store(Request $request)

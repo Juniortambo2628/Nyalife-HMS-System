@@ -61,6 +61,11 @@ class Appointment extends Model
         return $this->hasMany(Consultation::class, 'appointment_id', 'appointment_id');
     }
 
+    public function telehealthConsents()
+    {
+        return $this->hasMany(TelehealthConsent::class, 'appointment_id', 'appointment_id');
+    }
+
     public function scopeForDoctor($query, $staffId)
     {
         if (empty($staffId)) {

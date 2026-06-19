@@ -28,6 +28,9 @@ class Consultation extends Model
         'appointment_id',
         'consultation_date',
         'consultation_status',
+        'consultation_type',
+        'meeting_link',
+        'meeting_platform',
         'is_walk_in',
         'priority',
         'chief_complaint',
@@ -68,6 +71,11 @@ class Consultation extends Model
         'is_walk_in' => 'boolean',
         'consultation_date' => 'datetime',
     ];
+
+    public function getMeetingUrlAttribute(): ?string
+    {
+        return $this->meeting_link;
+    }
 
     public function patient()
     {

@@ -110,6 +110,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
         parity: initialDraft.current?.parity || prefill.parity || '',
         current_pregnancy: initialDraft.current?.current_pregnancy || prefill.current_pregnancy || '',
         past_obstetric: initialDraft.current?.past_obstetric || prefill.past_obstetric || [],
+        obstetric_history: initialDraft.current?.obstetric_history || prefill.obstetric_history || '',
         
         // Medical & Surgical
         past_medical_history: initialDraft.current?.past_medical_history || prefill.past_medical_history || '',
@@ -367,6 +368,8 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                     title="Patient Biodata & Vitals" 
                     icon="fas fa-user-injured"
                     headerClassName="bg-pink-500 text-white p-4"
+                    className="overflow-visible"
+                    bodyClassName="overflow-visible"
                 >
                     <div className="row g-3 mb-4">
                         <FormField label="Patient" required error={errors.patient_id} className="col-md-4">
@@ -629,6 +632,12 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                                 <input type="text" className="form-control" placeholder="Any details on current pregnancy..." value={data.current_pregnancy} onChange={e => setData('current_pregnancy', e.target.value)} />
                             </FormField>
                         </div>
+
+                        <div className="mb-4">
+                            <FormField label="Obstetric History Notes">
+                                <textarea className="form-control" rows="2" placeholder="Additional obstetric history notes..." value={data.obstetric_history} onChange={e => setData('obstetric_history', e.target.value)} />
+                            </FormField>
+                        </div>
                         
                         <h6 className="text-secondary small fw-bold text-uppercase border-bottom pb-2 mb-3">
                             Past Pregnancies 
@@ -726,8 +735,10 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                         title="Services, Procedures & Diagnostics" 
                         icon="fas fa-microscope" 
                         headerClassName="bg-blue-50 text-blue-700 p-3 fw-extrabold extra-small text-uppercase tracking-widest"
+                        className="overflow-visible"
+                        bodyClassName="overflow-visible"
                     >
-                        <div className="row g-4">
+                        <div className="row g-4 overflow-visible">
                             {/* Lab Tests Column */}
                             <div className="col-lg-4 border-end">
                                 <h6 className="fw-bold mb-3 text-secondary small text-uppercase">Laboratory Tests</h6>

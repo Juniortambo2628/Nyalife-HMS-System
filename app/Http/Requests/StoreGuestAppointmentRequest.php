@@ -28,6 +28,7 @@ class StoreGuestAppointmentRequest extends FormRequest
             'date' => 'required|date|after_or_equal:today',
             'time' => 'required',
             'reason' => 'required|string|max:500',
+            'type' => 'nullable|string|in:in_person,telehealth',
         ];
     }
 }

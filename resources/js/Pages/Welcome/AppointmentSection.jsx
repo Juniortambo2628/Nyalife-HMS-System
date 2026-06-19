@@ -77,6 +77,22 @@ export default function AppointmentSection({ data, setData, handleSubmit, proces
                             </div>
 
                             <div className="col-12">
+                                <label className="form-label fw-semibold text-gray-700 mb-2 ps-1">Appointment Type</label>
+                                <select
+                                    value={data.type || 'in_person'}
+                                    onChange={(e) => setData('type', e.target.value)}
+                                    className="form-select rounded-pill py-3 px-4 shadow-sm transition-all"
+                                >
+                                    <option value="in_person">In-Person Consultation</option>
+                                    <option value="telehealth">Telehealth / Online Consultation</option>
+                                </select>
+                                {data.type === 'telehealth' && (
+                                    <div className="mt-2 ps-2">
+                                        <small className="text-info"><i className="fas fa-video me-1"></i> A secure Jitsi video link will be provided for your online consultation.</small>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="col-12">
                                 <label className="form-label fw-semibold text-gray-700 mb-2 ps-1">Nature of Visit</label>
                                 <textarea
                                     value={data.reason}

@@ -6519,6 +6519,10 @@ th:hover .sort-icon {
 .nyl-select-dropdown {
     z-index: 9999;
     min-width: 280px;
+    overflow: visible;
+}
+.nyl-patient-id-card {
+    overflow: visible !important;
 }
 .nyl-select-dropdown--dark .custom-scrollbar::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.1);

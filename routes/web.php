@@ -58,6 +58,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/{role}', [DashboardController::class, 'index'])->name('dashboard.role');
     
+    // Emergency Triage
+    Route::middleware('permission:' . Permissions::MANAGE_CONSULTATIONS)->group(function () {
+        Route::get('/emergency-triage', [\App\Http\Controllers\EmergencyTriageController::class, 'create'])->name('emergency-triage.create');
+    });
+    
     // Appointments (staff or patient portal)
     Route::middleware('role_or_permission:' . Permissions::staffOrPatient(Permissions::MANAGE_APPOINTMENTS))->group(function () {
         Route::get('/appointments', [\App\Http\Controllers\AppointmentController::class, 'index'])->name('appointments.index');

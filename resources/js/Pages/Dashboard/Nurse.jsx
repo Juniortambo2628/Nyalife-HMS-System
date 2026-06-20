@@ -95,7 +95,7 @@ export default function Nurse({ auth, stats }) {
 
     const quickActions = [
         { label: 'Register patient', sub: 'New registry intake', icon: 'fa-user-plus', color: 'primary', url: route('patients.create') },
-        { label: 'Emergency triage', sub: 'Immediate assessment', icon: 'fa-notes-medical', color: 'danger', onClick: () => setIsEmergencyModalOpen(true) },
+        { label: 'Emergency triage', sub: 'Immediate assessment', icon: 'fa-notes-medical', color: 'danger', url: route('emergency-triage.create') },
         { label: 'View schedule', sub: "Today's appointments", icon: 'fa-calendar-alt', color: 'info', url: route('appointments.index') }
     ];
 
@@ -111,7 +111,7 @@ export default function Nurse({ auth, stats }) {
                     {
                         label: 'Emergency triage',
                         icon: 'fa-notes-medical',
-                        onClick: () => setIsEmergencyModalOpen(true),
+                        href: route('emergency-triage.create'),
                         color: 'danger',
                     },
                     {
@@ -168,28 +168,6 @@ export default function Nurse({ auth, stats }) {
                 </div>
             </RoleDashboardShell>
 
-            <Modal show={isEmergencyModalOpen} onClose={() => setIsEmergencyModalOpen(false)} maxWidth="md">
-                <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-0">
-                    <div className="bg-danger text-white p-4 d-flex justify-content-between align-items-center">
-                        <h5 className="mb-0 fw-extrabold"><i className="fas fa-exclamation-triangle me-2"></i>Emergency triage</h5>
-                        <button type="button" className="btn-close btn-close-white" onClick={() => setIsEmergencyModalOpen(false)}></button>
-                    </div>
-                    <div className="p-5">
-                        <p className="text-muted small fw-medium mb-4">Select a patient to initiate an immediate emergency consultation. This action will bypass the standard queue.</p>
-                        <div className="mb-4">
-                            <label className="form-label extra-small fw-bold text-muted mb-2">Search patient registry</label>
-                            <DashboardSelect 
-                                asyncUrl="/patients/search"
-                                placeholder="Start typing name or ID..."
-                                onChange={(val) => handleEmergencyTriage(val)}
-                            />
-                        </div>
-                        <div className="text-end">
-                            <button type="button" className="btn btn-light rounded-pill px-4 py-2 fw-bold border text-muted" onClick={() => setIsEmergencyModalOpen(false)}>Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            </Modal>
             <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`}</style>
         </AuthenticatedLayout>
     );

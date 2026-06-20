@@ -1578,7 +1578,7 @@ textarea,
 }
 
 /* Ensure all positioned elements don't block interaction when hidden */
-[class*="modal"]:not(.show),
+[class*=" modal"]:not(.show), [class^="modal"]:not(.show),
 [id*="modal"]:not(.show),
 .fade:not(.show) {
     z-index: -1 !important;

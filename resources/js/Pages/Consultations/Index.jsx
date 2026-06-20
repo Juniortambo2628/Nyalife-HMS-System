@@ -153,9 +153,15 @@ export default function Index({ consultations, drafts = [], filters, auth, stats
                     { icon: 'fa-stethoscope', label: 'Quick Clinical View', onClick: () => openModal(row.original), color: 'primary' },
                 ];
                 if (auth.user.role !== 'patient') {
-                    actions.push(
-                        { icon: 'fa-edit', label: 'Edit Record', href: route('consultations.edit', row.original.consultation_id), color: 'warning' },
-                    );
+                    if (auth.user.role === 'nurse') {
+                        actions.push(
+                            { icon: 'fa-eye', label: 'Show Consultation', href: route('consultations.show', row.original.consultation_id), color: 'info' },
+                        );
+                    } else {
+                        actions.push(
+                            { icon: 'fa-edit', label: 'Edit Record', href: route('consultations.edit', row.original.consultation_id), color: 'warning' },
+                        );
+                    }
                     if (row.original.consultation_status !== 'completed') {
                         actions.push(
                             { icon: 'fa-check-double', label: 'Conclude & Close', color: 'success', onClick: () => {

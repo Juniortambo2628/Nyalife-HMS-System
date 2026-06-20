@@ -83,6 +83,8 @@ final class Permissions
                 self::MANAGE_PATIENTS,
                 self::MANAGE_APPOINTMENTS,
                 self::MANAGE_CONSULTATIONS,
+                self::MANAGE_PRESCRIPTIONS,
+                self::MANAGE_LAB,
                 self::MANAGE_VITALS,
                 self::MANAGE_FOLLOW_UPS,
                 self::VIEW_DEPARTMENTS,

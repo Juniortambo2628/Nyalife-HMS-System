@@ -8,7 +8,7 @@ import DashboardPanel from '@/Components/DashboardPanel';
 import PatientTableCell from '@/Components/PatientTableCell';
 import RoleDashboardShell from '@/Components/RoleDashboardShell';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import DashboardSelect from '@/Components/DashboardSelect';
@@ -38,6 +38,16 @@ export default function Nurse({ auth, stats }) {
             });
         }
     };
+
+    const pollingRef = useRef(null);
+    const [liveSince] = useState(() => new Date().toISOString());
+
+    useEffect(() => {
+        pollingRef.current = setInterval(() => {
+            router.reload({ only: ['stats'], preserveState: true, preserveScroll: true });
+        }, 30000);
+        return () => clearInterval(pollingRef.current);
+    }, []);
 
     const columns = useMemo(() => [
         {
@@ -128,7 +138,10 @@ export default function Nurse({ auth, stats }) {
                             icon="fa-clock"
                             className="mb-4 h-100"
                             actions={
-                                <span className="badge rounded-pill bg-light text-muted border px-3 py-1 fw-bold extra-small">Live updates</span>
+                                <span className="badge rounded-pill bg-success text-white border px-3 py-1 fw-bold extra-small d-flex align-items-center gap-1">
+                                    <span className="rounded-circle bg-white" style={{ width: 6, height: 6, animation: 'pulse 2s infinite' }}></span>
+                                    Live
+                                </span>
                             }
                         >
                             <DashboardTable 
@@ -177,6 +190,7 @@ export default function Nurse({ auth, stats }) {
                     </div>
                 </div>
             </Modal>
+            <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`}</style>
         </AuthenticatedLayout>
     );
 }

@@ -1,0 +1,1 @@
+import{j as t}from"./app-DrNk9Sb8.js";import{T as o}from"./TableActions-DJAXx3Wc.js";function s({actions:r=[],className:e=""}){return r?.filter(Boolean).length?t.jsx("div",{className:`d-flex justify-content-end border-top border-gray-50 pt-3 mt-auto ${e}`.trim(),children:t.jsx(o,{actions:r})}):null}export{s as G};

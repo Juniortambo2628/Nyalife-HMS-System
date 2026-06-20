@@ -51,7 +51,6 @@
 
 /* Default content */
 .content, 
-.card, 
 .btn, 
 a, 
 input, 
@@ -59,11 +58,6 @@ select,
 textarea {
   z-index: var(--z-content);
   position: relative;
-}
-
-/* UI components */
-.card {
-  z-index: var(--z-card);
 }
 
 .dropdown-menu {

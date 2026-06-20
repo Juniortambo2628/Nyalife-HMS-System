@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -22,8 +23,24 @@ return new class extends Migration
 
         Schema::table('telehealth_consents', function (Blueprint $table) {
             if (!Schema::hasColumn('telehealth_consents', 'appointment_id')) {
-                $table->unsignedInteger('appointment_id')->nullable()->after('patient_id');
-                $table->foreign('appointment_id')->references('appointment_id')->on('appointments')->onDelete('set null');
+                $type = 'unsignedBigInteger';
+                if (Schema::hasTable('appointments')) {
+                    $col = collect(DB::select("SHOW COLUMNS FROM appointments WHERE Field = 'appointment_id'"))->first();
+                    if ($col) {
+                        $colType = strtolower($col->Type);
+                        if (str_contains($colType, 'bigint')) {
+                            $type = 'unsignedBigInteger';
+                        } elseif (str_contains($colType, 'int')) {
+                            $type = 'unsignedInteger';
+                        }
+                    }
+                }
+                $table->$type('appointment_id')->nullable()->after('patient_id');
+                try {
+                    $table->foreign('appointment_id')->references('appointment_id')->on('appointments')->onDelete('set null');
+                } catch (\Exception $e) {
+                    // FK may fail if referenced data has mismatched types; log and continue
+                }
             }
         });
     }

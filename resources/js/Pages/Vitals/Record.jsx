@@ -110,7 +110,7 @@ export default function Record({ preselected_patient_id, preselected_patient_lab
                         <FormSection 
                             title="Clinical Measurements" 
                             icon="fas fa-heartbeat"
-                            headerClassName="bg-white border-bottom text-primary p-4"
+                            headerClassName="bg-gradient-primary-to-secondary text-white p-4"
                         >
                             <div className="row g-4">
                                 <FormField label="Temperature (°C)" error={errors.temperature} className="col-md-6">
@@ -205,7 +205,7 @@ export default function Record({ preselected_patient_id, preselected_patient_lab
                         <FormSection 
                             title="Triage & Observations" 
                             icon="fas fa-clipboard-check"
-                            headerClassName="bg-light text-dark p-4 border-bottom"
+                            headerClassName="bg-gradient-primary-to-secondary text-white p-4"
                         >
                             <div className="mb-4">
                                 <label className="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-3 d-block">Urgency Level</label>

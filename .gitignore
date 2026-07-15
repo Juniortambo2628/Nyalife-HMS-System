@@ -58,3 +58,7 @@ webpack.config.js
 
 # SQL dumps (sensitive)
 *.sql
+
+# SSH keys
+github-actions-nyalifehms
+github-actions-nyalifehms.pub

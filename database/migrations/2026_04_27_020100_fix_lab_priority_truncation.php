@@ -12,6 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip for SQLite (testing)
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+        
         if (! Schema::hasTable('lab_test_requests')) {
             return;
         }

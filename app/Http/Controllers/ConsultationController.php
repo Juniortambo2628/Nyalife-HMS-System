@@ -17,9 +17,11 @@ use Illuminate\Support\Facades\DB;
 use App\Services\ActivityLogger;
 use App\Support\PatientId;
 use App\Support\Permissions;
+use App\Traits\HasBulkActions;
 
 class ConsultationController extends Controller
 {
+    use HasBulkActions;
     /**
      * Display a listing of the resource.
      */
@@ -240,105 +242,7 @@ class ConsultationController extends Controller
 
             $consultation = Consultation::create($data);
 
-            // PHASE 3: AUTOMATED INVOICING ENGINE
-            $invoice = \App\Models\Invoice::create([
-                'patient_id' => $data['patient_id'],
-                'consultation_id' => $consultation->consultation_id,
-                'invoice_number' => 'INV-' . strtoupper(substr(uniqid(), -6)),
-                'invoice_date' => now(),
-                'due_date' => now()->addDays(7), // Default 7-day due date
-                'status' => 'unpaid',
-                'total_amount' => 0, 
-                'created_by' => Auth::id()
-            ]);
-
-            $totalAmount = 0;
-
-            // 1. Base Consultation Fee Subtotal
-            $baseFee = \App\Models\MedicalProcedure::where('category', 'consultation')->first();
-            if ($baseFee) {
-                 \App\Models\InvoiceItem::create([
-                     'invoice_id' => $invoice->invoice_id,
-                     'item_type' => 'consultation',
-                     'item_id_ref' => $baseFee->procedure_id,
-                     'description' => 'Doctor Consultation: ' . $baseFee->name,
-                     'quantity' => 1,
-                     'unit_price' => $baseFee->standard_fee,
-                     'total_price' => $baseFee->standard_fee
-                 ]);
-                 $totalAmount += $baseFee->standard_fee;
-            }
-
-            // 2. Aggregate Requested Surgeries & Procedures
-            if (!empty($data['requested_procedures'])) {
-                foreach ($data['requested_procedures'] as $proc) {
-                    $fee = isset($proc['standard_fee']) ? $proc['standard_fee'] : 0;
-                    \App\Models\InvoiceItem::create([
-                        'invoice_id' => $invoice->invoice_id,
-                        'item_type' => 'procedure',
-                        'item_id_ref' => $proc['procedure_id'] ?? null,
-                        'description' => $proc['name'] ?? 'Procedure',
-                        'quantity' => 1,
-                        'unit_price' => $fee,
-                        'total_price' => $fee
-                    ]);
-                    $totalAmount += $fee;
-                }
-            }
-
-            // 3. Aggregate Requested Labs & Farm out Orders to Laboratory
-            if (!empty($data['requested_labs'])) {
-                foreach ($data['requested_labs'] as $lab) {
-                    $labTypeId = $lab['test_type_id'] ?? $lab['lab_test_type_id'] ?? null;
-                    $labType = $labTypeId ? \App\Models\LabTestType::find($labTypeId) : null;
-                    $fee = $labType ? $labType->price : (isset($lab['price']) ? $lab['price'] : 0);
-                    
-                    \App\Models\InvoiceItem::create([
-                        'invoice_id' => $invoice->invoice_id,
-                        'item_type' => 'lab_test',
-                        'item_id_ref' => $labTypeId,
-                        'description' => 'Lab: ' . ($labType->test_name ?? $lab['test_name'] ?? 'Diagnostics'),
-                        'quantity' => 1,
-                        'unit_price' => $fee,
-                        'total_price' => $fee
-                    ]);
-                    $totalAmount += $fee;
-                    
-                    \App\Models\LabTestRequest::create([
-                        'request_number' => 'LAB-' . strtoupper(substr(uniqid(), -6)),
-                        'consultation_id' => $consultation->consultation_id,
-                        'patient_id' => $data['patient_id'],
-                        'requested_by' => Auth::id(),
-                        'test_type_id' => $labTypeId,
-                        'status' => 'pending',
-                        'request_date' => now(),
-                        'notes' => 'Auto-requested via consultation',
-                        'priority' => $data['priority'] ?? 'routine'
-                    ]);
-                }
-            }
-
-            // 4. Aggregate Requested Service/Procedure Items from LabTestType
-            if (!empty($data['requested_service_items'])) {
-                foreach ($data['requested_service_items'] as $svc) {
-                    $svcTypeId = $svc['test_type_id'] ?? null;
-                    $svcType = $svcTypeId ? \App\Models\LabTestType::find($svcTypeId) : null;
-                    $fee = $svcType ? $svcType->price : (isset($svc['price']) ? $svc['price'] : 0);
-                    
-                    \App\Models\InvoiceItem::create([
-                        'invoice_id' => $invoice->invoice_id,
-                        'item_type' => 'service',
-                        'item_id_ref' => $svcTypeId,
-                        'description' => ($svcType->test_name ?? $svc['test_name'] ?? 'Service'),
-                        'quantity' => 1,
-                        'unit_price' => $fee,
-                        'total_price' => $fee
-                    ]);
-                    $totalAmount += $fee;
-                }
-            }
-
-            $invoice->update(['total_amount' => $totalAmount]);
+            \App\Services\ConsultationInvoiceService::createForConsultation($data, $consultation->consultation_id);
 
             // Update appointment status if linked
             if (!empty($data['appointment_id'])) {
@@ -406,9 +310,7 @@ class ConsultationController extends Controller
             Permissions::MANAGE_CONSULTATIONS
         );
 
-        $settings = \App\Models\Setting::whereIn('key', [
-            'contact_address', 'contact_email', 'contact_phone',
-        ])->pluck('value', 'key');
+        $settings = \App\Models\Setting::clinicContactSettings();
 
         return Inertia::render('Consultations/Print', [
             'consultation' => ConsultationResource::make($consultation),
@@ -487,110 +389,24 @@ class ConsultationController extends Controller
             $consultation->update($data);
 
             // Process any NEW items added during this edit session
-            $patient_id = $consultation->patient_id;
             $invoice = \App\Models\Invoice::withoutGlobalScope('not_voided')
                 ->where('consultation_id', $consultation->consultation_id)
                 ->where('is_voided', false)
                 ->first();
 
-            // Track existing items to avoid duplicates
-            $existingLabTypeIds = \App\Models\LabTestRequest::where('consultation_id', $consultation->consultation_id)
-                ->pluck('test_type_id')->filter()->values()->toArray();
-            $existingProcedureIds = \App\Models\InvoiceItem::where('invoice_id', optional($invoice)->invoice_id)
-                ->where('item_type', 'procedure')->pluck('item_id_ref')->toArray();
-
-            // Create new lab requests
-            if (!empty($data['requested_labs'])) {
-                foreach ($data['requested_labs'] as $lab) {
-                    $labTypeId = $lab['test_type_id'] ?? null;
-                    if (!$labTypeId || in_array($labTypeId, $existingLabTypeIds)) {
-                        continue;
-                    }
-                    $labType = \App\Models\LabTestType::find($labTypeId);
-
-                    \App\Models\LabTestRequest::create([
-                        'request_number' => 'LAB-' . strtoupper(substr(uniqid(), -6)),
-                        'consultation_id' => $consultation->consultation_id,
-                        'patient_id' => $patient_id,
-                        'requested_by' => Auth::id(),
-                        'test_type_id' => $labTypeId,
-                        'status' => 'pending',
-                        'request_date' => now(),
-                        'notes' => 'Requested during consultation edit',
-                        'priority' => $data['priority'] ?? 'routine'
-                    ]);
-
-                    if ($invoice && $labType) {
-                        \App\Models\InvoiceItem::create([
-                            'invoice_id' => $invoice->invoice_id,
-                            'item_type' => 'lab_test',
-                            'item_id_ref' => $labTypeId,
-                            'description' => 'Lab: ' . $labType->test_name,
-                            'quantity' => 1,
-                            'unit_price' => $labType->price ?? 0,
-                            'total_price' => $labType->price ?? 0,
-                        ]);
-                        $invoice->increment('total_amount', $labType->price ?? 0);
-                    }
-                }
-            }
-
-            // Create new service item requests
-            if (!empty($data['requested_service_items'])) {
-                $existingServiceTypeIds = \App\Models\InvoiceItem::where('invoice_id', optional($invoice)->invoice_id)
-                    ->where('item_type', 'service')->pluck('item_id_ref')->toArray();
-
-                foreach ($data['requested_service_items'] as $svc) {
-                    $svcTypeId = $svc['test_type_id'] ?? null;
-                    if (!$svcTypeId || in_array($svcTypeId, $existingServiceTypeIds)) {
-                        continue;
-                    }
-                    $svcType = \App\Models\LabTestType::find($svcTypeId);
-
-                    if ($invoice && $svcType) {
-                        \App\Models\InvoiceItem::create([
-                            'invoice_id' => $invoice->invoice_id,
-                            'item_type' => 'service',
-                            'item_id_ref' => $svcTypeId,
-                            'description' => $svcType->test_name ?? 'Service',
-                            'quantity' => 1,
-                            'unit_price' => $svcType->price ?? 0,
-                            'total_price' => $svcType->price ?? 0,
-                        ]);
-                        $invoice->increment('total_amount', $svcType->price ?? 0);
-                    }
-                }
-            }
-
-            // Create new procedure requests
-            if (!empty($data['requested_procedures'])) {
-                foreach ($data['requested_procedures'] as $proc) {
-                    $procId = $proc['procedure_id'] ?? null;
-                    if (!$procId || in_array($procId, $existingProcedureIds)) {
-                        continue;
-                    }
-                    $procedure = \App\Models\MedicalProcedure::find($procId);
-
-                    if ($invoice && $procedure) {
-                        \App\Models\InvoiceItem::create([
-                            'invoice_id' => $invoice->invoice_id,
-                            'item_type' => 'procedure',
-                            'item_id_ref' => $procId,
-                            'description' => $procedure->name,
-                            'quantity' => 1,
-                            'unit_price' => $procedure->standard_fee ?? 0,
-                            'total_price' => $procedure->standard_fee ?? 0,
-                        ]);
-                        $invoice->increment('total_amount', $procedure->standard_fee ?? 0);
-                    }
-                }
+            if ($invoice) {
+                \App\Services\ConsultationInvoiceService::addNewItemsToExisting(
+                    $invoice,
+                    $data,
+                    $consultation->consultation_id
+                );
             }
 
             // Create new prescriptions
             if (!empty($data['requested_prescriptions'])) {
                 $prescription = \App\Models\Prescription::create([
                     'consultation_id' => $consultation->consultation_id,
-                    'patient_id' => $patient_id,
+                    'patient_id' => $consultation->patient_id,
                     'prescribed_by' => Auth::id(),
                     'prescription_date' => now(),
                     'status' => 'pending',
@@ -684,33 +500,20 @@ class ConsultationController extends Controller
     /**
      * Handle bulk actions on consultations.
      */
-    public function bulkAction(Request $request)
+    protected function bulkActionMap(): array
     {
-        $validated = $request->validate([
-            'action' => 'required|string|in:mark_complete,delete,export',
-            'ids'    => 'required|array|min:1',
-            'ids.*'  => 'integer',
-        ]);
-
-        $ids    = $validated['ids'];
-        $action = $validated['action'];
-        $count  = count($ids);
-
-        switch ($action) {
-            case 'mark_complete':
-                Consultation::whereIn('consultation_id', $ids)
-                    ->update(['consultation_status' => 'completed']);
+        return [
+            'mark_complete' => function (array $ids, int $count) {
+                Consultation::whereIn('consultation_id', $ids)->update(['consultation_status' => 'completed']);
                 return redirect()->back()->with('success', "{$count} consultation(s) marked as complete.");
-
-            case 'delete':
+            },
+            'delete' => function (array $ids, int $count) {
                 Consultation::whereIn('consultation_id', $ids)->delete();
                 return redirect()->back()->with('success', "{$count} consultation(s) deleted.");
-
-            case 'export':
-                // Handled client-side; backend fallback
+            },
+            'export' => function (array $ids, int $count) {
                 return redirect()->back()->with('success', "{$count} records flagged for export.");
-        }
-
-        return redirect()->back()->with('error', 'Unknown bulk action.');
+            },
+        ];
     }
 }

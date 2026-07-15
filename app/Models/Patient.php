@@ -38,6 +38,8 @@ class Patient extends Model
         'occupation',
         'insurance_provider',
         'insurance_id',
+        'insurance_number',
+        'insurance_expiry',
     ];
     protected $casts = [
         'date_of_birth' => 'date',
@@ -97,5 +99,13 @@ class Patient extends Model
                 ->orWhere('last_name', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%");
         });
+    }
+
+    /**
+     * Generate a unique patient number.
+     */
+    public static function generateNumber(int $userId): string
+    {
+        return 'PAT-' . date('Ymd') . '-' . str_pad($userId, 4, '0', STR_PAD_LEFT);
     }
 }

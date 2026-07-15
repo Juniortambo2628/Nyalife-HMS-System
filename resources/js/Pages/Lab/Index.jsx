@@ -9,28 +9,20 @@ import PriorityBadge from '@/Components/PriorityBadge';
 import { RefBadge, TableCellPrimary, TableCellSub } from '@/Components/TableCells';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import PatientTableCell from '@/Components/PatientTableCell';
-import { useState, useMemo, useEffect } from 'react';
+import useSelectionState from '@/Hooks/useSelectionState';
+import useBulkAction from '@/Hooks/useBulkAction';
+import { useState, useMemo } from 'react';
 
 export default function LabRequestsIndex({ requests, filters, stats = {}, auth }) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [quickFilter, setQuickFilter] = useState(filters.quick_filter || '');
-    const [selectedIds, setSelectedIds] = useState([]);
-
-    useEffect(() => {
-        const handleClear = () => setSelectedIds([]);
-        window.addEventListener('toolbar-clear-selection', handleClear);
-        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
-    }, []);
-
-    const handleBulkAction = (action) => {
-        router.post(route('lab.bulk-action'), {
-            action: action,
-            ids: selectedIds
-        }, {
-            onSuccess: () => setSelectedIds([]),
-        });
-    };
+    const { selectedIds, setSelectedIds } = useSelectionState({ idField: 'request_id' });
+    const { handleBulkAction } = useBulkAction({
+        routeName: 'lab.bulk-action',
+        selectedIds,
+        clearSelection: () => setSelectedIds([]),
+    });
 
     const applyFilters = (searchValue, statusValue = status, quickFilterValue = quickFilter) => {
         router.get(route('lab.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {

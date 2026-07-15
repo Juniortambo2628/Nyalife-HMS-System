@@ -9,16 +9,32 @@ return new class extends Migration
 {
     private function indexExists(string $table, string $indexName): bool
     {
+        // Skip for SQLite (testing)
+        if (DB::getDriverName() === 'sqlite') {
+            // Check if index exists using SQLite PRAGMA
+            $result = DB::select("PRAGMA index_list({$table})");
+            foreach ($result as $index) {
+                if ($index->name === $indexName) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
         $rows = DB::select("SHOW INDEX FROM {$table} WHERE Key_name = ?", [$indexName]);
-
         return count($rows) > 0;
     }
 
     public function up(): void
     {
         if (Schema::hasTable('users') && ! $this->indexExists('users', 'idx_users_name')) {
-            // Prefix index avoids utf8mb4 key-length limit on varchar(255) columns.
-            DB::statement('ALTER TABLE users ADD INDEX idx_users_name (first_name(50), last_name(50))');
+            // SQLite doesn't support prefix indexes, use full column index
+            if (DB::getDriverName() === 'sqlite') {
+                DB::statement('CREATE INDEX idx_users_name ON users (first_name, last_name)');
+            } else {
+                // Prefix index avoids utf8mb4 key-length limit on varchar(255) columns.
+                DB::statement('ALTER TABLE users ADD INDEX idx_users_name (first_name(50), last_name(50))');
+            }
         }
 
         if (Schema::hasTable('appointments')) {
@@ -80,7 +96,7 @@ return new class extends Migration
     public function down(): void
     {
         if (Schema::hasTable('users') && $this->indexExists('users', 'idx_users_name')) {
-            DB::statement('ALTER TABLE users DROP INDEX idx_users_name');
+            DB::statement('DROP INDEX idx_users_name');
         }
 
         Schema::table('appointments', function (Blueprint $table) {

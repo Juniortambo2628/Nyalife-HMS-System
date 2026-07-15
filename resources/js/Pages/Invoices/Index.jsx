@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react';
-import { useState, useMemo, useEffect } from 'react';
+import { Head, router } from '@inertiajs/react';
+import { useState, useMemo } from 'react';
 
 import DashboardSearch from '@/Components/DashboardSearch';
 import RegistryTablePanel from '@/Components/RegistryTablePanel';
@@ -11,12 +11,14 @@ import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import PatientTableCell from '@/Components/PatientTableCell';
 import { formatNumber, formatCurrency } from '@/Utils/formatUtils';
 import StatCardGrid from '@/Components/StatCardGrid';
+import useSelectionState from '@/Hooks/useSelectionState';
+import useBulkAction from '@/Hooks/useBulkAction';
 
 export default function Index({ invoices, filters, auth, stats }) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [quickFilter, setQuickFilter] = useState(filters.quick_filter || '');
-    const [selectedIds, setSelectedIds] = useState([]);
+    const { selectedIds, setSelectedIds } = useSelectionState({ idField: 'invoice_id' });
 
     const statItems = useMemo(() => [
         {
@@ -45,20 +47,11 @@ export default function Index({ invoices, filters, auth, stats }) {
         },
     ], [stats]);
 
-    useEffect(() => {
-        const handleClear = () => setSelectedIds([]);
-        window.addEventListener('toolbar-clear-selection', handleClear);
-        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
-    }, []);
-
-    const handleBulkAction = (action) => {
-        router.post(route('invoices.bulk-action'), {
-            action: action,
-            ids: selectedIds
-        }, {
-            onSuccess: () => setSelectedIds([]),
-        });
-    };
+    const { handleBulkAction } = useBulkAction({
+        routeName: 'invoices.bulk-action',
+        selectedIds,
+        clearSelection: () => setSelectedIds([]),
+    });
 
     const applyFilters = (searchValue, statusValue = status, quickFilterValue = quickFilter) => {
         router.get(route('invoices.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {

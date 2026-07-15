@@ -75,3 +75,20 @@ export const formatTime = (dateString, options = {}) => {
         return dateString;
     }
 };
+
+/**
+ * Calculate age from date of birth.
+ * @param {string|null} dob - Date of birth string
+ * @param {*} fallback - Value to return when dob is missing/invalid
+ * @returns {number|string|null} Age in years, or fallback
+ */
+export const calculateAge = (dob, fallback = null) => {
+    if (!dob) return fallback;
+    const birthDate = new Date(dob);
+    if (isNaN(birthDate.getTime())) return fallback;
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+    return age;
+};

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -25,6 +26,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Skip for SQLite (testing) - SQLite can't drop column with index
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+        
         Schema::table('lab_test_requests', function (Blueprint $table) {
             $table->dropColumn('doctor_id');
         });

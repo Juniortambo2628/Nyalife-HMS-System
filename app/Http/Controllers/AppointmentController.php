@@ -21,11 +21,14 @@ use App\Services\ActivityLogger;
 use App\Support\PatientId;
 use App\Services\AppointmentQueryService;
 use App\Mail\TelehealthInvitation;
+use App\Mail\TelehealthPaymentNotification;
 use Illuminate\Support\Facades\Mail;
 use App\Support\Permissions;
+use App\Traits\HasBulkActions;
 
 class AppointmentController extends Controller
 {
+    use HasBulkActions;
     /**
      * Search doctors via AJAX.
      */
@@ -82,7 +85,7 @@ class AppointmentController extends Controller
                 'username' => $username,
                 'password' => Hash::make($password),
                 'role' => 'patient', // Assuming 'patient' role exists
-                'role_id' => Role::where('role_name', 'patient')->first()->role_id ?? 6, // Fallback ID
+                'role_id' => Role::idFromName('patient'),
                 'is_active' => true,
                 'status' => 'provisional',
             ]);
@@ -90,20 +93,11 @@ class AppointmentController extends Controller
             // Create Patient record
             Patient::create([
                 'user_id' => $user->user_id,
-                'patient_number' => 'NYA' . date('Y') . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
+                'patient_number' => Patient::generateNumber($user->user_id),
             ]);
             
             // Send guest credentials email
-            try {
-                Mail::to($user->email)->send(new \App\Mail\GuestCredentialsEmail([
-                    'patient_name' => $validated['name'],
-                    'email' => $validated['email'],
-                    'password' => $password,
-                    'login_url' => rtrim(config('app.url'), '/') . '/login',
-                ]));
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::warning('Guest credentials email failed: ' . $e->getMessage());
-            }
+            \App\Services\TelehealthNotificationService::sendGuestCredentials($user->email, $validated['name'], $password);
 
             // Assign Spatie patient role
             $user->assignRole('patient');
@@ -115,7 +109,7 @@ class AppointmentController extends Controller
         if (!$patient) {
              $patient = Patient::create([
                 'user_id' => $user->user_id,
-                'patient_number' => 'NYA' . date('Y') . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
+                'patient_number' => Patient::generateNumber($user->user_id),
             ]);
         }
 
@@ -142,28 +136,9 @@ class AppointmentController extends Controller
             'created_by' => $user->user_id, // Self-created
         ]);
 
-        // Generate Jitsi meeting link for telehealth guest appointments
-        if ($appointment_type === 'telehealth') {
-            $meetingId = 'nyalife-' . strtolower(\Illuminate\Support\Str::random(12));
-            $appUrl = rtrim(config('app.url'), '/');
-            $link = "{$appUrl}/telehealth/meeting/{$meetingId}";
-            $appointment->notes = "Meeting Link: {$link}";
-            $appointment->save();
-
-            // Send telehealth invitation email
-            try {
-                if ($user->email) {
-                    Mail::to($user->email)->send(new TelehealthInvitation([
-                        'patient_name' => $validated['name'],
-                        'meeting_link' => $link,
-                        'appointment_date' => $validated['date'],
-                        'appointment_time' => $validated['time'],
-                        'doctor_name' => 'Clinic Physician',
-                    ]));
-                }
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::warning('Telehealth invitation email failed: ' . $e->getMessage());
-            }
+        // Send payment notification for telehealth guest appointments
+        if ($appointment_type === 'telehealth' && $user->email) {
+            \App\Services\TelehealthNotificationService::sendPaymentNotification($appointment, $user->email);
         }
 
         ActivityLogger::log(
@@ -271,29 +246,11 @@ class AppointmentController extends Controller
         
         $appointment = Appointment::create($validated);
 
-        // Generate Jitsi meeting link for telehealth appointments
+        // Send payment notification for telehealth appointments
         if (($validated['appointment_type'] ?? '') === 'telehealth') {
-            $meetingId = 'nyalife-' . strtolower(\Illuminate\Support\Str::random(12));
-            $appUrl = rtrim(config('app.url'), '/');
-            $link = "{$appUrl}/telehealth/meeting/{$meetingId}";
-            $appointment->notes = ($appointment->notes ?? '') . "\nMeeting Link: {$link}";
-            $appointment->save();
-
-            // Send telehealth invitation email
-            try {
-                $patientEmail = $appointment->patient->user->email ?? null;
-                if ($patientEmail) {
-                    Mail::to($patientEmail)->send(new TelehealthInvitation([
-                        'patient_name' => trim(($appointment->patient->user->first_name ?? '') . ' ' . ($appointment->patient->user->last_name ?? '')),
-                        'meeting_link' => $link,
-                        'appointment_date' => $appointment->appointment_date,
-                        'appointment_time' => $appointment->appointment_time,
-                        'doctor_name' => 'Clinic Physician',
-                    ]));
-                }
-            } catch (\Exception $e) {
-                // Log but don't break the flow if email fails
-                \Illuminate\Support\Facades\Log::warning('Telehealth invitation email failed: ' . $e->getMessage());
+            $patientEmail = $appointment->patient->user->email ?? null;
+            if ($patientEmail) {
+                \App\Services\TelehealthNotificationService::sendPaymentNotification($appointment, $patientEmail);
             }
         }
 
@@ -419,36 +376,52 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Handle bulk actions on appointments.
+     * Confirm telehealth payment and generate meeting link.
      */
-    public function bulkAction(Request $request)
+    public function confirmTelehealthPayment(Request $request, $id)
     {
-        $validated = $request->validate([
-            'action' => 'required|string|in:confirm,cancel,delete',
-            'ids'    => 'required|array|min:1',
-            'ids.*'  => 'integer',
-        ]);
+        $appointment = Appointment::with(['patient.user', 'doctor.user'])->findOrFail($id);
 
-        $ids    = $validated['ids'];
-        $action = $validated['action'];
-        $count  = count($ids);
-
-        switch ($action) {
-            case 'confirm':
-                Appointment::whereIn('appointment_id', $ids)
-                    ->update(['status' => 'confirmed']);
-                return redirect()->back()->with('success', "{$count} appointment(s) confirmed.");
-
-            case 'cancel':
-                Appointment::whereIn('appointment_id', $ids)
-                    ->update(['status' => 'cancelled']);
-                return redirect()->back()->with('success', "{$count} appointment(s) cancelled.");
-
-            case 'delete':
-                Appointment::whereIn('appointment_id', $ids)->delete();
-                return redirect()->back()->with('success', "{$count} appointment(s) deleted.");
+        if ($appointment->appointment_type !== 'telehealth') {
+            return redirect()->back()->with('error', 'This appointment is not a telehealth consultation.');
         }
 
-        return redirect()->back()->with('error', 'Unknown bulk action.');
+        if ($appointment->status === 'cancelled') {
+            return redirect()->back()->with('error', 'This appointment has been cancelled.');
+        }
+
+        $link = \App\Services\TelehealthNotificationService::confirmPaymentAndSendInvite($appointment);
+
+        ActivityLogger::log(
+            'appointments',
+            "Telehealth payment confirmed for appointment #{$appointment->appointment_id}. Meeting link sent.",
+            ['appointment_id' => $appointment->appointment_id, 'meeting_link' => $link],
+            Auth::user(),
+            $appointment,
+            [1]
+        );
+
+        return redirect()->back()->with('success', 'Payment confirmed. Meeting link has been sent to the patient.');
+    }
+
+    /**
+     * Handle bulk actions on appointments.
+     */
+    protected function bulkActionMap(): array
+    {
+        return [
+            'confirm' => function (array $ids, int $count) {
+                Appointment::whereIn('appointment_id', $ids)->update(['status' => 'confirmed']);
+                return redirect()->back()->with('success', "{$count} appointment(s) confirmed.");
+            },
+            'cancel' => function (array $ids, int $count) {
+                Appointment::whereIn('appointment_id', $ids)->update(['status' => 'cancelled']);
+                return redirect()->back()->with('success', "{$count} appointment(s) cancelled.");
+            },
+            'delete' => function (array $ids, int $count) {
+                Appointment::whereIn('appointment_id', $ids)->delete();
+                return redirect()->back()->with('success', "{$count} appointment(s) deleted.");
+            },
+        ];
     }
 }

@@ -14,9 +14,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use App\Traits\HasBulkActions;
 
 class PatientController extends Controller
 {
+    use HasBulkActions;
     /**
      * Display a listing of patients.
      */
@@ -75,47 +77,7 @@ class PatientController extends Controller
      */
     public function store(StorePatientRequest $request)
     {
-        $validated = $request->validated();
-
-        // Handle optional email - remove spaces to comply with RFC 2822
-        $safeFirstName = str_replace(' ', '', $validated['first_name']);
-        $safeLastName = str_replace(' ', '', $validated['last_name']);
-        $email = $validated['email'] ?? strtolower($safeFirstName . '.' . $safeLastName . '.' . rand(1000, 9999) . '@nyalife-hms.com');
-
-        // Create user account
-        $user = User::create([
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'email' => $email,
-            'phone' => $validated['phone'],
-            'username' => strtolower($safeFirstName . '.' . $safeLastName . '.' . rand(1000, 9999)),
-            'password' => Hash::make('password123'), // Default password
-            'role_id' => \App\Models\Role::where('role_name', 'patient')->first()->role_id ?? 7,
-            'is_active' => true,
-            'gender' => $validated['gender'],
-            'date_of_birth' => $validated['date_of_birth'],
-            'address' => $validated['address'] ?? null,
-        ]);
-        
-        // Create patient record
-        Patient::create([
-            'user_id' => $user->user_id,
-            'date_of_birth' => $validated['date_of_birth'],
-            'gender' => $validated['gender'],
-            'address' => $validated['address'] ?? null,
-            'blood_group' => $validated['blood_group'] ?? null,
-            'height' => $validated['height'] ?? null,
-            'weight' => $validated['weight'] ?? null,
-            'allergies' => $validated['allergies'] ?? null,
-            'chronic_diseases' => $validated['chronic_diseases'] ?? null,
-            'marital_status' => $validated['marital_status'] ?? null,
-            'occupation' => $validated['occupation'] ?? null,
-            'insurance_provider' => $validated['insurance_provider'] ?? null,
-            'insurance_id' => $validated['insurance_id'] ?? null,
-            'emergency_name' => $validated['emergency_name'] ?? null,
-            'emergency_contact' => $validated['emergency_contact'] ?? null,
-            'patient_number' => 'PAT-' . date('Ymd') . '-' . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
-        ]);
+        \App\Services\PatientRegistrationService::register($request->validated());
         
         return redirect()->route('patients.index')
                          ->with('success', 'Patient registered successfully.');
@@ -216,34 +178,9 @@ class PatientController extends Controller
      */
     public function quickStore(QuickStorePatientRequest $request)
     {
-        $validated = $request->validated();
-
-        // Remove spaces to comply with RFC 2822
-        $safeFirstName = str_replace(' ', '', $validated['first_name']);
-        $safeLastName = str_replace(' ', '', $validated['last_name']);
-        $email = $validated['email'] ?? strtolower($safeFirstName . '.' . $safeLastName . '.' . time() . '@nyalife.com');
-
-        $user = User::create([
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'email' => $email,
-            'phone' => $validated['phone'],
-            'username' => strtolower($safeFirstName . '.' . $safeLastName . '.' . time()),
-            'password' => Hash::make('password123'),
-            'role_id' => \App\Models\Role::where('role_name', 'patient')->first()->role_id ?? 7,
-            'is_active' => true,
-        ]);
-        
-        // Create patient record
-        $patient = Patient::create([
-            'user_id' => $user->user_id,
-            'date_of_birth' => $validated['date_of_birth'],
-            'gender' => $validated['gender'],
-            'emergency_name' => $validated['emergency_name'] ?? null,
-            'emergency_contact' => $validated['emergency_contact'] ?? null,
-            'blood_group' => $validated['blood_group'] ?? null,
-            'patient_number' => 'PAT-' . date('Ymd') . '-' . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
-        ]);
+        $result = \App\Services\PatientRegistrationService::quickRegister($request->validated());
+        $user = $result['user'];
+        $patient = $result['patient'];
         
         return response()->json([
             'success' => true,
@@ -318,7 +255,7 @@ class PatientController extends Controller
 
         $importedCount = 0;
         $skippedCount = 0;
-        $roleId = \App\Models\Role::where('role_name', 'patient')->first()->role_id ?? 7;
+        $roleId = \App\Models\Role::idFromName('patient');
 
         \Illuminate\Support\Facades\DB::beginTransaction();
         try {
@@ -349,7 +286,7 @@ class PatientController extends Controller
                     'email' => trim($data['email']),
                     'phone' => trim($data['phone']),
                     'username' => $username,
-                    'password' => Hash::make('password123'), // Default temporary password
+                    'password' => Hash::make(\Illuminate\Support\Str::random(12)),
                     'role_id' => $roleId,
                     'is_active' => true,
                     'gender' => trim(strtolower($data['gender'])),
@@ -365,7 +302,7 @@ class PatientController extends Controller
                     'blood_group' => isset($data['blood_group']) ? trim($data['blood_group']) : null,
                     'emergency_name' => isset($data['emergency_name']) ? trim($data['emergency_name']) : null,
                     'emergency_contact' => isset($data['emergency_contact']) ? trim($data['emergency_contact']) : null,
-                    'patient_number' => 'PAT-' . date('Ymd') . '-' . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
+                    'patient_number' => Patient::generateNumber($user->user_id),
                 ]);
 
                 $importedCount++;
@@ -446,15 +383,15 @@ class PatientController extends Controller
     /**
      * Handle bulk actions on patients.
      */
-    public function bulkAction(Request $request)
+    protected function bulkActionMap(): array
     {
-        $validated = $request->validate([
-            'action' => 'required|string|in:export,print_cards',
-            'ids'    => 'required|array|min:1',
-            'ids.*'  => 'integer',
-        ]);
-
-        // Client-side print/export is handled in the browser; this is a fallback.
-        return redirect()->back()->with('success', count($validated['ids']) . ' patient records processed.');
+        return [
+            'export' => function (array $ids, int $count) {
+                return redirect()->back()->with('success', "{$count} patient record(s) exported.");
+            },
+            'print_cards' => function (array $ids, int $count) {
+                return redirect()->back()->with('success', "{$count} patient card(s) ready for printing.");
+            },
+        ];
     }
 }

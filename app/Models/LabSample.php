@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
 
 class LabSample extends Model
 {
+    use HasFactory;
+
     protected $table = 'lab_samples';
 
     protected $fillable = [

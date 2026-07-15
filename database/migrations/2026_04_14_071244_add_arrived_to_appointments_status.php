@@ -10,6 +10,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Skip for SQLite (testing)
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+        
         if (! Schema::hasTable('appointments')) {
             return;
         }
@@ -24,6 +29,11 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Skip for SQLite (testing)
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+        
         DB::statement("ALTER TABLE appointments MODIFY status enum('scheduled','confirmed','completed','cancelled','no_show','pending') DEFAULT 'scheduled'");
     }
 };

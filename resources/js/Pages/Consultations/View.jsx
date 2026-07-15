@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import { PatientIdLabel } from '@/Components/PatientTableCell';
 import { formatDateTime, formatDateOnly } from '@/Utils/dateUtils';
 import { useState } from 'react';
-import InfoModalComp from '@/Components/InfoModal';
+import InfoModal from '@/Components/InfoModal';
 import StatusBadge from '@/Components/StatusBadge';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 
@@ -571,7 +571,7 @@ export default function View({ consultation, auth }) {
             </div>
 
             {/* Lab Result Modal */}
-            <InfoModalComp
+            <InfoModal
                 show={!!selectedLabRequest}
                 onClose={() => setSelectedLabRequest(null)}
                 title={selectedLabRequest?.test_type?.test_name || 'Laboratory Analysis'}

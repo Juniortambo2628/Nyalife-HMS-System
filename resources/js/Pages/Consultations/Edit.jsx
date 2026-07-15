@@ -8,7 +8,7 @@ import FormSelect from '@/Components/FormSelect';
 import QuickPatientModal from '@/Components/QuickPatientModal';
 import Modal from '@/Components/Modal';
 import ConsultationDraftSwitcher from '@/Components/ConsultationDraftSwitcher';
-import InfoModalComp from '@/Components/InfoModal';
+import InfoModal from '@/Components/InfoModal';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { formatDateTime } from '@/Utils/dateUtils';
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -892,7 +892,7 @@ export default function Edit({
 
             {/* Lab Result Detail Modal */}
             {selectedLabRequest && (
-                <InfoModalComp
+                <InfoModal
                     show={!!selectedLabRequest}
                     onClose={() => setSelectedLabRequest(null)}
                     title={selectedLabRequest.test_type?.test_name || 'Lab Result'}

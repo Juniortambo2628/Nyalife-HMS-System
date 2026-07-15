@@ -12,9 +12,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Services\ActivityLogger;
+use App\Traits\HasBulkActions;
 
 class LabController extends Controller
 {
+    use HasBulkActions;
     /**
      * Base query scoped to the authenticated user's lab access.
      */
@@ -126,7 +128,7 @@ class LabController extends Controller
         return Inertia::render('Lab/TestsCatalog', [
             'tests' => $query->paginate(10)->withQueryString(),
             'filters' => $request->only(['search', 'sort', 'direction']),
-            'categories' => $labCategories,
+            'categories' => LabTestType::LAB_CATEGORIES,
             'stats' => $stats,
         ]);
     }
@@ -310,70 +312,33 @@ class LabController extends Controller
     /**
      * Handle bulk actions on lab requests.
      */
-    public function bulkAction(Request $request)
+    protected function bulkActionMap(): array
     {
-        $validated = $request->validate([
-            'action' => 'required|string|in:complete,cancel,delete',
-            'ids'    => 'required|array|min:1',
-            'ids.*'  => 'integer',
-        ]);
-
-        $ids    = $validated['ids'];
-        $action = $validated['action'];
-        $count  = count($ids);
-
-        switch ($action) {
-            case 'complete':
-                $labRequests = LabTestRequest::whereIn('request_id', $ids)->get();
-                $updatedCount = 0;
-                foreach ($labRequests as $labReq) {
-                    if ($labReq->status !== 'completed' && $labReq->status !== 'cancelled') {
-                        $labReq->update([
-                            'status' => 'completed',
-                            'completed_at' => now(),
-                            'assigned_to' => Auth::id(),
-                        ]);
-                        ActivityLogger::log(
-                            'lab',
-                            "Lab request #{$labReq->request_id} bulk completed",
-                            ['request_id' => $labReq->request_id, 'status' => 'completed'],
-                            Auth::user(),
-                            $labReq,
-                            [$labReq->requested_by, $labReq->patient->user_id, 1]
-                        );
-                        $updatedCount++;
-                    }
-                }
-                return redirect()->back()->with('success', "{$updatedCount} lab request(s) completed.");
-
-            case 'cancel':
-                $labRequests = LabTestRequest::whereIn('request_id', $ids)->get();
-                $updatedCount = 0;
-                foreach ($labRequests as $labReq) {
-                    if ($labReq->status !== 'completed' && $labReq->status !== 'cancelled') {
-                        $labReq->update([
-                            'status' => 'cancelled',
-                        ]);
-                        ActivityLogger::log(
-                            'lab',
-                            "Lab request #{$labReq->request_id} bulk cancelled",
-                            ['request_id' => $labReq->request_id, 'status' => 'cancelled'],
-                            Auth::user(),
-                            $labReq,
-                            [$labReq->requested_by, $labReq->patient->user_id, 1]
-                        );
-                        $updatedCount++;
-                    }
-                }
-                return redirect()->back()->with('success', "{$updatedCount} lab request(s) cancelled.");
-
-            case 'delete':
-                $deletedCount = LabTestRequest::whereIn('request_id', $ids)
-                    ->where('status', '!=', 'completed')
-                    ->delete();
-                return redirect()->back()->with('success', "{$deletedCount} lab request(s) deleted.");
-        }
-
-        return redirect()->back()->with('error', 'Unknown bulk action.');
+        return [
+            'complete' => function (array $ids, int $count) {
+                $updated = $this->bulkProcessWithLog(
+                    LabTestRequest::class, 'request_id', $ids,
+                    fn ($item) => ! in_array($item->status, ['completed', 'cancelled']),
+                    fn ($item) => ['status' => 'completed', 'completed_at' => now(), 'assigned_to' => Auth::id()],
+                    'lab', 'Lab request',
+                    fn ($item) => [$item->requested_by, $item->patient->user_id, 1]
+                );
+                return redirect()->back()->with('success', "{$updated} lab request(s) completed.");
+            },
+            'cancel' => function (array $ids, int $count) {
+                $updated = $this->bulkProcessWithLog(
+                    LabTestRequest::class, 'request_id', $ids,
+                    fn ($item) => ! in_array($item->status, ['completed', 'cancelled']),
+                    fn ($item) => ['status' => 'cancelled'],
+                    'lab', 'Lab request',
+                    fn ($item) => [$item->requested_by, $item->patient->user_id, 1]
+                );
+                return redirect()->back()->with('success', "{$updated} lab request(s) cancelled.");
+            },
+            'delete' => function (array $ids, int $count) {
+                $deleted = $this->bulkDelete(LabTestRequest::class, 'request_id', $ids, 'status', 'completed');
+                return redirect()->back()->with('success', "{$deleted} lab request(s) deleted.");
+            },
+        ];
     }
 }

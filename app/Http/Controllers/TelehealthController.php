@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TelehealthConsent;
 use App\Models\Patient;
 use App\Models\Staff;
+use App\Models\Appointment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -27,12 +28,30 @@ class TelehealthController extends Controller
      */
     public function meetingRoom($meetingId)
     {
+        $user = Auth::user();
+
+        $appointment = Appointment::where('notes', 'like', "%Meeting Link: %{$meetingId}%")
+            ->where(function ($q) use ($user) {
+                $q->where('patient_id', function ($subq) use ($user) {
+                    $subq->select('patient_id')->from('patients')->where('user_id', $user->user_id);
+                })
+                ->orWhere('doctor_id', function ($subq) use ($user) {
+                    $subq->select('staff_id')->from('staff')->where('user_id', $user->user_id);
+                })
+                ->orWhere('created_by', $user->user_id);
+            })
+            ->first();
+
+        if (!$appointment) {
+            abort(403, 'You do not have access to this meeting room.');
+        }
+
         $jitsiDomain = config('services.jitsi.domain', 'meet.jit.si');
 
         return Inertia::render('Telehealth/MeetingRoom', [
             'meetingId' => $meetingId,
             'jitsiDomain' => $jitsiDomain,
-            'user' => Auth::user(),
+            'user' => $user,
         ]);
     }
 

@@ -3,11 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use App\Traits\HasStatusScope;
 
 class Payment extends Model
 {
+    use HasFactory, HasStatusScope;
+
+    protected $statusColumn = 'payment_status';
+
     protected $primaryKey = 'payment_id';
 
     protected $fillable = [
@@ -74,15 +80,6 @@ class Payment extends Model
                         ->orWhere('last_name', 'like', "%{$search}%");
                 });
         });
-    }
-
-    public function scopeStatus(Builder $query, ?string $status): Builder
-    {
-        if (empty($status)) {
-            return $query;
-        }
-
-        return $query->where('payment_status', $status);
     }
 
     public function scopeMethod(Builder $query, ?string $method): Builder

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -23,6 +24,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Skip for SQLite (testing) - dropping columns with indexes causes issues
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+        
         Schema::table('prescriptions', function (Blueprint $table) {
             if (Schema::hasColumn('prescriptions', 'consultation_id')) {
                 $table->dropColumn('consultation_id');

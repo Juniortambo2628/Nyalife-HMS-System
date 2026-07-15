@@ -2,8 +2,10 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 
 import { useState, useEffect, useMemo } from 'react';
+import useSelectionState from '@/Hooks/useSelectionState';
+import useBulkAction from '@/Hooks/useBulkAction';
 import DashboardSearch from '@/Components/DashboardSearch';
-import DashboardTable from '@/Components/DashboardTable';
+import PaginationFooter from '@/Components/PaginationFooter';
 import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import ViewToggle from '@/Components/ViewToggle';
 import UserAvatar from '@/Components/UserAvatar';
@@ -19,7 +21,12 @@ export default function Index({ users, filters, roles, auth, stats }) {
     const [roleFilter, setRoleFilter] = useState(filters?.role || '');
     const [sortBy, setSortBy] = useState(typeof filters?.sort === 'string' ? filters.sort : 'created_at');
     const [direction, setDirection] = useState(filters?.direction || 'desc');
-    const [selectedIds, setSelectedIds] = useState([]);
+    const { selectedIds, setSelectedIds } = useSelectionState({ idField: 'user_id' });
+    const { handleBulkAction } = useBulkAction({
+        routeName: 'users.bulk-action',
+        selectedIds,
+        clearSelection: () => setSelectedIds([]),
+    });
 
     const statItems = useMemo(() => [
         {
@@ -41,21 +48,6 @@ export default function Index({ users, filters, roles, auth, stats }) {
             color: 'danger',
         },
     ], [stats]);
-
-    useEffect(() => {
-        const handleClear = () => setSelectedIds([]);
-        window.addEventListener('toolbar-clear-selection', handleClear);
-        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
-    }, []);
-
-    const handleBulkAction = (action) => {
-        router.post(route('users.bulk-action'), {
-            action: action,
-            ids: selectedIds
-        }, {
-            onSuccess: () => setSelectedIds([]),
-        });
-    };
 
     const handleSearch = (searchValue, quickFilterValue = filters?.quick_filter) => {
         const query = { search: searchValue };
@@ -246,12 +238,7 @@ export default function Index({ users, filters, roles, auth, stats }) {
                                 
                                 {/* Pagination for Grid View */}
                                 <div className="col-12 mt-4">
-                                    <DashboardTable 
-                                        data={[]} 
-                                        columns={[]} 
-                                        pagination={users}
-                                        className="bg-transparent shadow-none"
-                                    />
+                                    <PaginationFooter pagination={users} />
                                 </div>
                             </>
                         ) : (

@@ -245,7 +245,7 @@ class DemoEnvironmentSeeder extends Seeder
             $patients[] = Patient::updateOrCreate(
                 ['user_id' => $user->user_id],
                 [
-                    'patient_number' => 'NYA-' . str_pad((string) $user->user_id, 5, '0', STR_PAD_LEFT),
+                    'patient_number' => Patient::generateNumber($user->user_id),
                     'gender' => $def['gender'],
                     'date_of_birth' => $def['dob'],
                     'blood_group' => $def['blood_group'],

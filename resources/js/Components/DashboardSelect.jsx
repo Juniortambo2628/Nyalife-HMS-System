@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
-import Modal from '@/Components/Modal';
 
+/**
+ * DashboardSelect - A unified, robust searchable select component.
+ * Refactored for premium clinical aesthetic and high contrast interaction.
+ */
 export default function DashboardSelect({ 
     options = [], 
     asyncUrl = null,
@@ -19,12 +22,13 @@ export default function DashboardSelect({
     dropup = false,
     style = {}
 }) {
-    const [modalOpen, setModalOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [asyncOptions, setAsyncOptions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedDisplay, setSelectedDisplay] = useState(initialLabel || '');
-    const searchInputRef = useRef(null);
+    
+    const dropdownRef = useRef(null);
     const debounceTimer = useRef(null);
 
     const isDark = theme === 'dark';
@@ -73,53 +77,36 @@ export default function DashboardSelect({
         return () => clearTimeout(debounceTimer.current);
     }, [searchTerm, asyncUrl]);
 
-    // Focus search input when modal opens
     useEffect(() => {
-        if (modalOpen && searchInputRef.current) {
-            setTimeout(() => searchInputRef.current.focus(), 100);
-        }
-    }, [modalOpen]);
+        const handleClickOutside = (e) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
-    // Reset search when modal opens/closes
-    useEffect(() => {
-        if (!modalOpen) {
-            setSearchTerm('');
-        }
-    }, [modalOpen]);
-
-    const openModal = () => setModalOpen(true);
-    const closeModal = () => setModalOpen(false);
-
-    const selectOption = (opt) => {
-        onChange(opt[valueField], opt);
-        setSelectedDisplay(opt[labelField]);
-        closeModal();
-    };
-
-    const clearValue = (e) => {
-        e.stopPropagation();
-        onChange(null, null);
-        setSelectedDisplay('');
-        setSearchTerm('');
-    };
-
-    const triggerTextColor = (value) ? 'text-pink-500' : 'text-pink-500';
-    const triggerBgColor = (value) ? 'bg-white' : (isDark ? 'bg-white bg-opacity-20 hover-bg-opacity-30' : 'bg-white');
+    // Determine font color for trigger based on state
+    // "change the font color of the Doctor and patient input boxes to black when state=active"
+    const triggerTextColor = (isOpen || value) ? 'text-pink-500' : 'text-pink-500';
+    const triggerBgColor = (isOpen || value) ? 'bg-white' : (isDark ? 'bg-white bg-opacity-20 hover-bg-opacity-30' : 'bg-white');
 
     const hasValue = !!value;
 
     return (
-        <div className={`dashboard-select-container ${className}`} style={style}>
+        <div className={`dashboard-select-container position-relative ${isOpen ? 'is-open' : ''} ${hasValue ? 'has-value' : ''} ${className}`} ref={dropdownRef} style={style}>
             {/* Trigger Area */}
             <div 
-                className={`form-control border-0 rounded-pill py-2 px-4 d-flex justify-content-between align-items-center cursor-pointer transition-all shadow-sm nyl-select-trigger ${triggerBgColor} ${triggerTextColor} ${!isDark && !value ? 'border' : ''}`}
-                onClick={openModal}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openModal(); }}
+                className={`form-control border-0 rounded-pill py-2 px-4 d-flex justify-content-between align-items-center cursor-pointer transition-all shadow-sm nyl-select-trigger ${isOpen ? 'ring-2 ring-primary ring-opacity-20' : ''} ${triggerBgColor} ${triggerTextColor} ${!isDark && !isOpen && !value ? 'border' : ''}`}
+                onClick={() => setIsOpen(!isOpen)}
             >
                 <div className="d-flex align-items-center gap-2 overflow-hidden flex-grow-1">
-                    <i className="fas fa-search text-pink-500 extra-small"></i>
+                    {loading ? (
+                        <div className="spinner-border spinner-border-sm text-pink-500 opacity-50 nyl-select-spinner" role="status"></div>
+                    ) : (
+                        <i className={`fas fa-filter text-pink-500 extra-small`}></i>
+                    )}
                     <span className="fw-extrabold extra-small tracking-widest text-uppercase text-truncate">
                         {selectedDisplay || placeholder}
                     </span>
@@ -128,104 +115,90 @@ export default function DashboardSelect({
                     {value && (
                         <button 
                             type="button"
-                            className="btn btn-link p-0 border-0 shadow-none nyl-select-clear"
-                            onClick={clearValue}
+                            className={`btn btn-link p-0 border-0 shadow-none hover-opacity-100 nyl-select-clear ${isOpen || value ? 'text-gray-400' : (isDark ? 'text-gray-400' : 'text-muted')}`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onChange(null, null);
+                                setSelectedDisplay('');
+                                setSearchTerm('');
+                            }}
                         >
                             <i className="fas fa-times-circle"></i>
                         </button>
                     )}
-                    <i className="fas fa-chevron-down text-pink-500 fs-xs opacity-40"></i>
+                    <i className={`fas fa-chevron-${isOpen ? (dropup ? 'up' : 'down') : (dropup ? 'down' : 'up')} text-pink-500 fs-xs transition-all duration-500 ${isOpen ? 'opacity-100' : 'opacity-40'}`}></i>
                 </div>
             </div>
 
-            {/* Search Modal */}
-            <Modal show={modalOpen} onClose={closeModal} maxWidth="lg">
-                <div className="p-4" style={{ minHeight: '400px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
-                    {/* Search Input */}
-                    <div className="mb-3">
-                        <div className="input-group input-group-lg rounded-pill shadow-sm border bg-white overflow-hidden">
-                            <span className="input-group-text bg-transparent border-0 px-3">
-                                <i className="fas fa-search text-pink-400"></i>
+            {/* Dropdown Menu - Submenu Border Radius Removed as per request */}
+            {isOpen && (
+                <div 
+                    className={`position-absolute start-0 w-100 shadow-2xl border-0 overflow-hidden nyl-select-dropdown bg-white border border-gray-100 ${dropup ? 'bottom-100 mb-3' : 'top-100 mt-3'}`}
+                    style={{ borderRadius: '0', zIndex: 1100 }}
+                >
+                    {/* Search Input Area - Fixed Light Theme */}
+                    <div className="p-3 border-bottom sticky-top bg-white">
+                        <div className="input-group input-group-sm rounded-pill px-3 bg-gray-50 border">
+                            <span className="input-group-text bg-transparent border-0 px-0 me-2">
+                                <i className="fas fa-search text-gray-400"></i>
                             </span>
                             <input 
-                                ref={searchInputRef}
                                 type="text" 
-                                className="form-control border-0 shadow-none py-3 fw-bold text-dark" 
+                                className="form-control bg-transparent border-0 shadow-none py-2 fw-extrabold extra-small text-dark" 
                                 placeholder={searchPlaceholder}
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
+                                autoFocus
                             />
-                            {loading && (
-                                <span className="input-group-text bg-transparent border-0 px-3">
-                                    <div className="spinner-border spinner-border-sm text-pink-500" role="status"></div>
-                                </span>
-                            )}
                         </div>
                     </div>
 
-                    {/* Results */}
-                    <div className="flex-grow-1 overflow-auto custom-scrollbar" style={{ flex: '1 1 auto', minHeight: 0 }}>
-                        {asyncUrl && searchTerm.length < 2 && (
-                            <div className="p-5 text-center text-muted">
-                                <i className="fas fa-search fs-2 opacity-25 mb-3 d-block"></i>
-                                <p className="fw-bold extra-small text-uppercase tracking-widest opacity-50 mb-0">
-                                    Type at least 2 characters to search
-                                </p>
+                    {/* Options List - Fixed Light Theme with Dark Text */}
+                    <div className="overflow-auto custom-scrollbar" style={{ maxHeight: '300px' }}>
+                        {loading && asyncUrl && (
+                            <div className="p-4 text-center">
+                                <div className="spinner-border text-primary spinner-border-sm opacity-25" role="status"></div>
+                                <div className="mt-2 extra-small text-muted fw-extrabold text-uppercase tracking-widest">Scanning Catalog...</div>
                             </div>
                         )}
 
-                        {loading && (
-                            <div className="p-5 text-center">
-                                <div className="spinner-border text-pink-500" role="status">
-                                    <span className="visually-hidden">Searching...</span>
+                        {!loading && filteredOptions.length > 0 ? (
+                            filteredOptions.map((opt, i) => (
+                                <div 
+                                    key={opt[valueField] || i}
+                                    className={`px-4 py-3 cursor-pointer transition-all d-flex justify-content-between align-items-center hover-bg-gray-50 ${value == opt[valueField] ? 'bg-primary-subtle text-primary fw-extrabold' : 'text-dark'}`}
+                                    onClick={() => {
+                                        onChange(opt[valueField], opt);
+                                        setSelectedDisplay(opt[labelField]);
+                                        setIsOpen(false);
+                                        setSearchTerm('');
+                                    }}
+                                >
+                                    <div className="d-flex flex-column">
+                                        <span className="fw-bold extra-small text-uppercase tracking-tight">{opt[labelField]}</span>
+                                        {opt.sublabel && <small className="text-muted extra-small opacity-75">{opt.sublabel}</small>}
+                                    </div>
+                                    {value == opt[valueField] && <i className="fas fa-check-circle text-primary"></i>}
                                 </div>
-                                <p className="mt-3 fw-bold extra-small text-uppercase tracking-widest text-muted opacity-50 mb-0">
-                                    Searching...
-                                </p>
-                            </div>
-                        )}
-
-                        {!loading && filteredOptions.length > 0 && (
-                            <div className="list-group list-group-flush">
-                                {filteredOptions.map((opt, i) => (
-                                    <button
-                                        key={opt[valueField] || i}
-                                        type="button"
-                                        className={`list-group-item list-group-item-action border-0 rounded-lg py-3 px-4 text-start d-flex justify-content-between align-items-center ${value == opt[valueField] ? 'bg-pink-50 text-pink-600 fw-extrabold' : 'text-dark fw-bold'}`}
-                                        onClick={() => selectOption(opt)}
-                                    >
-                                        <div>
-                                            <div className="extra-small text-uppercase tracking-tight">{opt[labelField]}</div>
-                                            {opt.sublabel && <small className="text-muted extra-small opacity-75 d-block mt-1">{opt.sublabel}</small>}
-                                        </div>
-                                        {value == opt[valueField] && <i className="fas fa-check-circle text-pink-500"></i>}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-
-                        {!loading && filteredOptions.length === 0 && !(asyncUrl && searchTerm.length < 2) && (
+                            ))
+                        ) : !loading && (
                             <div className="p-5 text-center">
-                                <div className="bg-gray-50 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '70px', height: '70px' }}>
-                                    <i className={`${searchTerm ? 'fas fa-search-minus text-gray-300' : 'fas fa-inbox text-gray-300'} fs-3`}></i>
+                                <div className="bg-gray-50 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: '60px', height: '60px' }}>
+                                    <i className="fas fa-search-minus text-gray-200 fs-4"></i>
                                 </div>
-                                <p className="fw-bold extra-small text-uppercase tracking-widest text-muted opacity-50 mb-0">
-                                    {searchTerm ? 'No matching results found' : 'No options available'}
-                                </p>
-                                {searchTerm && <p className="extra-small text-muted mt-2 opacity-50">Try a different search term</p>}
-                                {!searchTerm && onAddNew && <p className="extra-small text-muted mt-2 opacity-50">Add a new option below</p>}
+                                <p className="mb-0 fw-extrabold extra-small text-muted text-uppercase tracking-widest opacity-50">Zero matches detected</p>
                             </div>
                         )}
                     </div>
 
-                    {/* Add New Footer */}
+                    {/* Action Footer */}
                     {onAddNew && (
-                        <div className="border-top pt-3 mt-3">
+                        <div className="p-3 border-top bg-gray-50">
                             <button 
                                 type="button" 
-                                className="btn btn-outline-pink btn-lg w-100 rounded-pill fw-extrabold extra-small tracking-widest d-flex align-items-center justify-content-center gap-2 py-3"
+                                className="btn btn-primary btn-sm w-100 rounded-pill fw-extrabold extra-small tracking-widest shadow-sm d-flex align-items-center justify-content-center gap-2 py-2"
                                 onClick={() => {
-                                    closeModal();
+                                    setIsOpen(false);
                                     onAddNew();
                                 }}
                             >
@@ -235,7 +208,7 @@ export default function DashboardSelect({
                         </div>
                     )}
                 </div>
-            </Modal>
+            )}
         </div>
     );
 }

@@ -47,7 +47,7 @@ class GoogleController extends Controller
             ]);
 
             $route = $request->role === 'staff' ? 'login.staff' : 'login.patient';
-            return redirect()->route($route)->with('error', 'Could not initialize Google authentication. Error: ' . $e->getMessage());
+            return redirect()->route($route)->with('error', 'Could not initialize Google authentication. Please try again later.');
         }
     }
 
@@ -108,7 +108,7 @@ class GoogleController extends Controller
                 'role' => $authRole
             ]);
             $route = $authRole === 'staff' ? 'login.staff' : 'login.patient';
-            return redirect()->route($route)->with('error', 'Google authentication failed. Error: ' . $e->getMessage());
+            return redirect()->route($route)->with('error', 'Google authentication failed. Please try again later.');
         }
     }
 
@@ -146,7 +146,7 @@ class GoogleController extends Controller
             'google_token' => $googleData['token'],
             'google_refresh_token' => $googleData['refresh_token'],
             'password' => bcrypt(Str::random(16)),
-            'role_id' => 1, // Patient
+            'role_id' => \App\Models\Role::idFromName('patient'),
             'gender' => $request->gender,
             'date_of_birth' => $request->date_of_birth,
             'phone' => $request->phone,
@@ -161,7 +161,7 @@ class GoogleController extends Controller
         // Create Patient record
         \App\Models\Patient::firstOrCreate(
             ['user_id' => $user->user_id],
-            ['patient_number' => 'NYA' . date('Y') . str_pad($user->user_id, 4, '0', STR_PAD_LEFT)]
+            ['patient_number' => \App\Models\Patient::generateNumber($user->user_id)]
         );
 
         Auth::login($user);

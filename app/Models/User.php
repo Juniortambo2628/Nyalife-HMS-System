@@ -118,7 +118,15 @@ class User extends Authenticatable
     /**
      * Append role to JSON serialization.
      */
-    protected $appends = ['role'];
+    protected $appends = ['role', 'full_name'];
+
+    /**
+     * Get the user's full name.
+     */
+    public function getFullNameAttribute(): string
+    {
+        return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? ''));
+    }
 
     /**
      * Get the staff associated with the user.

@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
-import DashboardTable from '@/Components/DashboardTable';
+import PaginationFooter from '@/Components/PaginationFooter';
 import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import ViewToggle from '@/Components/ViewToggle';
 import InfoModal from '@/Components/InfoModal';
@@ -11,13 +11,23 @@ import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import GridCardActions from '@/Components/GridCardActions';
 import { PatientIdLabel } from '@/Components/PatientTableCell';
 import StatCardGrid from '@/Components/StatCardGrid';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import useViewToggle from '@/Hooks/useViewToggle';
+import useSelectionState from '@/Hooks/useSelectionState';
+import useBulkAction from '@/Hooks/useBulkAction';
+import { calculateAge as calculateAgeUtil } from '@/Utils/dateUtils';
 
 export default function Index({ patients, filters, auth, stats }) {
-    const [view, setView] = useState(() => localStorage.getItem('patients_view') || 'list');
+    const { viewMode, handleViewChange } = useViewToggle({ storageKey: 'patients_view' });
+    const { selectedIds, setSelectedIds, isSelected } = useSelectionState({ idField: 'patient_id' });
+    const { handleBulkAction } = useBulkAction({
+        routeName: 'patients.bulk-action',
+        selectedIds,
+        clearSelection: () => setSelectedIds([]),
+    });
+
     const [search, setSearch] = useState(filters.search || '');
     const [activeFilter, setActiveFilter] = useState(filters.status || '');
-    const [selectedIds, setSelectedIds] = useState([]);
 
     const statItems = useMemo(() => [
         {
@@ -46,40 +56,10 @@ export default function Index({ patients, filters, auth, stats }) {
         },
     ], [stats]);
 
-    useEffect(() => {
-        const handleClear = () => setSelectedIds([]);
-        window.addEventListener('toolbar-clear-selection', handleClear);
-        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
-    }, []);
-
     const [modalConfig, setModalConfig] = useState({
         show: false,
         patient: null,
     });
-
-    const handleBulkAction = (action) => {
-        if (action === 'export') {
-            window.location.href = route('patients.export') + '?ids=' + selectedIds.join(',');
-            setSelectedIds([]);
-            return;
-        }
-        if (action === 'print_cards') {
-            window.open(route('patients.print-cards') + '?ids=' + selectedIds.join(','), '_blank');
-            setSelectedIds([]);
-            return;
-        }
-        router.post(route('patients.bulk-action'), {
-            action: action,
-            ids: selectedIds
-        }, {
-            onSuccess: () => setSelectedIds([]),
-        });
-    };
-
-    const handleViewChange = (newView) => {
-        setView(newView);
-        localStorage.setItem('patients_view', newView);
-    };
 
     const applyFilters = (searchValue) => {
         router.get(route('patients.index'), { search: searchValue, status: activeFilter }, {
@@ -113,16 +93,7 @@ export default function Index({ patients, filters, auth, stats }) {
         });
     };
 
-    const calculateAge = (dob) => {
-        if (!dob) return 'N/A';
-        const birthDate = new Date(dob);
-        if (isNaN(birthDate.getTime())) return 'N/A';
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-        return age;
-    };
+    const calculateAge = (dob) => calculateAgeUtil(dob, 'N/A');
 
     const columns = useMemo(() => [
         {
@@ -328,7 +299,7 @@ export default function Index({ patients, filters, auth, stats }) {
             <StatCardGrid items={statItems} cols={4} />
 
             <UnifiedToolbar 
-                viewMode={view}
+                viewMode={viewMode}
                 onViewModeChange={handleViewChange}
                 filterGroups={[
                     {
@@ -349,8 +320,12 @@ export default function Index({ patients, filters, auth, stats }) {
                     { label: 'REGISTER NEW', icon: 'fa-user-plus', href: route('patients.create') }
                 ]}
                 bulkActions={[
-                    { label: 'EXPORT RECORDS', icon: 'fa-file-export', onClick: () => handleBulkAction('export') },
-                    { label: 'PRINT CARDS', icon: 'fa-id-card', onClick: () => handleBulkAction('print_cards') }
+                    { label: 'EXPORT RECORDS', icon: 'fa-file-export', onClick: () => handleBulkAction('export', (action, ids) => {
+                        window.location.href = route('patients.export') + '?ids=' + ids.join(',');
+                    }) },
+                    { label: 'PRINT CARDS', icon: 'fa-id-card', onClick: () => handleBulkAction('print_cards', (action, ids) => {
+                        window.open(route('patients.print-cards') + '?ids=' + ids.join(','), '_blank');
+                    }) }
                 ]}
                 selectionCount={selectedIds.length}
             />
@@ -371,7 +346,7 @@ export default function Index({ patients, filters, auth, stats }) {
                 />
 
                 {/* View Content */}
-                {view === 'list' ? (
+                {viewMode === 'list' ? (
                     <RegistryTablePanel
                         title="Patient registry"
                         icon="fa-users"
@@ -432,12 +407,7 @@ export default function Index({ patients, filters, auth, stats }) {
 
                                 {/* Pagination for Grid View */}
                                 <div className="col-12 mt-5">
-                                    <DashboardTable 
-                                        data={[]} 
-                                        columns={[]} 
-                                        pagination={patients}
-                                        className="bg-transparent shadow-none"
-                                    />
+                                    <PaginationFooter pagination={patients} />
                                 </div>
                             </>
                         ) : (

@@ -139,7 +139,6 @@ const ContextSwitcher = () => {
                 .hover-bg-primary:hover { background-color: var(--bs-primary); border-color: var(--bs-primary); }
                 .hover-text-white:hover { color: white !important; }
                 .fs-xs { font-size: 0.65rem; }
-                .extra-small { font-size: 0.7rem; }
                 .transition-all { transition: all 0.2s ease-in-out; }
             `}</style>
         </div>

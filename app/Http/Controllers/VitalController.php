@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\VitalResource;
 use App\Http\Requests\StoreVitalRequest;
+use App\Http\Requests\VoidRequest;
 use App\Models\Vital;
 use App\Models\Patient;
 use App\Support\PatientId;
@@ -100,15 +101,13 @@ class VitalController extends Controller
                          ->with('success', 'Patient vitals updated successfully.');
     }
 
-    public function destroy(Request $request, Vital $vital)
+    public function destroy(VoidRequest $request, Vital $vital)
     {
-        $request->validate([
-            'void_reason' => 'required|string|max:255'
-        ]);
+        $validated = $request->validated();
 
         $vital->update([
             'is_voided' => true,
-            'void_reason' => $request->void_reason,
+            'void_reason' => $validated['void_reason'],
             'voided_by' => Auth::id(),
             'voided_at' => now(),
         ]);

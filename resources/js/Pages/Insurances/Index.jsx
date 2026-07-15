@@ -120,8 +120,7 @@ export default function Index({ auth, insurances }) {
             </div>
 
             <style>{`
-                .extra-small { font-size: 0.7rem; }
-                .insurance-card:hover {
+    .insurance-card:hover {
                     transform: translateY(-5px);
                     box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
                 }

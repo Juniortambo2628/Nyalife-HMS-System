@@ -250,7 +250,6 @@ export default function Index({ procedures, auth }) {
 }
 
 const styles = `
-    .extra-small { font-size: 0.75rem; }
     .hover-scale:hover { transform: scale(1.1); }
     .btn-white { background: white; }
     .btn-white:hover { background: #f8f9fa; }

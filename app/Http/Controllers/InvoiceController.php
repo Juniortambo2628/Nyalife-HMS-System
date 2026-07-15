@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreInvoiceRequest;
+use App\Http\Requests\VoidRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Http\Resources\InvoiceResource;
 use App\Models\Consultation;
@@ -14,9 +15,11 @@ use Inertia\Inertia;
 use App\Services\ActivityLogger;
 use App\Support\Permissions;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Traits\HasBulkActions;
 
 class InvoiceController extends Controller
 {
+    use HasBulkActions;
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -73,12 +76,7 @@ class InvoiceController extends Controller
             Permissions::MANAGE_PAYMENTS
         );
         
-        $settings = \App\Models\Setting::whereIn('key', [
-            'contact_address', 
-            'contact_email', 
-            'contact_phone',
-            'tax_rate'
-        ])->pluck('value', 'key');
+        $settings = \App\Models\Setting::clinicInvoiceSettings();
 
         return Inertia::render('Invoices/Show', [
             'invoice' => InvoiceResource::make($invoice),
@@ -187,11 +185,9 @@ class InvoiceController extends Controller
         return back()->with('error', 'No valid updates provided.');
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(VoidRequest $request, $id)
     {
-        $request->validate([
-            'void_reason' => 'required|string|max:255'
-        ]);
+        $validated = $request->validated();
 
         $invoice = Invoice::with('patient.user')->findOrFail($id);
 
@@ -201,14 +197,14 @@ class InvoiceController extends Controller
 
         $invoice->update([
             'is_voided' => true,
-            'void_reason' => $request->void_reason,
+            'void_reason' => $validated['void_reason'],
             'voided_by' => Auth::id(),
             'voided_at' => now(),
         ]);
 
         ActivityLogger::log(
             'billing',
-            "Invoice #{$invoice->invoice_number} voided: {$request->void_reason}",
+            "Invoice #{$invoice->invoice_number} voided: {$validated['void_reason']}",
             ['invoice_id' => $invoice->invoice_id, 'amount' => $invoice->total_amount],
             Auth::user(),
             $invoice,
@@ -221,51 +217,24 @@ class InvoiceController extends Controller
     /**
      * Handle bulk actions on invoices.
      */
-    public function bulkAction(Request $request)
+    protected function bulkActionMap(): array
     {
-        $validated = $request->validate([
-            'action' => 'required|string|in:void,delete',
-            'ids'    => 'required|array|min:1',
-            'ids.*'  => 'integer',
-        ]);
-
-        $ids    = $validated['ids'];
-        $action = $validated['action'];
-        $count  = count($ids);
-
-        switch ($action) {
-            case 'void':
-                $invoices = Invoice::whereIn('invoice_id', $ids)->get();
-                $voidedCount = 0;
-                foreach ($invoices as $invoice) {
-                    if ($invoice->status !== 'paid' && !$invoice->is_voided) {
-                        $invoice->update([
-                            'is_voided' => true,
-                            'void_reason' => 'Bulk voided via toolbar',
-                            'voided_by' => Auth::id(),
-                            'voided_at' => now(),
-                        ]);
-                        ActivityLogger::log(
-                            'billing',
-                            "Invoice #{$invoice->invoice_number} bulk voided",
-                            ['invoice_id' => $invoice->invoice_id, 'amount' => $invoice->total_amount],
-                            Auth::user(),
-                            $invoice,
-                            [$invoice->patient->user_id, 1]
-                        );
-                        $voidedCount++;
-                    }
-                }
-                return redirect()->back()->with('success', "{$voidedCount} invoice(s) voided.");
-
-            case 'delete':
-                $deletedCount = Invoice::whereIn('invoice_id', $ids)
-                    ->where('status', '!=', 'paid')
-                    ->delete();
-                return redirect()->back()->with('success', "{$deletedCount} unpaid invoice(s) deleted.");
-        }
-
-        return redirect()->back()->with('error', 'Unknown bulk action.');
+        return [
+            'void' => function (array $ids, int $count) {
+                $updated = $this->bulkProcessWithLog(
+                    Invoice::class, 'invoice_id', $ids,
+                    fn ($item) => $item->status !== 'paid' && ! $item->is_voided,
+                    fn ($item) => ['is_voided' => true, 'void_reason' => 'Bulk voided via toolbar', 'voided_by' => Auth::id(), 'voided_at' => now()],
+                    'billing', 'Invoice',
+                    fn ($item) => [$item->patient->user_id, 1]
+                );
+                return redirect()->back()->with('success', "{$updated} invoice(s) voided.");
+            },
+            'delete' => function (array $ids, int $count) {
+                $deleted = $this->bulkDelete(Invoice::class, 'invoice_id', $ids, 'status', 'paid');
+                return redirect()->back()->with('success', "{$deleted} unpaid invoice(s) deleted.");
+            },
+        ];
     }
 
     public function exportCsv(Request $request)
@@ -320,9 +289,7 @@ class InvoiceController extends Controller
             Permissions::MANAGE_PAYMENTS
         );
 
-        $settings = \App\Models\Setting::whereIn('key', [
-            'contact_address', 'contact_email', 'contact_phone', 'tax_rate',
-        ])->pluck('value', 'key');
+        $settings = \App\Models\Setting::clinicInvoiceSettings();
 
         return Inertia::render('Invoices/Print', [
             'invoice' => InvoiceResource::make($invoice),
@@ -340,9 +307,7 @@ class InvoiceController extends Controller
             Permissions::MANAGE_PAYMENTS
         );
 
-        $settings = \App\Models\Setting::whereIn('key', [
-            'contact_address', 'contact_email', 'contact_phone', 'tax_rate',
-        ])->pluck('value', 'key');
+        $settings = \App\Models\Setting::clinicInvoiceSettings();
 
         $subtotal = $invoice->items->sum('total_price');
         $taxRate = (float) ($settings['tax_rate'] ?? 0);

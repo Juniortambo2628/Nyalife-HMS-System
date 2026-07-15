@@ -1578,7 +1578,7 @@ textarea,
 }
 
 /* Ensure all positioned elements don't block interaction when hidden */
-[class*=" modal"]:not(.show), [class^="modal"]:not(.show),
+[class*="modal"]:not(.show),
 [id*="modal"]:not(.show),
 .fade:not(.show) {
     z-index: -1 !important;
@@ -6519,10 +6519,6 @@ th:hover .sort-icon {
 .nyl-select-dropdown {
     z-index: 9999;
     min-width: 280px;
-    overflow: visible;
-}
-.nyl-patient-id-card {
-    overflow: visible !important;
 }
 .nyl-select-dropdown--dark .custom-scrollbar::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.1);
@@ -6717,10 +6713,6 @@ th:hover .sort-icon {
 /* Typography Extensions */
 .tracking-tightest { letter-spacing: -0.05em; }
 .tracking-tighter { letter-spacing: -0.025em; }
-
-.extra-small {
-    font-size: 0.7rem;
-}
 
 .font-mono {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -7096,10 +7088,6 @@ th:hover .sort-icon {
 .nyl-toolbar-divider {
     height: 20px;
 }
-
-.extra-small {
-    font-size: 0.7rem;
-}
 /**
  * Nyalife Utility Classes
  * Replaces Tailwind utility classes used across the codebase.
@@ -7217,7 +7205,6 @@ th:hover .sort-icon {
 /* ----------------------------------------------------------------
    TYPOGRAPHY
    ---------------------------------------------------------------- */
-.extra-small { font-size: 0.7rem; }
 .text-xs { font-size: 0.75rem !important; }
 .text-xl { font-size: 1.25rem !important; }
 .text-2xl { font-size: 1.5rem !important; }

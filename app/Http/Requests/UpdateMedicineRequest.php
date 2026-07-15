@@ -2,25 +2,10 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class UpdateMedicineRequest extends FormRequest
+class UpdateMedicineRequest extends StoreMedicineRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
-        return [
-            'medication_name' => 'required|string|max:255',
-            'medication_type' => 'required|string|max:100',
-            'strength' => 'required|string|max:100',
-            'unit' => 'required|string|max:50',
-            'price_per_unit' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
-            'expiry_date' => 'nullable|date',
-        ];
+        return array_map(fn ($rule) => str_replace('required', 'sometimes', $rule), parent::rules());
     }
 }

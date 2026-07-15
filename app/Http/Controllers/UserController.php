@@ -10,9 +10,11 @@ use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use App\Traits\HasBulkActions;
 
 class UserController extends Controller
 {
+    use HasBulkActions;
     public function index(Request $request)
     {
         $sort = $request->sort ?? 'created_at';
@@ -183,42 +185,29 @@ class UserController extends Controller
     /**
      * Handle bulk actions on users.
      */
-    public function bulkAction(Request $request)
+    protected function bulkActionMap(): array
     {
-        $validated = $request->validate([
-            'action' => 'required|string|in:activate,deactivate,delete',
-            'ids'    => 'required|array|min:1',
-            'ids.*'  => 'integer',
-        ]);
-
-        $ids    = $validated['ids'];
-        $action = $validated['action'];
-        $count  = count($ids);
-
-        switch ($action) {
-            case 'activate':
+        return [
+            'activate' => function (array $ids, int $count) {
                 User::whereIn('user_id', $ids)->update(['is_active' => true]);
                 return redirect()->back()->with('success', "{$count} user(s) activated.");
-
-            case 'deactivate':
-                // Prevent self-deactivation
-                $ids = array_diff($ids, [Auth::id()]);
+            },
+            'deactivate' => function (array $ids, int $count) {
+                $ids = array_diff($ids, [\Illuminate\Support\Facades\Auth::id()]);
                 $count = count($ids);
                 if ($count > 0) {
                     User::whereIn('user_id', $ids)->update(['is_active' => false]);
                 }
                 return redirect()->back()->with('success', "{$count} user(s) deactivated.");
-
-            case 'delete':
-                // Prevent self-deletion
-                $ids = array_diff($ids, [Auth::id()]);
+            },
+            'delete' => function (array $ids, int $count) {
+                $ids = array_diff($ids, [\Illuminate\Support\Facades\Auth::id()]);
                 $count = count($ids);
                 if ($count > 0) {
                     User::whereIn('user_id', $ids)->delete();
                 }
                 return redirect()->back()->with('success', "{$count} user(s) deleted.");
-        }
-
-        return redirect()->back()->with('error', 'Unknown bulk action.');
+            },
+        ];
     }
 }

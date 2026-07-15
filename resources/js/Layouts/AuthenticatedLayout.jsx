@@ -35,6 +35,7 @@ const sidebarMenus = {
         { id: 'lab-catalog', text: 'Lab Catalog', url: route('lab.tests'), icon: 'fas fa-vials', permission: 'manage-lab-catalog' },
         { id: 'reports', text: 'Reports', url: '/reports', icon: 'fas fa-chart-bar', permission: 'view-reports' },
         { id: 'void-audit', text: 'Void Audit', url: route('admin.void-audit.index'), icon: 'fas fa-ban', permission: 'view-reports' },
+        { id: 'block-outs', text: 'Block-Out Dates', url: '/doctor-block-outs', icon: 'fas fa-calendar-minus', permission: 'manage-appointments' },
         { id: 'blog-manage', text: 'Manage Blogs', url: route('blog.manage'), icon: 'fas fa-blog', permission: 'manage-system' },
         { id: 'cms-manage', text: 'Landing CMS', url: route('cms.index'), icon: 'fas fa-laptop-code', permission: 'manage-system' },
         { id: 'admin-settings', text: 'System Settings', url: route('admin.settings.index'), icon: 'fas fa-cogs', permission: 'manage-settings' },
@@ -50,6 +51,7 @@ const sidebarMenus = {
         { id: 'patients', text: 'View Patients', url: '/patients', icon: 'fas fa-users', permission: 'manage-patients' },
         { id: 'lab-requests', text: 'Lab Requests', url: route('lab.index'), icon: 'fas fa-flask', permission: 'manage-lab' },
         { id: 'prescriptions', text: 'Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription', permissionAny: P.rx },
+        { id: 'block-outs', text: 'Block-Out Dates', url: '/doctor-block-outs', icon: 'fas fa-calendar-minus', permission: 'manage-appointments' },
         { id: 'schedule', text: 'My Schedule', url: '/appointments/calendar', icon: 'fas fa-clock', permission: 'manage-appointments' },
     ],
     nurse: [

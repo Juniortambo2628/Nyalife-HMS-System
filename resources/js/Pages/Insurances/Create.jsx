@@ -137,8 +137,7 @@ export default function Create() {
             </div>
 
             <style>{`
-                .extra-small { font-size: 0.75rem; }
-                .bg-primary-gradient {
+    .bg-primary-gradient {
                     background: linear-gradient(135deg, #e91e63 0%, #ff4081 100%);
                 }
                 .form-control:focus, .input-group-text:focus {

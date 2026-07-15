@@ -228,8 +228,7 @@ export default function PublicIndex({ blogs = { data: [], links: [] }, filters =
             </div>
 
             <style>{`
-                .extra-small { font-size: 0.75rem; }
-                .lead-sm { font-size: 0.95rem; line-height: 1.6; }
+    .lead-sm { font-size: 0.95rem; line-height: 1.6; }
                 .hover-lift:hover { transform: translateY(-5px); transition: transform 0.3s ease; }
             `}</style>
         </div>

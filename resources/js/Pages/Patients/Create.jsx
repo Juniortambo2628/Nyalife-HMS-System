@@ -306,8 +306,7 @@ export default function Create({ auth }) {
             </div>
             
             <style>{`
-                .extra-small { font-size: 0.7rem; }
-                .fw-extrabold { font-weight: 800; }
+    .fw-extrabold { font-weight: 800; }
                 .tracking-widest { letter-spacing: 0.1em; }
                 .bg-gradient-primary-to-secondary {
                     background: linear-gradient(135deg, #e91e63 0%, #d81b60 100%);

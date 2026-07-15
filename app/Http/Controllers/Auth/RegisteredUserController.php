@@ -80,7 +80,7 @@ class RegisteredUserController extends Controller
                 'gender' => $input['gender'] ?? null,
                 'date_of_birth' => $input['date_of_birth'] ?? null,
                 'password' => $input['password'],
-                'role_id' => 1, // Default to patient
+                'role_id' => \App\Models\Role::idFromName('patient'),
                 'status' => 'active',
                 'is_active' => true,
             ]);
@@ -91,7 +91,7 @@ class RegisteredUserController extends Controller
             // Create Patient record if missing
             \App\Models\Patient::firstOrCreate(
                 ['user_id' => $user->user_id],
-                ['patient_number' => 'NYA' . date('Y') . str_pad($user->user_id, 4, '0', STR_PAD_LEFT)]
+                ['patient_number' => \App\Models\Patient::generateNumber($user->user_id)]
             );
         }
 

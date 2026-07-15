@@ -1,10 +1,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import useSelectionState from '@/Hooks/useSelectionState';
+import useViewToggle from '@/Hooks/useViewToggle';
+import useBulkAction from '@/Hooks/useBulkAction';
 import InfoModal from '@/Components/InfoModal';
 import ViewToggle from '@/Components/ViewToggle';
 import DashboardSearch from '@/Components/DashboardSearch';
-import DashboardTable from '@/Components/DashboardTable';
+import PaginationFooter from '@/Components/PaginationFooter';
 import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import StatusBadge from '@/Components/StatusBadge';
 import TableActions from '@/Components/TableActions';
@@ -12,12 +15,18 @@ import { RefBadge, TableCellStack, TableDateTimeCell, TableDoctorCell } from '@/
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import GridCardActions from '@/Components/GridCardActions';
 import { PatientIdLabel } from '@/Components/PatientTableCell';
+import { calculateAge as calculateAgeUtil } from '@/Utils/dateUtils';
 import StatCardGrid from '@/Components/StatCardGrid';
 
 export default function Index({ appointments, filters, auth, stats }) {
-    const [view, setView] = useState(() => localStorage.getItem('appointments_view') || 'list');
+    const { viewMode, handleViewChange } = useViewToggle({ storageKey: 'appointments_view', defaultView: 'list' });
     const [search, setSearch] = useState(filters.search || '');
-    const [selectedIds, setSelectedIds] = useState([]);
+    const { selectedIds, setSelectedIds, toggleSelection, isSelected } = useSelectionState({ idField: 'appointment_id' });
+    const { handleBulkAction } = useBulkAction({
+        routeName: 'appointments.bulk-action',
+        selectedIds,
+        clearSelection: () => setSelectedIds([]),
+    });
 
     const statItems = useMemo(() => [
         {
@@ -46,11 +55,6 @@ export default function Index({ appointments, filters, auth, stats }) {
         },
     ], [stats]);
 
-    useEffect(() => {
-        const handleClear = () => setSelectedIds([]);
-        window.addEventListener('toolbar-clear-selection', handleClear);
-        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
-    }, []);
     const [filterData, setFilterData] = useState({
         status: filters.status || '',
         date: filters.date || '',
@@ -59,37 +63,13 @@ export default function Index({ appointments, filters, auth, stats }) {
         quick_filter: filters.quick_filter || '',
     });
 
-    const calculateAge = (dob) => {
-        if (!dob) return null;
-        const birthDate = new Date(dob);
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-        return age;
-    };
+    const calculateAge = (dob) => calculateAgeUtil(dob);
 
 
     const [modalConfig, setModalConfig] = useState({
         show: false,
         appointment: null,
     });
-
-    const handleViewChange = (newView) => {
-        setView(newView);
-        localStorage.setItem('appointments_view', newView);
-    };
-
-    const handleBulkAction = (action) => {
-        router.post(route('appointments.bulk-action'), {
-            action: action,
-            ids: selectedIds
-        }, {
-            onSuccess: () => setSelectedIds([]),
-        });
-    };
 
     const handleAsyncChange = (name, val) => {
         const newData = { ...filterData, [name]: val };
@@ -108,20 +88,6 @@ export default function Index({ appointments, filters, auth, stats }) {
             preserveState: true,
             replace: true,
         });
-    };
-
-    const handleSelectAll = (e) => {
-        if (e.target.checked) {
-            setSelectedIds(appointments.data.map(a => a.appointment_id));
-        } else {
-            setSelectedIds([]);
-        }
-    };
-
-    const toggleSelection = (id) => {
-        setSelectedIds(prev => 
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-        );
     };
 
     const columns = useMemo(() => [
@@ -367,7 +333,7 @@ export default function Index({ appointments, filters, auth, stats }) {
 
 
             <UnifiedToolbar 
-                viewMode={view}
+                viewMode={viewMode}
                 onViewModeChange={handleViewChange}
                 filterGroups={[
                     {
@@ -447,7 +413,7 @@ export default function Index({ appointments, filters, auth, stats }) {
                 />
 
                 {/* View Content */}
-                {view === 'list' ? (
+                {viewMode === 'list' ? (
                     <RegistryTablePanel
                         title="Appointment registry"
                         icon="fa-calendar-check"
@@ -466,13 +432,13 @@ export default function Index({ appointments, filters, auth, stats }) {
                             <>
                                 {appointments.data.map((apt) => (
                                     <div key={apt.appointment_id} className="col-md-6 col-lg-4">
-                                        <div className={`card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-shadow-lg transition-all duration-300 bg-white ${selectedIds.includes(apt.appointment_id) ? 'ring-2 ring-primary ring-opacity-50' : ''}`}>
+                                        <div className={`card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-shadow-lg transition-all duration-300 bg-white ${isSelected(apt.appointment_id) ? 'ring-2 ring-primary ring-opacity-50' : ''}`}>
                                             <div className="card-body p-4 position-relative">
                                                 <div className="form-check position-absolute top-0 end-0 m-4 d-flex justify-content-center align-items-center p-0">
                                                     <input 
                                                         type="checkbox" 
                                                         className="form-check-input shadow-none cursor-pointer nyl-checkbox m-0" 
-                                                        checked={selectedIds.includes(apt.appointment_id)}
+                                                        checked={isSelected(apt.appointment_id)}
                                                         onChange={() => toggleSelection(apt.appointment_id)}
                                                     />
                                                 </div>
@@ -529,12 +495,7 @@ export default function Index({ appointments, filters, auth, stats }) {
                                 
                                 {/* Unified Pagination for Grid View */}
                                 <div className="col-12 mt-4">
-                                    <DashboardTable 
-                                        data={[]} 
-                                        columns={[]} 
-                                        pagination={appointments}
-                                        className="bg-transparent shadow-none"
-                                    />
+                                    <PaginationFooter pagination={appointments} />
                                 </div>
                             </>
                         ) : (
@@ -558,8 +519,7 @@ export default function Index({ appointments, filters, auth, stats }) {
             />
             
             <style>{`
-                .extra-small { font-size: 0.7rem; }
-                .fw-extrabold { font-weight: 800; }
+    .fw-extrabold { font-weight: 800; }
                 .tracking-tight { letter-spacing: -0.025em; }
                 .line-clamp-2 {
                     display: -webkit-box;

@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
-import DashboardTable from '@/Components/DashboardTable';
+import PaginationFooter from '@/Components/PaginationFooter';
 import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import TableActions from '@/Components/TableActions';
@@ -10,13 +10,15 @@ import StatusBadge from '@/Components/StatusBadge';
 import { TableCellPrimary, TableCellStack } from '@/Components/TableCells';
 import { formatNumber } from '@/Utils/formatUtils';
 import StatCardGrid from '@/Components/StatCardGrid';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import useSelectionState from '@/Hooks/useSelectionState';
+import useViewToggle from '@/Hooks/useViewToggle';
 
 export default function TestsCatalog({ tests, auth, filters, categories, stats }) {
     const [search, setSearch] = useState(filters.search || '');
     const [quickFilter, setQuickFilter] = useState(filters.category || '');
-    const [viewMode, setViewMode] = useState(() => localStorage.getItem('lab_tests_view') || 'list'); 
-    const [selectedTests, setSelectedTests] = useState([]);
+    const { viewMode, handleViewChange } = useViewToggle({ storageKey: 'lab_tests_view', defaultView: 'list' });
+    const { selectedIds: selectedTests, selectAll, selectNone, toggleSelection, isSelected } = useSelectionState({ idField: 'test_type_id' });
 
     const statItems = useMemo(() => [
         {
@@ -39,31 +41,11 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
         },
     ], [stats]);
 
-    useEffect(() => {
-        const handleClear = () => setSelectedTests([]);
-        window.addEventListener('toolbar-clear-selection', handleClear);
-        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
-    }, []);
-
     const isAdmin = auth.user.role === 'admin' || auth.user.role === 'lab_technician';
 
     const handleSort = (column) => {
         const direction = filters.sort === column && filters.direction === 'asc' ? 'desc' : 'asc';
         router.get(route('lab.tests'), { ...filters, sort: column, direction }, { preserveState: true, preserveScroll: true });
-    };
-
-    const handleSelectAll = (e) => {
-        if (e.target.checked) {
-            setSelectedTests(tests.data.map(t => t.test_type_id));
-        } else {
-            setSelectedTests([]);
-        }
-    };
-
-    const handleSelectOne = (id) => {
-        setSelectedTests(prev => 
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-        );
     };
 
     const handleToggleStatus = (id) => {
@@ -72,11 +54,6 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
                 preserveScroll: true
             });
         }
-    };
-
-    const handleViewChange = (newView) => {
-        setViewMode(newView);
-        localStorage.setItem('lab_tests_view', newView);
     };
 
     const handleCategoryChange = (val) => {
@@ -90,21 +67,21 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
                 id: 'select',
                 header: () => (
                     <div className="form-check ms-1">
-                        <input 
-                            type="checkbox" 
-                            className="form-check-input shadow-none" 
-                            onChange={handleSelectAll}
+                        <input
+                            type="checkbox"
+                            className="form-check-input shadow-none"
+                            onChange={(e) => e.target.checked ? selectAll(tests.data) : selectNone()}
                             checked={selectedTests.length === tests.data.length && tests.data.length > 0}
                         />
                     </div>
                 ),
                 cell: ({ row }) => (
                     <div className="form-check ms-1">
-                        <input 
-                            type="checkbox" 
-                            className="form-check-input shadow-none" 
-                            checked={selectedTests.includes(row.original.test_type_id)}
-                            onChange={() => handleSelectOne(row.original.test_type_id)}
+                        <input
+                            type="checkbox"
+                            className="form-check-input shadow-none"
+                            checked={isSelected(row.original.test_type_id)}
+                            onChange={() => toggleSelection(row.original.test_type_id)}
                         />
                     </div>
                 )
@@ -259,14 +236,14 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
                             <>
                                 {tests.data.map((test) => (
                                     <div key={test.test_type_id} className="col-md-6 col-lg-4">
-                                        <div className={`card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-lift transition-all bg-white shadow-hover ${selectedTests.includes(test.test_type_id) ? 'ring-2 ring-primary ring-opacity-50' : ''}`}>
+                                        <div className={`card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-lift transition-all bg-white shadow-hover ${isSelected(test.test_type_id) ? 'ring-2 ring-primary ring-opacity-50' : ''}`}>
                                             <div className="card-body p-4 position-relative">
                                                 <div className="form-check position-absolute top-0 end-0 m-4">
-                                                    <input 
-                                                        type="checkbox" 
-                                                        className="form-check-input shadow-none border-gray-300" 
-                                                        checked={selectedTests.includes(test.test_type_id)}
-                                                        onChange={() => handleSelectOne(test.test_type_id)}
+                                                    <input
+                                                        type="checkbox"
+                                                        className="form-check-input shadow-none border-gray-300"
+                                                        checked={isSelected(test.test_type_id)}
+                                                        onChange={() => toggleSelection(test.test_type_id)}
                                                     />
                                                 </div>
                                                 <div className="d-flex align-items-center mb-4">
@@ -297,12 +274,7 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
                                 
                                 {/* Pagination for Grid View */}
                                 <div className="col-12 mt-4">
-                                    <DashboardTable 
-                                        data={[]} 
-                                        columns={[]} 
-                                        pagination={tests}
-                                        className="bg-transparent shadow-none"
-                                    />
+                                    <PaginationFooter pagination={tests} />
                                 </div>
                             </>
                         ) : (
@@ -318,8 +290,7 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
             </div>
             
             <style>{`
-                .extra-small { font-size: 0.7rem; }
-                .hover-lift:hover { transform: translateY(-5px); }
+    .hover-lift:hover { transform: translateY(-5px); }
                 .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); }
                 .ring-primary { --tw-ring-color: #e91e63; }
                 .ring-2 { box-shadow: 0 0 0 2px var(--tw-ring-color); }

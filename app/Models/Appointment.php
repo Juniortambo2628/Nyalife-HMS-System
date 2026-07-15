@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use App\Traits\HasStatusScope;
 
 class Appointment extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasStatusScope;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -85,13 +86,5 @@ class Appointment extends Model
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
-    }
-
-    public function scopeStatus($query, $status)
-    {
-        if (empty($status)) {
-            return $query;
-        }
-        return $query->where('status', $status);
     }
 }

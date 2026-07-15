@@ -1,0 +1,39 @@
+﻿
+> build
+> vite build
+
+[36mvite v7.3.6 [32mbuilding client environment for production...[36m[39m
+transforming...
+node.exe : 
+At line:1 char:1
++ & "C:\nodejs/node.exe" "C:\nodejs/node_modules/npm/bin/npm-cli.js" ru ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+/assets/webfonts/fa-brands-400.woff2 referenced in /assets/webfonts/fa-brands-400.woff2 didn't resolve at build time, 
+it will remain unchanged to be resolved at runtime
+
+/assets/webfonts/fa-regular-400.woff2 referenced in /assets/webfonts/fa-regular-400.woff2 didn't resolve at build 
+time, it will remain unchanged to be resolved at runtime
+
+/assets/webfonts/fa-solid-900.woff2 referenced in /assets/webfonts/fa-solid-900.woff2 didn't resolve at build time, it 
+will remain unchanged to be resolved at runtime
+
+/assets/webfonts/fa-v4compatibility.woff2 referenced in /assets/webfonts/fa-v4compatibility.woff2 didn't resolve at 
+build time, it will remain unchanged to be resolved at runtime
+
+/assets/img/hero/Obstetrics-care.jpg referenced in /assets/img/hero/Obstetrics-care.jpg didn't resolve at build time, 
+it will remain unchanged to be resolved at runtime
+
+/assets/img/hero/Gynecology-services.jpg referenced in /assets/img/hero/Gynecology-services.jpg didn't resolve at 
+build time, it will remain unchanged to be resolved at runtime
+
+/assets/img/hero/Laboratory-services.JPG referenced in /assets/img/hero/Laboratory-services.JPG didn't resolve at 
+build time, it will remain unchanged to be resolved at runtime
+
+/assets/img/hero/Pharmacy.jpg referenced in /assets/img/hero/Pharmacy.jpg didn't resolve at build time, it will remain 
+unchanged to be resolved at runtime
+
+/assets/img/gallery/Obstetrics-care.jpg referenced in /assets/img/gallery/Obstetrics-care.jpg didn't resolve at build 
+time, it will remain unchanged to be resolved at runtime

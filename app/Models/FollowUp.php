@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Traits\HasStatusScope;
 
 class FollowUp extends Model
 {
+    use HasFactory, HasStatusScope;
     protected $table = 'follow_ups';
 
     protected $primaryKey = 'follow_up_id';
@@ -73,15 +76,6 @@ class FollowUp extends Model
                         ->orWhere('last_name', 'like', "%{$search}%");
                 });
         });
-    }
-
-    public function scopeStatus(Builder $query, ?string $status): Builder
-    {
-        if (empty($status)) {
-            return $query;
-        }
-
-        return $query->where('status', $status);
     }
 
     public function scopeType(Builder $query, ?string $type): Builder

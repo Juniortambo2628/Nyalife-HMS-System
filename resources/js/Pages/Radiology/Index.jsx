@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
 import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import StatusBadge from '@/Components/StatusBadge';
@@ -8,28 +8,20 @@ import PriorityBadge from '@/Components/PriorityBadge';
 import TableActions from '@/Components/TableActions';
 import { RefBadge, TableCellPrimary, TableCellSub } from '@/Components/TableCells';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
-import { useState, useMemo, useEffect } from 'react';
+import useSelectionState from '@/Hooks/useSelectionState';
+import useBulkAction from '@/Hooks/useBulkAction';
+import { useState, useMemo } from 'react';
 
 export default function RadiologyRequestsIndex({ requests, filters, auth }) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const [quickFilter, setQuickFilter] = useState(filters.quick_filter || '');
-    const [selectedIds, setSelectedIds] = useState([]);
-
-    useEffect(() => {
-        const handleClear = () => setSelectedIds([]);
-        window.addEventListener('toolbar-clear-selection', handleClear);
-        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
-    }, []);
-
-    const handleBulkAction = (action) => {
-        router.post(route('radiology.bulk-action'), {
-            action: action,
-            ids: selectedIds
-        }, {
-            onSuccess: () => setSelectedIds([]),
-        });
-    };
+    const { selectedIds, setSelectedIds } = useSelectionState({ idField: 'request_id' });
+    const { handleBulkAction } = useBulkAction({
+        routeName: 'radiology.bulk-action',
+        selectedIds,
+        clearSelection: () => setSelectedIds([]),
+    });
 
     const applyFilters = (searchValue, statusValue = status, quickFilterValue = quickFilter) => {
         router.get(route('radiology.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {

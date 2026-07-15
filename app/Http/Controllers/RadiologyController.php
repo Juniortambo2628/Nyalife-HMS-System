@@ -11,9 +11,11 @@ use Inertia\Inertia;
 use App\Services\ActivityLogger;
 use App\Support\PatientId;
 use App\Support\Permissions;
+use App\Traits\HasBulkActions;
 
 class RadiologyController extends Controller
 {
+    use HasBulkActions;
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -254,70 +256,33 @@ class RadiologyController extends Controller
     /**
      * Handle bulk actions on radiology requests.
      */
-    public function bulkAction(Request $request)
+    protected function bulkActionMap(): array
     {
-        $validated = $request->validate([
-            'action' => 'required|string|in:complete,cancel,delete',
-            'ids'    => 'required|array|min:1',
-            'ids.*'  => 'integer',
-        ]);
-
-        $ids    = $validated['ids'];
-        $action = $validated['action'];
-        $count  = count($ids);
-
-        switch ($action) {
-            case 'complete':
-                $radRequests = RadiologyRequest::whereIn('request_id', $ids)->get();
-                $updatedCount = 0;
-                foreach ($radRequests as $radReq) {
-                    if ($radReq->status !== 'completed' && $radReq->status !== 'cancelled') {
-                        $radReq->update([
-                            'status' => 'completed',
-                            'completed_at' => now(),
-                            'assigned_to' => Auth::id(),
-                        ]);
-                        ActivityLogger::log(
-                            'radiology',
-                            "Radiology request #{$radReq->request_id} bulk completed",
-                            ['request_id' => $radReq->request_id, 'status' => 'completed'],
-                            Auth::user(),
-                            $radReq,
-                            [$radReq->requested_by, $radReq->patient->user_id, 1]
-                        );
-                        $updatedCount++;
-                    }
-                }
-                return redirect()->back()->with('success', "{$updatedCount} radiology request(s) completed.");
-
-            case 'cancel':
-                $radRequests = RadiologyRequest::whereIn('request_id', $ids)->get();
-                $updatedCount = 0;
-                foreach ($radRequests as $radReq) {
-                    if ($radReq->status !== 'completed' && $radReq->status !== 'cancelled') {
-                        $radReq->update([
-                            'status' => 'cancelled',
-                        ]);
-                        ActivityLogger::log(
-                            'radiology',
-                            "Radiology request #{$radReq->request_id} bulk cancelled",
-                            ['request_id' => $radReq->request_id, 'status' => 'cancelled'],
-                            Auth::user(),
-                            $radReq,
-                            [$radReq->requested_by, $radReq->patient->user_id, 1]
-                        );
-                        $updatedCount++;
-                    }
-                }
-                return redirect()->back()->with('success', "{$updatedCount} radiology request(s) cancelled.");
-
-            case 'delete':
-                $deletedCount = RadiologyRequest::whereIn('request_id', $ids)
-                    ->where('status', '!=', 'completed')
-                    ->delete();
-                return redirect()->back()->with('success', "{$deletedCount} radiology request(s) deleted.");
-        }
-
-        return redirect()->back()->with('error', 'Unknown bulk action.');
+        return [
+            'complete' => function (array $ids, int $count) {
+                $updated = $this->bulkProcessWithLog(
+                    RadiologyRequest::class, 'request_id', $ids,
+                    fn ($item) => ! in_array($item->status, ['completed', 'cancelled']),
+                    fn ($item) => ['status' => 'completed', 'completed_at' => now(), 'assigned_to' => Auth::id()],
+                    'radiology', 'Radiology request',
+                    fn ($item) => [$item->requested_by, $item->patient->user_id, 1]
+                );
+                return redirect()->back()->with('success', "{$updated} radiology request(s) completed.");
+            },
+            'cancel' => function (array $ids, int $count) {
+                $updated = $this->bulkProcessWithLog(
+                    RadiologyRequest::class, 'request_id', $ids,
+                    fn ($item) => ! in_array($item->status, ['completed', 'cancelled']),
+                    fn ($item) => ['status' => 'cancelled'],
+                    'radiology', 'Radiology request',
+                    fn ($item) => [$item->requested_by, $item->patient->user_id, 1]
+                );
+                return redirect()->back()->with('success', "{$updated} radiology request(s) cancelled.");
+            },
+            'delete' => function (array $ids, int $count) {
+                $deleted = $this->bulkDelete(RadiologyRequest::class, 'request_id', $ids, 'status', 'completed');
+                return redirect()->back()->with('success', "{$deleted} radiology request(s) deleted.");
+            },
+        ];
     }
 }

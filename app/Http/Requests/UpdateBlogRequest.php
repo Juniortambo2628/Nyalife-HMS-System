@@ -2,23 +2,10 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class UpdateBlogRequest extends FormRequest
+class UpdateBlogRequest extends StoreBlogRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     public function rules(): array
     {
-        return [
-            'title' => 'required|string|max:255',
-            'content' => 'required',
-            'excerpt' => 'nullable|string',
-            'tags' => 'nullable|array',
-            'image' => 'nullable|image|max:2048',
-        ];
+        return array_map(fn ($rule) => str_replace('required', 'sometimes', $rule), parent::rules());
     }
 }

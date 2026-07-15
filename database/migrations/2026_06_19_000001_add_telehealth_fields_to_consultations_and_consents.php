@@ -25,13 +25,16 @@ return new class extends Migration
             if (!Schema::hasColumn('telehealth_consents', 'appointment_id')) {
                 $type = 'unsignedBigInteger';
                 if (Schema::hasTable('appointments')) {
-                    $col = collect(DB::select("SHOW COLUMNS FROM appointments WHERE Field = 'appointment_id'"))->first();
-                    if ($col) {
-                        $colType = strtolower($col->Type);
-                        if (str_contains($colType, 'bigint')) {
-                            $type = 'unsignedBigInteger';
-                        } elseif (str_contains($colType, 'int')) {
-                            $type = 'unsignedInteger';
+                    // Skip for SQLite (testing)
+                    if (DB::getDriverName() !== 'sqlite') {
+                        $col = collect(DB::select("SHOW COLUMNS FROM appointments WHERE Field = 'appointment_id'"))->first();
+                        if ($col) {
+                            $colType = strtolower($col->Type);
+                            if (str_contains($colType, 'bigint')) {
+                                $type = 'unsignedBigInteger';
+                            } elseif (str_contains($colType, 'int')) {
+                                $type = 'unsignedInteger';
+                            }
                         }
                     }
                 }

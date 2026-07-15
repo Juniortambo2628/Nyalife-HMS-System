@@ -11,9 +11,11 @@ use App\Support\Permissions;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/appointments/available-slots', [AppointmentSlotController::class, 'index'])
+    ->middleware('throttle:30,1')
     ->name('api.appointments.available-slots');
 
 Route::get('/insurances', [InsuranceController::class, 'publicList'])
+    ->middleware('throttle:30,1')
     ->name('api.insurances.list');
 
 Route::middleware(['auth:sanctum'])->group(function () {

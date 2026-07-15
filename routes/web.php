@@ -27,7 +27,7 @@ Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleController::class, 
 Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
 Route::get('/auth/google/complete-profile', [\App\Http\Controllers\Auth\GoogleController::class, 'completeProfileView'])->name('auth.google.complete-profile');
-Route::post('/auth/google/complete-profile', [\App\Http\Controllers\Auth\GoogleController::class, 'storeProfile'])->name('auth.google.store-profile');
+Route::post('/auth/google/complete-profile', [\App\Http\Controllers\Auth\GoogleController::class, 'storeProfile'])->middleware('throttle:5,1')->name('auth.google.store-profile');
 
 // Legal Policies
 Route::get('/privacy-policy', function () {
@@ -42,26 +42,21 @@ Route::get('/terms-of-service', function () {
     return Inertia::render('TermsOfService');
 })->name('terms-of-service');
 
-Route::post('/contact', [App\Http\Controllers\ContactMessageController::class, 'store'])->name('contact.store');
-Route::post('/guest-appointment', [App\Http\Controllers\AppointmentController::class, 'storeGuest'])->name('appointments.guest.store');
+Route::post('/contact', [App\Http\Controllers\ContactMessageController::class, 'store'])->middleware('throttle:10,1')->name('contact.store');
+Route::post('/guest-appointment', [App\Http\Controllers\AppointmentController::class, 'storeGuest'])->middleware('throttle:5,1')->name('appointments.guest.store');
 Route::get('/guest-appointments/confirmation', [App\Http\Controllers\AppointmentController::class, 'guestConfirmation'])->name('guest-appointments.confirmation');
-Route::post('/newsletter/subscribe', [App\Http\Controllers\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
-Route::post('/check-guest-data', [App\Http\Controllers\CheckGuestDataController::class, 'check'])->name('guest.check');
+Route::post('/newsletter/subscribe', [App\Http\Controllers\NewsletterController::class, 'subscribe'])->middleware('throttle:5,1')->name('newsletter.subscribe');
+Route::post('/check-guest-data', [App\Http\Controllers\CheckGuestDataController::class, 'check'])->middleware('throttle:10,1')->name('guest.check');
 
 // Telehealth
 Route::get('/telehealth', [App\Http\Controllers\TelehealthController::class, 'index'])->name('telehealth.index');
-Route::post('/telehealth/consent', [App\Http\Controllers\TelehealthController::class, 'store'])->name('telehealth.store');
-Route::get('/telehealth/meeting/{meetingId}', [App\Http\Controllers\TelehealthController::class, 'meetingRoom'])->name('telehealth.meeting');
+Route::post('/telehealth/consent', [App\Http\Controllers\TelehealthController::class, 'store'])->middleware('throttle:5,1')->name('telehealth.store');
+Route::get('/telehealth/meeting/{meetingId}', [App\Http\Controllers\TelehealthController::class, 'meetingRoom'])->middleware('auth')->name('telehealth.meeting');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/{role}', [DashboardController::class, 'index'])->name('dashboard.role');
-    
-    // Emergency Triage
-    Route::middleware('permission:' . Permissions::MANAGE_CONSULTATIONS)->group(function () {
-        Route::get('/emergency-triage', [\App\Http\Controllers\EmergencyTriageController::class, 'create'])->name('emergency-triage.create');
-    });
     
     // Appointments (staff or patient portal)
     Route::middleware('role_or_permission:' . Permissions::staffOrPatient(Permissions::MANAGE_APPOINTMENTS))->group(function () {
@@ -76,7 +71,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::match(['put', 'patch'], '/appointments/{id}', [\App\Http\Controllers\AppointmentController::class, 'update'])->name('appointments.update');
         Route::delete('/appointments/{id}', [\App\Http\Controllers\AppointmentController::class, 'destroy'])->name('appointments.destroy');
         Route::post('/appointments/{id}/check-in', [\App\Http\Controllers\AppointmentController::class, 'checkIn'])->name('appointments.check-in');
+        Route::post('/appointments/{id}/confirm-telehealth-payment', [\App\Http\Controllers\AppointmentController::class, 'confirmTelehealthPayment'])->name('appointments.confirm-telehealth-payment');
         Route::get('/doctors/search', [\App\Http\Controllers\AppointmentController::class, 'searchDoctorsAjax'])->name('doctors.search');
+        Route::get('/doctor-block-outs', [\App\Http\Controllers\DoctorBlockOutController::class, 'index'])->name('doctor-block-outs.index');
+        Route::post('/doctor-block-outs', [\App\Http\Controllers\DoctorBlockOutController::class, 'store'])->name('doctor-block-outs.store');
+        Route::delete('/doctor-block-outs/{id}', [\App\Http\Controllers\DoctorBlockOutController::class, 'destroy'])->name('doctor-block-outs.destroy');
+        Route::post('/doctor-block-outs/bulk-delete', [\App\Http\Controllers\DoctorBlockOutController::class, 'bulkDelete'])->name('doctor-block-outs.bulk-delete');
     });
     
     // Patients (staff only)
@@ -94,7 +94,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/patients/{id}', [\App\Http\Controllers\PatientController::class, 'update'])->name('patients.update');
         Route::get('/patients/{id}/edit', [\App\Http\Controllers\PatientController::class, 'edit'])->name('patients.edit');
     });
-    Route::get('/medications/search', [\App\Http\Controllers\PharmacyController::class, 'searchAjax'])->name('medications.search');
+    Route::middleware('permission:' . Permissions::MANAGE_PHARMACY)->group(function () {
+        Route::get('/medications/search', [\App\Http\Controllers\PharmacyController::class, 'searchAjax'])->name('medications.search');
+    });
     
     // Consultations
     Route::middleware('permission:' . Permissions::MANAGE_CONSULTATIONS)->group(function () {

@@ -78,7 +78,6 @@ export default function Record({ preselected_patient_id, preselected_patient_lab
                             title="Patient Identification" 
                             icon="fas fa-id-card"
                             headerClassName="bg-gradient-primary-to-secondary text-white p-4"
-                            className="nyl-patient-id-card"
                         >
                             <div className="row g-3">
                                 <FormField 
@@ -86,6 +85,7 @@ export default function Record({ preselected_patient_id, preselected_patient_lab
                                     required 
                                     error={errors.patient_id} 
                                     className="col-12"
+                                    labelClassName="extra-small fw-extrabold text-muted text-uppercase tracking-widest mb-2"
                                 >
                                     <DashboardSelect 
                                         asyncUrl="/patients/search"
@@ -263,8 +263,7 @@ export default function Record({ preselected_patient_id, preselected_patient_lab
             />
             
             <style>{`
-                .extra-small { font-size: 0.7rem; }
-                .fw-extrabold { font-weight: 800; }
+    .fw-extrabold { font-weight: 800; }
                 .tracking-widest { letter-spacing: 0.1em; }
                 .bg-gradient-primary-to-secondary {
                     background: linear-gradient(135deg, #e91e63 0%, #d81b60 100%);

@@ -6,12 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-
 use Illuminate\Database\Eloquent\Builder;
+use App\Traits\HasVoidFields;
+use App\Traits\HasStatusScope;
 
 class Invoice extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasVoidFields, HasStatusScope;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -54,21 +55,7 @@ class Invoice extends Model
         'tax' => 'decimal:2',
         'insurance_coverage' => 'decimal:2',
         'patient_responsibility' => 'decimal:2',
-        'voided_at' => 'datetime',
-        'is_voided' => 'boolean',
     ];
-
-    protected static function booted()
-    {
-        static::addGlobalScope('not_voided', function (Builder $builder) {
-            $builder->where('is_voided', false);
-        });
-    }
-
-    public function voidedBy()
-    {
-        return $this->belongsTo(User::class, 'voided_by', 'user_id');
-    }
 
     public function patient()
     {
@@ -101,13 +88,5 @@ class Invoice extends Model
                     ->orWhere('last_name', 'like', "%{$search}%");
             })->orWhere('invoice_number', 'like', "%{$search}%");
         });
-    }
-
-    public function scopeStatus(Builder $query, ?string $status): Builder
-    {
-        if (empty($status)) {
-            return $query;
-        }
-        return $query->where('status', $status);
     }
 }

@@ -62,6 +62,14 @@ export default function Show({ appointment, auth }) {
         }
     };
 
+    const confirmTelehealthPayment = () => {
+        if (confirm('Confirm payment received? This will generate the meeting link and send it to the patient.')) {
+            router.post(route('appointments.confirm-telehealth-payment', appointment.appointment_id), {}, {
+                preserveScroll: true,
+            });
+        }
+    };
+
     const statItems = [
         {
             label: 'Visit date',
@@ -330,11 +338,15 @@ export default function Show({ appointment, auth }) {
                                 </div>
                                 {appointment.appointment_type === 'telehealth' && (
                                     <div className="col-12 mt-3">
-                                        <div className="alert alert-info d-flex align-items-center gap-3 rounded-4 py-3 px-4 mb-0">
+                                        <div className={`alert d-flex align-items-center gap-3 rounded-4 py-3 px-4 mb-0 ${appointment.status === 'confirmed' ? 'alert-success' : 'alert-info'}`}>
                                             <i className="fas fa-video fa-lg"></i>
                                             <div>
                                                 <strong className="d-block">Telehealth Appointment</strong>
-                                                <span className="small">A Jitsi meeting link was generated for this visit. The link is stored in the appointment notes above. Share it with the patient before the scheduled time.</span>
+                                                {appointment.status === 'confirmed' ? (
+                                                    <span className="small">Payment confirmed. Meeting link has been sent to the patient.</span>
+                                                ) : (
+                                                    <span className="small">Waiting for payment confirmation. Once payment is received (KES 4,000 via Till 9344367), click "CONFIRM PAYMENT" to generate and send the meeting link.</span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -425,6 +437,14 @@ export default function Show({ appointment, auth }) {
                             patient_id: appointment.patient_id,
                             appointment_id: appointment.appointment_id,
                         }),
+                    },
+                    ['admin', 'receptionist'].includes(auth.user.role) &&
+                        appointment.appointment_type === 'telehealth' &&
+                        !['completed', 'cancelled', 'confirmed'].includes(appointment.status) && {
+                        label: 'CONFIRM PAYMENT',
+                        icon: 'fa-credit-card',
+                        onClick: confirmTelehealthPayment,
+                        color: 'success',
                     },
                     ['admin', 'doctor'].includes(auth.user.role) && {
                         label: 'NEW PRESCRIPTION',

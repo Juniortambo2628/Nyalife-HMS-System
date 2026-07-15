@@ -12,4 +12,19 @@ class Setting extends Model
         'type',
         'group',
         'label'
-    ];}
+    ];
+
+    public static function clinicContactSettings(): \Illuminate\Support\Collection
+    {
+        return static::whereIn('key', [
+            'contact_address', 'contact_email', 'contact_phone',
+        ])->pluck('value', 'key');
+    }
+
+    public static function clinicInvoiceSettings(): \Illuminate\Support\Collection
+    {
+        return static::whereIn('key', [
+            'contact_address', 'contact_email', 'contact_phone', 'tax_rate',
+        ])->pluck('value', 'key');
+    }
+}

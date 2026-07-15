@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { useState } from 'react';
+import useViewToggle from '@/Hooks/useViewToggle';
 import DashboardTable from '@/Components/DashboardTable';
 import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
@@ -13,7 +13,7 @@ import { TableCellPrimary, TableCellStack } from '@/Components/TableCells';
 import { resolvePublicImageUrl } from '@/Utils/imageUtils';
 
 export default function Index({ blogs }) {
-    const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+    const { viewMode, handleViewChange } = useViewToggle({ defaultView: 'grid' });
 
     const handleDelete = (id) => {
         if (confirm('Are you sure you want to delete this blog post?')) {
@@ -35,7 +35,7 @@ export default function Index({ blogs }) {
 
             <UnifiedToolbar
                 viewMode={viewMode}
-                onViewModeChange={setViewMode}
+                onViewModeChange={handleViewChange}
                 actions={[
                     { label: 'NEW POST', icon: 'fa-plus', href: route('blog.create') },
                 ]}
@@ -166,7 +166,6 @@ export default function Index({ blogs }) {
             </div>
 
             <style>{`
-                .extra-small { font-size: 0.75rem; }
                 .btn-icon { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
                 .bg-soft-success { background-color: rgba(25, 135, 84, 0.1); }
                 .bg-soft-secondary { background-color: rgba(108, 117, 125, 0.1); }

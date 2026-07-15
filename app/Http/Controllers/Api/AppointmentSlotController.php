@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\DoctorBlockOut;
 use App\Models\Staff;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -26,6 +27,29 @@ class AppointmentSlotController extends Controller
             return response()->json(['data' => [], 'message' => 'No doctor available.']);
         }
 
+        // Check if doctor has a full-day block-out
+        $fullDayBlock = DoctorBlockOut::where('doctor_id', $doctorId)
+            ->where('block_date', $date)
+            ->whereNull('start_time')
+            ->whereNull('end_time')
+            ->exists();
+
+        if ($fullDayBlock) {
+            return response()->json([
+                'doctor_id' => (int) $doctorId,
+                'date' => $date,
+                'data' => [],
+                'message' => 'Doctor is not available on this date.',
+            ]);
+        }
+
+        // Get partial block-outs for the day
+        $blockOuts = DoctorBlockOut::where('doctor_id', $doctorId)
+            ->where('block_date', $date)
+            ->whereNotNull('start_time')
+            ->whereNotNull('end_time')
+            ->get();
+
         $booked = Appointment::where('doctor_id', $doctorId)
             ->whereDate('appointment_date', $date)
             ->whereNotIn('status', ['cancelled', 'no_show'])
@@ -39,7 +63,20 @@ class AppointmentSlotController extends Controller
 
         while ($cursor <= $end) {
             $label = $cursor->format('H:i');
-            if (! in_array($label, $booked, true)) {
+            $slotTime = $cursor->copy();
+
+            // Check if slot falls within any block-out period
+            $isBlocked = false;
+            foreach ($blockOuts as $block) {
+                $blockStart = Carbon::parse($date . ' ' . $block->start_time);
+                $blockEnd = Carbon::parse($date . ' ' . $block->end_time);
+                if ($slotTime->gte($blockStart) && $slotTime->lt($blockEnd)) {
+                    $isBlocked = true;
+                    break;
+                }
+            }
+
+            if (! in_array($label, $booked, true) && ! $isBlocked) {
                 $slots[] = [
                     'time' => $label,
                     'label' => $cursor->format('g:i A'),

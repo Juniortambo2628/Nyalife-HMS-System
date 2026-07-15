@@ -176,6 +176,15 @@ export default function Index({ messages, users, filters = {}, auth }) {
             <UnifiedToolbar
                 actions={[
                     {
+                        label: 'NEW MESSAGE',
+                        icon: 'fa-paper-plane',
+                        onClick: () => {
+                            setSelectedUser(null);
+                            if (textareaRef.current) textareaRef.current.focus();
+                        },
+                        color: 'primary',
+                    },
+                    {
                         label: showArchived ? 'VIEW INBOX' : 'VIEW ARCHIVED',
                         icon: showArchived ? 'fa-inbox' : 'fa-archive',
                         onClick: toggleArchived,

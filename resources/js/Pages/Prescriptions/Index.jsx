@@ -1,19 +1,21 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import DashboardSearch from '@/Components/DashboardSearch';
 import RegistryTablePanel from '@/Components/RegistryTablePanel';
 import StatusBadge from '@/Components/StatusBadge';
 import TableActions from '@/Components/TableActions';
-import { RefBadge, TableCellPrimary, TableCellStack, TableCellSub } from '@/Components/TableCells';
+import { RefBadge, TableCellStack, TableCellSub } from '@/Components/TableCells';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import PatientTableCell from '@/Components/PatientTableCell';
 import StatCardGrid from '@/Components/StatCardGrid';
-import { useState, useMemo, useEffect } from 'react';
+import useSelectionState from '@/Hooks/useSelectionState';
+import useBulkAction from '@/Hooks/useBulkAction';
+import { useState, useMemo } from 'react';
 
 export default function Index({ prescriptions, filters, auth, stats }) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
-    const [selectedIds, setSelectedIds] = useState([]);
+    const { selectedIds, setSelectedIds } = useSelectionState({ idField: 'prescription_id' });
 
     const statItems = useMemo(() => [
         {
@@ -42,20 +44,11 @@ export default function Index({ prescriptions, filters, auth, stats }) {
         },
     ], [stats]);
 
-    useEffect(() => {
-        const handleClear = () => setSelectedIds([]);
-        window.addEventListener('toolbar-clear-selection', handleClear);
-        return () => window.removeEventListener('toolbar-clear-selection', handleClear);
-    }, []);
-
-    const handleBulkAction = (action) => {
-        router.post(route('prescriptions.bulk-action'), {
-            action: action,
-            ids: selectedIds
-        }, {
-            onSuccess: () => setSelectedIds([]),
-        });
-    };
+    const { handleBulkAction } = useBulkAction({
+        routeName: 'prescriptions.bulk-action',
+        selectedIds,
+        clearSelection: () => setSelectedIds([]),
+    });
 
     const applyFilters = (searchValue, statusValue = status, quickFilterValue = filters?.quick_filter) => {
         router.get(route('prescriptions.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {

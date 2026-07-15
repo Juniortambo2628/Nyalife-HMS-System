@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use App\Traits\SearchByPatientName;
+use App\Traits\HasStatusScope;
 
 class RadiologyRequest extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SearchByPatientName, HasStatusScope;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -75,24 +77,5 @@ class RadiologyRequest extends Model
     public function consultation()
     {
         return $this->belongsTo(Consultation::class, 'consultation_id', 'consultation_id');
-    }
-
-    public function scopeSearchByPatientName($query, $search)
-    {
-        if (empty($search)) {
-            return $query;
-        }
-        return $query->whereHas('patient.user', function ($q) use ($search) {
-            $q->where('first_name', 'like', "%{$search}%")
-                ->orWhere('last_name', 'like', "%{$search}%");
-        });
-    }
-
-    public function scopeStatus($query, $status)
-    {
-        if (empty($status)) {
-            return $query;
-        }
-        return $query->where('status', $status);
     }
 }

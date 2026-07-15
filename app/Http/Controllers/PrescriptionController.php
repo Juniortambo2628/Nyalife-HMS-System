@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePrescriptionRequest;
+use App\Http\Requests\VoidRequest;
 use App\Http\Resources\PrescriptionResource;
 use App\Models\Prescription;
 use App\Models\Patient;
@@ -17,9 +18,11 @@ use Inertia\Inertia;
 use App\Services\ActivityLogger;
 use App\Support\PatientId;
 use App\Support\Permissions;
+use App\Traits\HasBulkActions;
 
 class PrescriptionController extends Controller
 {
+    use HasBulkActions;
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -87,97 +90,10 @@ class PrescriptionController extends Controller
 
     public function store(StorePrescriptionRequest $request)
     {
-        $validated = $request->validated();
-
-        DB::beginTransaction();
         try {
-            // 1) Create the Prescription record
-            $prescription = Prescription::create([
-                'patient_id' => $validated['patient_id'],
-                'consultation_id' => $validated['consultation_id'] ?? null,
-                'prescribed_by' => Auth::id(),
-                'prescription_date' => $validated['prescription_date'],
-                'status' => 'pending',
-                'notes' => $validated['notes'] ?? null,
-                'prescription_number' => 'RX-' . strtoupper(uniqid())
-            ]);
-
-            // 2) Create prescription items + deduct stock + collect invoice line items
-            $invoiceItems = [];
-            foreach ($validated['items'] as $item) {
-                $prescription->items()->create([
-                    'medication_id' => $item['medication_id'] ?? null,
-                    'dosage' => $item['dosage'],
-                    'frequency' => $item['frequency'],
-                    'duration' => $item['duration']
-                ]);
-
-                // If medication_id is set, deduct stock and prepare invoice line
-                if (!empty($item['medication_id'])) {
-                    $medication = Medication::find($item['medication_id']);
-                    if ($medication) {
-                        // Calculate quantity needed (duration days x frequency per day, default 1)
-                        $freqNum = $this->parseFrequencyToDaily($item['frequency'] ?? '');
-                        $durationDays = (int) ($item['duration'] ?? 1);
-                        $quantityNeeded = max(1, $freqNum * $durationDays);
-
-                        // Deduct stock (floor at zero)
-                        $deduction = min($quantityNeeded, $medication->stock_quantity);
-                        if ($deduction > 0) {
-                            $medication->decrement('stock_quantity', $deduction);
-                        }
-
-                        // Prepare invoice line item
-                        $invoiceItems[] = [
-                            'item_type' => 'medication',
-                            'item_id_ref' => $medication->medication_id,
-                            'description' => "{$medication->medication_name} ({$medication->strength} {$medication->unit})",
-                            'quantity' => $quantityNeeded,
-                            'unit_price' => $medication->price_per_unit,
-                            'total_price' => $quantityNeeded * $medication->price_per_unit,
-                        ];
-                    }
-                }
-            }
-
-            // 3) Auto-generate Invoice if there are billable items
-            if (count($invoiceItems) > 0) {
-                $totalAmount = array_sum(array_column($invoiceItems, 'total_price'));
-
-                $invoice = Invoice::create([
-                    'patient_id' => $validated['patient_id'],
-                    'consultation_id' => $validated['consultation_id'] ?? null,
-                    'invoice_number' => 'INV-' . strtoupper(uniqid()),
-                    'invoice_date' => now()->toDateString(),
-                    'due_date' => now()->addDays(30)->toDateString(),
-                    'total_amount' => $totalAmount,
-                    'status' => 'pending',
-                    'created_by' => Auth::id(),
-                    'notes' => "Auto-generated from prescription {$prescription->prescription_number}",
-                ]);
-
-                foreach ($invoiceItems as $lineItem) {
-                    InvoiceItem::create(array_merge($lineItem, [
-                        'invoice_id' => $invoice->invoice_id,
-                    ]));
-                }
-            }
-
-            DB::commit();
-
-            ActivityLogger::log(
-                'pharmacy',
-                "New prescription created for " . ($prescription->patient->user->full_name ?? 'Patient'),
-                ['prescription_id' => $prescription->prescription_id],
-                Auth::user(),
-                $prescription,
-                [$prescription->patient->user_id, 1]
-            );
-
+            \App\Services\PrescriptionService::create($request->validated());
             return redirect()->route('prescriptions.index')->with('success', 'Prescription created successfully. Invoice auto-generated.');
-
         } catch (\Exception $e) {
-            DB::rollBack();
             return back()->withErrors(['error' => 'Failed to process prescription: ' . $e->getMessage()]);
         }
     }
@@ -207,9 +123,7 @@ class PrescriptionController extends Controller
             Permissions::MANAGE_PHARMACY
         );
 
-        $settings = \App\Models\Setting::whereIn('key', [
-            'contact_address', 'contact_email', 'contact_phone',
-        ])->pluck('value', 'key');
+        $settings = \App\Models\Setting::clinicContactSettings();
 
         return Inertia::render('Prescriptions/Print', [
             'prescription' => PrescriptionResource::make($prescription),
@@ -225,23 +139,7 @@ class PrescriptionController extends Controller
             return back()->withErrors(['error' => 'Prescription is already dispensed or cancelled.']);
         }
 
-        $prescription->update([
-            'status' => 'dispensed',
-            'dispensed_by' => Auth::id(),
-            'dispensed_at' => now(),
-        ]);
-
-        $rxLabel = $prescription->prescription_number
-            ?? ('RX-' . str_pad((string) $prescription->prescription_id, 6, '0', STR_PAD_LEFT));
-
-        ActivityLogger::log(
-            'pharmacy',
-            "Prescription {$rxLabel} dispensed",
-            ['prescription_id' => $prescription->prescription_id],
-            Auth::user(),
-            $prescription,
-            [$prescription->patient->user_id, 1]
-        );
+        \App\Services\PrescriptionService::dispense($prescription);
 
         return back()->with('success', 'Prescription marked as dispensed.');
     }
@@ -279,63 +177,33 @@ class PrescriptionController extends Controller
             'items.*.duration' => 'required|string',
         ]);
 
-        DB::beginTransaction();
         try {
-            $prescription->update([
-                'prescription_date' => $validated['prescription_date'],
-                'notes' => $validated['notes'] ?? null,
-            ]);
-
-            // Delete old items and re-create
-            $prescription->items()->delete();
-
-            foreach ($validated['items'] as $item) {
-                $prescription->items()->create([
-                    'medication_id' => $item['medication_id'] ?? null,
-                    'dosage' => $item['dosage'],
-                    'frequency' => $item['frequency'],
-                    'duration' => $item['duration'],
-                ]);
-            }
-
-            DB::commit();
-
-            ActivityLogger::log(
-                'pharmacy',
-                "Prescription {$prescription->prescription_number} updated",
-                ['prescription_id' => $prescription->prescription_id],
-                Auth::user(),
-                $prescription,
-                [$prescription->patient->user_id, 1]
-            );
+            \App\Services\PrescriptionService::update($prescription, $validated);
 
             return redirect()->route('prescriptions.show', $prescription->prescription_id)
                 ->with('success', 'Prescription updated successfully.');
 
         } catch (\Exception $e) {
-            DB::rollBack();
             return back()->withErrors(['error' => 'Failed to update prescription: ' . $e->getMessage()]);
         }
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(VoidRequest $request, $id)
     {
-        $request->validate([
-            'void_reason' => 'required|string|max:255'
-        ]);
+        $validated = $request->validated();
 
         $prescription = Prescription::findOrFail($id);
 
         $prescription->update([
             'is_voided' => true,
-            'void_reason' => $request->void_reason,
+            'void_reason' => $validated['void_reason'],
             'voided_by' => Auth::id(),
             'voided_at' => now(),
         ]);
 
         ActivityLogger::log(
             'pharmacy',
-            "Prescription {$prescription->prescription_number} voided: {$request->void_reason}",
+            "Prescription {$prescription->prescription_number} voided: {$validated['void_reason']}",
             ['prescription_id' => $prescription->prescription_id],
             Auth::user(),
             $prescription,
@@ -348,101 +216,34 @@ class PrescriptionController extends Controller
     /**
      * Handle bulk actions on prescriptions.
      */
-    public function bulkAction(Request $request)
+    protected function bulkActionMap(): array
     {
-        $validated = $request->validate([
-            'action' => 'required|string|in:dispense,void,delete',
-            'ids'    => 'required|array|min:1',
-            'ids.*'  => 'integer',
-        ]);
-
-        $ids    = $validated['ids'];
-        $action = $validated['action'];
-        $count  = count($ids);
-
-        switch ($action) {
-            case 'dispense':
-                $prescriptions = Prescription::whereIn('prescription_id', $ids)->get();
-                $dispensedCount = 0;
-                foreach ($prescriptions as $prescription) {
-                    if ($prescription->status !== 'dispensed' && !$prescription->is_voided) {
-                        $prescription->update([
-                            'status' => 'dispensed',
-                            'dispensed_by' => Auth::id(),
-                            'dispensed_at' => now(),
-                        ]);
-                        ActivityLogger::log(
-                            'pharmacy',
-                            "Prescription {$prescription->prescription_number} bulk dispensed",
-                            ['prescription_id' => $prescription->prescription_id],
-                            Auth::user(),
-                            $prescription,
-                            [$prescription->patient->user_id, 1]
-                        );
-                        $dispensedCount++;
-                    }
-                }
-                return redirect()->back()->with('success', "{$dispensedCount} prescription(s) dispensed.");
-
-            case 'void':
-                $prescriptions = Prescription::whereIn('prescription_id', $ids)->get();
-                $voidedCount = 0;
-                foreach ($prescriptions as $prescription) {
-                    if (!$prescription->is_voided && $prescription->status !== 'dispensed') {
-                        $prescription->update([
-                            'is_voided' => true,
-                            'void_reason' => 'Bulk voided via toolbar',
-                            'voided_by' => Auth::id(),
-                            'voided_at' => now(),
-                        ]);
-                        ActivityLogger::log(
-                            'pharmacy',
-                            "Prescription {$prescription->prescription_number} bulk voided",
-                            ['prescription_id' => $prescription->prescription_id],
-                            Auth::user(),
-                            $prescription,
-                            [$prescription->patient->user_id, 1]
-                        );
-                        $voidedCount++;
-                    }
-                }
-                return redirect()->back()->with('success', "{$voidedCount} prescription(s) voided.");
-
-            case 'delete':
-                $deletedCount = Prescription::whereIn('prescription_id', $ids)
-                    ->where('status', '!=', 'dispensed')
-                    ->delete();
-                return redirect()->back()->with('success', "{$deletedCount} prescription(s) deleted.");
-        }
-
-        return redirect()->back()->with('error', 'Unknown bulk action.');
-    }
-
-    /**
-     * Parse a frequency string like "3 times daily", "twice daily", "BD", "TDS" into a numeric daily count.
-     */
-    private function parseFrequencyToDaily(string $frequency): int
-    {
-        $freq = strtolower(trim($frequency));
-
-        // Common abbreviations
-        $map = [
-            'od' => 1, 'once daily' => 1, 'daily' => 1,
-            'bd' => 2, 'bid' => 2, 'twice daily' => 2, '2 times daily' => 2,
-            'tds' => 3, 'tid' => 3, 'three times daily' => 3, '3 times daily' => 3,
-            'qds' => 4, 'qid' => 4, 'four times daily' => 4, '4 times daily' => 4,
-            'stat' => 1, 'prn' => 1, 'as needed' => 1,
+        return [
+            'dispense' => function (array $ids, int $count) {
+                $updated = $this->bulkProcessWithLog(
+                    Prescription::class, 'prescription_id', $ids,
+                    fn ($item) => $item->status !== 'dispensed' && ! $item->is_voided,
+                    fn ($item) => ['status' => 'dispensed', 'dispensed_by' => Auth::id(), 'dispensed_at' => now()],
+                    'pharmacy', 'Prescription',
+                    fn ($item) => [$item->patient->user_id, 1]
+                );
+                return redirect()->back()->with('success', "{$updated} prescription(s) dispensed.");
+            },
+            'void' => function (array $ids, int $count) {
+                $updated = $this->bulkProcessWithLog(
+                    Prescription::class, 'prescription_id', $ids,
+                    fn ($item) => ! $item->is_voided && $item->status !== 'dispensed',
+                    fn ($item) => ['is_voided' => true, 'void_reason' => 'Bulk voided via toolbar', 'voided_by' => Auth::id(), 'voided_at' => now()],
+                    'pharmacy', 'Prescription',
+                    fn ($item) => [$item->patient->user_id, 1]
+                );
+                return redirect()->back()->with('success', "{$updated} prescription(s) voided.");
+            },
+            'delete' => function (array $ids, int $count) {
+                $deleted = $this->bulkDelete(Prescription::class, 'prescription_id', $ids, 'status', 'dispensed');
+                return redirect()->back()->with('success', "{$deleted} prescription(s) deleted.");
+            },
         ];
-
-        if (isset($map[$freq])) {
-            return $map[$freq];
-        }
-
-        // Try to extract number
-        if (preg_match('/(\d+)/', $freq, $matches)) {
-            return (int) $matches[1];
-        }
-
-        return 1; // Default
     }
+
 }

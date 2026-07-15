@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('doctor_block_outs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('doctor_id')->constrained('staff', 'staff_id')->cascadeOnDelete();
+            $table->unsignedBigInteger('doctor_id');
             $table->date('block_date');
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
@@ -18,6 +18,10 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['doctor_id', 'block_date', 'start_time']);
+            
+            // Note: Foreign key to staff table omitted due to production schema mismatch
+            // Production staff table uses 'id' as PK, not 'staff_id'
+            // $table->foreign('doctor_id')->references('id')->on('staff')->onDelete('cascade');
         });
     }
 

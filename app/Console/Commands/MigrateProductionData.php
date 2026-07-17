@@ -24,11 +24,11 @@ class MigrateProductionData extends Command
         // Configure legacy DB connection dynamically
         config(['database.connections.legacy' => [
             'driver' => 'mysql',
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3306'),
+            'host' => config('database.connections.mysql.host'),
+            'port' => config('database.connections.mysql.port'),
             'database' => 'nyalifew_legacy',
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
+            'username' => config('database.connections.mysql.username'),
+            'password' => config('database.connections.mysql.password'),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
         ]]);

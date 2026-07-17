@@ -284,7 +284,7 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                 {/* Messages View */}
                                 <div className="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col">
                                     {conversationMessages.slice().reverse().map(m => (
-                                        <div key={m.id} className={`max-w-[75%] rounded-2xl p-4 shadow-sm relative group ${m.sender_id === auth.user.user_id ? 'bg-pink-600 text-white ml-auto rounded-tr-none' : 'bg-pink-100 text-gray-800 rounded-tl-none'}`}>
+                                        <div key={m.id} className={`max-w-[75%] rounded-2xl p-4 shadow-sm relative group ${m.sender_id === auth.user.user_id ? 'bg-pink-700 text-white ml-auto rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'}`}>
                                             {m.sender_id === auth.user.user_id && (
                                                 <button
                                                     type="button"
@@ -301,7 +301,7 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                             {m.metadata?.references?.length > 0 && (
                                                 <div className="mt-2 space-y-2 border-t pt-2 border-white/20">
                                                     {m.metadata.references.map((ref, idx) => (
-                                                        <div key={idx} className={`text-xs p-2 rounded-xl flex items-center gap-2 ${m.sender_id === auth.user.user_id ? 'bg-white/10 text-white' : 'bg-gray-50 text-gray-700 border border-gray-100'}`}>
+                                                        <div key={idx} className={`text-xs p-2 rounded-xl flex items-center gap-2 ${m.sender_id === auth.user.user_id ? 'bg-white/20 text-white' : 'bg-gray-50 text-gray-700 border border-gray-100'}`}>
                                                             <i className={`fas ${
                                                                 ref.type === 'patient' ? 'fa-user-injured' : 
                                                                 ref.type === 'appointment' ? 'fa-calendar-check' :
@@ -314,7 +314,7 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                                 </div>
                                             )}
 
-                                            <small className={`text-[10px] block mt-1 opacity-70 ${m.sender_id === auth.user.user_id ? 'text-end' : ''}`}>
+                                            <small className={`text-[10px] block mt-1 ${m.sender_id === auth.user.user_id ? 'text-pink-200 text-end' : 'text-gray-400'}`}>
                                                 {formatTime(m.created_at)}
                                             </small>
                                         </div>
@@ -457,10 +457,6 @@ export default function Index({ messages, users, filters = {}, auth }) {
             </div>
 
             <style>{`
-                .w-1\/3 { width: 33.333333%; }
-                .flex-1 { flex: 1 1 0%; }
-                .rounded-2xl { border-radius: 1.25rem; }
-                .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); }
                 @keyframes pulse-slow {
                     0%, 100% { opacity: 0.3; transform: scale(1); }
                     50% { opacity: 0.4; transform: scale(1.05); }

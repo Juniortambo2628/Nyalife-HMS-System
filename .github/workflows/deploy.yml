@@ -3,7 +3,7 @@ name: 🚀 Deploy Nyalife HMS to Production
 on:
   push:
     branches: [main]
-  workflow_dispatch:  # Manual trigger from GitHub Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
@@ -40,66 +40,46 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔍 Verify runner environment
-        shell: cmd
-        run: |
-          echo Git version:
-          git --version
-          echo SSH available:
-          where ssh
-          echo PHP version:
-          php --version
-          echo Composer version:
-          composer --version
-
-
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-assets
           path: public/build/
 
-      - name: 📂 Deploy backend to nyalife_core
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: 21
-          local-dir: ./
-          server-dir: /nyalife_core/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/.env
-            **/.env.*
-            **/storage/logs/**
-            **/storage/framework/sessions/**
-            **/storage/framework/cache/**
-            **/vendor/**
-            **/*.sql
-            **/docs/production/**
+      - name: 🔧 Setup SSH key
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
-      - name: 🌐 Deploy public assets to public_html
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: 21
-          local-dir: ./public/
-          server-dir: /public_html/
-          exclude: |
-            **/index.php
-            **/.htaccess
-            **/storage/**
+      - name: 📂 Deploy backend via SSH
+        shell: bash
+        run: |
+          rsync -avz --delete \
+            -e "ssh -p ${{ secrets.SSH_PORT }}" \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            --exclude='storage/logs/*' \
+            --exclude='storage/framework/sessions/*' \
+            --exclude='storage/framework/cache/*' \
+            --exclude='vendor' \
+            --exclude='*.sql' \
+            --exclude='public/build' \
+            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home1/${{ secrets.SSH_USERNAME }}/nyalife_core/
+
+      - name: 🌐 Deploy public assets via SSH
+        shell: bash
+        run: |
+          rsync -avz \
+            -e "ssh -p ${{ secrets.SSH_PORT }}" \
+            --exclude='storage' \
+            ./public/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home1/${{ secrets.SSH_USERNAME }}/public_html/
 
       - name: 🔧 Run post-deploy commands via SSH
-        shell: cmd
+        shell: bash
         run: |
-          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "bash -l /home1/nyalifew/nyalife_core/scripts/post-deploy.sh"
-
-
-
-
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "bash -l /home1/${{ secrets.SSH_USERNAME }}/nyalife_core/scripts/post-deploy.sh"

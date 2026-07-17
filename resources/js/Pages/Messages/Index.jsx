@@ -284,7 +284,7 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                 {/* Messages View */}
                                 <div className="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col">
                                     {conversationMessages.slice().reverse().map(m => (
-                                        <div key={m.id} className={`max-w-[75%] rounded-2xl p-4 shadow-sm relative group ${m.sender_id === auth.user.user_id ? 'bg-pink-600 text-white ml-auto rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none'}`}>
+                                        <div key={m.id} className={`max-w-[75%] rounded-2xl p-4 shadow-sm relative group ${m.sender_id === auth.user.user_id ? 'bg-pink-600 text-white ml-auto rounded-tr-none' : 'bg-pink-100 text-gray-800 rounded-tl-none'}`}>
                                             {m.sender_id === auth.user.user_id && (
                                                 <button
                                                     type="button"

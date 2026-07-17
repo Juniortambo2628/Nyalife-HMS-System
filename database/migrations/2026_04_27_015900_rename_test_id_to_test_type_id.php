@@ -35,7 +35,7 @@ return new class extends Migration
         }
         
         Schema::table('lab_test_requests', function (Blueprint $table) {
-            if (Schema::hasColumn('lab_test_requests', 'test_type_id')) {
+            if (Schema::hasColumn('lab_test_requests', 'test_type_id') && !Schema::hasColumn('lab_test_requests', 'test_id')) {
                 $table->renameColumn('test_type_id', 'test_id');
             }
         });

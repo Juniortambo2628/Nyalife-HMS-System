@@ -8,11 +8,11 @@ use App\Models\Consultation;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class InvoiceTest extends TestCase
 {
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     public function test_invoice_belongs_to_patient(): void
     {

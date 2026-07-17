@@ -12,10 +12,10 @@ class PatientRegistrationService
 {
     public static function register(array $data): array
     {
-        $safeFirstName = str_replace(' ', '', $data['first_name']);
-        $safeLastName = str_replace(' ', '', $data['last_name']);
-        $email = $data['email'] ?? strtolower($safeFirstName . '.' . $safeLastName . '.' . rand(1000, 9999) . '@nyalife-hms.com');
-        $username = strtolower($safeFirstName . '.' . $safeLastName . '.' . rand(1000, 9999));
+        $safeFirstName = substr(str_replace(' ', '', $data['first_name']), 0, 30);
+        $safeLastName = substr(str_replace(' ', '', $data['last_name']), 0, 30);
+        $email = $data['email'] ?? strtolower(substr($safeFirstName . '.' . $safeLastName . '.' . rand(1000, 9999), 0, 180) . '@nyalife-hms.com');
+        $username = strtolower(substr($safeFirstName . '.' . $safeLastName . '.' . rand(1000, 9999), 0, 191));
 
         $user = User::create([
             'first_name' => $data['first_name'],

@@ -51,7 +51,7 @@ export default function Edit({
     const [autosaveStatus, setAutosaveStatus] = useState('');
     const autosaveTimerRef = useRef(null);
 
-    const { data, setData, put, processing, errors, transform } = useForm({
+    const { data, setData, put, processing, errors, transform, reset } = useForm({
         patient_id: consultation.patient_id || '',
         patient_label: getPatientName(consultation),
         doctor_id: consultation.doctor_id || '',

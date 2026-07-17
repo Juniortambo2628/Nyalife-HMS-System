@@ -104,7 +104,7 @@ return new class extends Migration
     {
         $drop = function (string $table, string $index) {
             if ($this->indexExists($table, $index)) {
-                DB::statement("DROP INDEX {$index}");
+                DB::statement("DROP INDEX {$index} ON {$table}");
             }
         };
 

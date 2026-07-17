@@ -96,7 +96,7 @@ return new class extends Migration
     public function down(): void
     {
         if (Schema::hasTable('users') && $this->indexExists('users', 'idx_users_name')) {
-            DB::statement('DROP INDEX idx_users_name');
+            DB::statement('DROP INDEX idx_users_name ON users');
         }
 
         Schema::table('appointments', function (Blueprint $table) {

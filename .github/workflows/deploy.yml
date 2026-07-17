@@ -54,32 +54,42 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
-      - name: 📂 Deploy backend via SSH
+      - name: 🔧 Run deploy via SSH
         shell: bash
         run: |
-          rsync -avz --delete \
-            -e "ssh -p ${{ secrets.SSH_PORT }}" \
-            --exclude='.git' \
-            --exclude='node_modules' \
-            --exclude='.env' \
-            --exclude='.env.*' \
-            --exclude='storage/logs/*' \
-            --exclude='storage/framework/sessions/*' \
-            --exclude='storage/framework/cache/*' \
-            --exclude='vendor' \
-            --exclude='*.sql' \
-            --exclude='public/build' \
-            ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home1/${{ secrets.SSH_USERNAME }}/nyalife_core/
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'DEPLOY'
+            set -e
+            cd /home1/nyalifew/nyalife_core
 
-      - name: 🌐 Deploy public assets via SSH
-        shell: bash
-        run: |
-          rsync -avz \
-            -e "ssh -p ${{ secrets.SSH_PORT }}" \
-            --exclude='storage' \
-            ./public/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home1/${{ secrets.SSH_USERNAME }}/public_html/
+            echo "📥 Pulling latest code..."
+            git pull origin main
 
-      - name: 🔧 Run post-deploy commands via SSH
-        shell: bash
-        run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "bash -l /home1/${{ secrets.SSH_USERNAME }}/nyalife_core/scripts/post-deploy.sh"
+            echo "📦 Installing composer dependencies..."
+            if command -v composer &> /dev/null; then
+              composer install --no-dev --optimize-autoloader --no-interaction
+            elif [ -f "composer.phar" ]; then
+              php composer.phar install --no-dev --optimize-autoloader --no-interaction
+            else
+              curl -sS https://getcomposer.org/installer | php
+              php composer.phar install --no-dev --optimize-autoloader --no-interaction
+            fi
+
+            echo "🗄️ Running migrations..."
+            php artisan migrate --force
+
+            echo "🗄️ Migrating production data..."
+            php artisan production:migrate-data 2>&1 || echo "⚠️ Data migration skipped"
+
+            echo "🔧 Clearing and rebuilding caches..."
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan event:cache
+
+            echo "🔒 Fixing permissions..."
+            chmod -R 775 storage
+            chmod -R 775 bootstrap/cache
+
+            echo "✅ Deployment complete!"
+          DEPLOY

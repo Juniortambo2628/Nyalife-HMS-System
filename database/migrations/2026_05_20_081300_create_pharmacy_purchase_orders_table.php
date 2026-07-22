@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('pharmacy_purchase_orders', function (Blueprint $table) {
             $table->id();
             $table->string('order_number')->unique();
-            $table->integer('medication_id')->nullable();
+            $table->unsignedInteger('medication_id')->nullable();
             $table->foreign('medication_id')->references('medication_id')->on('medications')->onDelete('set null');
             $table->string('medication_name'); // Denormalized for safety if medication deleted
             $table->integer('quantity');

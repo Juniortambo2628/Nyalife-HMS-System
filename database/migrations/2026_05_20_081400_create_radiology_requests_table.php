@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('radiology_requests', function (Blueprint $table) {
             $table->id('request_id');
             $table->string('request_number')->unique();
-            $table->integer('patient_id');
-            $table->integer('doctor_id')->nullable();
+            $table->unsignedInteger('patient_id');
+            $table->unsignedInteger('doctor_id')->nullable();
             $table->string('scan_type'); // e.g. Pelvic Ultrasound, Obstetric Scan, Chest X-Ray
             $table->text('clinical_indication')->nullable();
             $table->text('scan_details')->nullable();
@@ -23,13 +23,13 @@ return new class extends Migration
             $table->text('impression')->nullable();
             $table->string('priority')->default('routine'); // routine, urgent, emergency
             $table->string('status')->default('pending'); // pending, processing, pending_verification, verified, completed, cancelled
-            $table->integer('requested_by')->nullable();
-            $table->integer('assigned_to')->nullable();
-            $table->integer('verified_by')->nullable();
+            $table->unsignedBigInteger('requested_by')->nullable();
+            $table->unsignedBigInteger('assigned_to')->nullable();
+            $table->unsignedBigInteger('verified_by')->nullable();
             $table->timestamp('verified_at')->nullable();
             $table->timestamp('completed_at')->nullable();
-            $table->integer('consultation_id')->nullable();
-            $table->integer('appointment_id')->nullable();
+            $table->unsignedInteger('consultation_id')->nullable();
+            $table->unsignedInteger('appointment_id')->nullable();
 
             $table->foreign('patient_id')->references('patient_id')->on('patients')->onDelete('cascade');
             $table->foreign('doctor_id')->references('staff_id')->on('staff')->onDelete('set null');

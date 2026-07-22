@@ -16,6 +16,7 @@ class StoreConsultationRequest extends FormRequest
         return [
             'patient_id' => 'required|exists:patients,patient_id',
             'doctor_id' => 'required|exists:staff,staff_id',
+            'appointment_id' => 'nullable|exists:appointments,appointment_id',
             'consultation_date' => 'required|date',
             'chief_complaint' => 'nullable|string',
             'status' => 'required|string|in:pending,in_progress,completed',

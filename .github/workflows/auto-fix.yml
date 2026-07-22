@@ -1,0 +1,56 @@
+name: Auto Fix Code Style
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  auto-fix:
+    name: Auto Fix
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, bcmath, pdo, mysql, curl, gd, zip
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Fix PHP code style with Laravel Pint
+        run: vendor/bin/pint
+
+      - name: Fix ESLint issues
+        run: npm run lint:fix
+
+      - name: Fix formatting with Prettier
+        run: npm run format:fix
+
+      - name: Commit and push fixes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'style: auto-fix code style issues'
+          commit_options: '--no-verify'
+          skip_fetch: true

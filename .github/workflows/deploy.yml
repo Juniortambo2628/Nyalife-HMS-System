@@ -1,14 +1,23 @@
 name: 🚀 Deploy Nyalife HMS to Production
 
 on:
-  push:
+  # Deployment is gated by the successful completion of the CI workflow.
+  # This keeps CI concerns separate from deployment and avoids duplicating
+  # test jobs inside the deploy workflow.
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
+
   workflow_dispatch:
 
 jobs:
   build:
     name: 📦 Build Assets
     runs-on: ubuntu-latest
+    # Only proceed when the CI workflow succeeded, or when this is a manual run.
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -46,6 +55,7 @@ jobs:
     name: 🚀 Deploy to cPanel
     runs-on: ubuntu-latest
     needs: build
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

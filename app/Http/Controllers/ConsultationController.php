@@ -5,23 +5,35 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreConsultationRequest;
 use App\Http\Requests\UpdateConsultationRequest;
 use App\Http\Resources\ConsultationResource;
-use App\Models\Consultation;
-use App\Models\Patient;
 use App\Models\Appointment;
-use App\Models\User;
+use App\Models\Consultation;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\LabTestType;
+use App\Models\MedicalProcedure;
+use App\Models\Medication;
+use App\Models\Patient;
+use App\Models\Prescription;
+use App\Models\PrescriptionItem;
+use App\Models\Setting;
 use App\Models\Staff;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use App\Models\Vital;
 use App\Services\ActivityLogger;
+use App\Services\ConsultationInvoiceService;
 use App\Support\PatientId;
 use App\Support\Permissions;
 use App\Traits\HasBulkActions;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class ConsultationController extends Controller
 {
     use HasBulkActions;
+
     /**
      * Display a listing of the resource.
      */
@@ -70,12 +82,14 @@ class ConsultationController extends Controller
 
         $activeDrafts = Consultation::with(['patient.user', 'doctor.user'])
             ->where('consultation_status', 'in_progress')
-            ->when($user && $user->role === 'doctor', function($q) use ($user) {
+            ->when($user && $user->role === 'doctor', function ($q) use ($user) {
                 $staff = Staff::where('user_id', $user->user_id)->first();
+
                 return $staff ? $q->where('doctor_id', $staff->staff_id) : $q;
             })
-            ->when($user && $user->role === 'patient', function($q) use ($user) {
+            ->when($user && $user->role === 'patient', function ($q) use ($user) {
                 $patient = Patient::where('user_id', $user->user_id)->first();
+
                 return $patient ? $q->where('patient_id', $patient->patient_id) : $q;
             })
             ->latest()
@@ -103,20 +117,20 @@ class ConsultationController extends Controller
     {
         $appointmentId = $request->query('appointment_id');
         $patientId = $request->query('patient_id');
-        
-        \Illuminate\Support\Facades\Log::info('Consultation Create Request', [
+
+        Log::info('Consultation Create Request', [
             'appointment_id' => $appointmentId,
             'patient_id' => $patientId,
-            'url' => $request->fullUrl()
+            'url' => $request->fullUrl(),
         ]);
 
         // Auto-redirect if an active draft already exists for this patient/appointment to prevent duplication
         if ($appointmentId || $patientId) {
             $existingDraft = Consultation::where('consultation_status', 'in_progress')
-                ->when($appointmentId, function($q) use ($appointmentId) {
+                ->when($appointmentId, function ($q) use ($appointmentId) {
                     return $q->where('appointment_id', $appointmentId);
                 })
-                ->when($patientId && !$appointmentId, function($q) use ($patientId) {
+                ->when($patientId && ! $appointmentId, function ($q) use ($patientId) {
                     return $q->where('patient_id', $patientId);
                 })
                 ->first();
@@ -126,7 +140,7 @@ class ConsultationController extends Controller
                     ->with('info', 'Redirected to resume active assessment draft.');
             }
         }
-        
+
         $appointment = null;
         $patient = null;
         $doctorId = null;
@@ -143,7 +157,7 @@ class ConsultationController extends Controller
         }
 
         // If no doctor from appointment, and current user is a doctor, prefill with current user
-        if (!$doctorId && Auth::user()->role === 'doctor') {
+        if (! $doctorId && Auth::user()->role === 'doctor') {
             $staff = Staff::where('user_id', Auth::id())->first();
             if ($staff) {
                 $doctorId = $staff->staff_id;
@@ -156,13 +170,13 @@ class ConsultationController extends Controller
         $patientClinical = null;
 
         if ($patientId) {
-            $latestVitals = \App\Models\Vital::where('patient_id', $patientId)
+            $latestVitals = Vital::where('patient_id', $patientId)
                 ->where('measured_at', '>=', now()->subHours(24))
                 ->latest('measured_at')
                 ->first();
-            
+
             // For returning patients, get height from the most recent record ever
-            $latestHeight = \App\Models\Vital::where('patient_id', $patientId)
+            $latestHeight = Vital::where('patient_id', $patientId)
                 ->whereNotNull('height')
                 ->latest('measured_at')
                 ->value('height');
@@ -190,20 +204,20 @@ class ConsultationController extends Controller
             'preselected_doctor_id' => $doctorId,
             'latest_height' => $latestHeight,
             'priority' => $request->query('priority', 'normal'),
-              // Link doctors to users for the dropdown
-            'doctors' => Staff::whereHas('user.roleRelation', function($query) {
+            // Link doctors to users for the dropdown
+            'doctors' => Staff::whereHas('user.roleRelation', function ($query) {
                 $query->where('role_name', 'doctor');
-            })->with('user')->get()->map(function($s) {
-                 return [
+            })->with('user')->get()->map(function ($s) {
+                return [
                     'value' => $s->staff_id,
-                    'label' => 'Dr. ' . ($s->user->last_name ?? 'Unknown')
-                 ];
+                    'label' => 'Dr. '.($s->user->last_name ?? 'Unknown'),
+                ];
             }),
             'drafts' => ConsultationResource::collection($this->getActiveDrafts()),
             'appointment' => $appointment,
-            'medical_procedures' => \App\Models\MedicalProcedure::where('is_active', true)->orderBy('name')->get(),
-            'lab_test_types' => \App\Models\LabTestType::labTests()->active()->orderBy('category')->orderBy('test_name')->get(),
-            'procedure_services' => \App\Models\LabTestType::services()->active()->orderBy('category')->orderBy('test_name')->get(),
+            'medical_procedures' => MedicalProcedure::where('is_active', true)->orderBy('name')->get(),
+            'lab_test_types' => LabTestType::labTests()->active()->orderBy('category')->orderBy('test_name')->get(),
+            'procedure_services' => LabTestType::services()->active()->orderBy('category')->orderBy('test_name')->get(),
             'latest_vitals' => $latestVitals,
             'history_prefill' => $historyPrefill,
             'patient_clinical' => $patientClinical,
@@ -215,25 +229,25 @@ class ConsultationController extends Controller
      */
     public function store(StoreConsultationRequest $request)
     {
-        \Illuminate\Support\Facades\Log::info('Consultation Store Attempt', [
+        Log::info('Consultation Store Attempt', [
             'data' => $request->all(),
-            'user' => Auth::id()
+            'user' => Auth::id(),
         ]);
-        
+
         DB::beginTransaction();
         try {
             $data = $request->validated();
-            
+
             // Ensure non-null values for text fields that might be NOT NULL in DB
             $data['diagnosis'] = $data['diagnosis'] ?? '';
             $data['treatment_plan'] = $data['treatment_plan'] ?? '';
             $data['follow_up_instructions'] = $data['follow_up_instructions'] ?? '';
             $data['notes'] = $data['notes'] ?? '';
-            
+
             // Map 'status' to 'consultation_status' if specific name used in legacy
             $data['consultation_status'] = $data['status'];
             $data['created_by'] = Auth::id();
-            
+
             // Handle walk-in logic
             $data['is_walk_in'] = $request->boolean('is_walk_in');
             if ($data['is_walk_in']) {
@@ -242,10 +256,10 @@ class ConsultationController extends Controller
 
             $consultation = Consultation::create($data);
 
-            \App\Services\ConsultationInvoiceService::createForConsultation($data, $consultation->consultation_id);
+            ConsultationInvoiceService::createForConsultation($data, $consultation->consultation_id);
 
             // Update appointment status if linked
-            if (!empty($data['appointment_id'])) {
+            if (! empty($data['appointment_id'])) {
                 Appointment::where('appointment_id', $data['appointment_id'])
                     ->update(['status' => 'completed']);
             }
@@ -254,7 +268,7 @@ class ConsultationController extends Controller
 
             ActivityLogger::log(
                 'consultations',
-                "Consultation " . ($data['consultation_status'] === 'in_progress' ? 'started' : 'concluded') . " for " . ($consultation->patient->user->full_name ?? 'Patient'),
+                'Consultation '.($data['consultation_status'] === 'in_progress' ? 'started' : 'concluded').' for '.($consultation->patient->user->full_name ?? 'Patient'),
                 ['consultation_id' => $consultation->consultation_id, 'status' => $data['consultation_status']],
                 Auth::user(),
                 $consultation,
@@ -270,14 +284,14 @@ class ConsultationController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Illuminate\Support\Facades\Log::error('Consultation store failed', [
+            Log::error('Consultation store failed', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'data' => $request->except(['password']),
                 'user_id' => Auth::id(),
             ]);
 
-            return back()->withErrors(['error' => 'Failed to create consultation: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to create consultation: '.$e->getMessage()]);
         }
     }
 
@@ -287,8 +301,8 @@ class ConsultationController extends Controller
     public function show($id)
     {
         $consultation = Consultation::with([
-            'patient.user', 
-            'doctor.user', 
+            'patient.user',
+            'doctor.user',
             'appointment',
             'prescriptions.items.medication',
             'labTestRequests.testType',
@@ -302,9 +316,9 @@ class ConsultationController extends Controller
             $consultation->patient_id,
             Permissions::MANAGE_CONSULTATIONS
         );
-            
+
         return Inertia::render('Consultations/View', [
-            'consultation' => ConsultationResource::make($consultation)
+            'consultation' => ConsultationResource::make($consultation),
         ]);
     }
 
@@ -318,7 +332,7 @@ class ConsultationController extends Controller
             Permissions::MANAGE_CONSULTATIONS
         );
 
-        $settings = \App\Models\Setting::clinicContactSettings();
+        $settings = Setting::clinicContactSettings();
 
         return Inertia::render('Consultations/Print', [
             'consultation' => ConsultationResource::make($consultation),
@@ -337,34 +351,34 @@ class ConsultationController extends Controller
         }
 
         $consultation = Consultation::with([
-            'patient.user', 
-            'labTestRequests.testType', 
+            'patient.user',
+            'labTestRequests.testType',
             'labTestRequests.assignedTo',
             'prescriptions.items.medication',
-            'invoices.items'
+            'invoices.items',
         ])->findOrFail($id);
-        
+
         return Inertia::render('Consultations/Edit', [
             'consultation' => ConsultationResource::make($consultation),
-             'patients' => Patient::with('user')->get()->map(function($p) {
+            'patients' => Patient::with('user')->get()->map(function ($p) {
                 return [
                     'value' => $p->patient_id,
-                    'label' => $p->user->first_name . ' ' . $p->user->last_name
+                    'label' => $p->user->first_name.' '.$p->user->last_name,
                 ];
             }),
-            'doctors' => Staff::whereHas('user.roleRelation', function($query) {
+            'doctors' => Staff::whereHas('user.roleRelation', function ($query) {
                 $query->where('role_name', 'doctor');
-            })->with('user')->get()->map(function($s) {
-                 return [
+            })->with('user')->get()->map(function ($s) {
+                return [
                     'value' => $s->staff_id,
-                    'label' => 'Dr. ' . ($s->user->last_name ?? 'Unknown')
-                 ];
+                    'label' => 'Dr. '.($s->user->last_name ?? 'Unknown'),
+                ];
             }),
             'drafts' => ConsultationResource::collection($this->getActiveDrafts()),
-            'medical_procedures' => \App\Models\MedicalProcedure::where('is_active', true)->orderBy('name')->get(),
-            'medications' => \App\Models\Medication::orderBy('medication_name')->get(),
-            'lab_test_types' => \App\Models\LabTestType::labTests()->active()->orderBy('category')->orderBy('test_name')->get(),
-            'procedure_services' => \App\Models\LabTestType::services()->active()->orderBy('category')->orderBy('test_name')->get(),
+            'medical_procedures' => MedicalProcedure::where('is_active', true)->orderBy('name')->get(),
+            'medications' => Medication::orderBy('medication_name')->get(),
+            'lab_test_types' => LabTestType::labTests()->active()->orderBy('category')->orderBy('test_name')->get(),
+            'procedure_services' => LabTestType::services()->active()->orderBy('category')->orderBy('test_name')->get(),
         ]);
     }
 
@@ -397,13 +411,13 @@ class ConsultationController extends Controller
             $consultation->update($data);
 
             // Process any NEW items added during this edit session
-            $invoice = \App\Models\Invoice::withoutGlobalScope('not_voided')
+            $invoice = Invoice::withoutGlobalScope('not_voided')
                 ->where('consultation_id', $consultation->consultation_id)
                 ->where('is_voided', false)
                 ->first();
 
             if ($invoice) {
-                \App\Services\ConsultationInvoiceService::addNewItemsToExisting(
+                ConsultationInvoiceService::addNewItemsToExisting(
                     $invoice,
                     $data,
                     $consultation->consultation_id
@@ -411,8 +425,8 @@ class ConsultationController extends Controller
             }
 
             // Create new prescriptions
-            if (!empty($data['requested_prescriptions'])) {
-                $prescription = \App\Models\Prescription::create([
+            if (! empty($data['requested_prescriptions'])) {
+                $prescription = Prescription::create([
                     'consultation_id' => $consultation->consultation_id,
                     'patient_id' => $consultation->patient_id,
                     'prescribed_by' => Auth::id(),
@@ -423,9 +437,9 @@ class ConsultationController extends Controller
 
                 foreach ($data['requested_prescriptions'] as $rx) {
                     $medId = $rx['medication_id'] ?? null;
-                    $medication = $medId ? \App\Models\Medication::find($medId) : null;
+                    $medication = $medId ? Medication::find($medId) : null;
 
-                    \App\Models\PrescriptionItem::create([
+                    PrescriptionItem::create([
                         'prescription_id' => $prescription->prescription_id,
                         'medication_id' => $medId,
                         'dosage' => $rx['dosage'] ?? '',
@@ -436,11 +450,11 @@ class ConsultationController extends Controller
                     ]);
 
                     if ($invoice && $medication) {
-                        \App\Models\InvoiceItem::create([
+                        InvoiceItem::create([
                             'invoice_id' => $invoice->invoice_id,
                             'item_type' => 'medication',
                             'item_id_ref' => $medId,
-                            'description' => 'Rx: ' . $medication->medication_name . ' ' . ($medication->strength ?? ''),
+                            'description' => 'Rx: '.$medication->medication_name.' '.($medication->strength ?? ''),
                             'quantity' => 1,
                             'unit_price' => $medication->price_per_unit ?? 0,
                             'total_price' => $medication->price_per_unit ?? 0,
@@ -456,7 +470,7 @@ class ConsultationController extends Controller
             $patientUserId = $patientUser->user_id ?? null;
             ActivityLogger::log(
                 'consultations',
-                "Consultation " . ($status === 'in_progress' ? 'updated' : 'concluded') . " for " . ($patientUser->full_name ?? 'Patient'),
+                'Consultation '.($status === 'in_progress' ? 'updated' : 'concluded').' for '.($patientUser->full_name ?? 'Patient'),
                 ['consultation_id' => $consultation->consultation_id, 'status' => $status],
                 Auth::user(),
                 $consultation,
@@ -473,7 +487,7 @@ class ConsultationController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Illuminate\Support\Facades\Log::error('Consultation update failed', [
+            Log::error('Consultation update failed', [
                 'consultation_id' => $id,
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -481,7 +495,7 @@ class ConsultationController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
-            return back()->withErrors(['error' => 'Failed to update consultation: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to update consultation: '.$e->getMessage()]);
         }
     }
 
@@ -492,22 +506,27 @@ class ConsultationController extends Controller
     {
         $consultation = Consultation::findOrFail($id);
         $consultation->delete();
+
         return redirect()->route('consultations.index')->with('success', 'Consultation deleted successfully.');
     }
+
     /**
      * Get active in-progress drafts for the current user context.
      */
     private function getActiveDrafts()
     {
         $user = Auth::user();
+
         return Consultation::with(['patient.user', 'doctor.user'])
             ->where('consultation_status', 'in_progress')
-            ->when($user && $user->role === 'doctor', function($q) use ($user) {
+            ->when($user && $user->role === 'doctor', function ($q) use ($user) {
                 $staff = Staff::where('user_id', $user->user_id)->first();
+
                 return $staff ? $q->where('doctor_id', $staff->staff_id) : $q;
             })
-            ->when($user && $user->role === 'patient', function($q) use ($user) {
+            ->when($user && $user->role === 'patient', function ($q) use ($user) {
                 $patient = Patient::where('user_id', $user->user_id)->first();
+
                 return $patient ? $q->where('patient_id', $patient->patient_id) : $q;
             })
             ->latest()
@@ -522,10 +541,12 @@ class ConsultationController extends Controller
         return [
             'mark_complete' => function (array $ids, int $count) {
                 Consultation::whereIn('consultation_id', $ids)->update(['consultation_status' => 'completed']);
+
                 return redirect()->back()->with('success', "{$count} consultation(s) marked as complete.");
             },
             'delete' => function (array $ids, int $count) {
                 Consultation::whereIn('consultation_id', $ids)->delete();
+
                 return redirect()->back()->with('success', "{$count} consultation(s) deleted.");
             },
             'export' => function (array $ids, int $count) {

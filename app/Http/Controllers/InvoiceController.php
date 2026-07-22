@@ -3,23 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreInvoiceRequest;
-use App\Http\Requests\VoidRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
+use App\Http\Requests\VoidRequest;
 use App\Http\Resources\InvoiceResource;
 use App\Models\Consultation;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Patient;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
+use App\Models\Payment;
+use App\Models\Setting;
 use App\Services\ActivityLogger;
 use App\Support\Permissions;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Traits\HasBulkActions;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class InvoiceController extends Controller
 {
     use HasBulkActions;
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -35,13 +40,13 @@ class InvoiceController extends Controller
         if ($request->has('quick_filter') && $request->quick_filter) {
             switch ($request->quick_filter) {
                 case 'unpaid':
-                    $query->where('status', 'unpaid');
+                    $query->where('status', 'pending');
                     break;
                 case 'paid':
                     $query->where('status', 'paid');
                     break;
                 case 'overdue':
-                    $query->where('status', 'unpaid')->whereDate('due_date', '<', today());
+                    $query->where('status', 'pending')->whereDate('due_date', '<', today());
                     break;
             }
         }
@@ -54,7 +59,7 @@ class InvoiceController extends Controller
 
         $stats = [
             'total' => Invoice::count(),
-            'unpaid' => Invoice::where('status', 'unpaid')->count(),
+            'unpaid' => Invoice::where('status', 'pending')->count(),
             'paid' => Invoice::where('status', 'paid')->count(),
             'total_amount' => Invoice::sum('total_amount'),
         ];
@@ -75,15 +80,16 @@ class InvoiceController extends Controller
             Permissions::MANAGE_INVOICES,
             Permissions::MANAGE_PAYMENTS
         );
-        
-        $settings = \App\Models\Setting::clinicInvoiceSettings();
+
+        $settings = Setting::clinicInvoiceSettings();
 
         return Inertia::render('Invoices/Show', [
             'invoice' => InvoiceResource::make($invoice),
             'clinic_settings' => $settings,
-            'paymentMethods' => \App\Models\Payment::METHODS,
+            'paymentMethods' => Payment::METHODS,
         ]);
     }
+
     public function create(Request $request)
     {
         $consultation_id = $request->query('consultation_id');
@@ -99,7 +105,7 @@ class InvoiceController extends Controller
             'patient_id' => $patient_id,
             'consultation_id' => $consultation_id,
             'consultation' => $consultation,
-            'consultation_fee' => \App\Models\Setting::where('key', 'consultation_fee')->value('value') ?: 1500,
+            'consultation_fee' => Setting::where('key', 'consultation_fee')->value('value') ?: 1500,
         ]);
     }
 
@@ -113,13 +119,13 @@ class InvoiceController extends Controller
             $totalAmount += $item['quantity'] * $item['unit_price'];
         }
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             // Create Invoice
             $invoice = Invoice::create([
                 'patient_id' => $validated['patient_id'],
                 'consultation_id' => $validated['consultation_id'] ?? null,
-                'invoice_number' => 'INV-' . strtoupper(uniqid()), // Simple generator, can be improved
+                'invoice_number' => 'INV-'.strtoupper(uniqid()), // Simple generator, can be improved
                 'invoice_date' => $validated['invoice_date'],
                 'due_date' => $validated['due_date'],
                 'total_amount' => $totalAmount,
@@ -130,7 +136,7 @@ class InvoiceController extends Controller
 
             // Create Invoice Items
             foreach ($request->items as $item) {
-                \App\Models\InvoiceItem::create([
+                InvoiceItem::create([
                     'invoice_id' => $invoice->invoice_id,
                     'description' => $item['description'],
                     'quantity' => $item['quantity'],
@@ -139,11 +145,11 @@ class InvoiceController extends Controller
                 ]);
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
 
             ActivityLogger::log(
                 'billing',
-                "New invoice #{$invoice->invoice_number} created for " . ($invoice->patient->user->full_name ?? 'Patient'),
+                "New invoice #{$invoice->invoice_number} created for ".($invoice->patient->user->full_name ?? 'Patient'),
                 ['invoice_id' => $invoice->invoice_id, 'amount' => $totalAmount],
                 Auth::user(),
                 $invoice,
@@ -154,8 +160,9 @@ class InvoiceController extends Controller
                 ->with('success', 'Invoice created successfully.');
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to create invoice: ' . $e->getMessage()]);
+            DB::rollBack();
+
+            return back()->withErrors(['error' => 'Failed to create invoice: '.$e->getMessage()]);
         }
     }
 
@@ -228,10 +235,12 @@ class InvoiceController extends Controller
                     'billing', 'Invoice',
                     fn ($item) => [$item->patient->user_id, 1]
                 );
+
                 return redirect()->back()->with('success', "{$updated} invoice(s) voided.");
             },
             'delete' => function (array $ids, int $count) {
                 $deleted = $this->bulkDelete(Invoice::class, 'invoice_id', $ids, 'status', 'paid');
+
                 return redirect()->back()->with('success', "{$deleted} unpaid invoice(s) deleted.");
             },
         ];
@@ -257,7 +266,7 @@ class InvoiceController extends Controller
             ->latest()
             ->get();
 
-        $filename = 'invoices-' . now()->format('Y-m-d') . '.csv';
+        $filename = 'invoices-'.now()->format('Y-m-d').'.csv';
 
         return response()->streamDownload(function () use ($invoices) {
             $handle = fopen('php://output', 'w');
@@ -266,7 +275,7 @@ class InvoiceController extends Controller
             foreach ($invoices as $invoice) {
                 fputcsv($handle, [
                     $invoice->invoice_number,
-                    trim(($invoice->patient?->user?->first_name ?? '') . ' ' . ($invoice->patient?->user?->last_name ?? '')),
+                    trim(($invoice->patient?->user?->first_name ?? '').' '.($invoice->patient?->user?->last_name ?? '')),
                     $invoice->invoice_date,
                     $invoice->due_date,
                     $invoice->total_amount,
@@ -289,7 +298,7 @@ class InvoiceController extends Controller
             Permissions::MANAGE_PAYMENTS
         );
 
-        $settings = \App\Models\Setting::clinicInvoiceSettings();
+        $settings = Setting::clinicInvoiceSettings();
 
         return Inertia::render('Invoices/Print', [
             'invoice' => InvoiceResource::make($invoice),
@@ -307,7 +316,7 @@ class InvoiceController extends Controller
             Permissions::MANAGE_PAYMENTS
         );
 
-        $settings = \App\Models\Setting::clinicInvoiceSettings();
+        $settings = Setting::clinicInvoiceSettings();
 
         $subtotal = $invoice->items->sum('total_price');
         $taxRate = (float) ($settings['tax_rate'] ?? 0);
@@ -330,4 +339,3 @@ class InvoiceController extends Controller
         return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
     }
 }
-

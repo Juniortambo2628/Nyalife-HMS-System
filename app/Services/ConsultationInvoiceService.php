@@ -16,10 +16,10 @@ class ConsultationInvoiceService
         $invoice = Invoice::create([
             'patient_id' => $data['patient_id'],
             'consultation_id' => $consultationId,
-            'invoice_number' => 'INV-' . strtoupper(substr(uniqid(), -6)),
+            'invoice_number' => 'INV-'.strtoupper(substr(uniqid(), -6)),
             'invoice_date' => now(),
             'due_date' => now()->addDays(7),
-            'status' => 'unpaid',
+            'status' => 'pending',
             'total_amount' => 0,
             'created_by' => Auth::id(),
         ]);
@@ -45,10 +45,10 @@ class ConsultationInvoiceService
         $existingServiceTypeIds = InvoiceItem::where('invoice_id', $invoice->invoice_id)
             ->where('item_type', 'service')->pluck('item_id_ref')->toArray();
 
-        if (!empty($data['requested_labs'])) {
+        if (! empty($data['requested_labs'])) {
             foreach ($data['requested_labs'] as $lab) {
                 $labTypeId = self::resolveLabTypeId($lab);
-                if (!$labTypeId || in_array($labTypeId, $existingLabTypeIds)) {
+                if (! $labTypeId || in_array($labTypeId, $existingLabTypeIds)) {
                     continue;
                 }
 
@@ -67,7 +67,7 @@ class ConsultationInvoiceService
                 $invoice->increment('total_amount', $fee);
 
                 LabTestRequest::create([
-                    'request_number' => 'LAB-' . strtoupper(substr(uniqid(), -6)),
+                    'request_number' => 'LAB-'.strtoupper(substr(uniqid(), -6)),
                     'consultation_id' => $consultationId,
                     'patient_id' => $data['patient_id'],
                     'requested_by' => Auth::id(),
@@ -80,10 +80,10 @@ class ConsultationInvoiceService
             }
         }
 
-        if (!empty($data['requested_service_items'])) {
+        if (! empty($data['requested_service_items'])) {
             foreach ($data['requested_service_items'] as $svc) {
                 $svcTypeId = self::resolveServiceTypeId($svc);
-                if (!$svcTypeId || in_array($svcTypeId, $existingServiceTypeIds)) {
+                if (! $svcTypeId || in_array($svcTypeId, $existingServiceTypeIds)) {
                     continue;
                 }
 
@@ -103,10 +103,10 @@ class ConsultationInvoiceService
             }
         }
 
-        if (!empty($data['requested_procedures'])) {
+        if (! empty($data['requested_procedures'])) {
             foreach ($data['requested_procedures'] as $proc) {
                 $procId = self::resolveProcedureId($proc);
-                if (!$procId || in_array($procId, $existingProcedureIds)) {
+                if (! $procId || in_array($procId, $existingProcedureIds)) {
                     continue;
                 }
 
@@ -130,7 +130,7 @@ class ConsultationInvoiceService
     private static function addConsultationFee(Invoice $invoice): float
     {
         $baseFee = MedicalProcedure::where('category', 'consultation')->first();
-        if (!$baseFee) {
+        if (! $baseFee) {
             return 0;
         }
 
@@ -138,7 +138,7 @@ class ConsultationInvoiceService
             'invoice_id' => $invoice->invoice_id,
             'item_type' => 'consultation',
             'item_id_ref' => $baseFee->procedure_id,
-            'description' => 'Doctor Consultation: ' . $baseFee->name,
+            'description' => 'Doctor Consultation: '.$baseFee->name,
             'quantity' => 1,
             'unit_price' => $baseFee->standard_fee,
             'total_price' => $baseFee->standard_fee,
@@ -152,7 +152,7 @@ class ConsultationInvoiceService
         $total = 0;
         foreach ($procedures as $proc) {
             $procId = self::resolveProcedureId($proc);
-            if (!$procId) {
+            if (! $procId) {
                 continue;
             }
 
@@ -170,6 +170,7 @@ class ConsultationInvoiceService
             ]);
             $total += $fee;
         }
+
         return $total;
     }
 
@@ -182,7 +183,7 @@ class ConsultationInvoiceService
 
         foreach ($data['requested_labs'] as $lab) {
             $labTypeId = self::resolveLabTypeId($lab);
-            if (!$labTypeId) {
+            if (! $labTypeId) {
                 continue;
             }
 
@@ -201,7 +202,7 @@ class ConsultationInvoiceService
             $total += $fee;
 
             LabTestRequest::create([
-                'request_number' => 'LAB-' . strtoupper(substr(uniqid(), -6)),
+                'request_number' => 'LAB-'.strtoupper(substr(uniqid(), -6)),
                 'consultation_id' => $consultationId,
                 'patient_id' => $data['patient_id'],
                 'requested_by' => Auth::id(),
@@ -221,7 +222,7 @@ class ConsultationInvoiceService
         $total = 0;
         foreach ($services as $svc) {
             $svcTypeId = self::resolveServiceTypeId($svc);
-            if (!$svcTypeId) {
+            if (! $svcTypeId) {
                 continue;
             }
 
@@ -239,6 +240,7 @@ class ConsultationInvoiceService
             ]);
             $total += $fee;
         }
+
         return $total;
     }
 
@@ -248,7 +250,7 @@ class ConsultationInvoiceService
             return (int) $lab;
         }
 
-        if (!is_array($lab)) {
+        if (! is_array($lab)) {
             return null;
         }
 
@@ -263,7 +265,7 @@ class ConsultationInvoiceService
             return (int) $svc;
         }
 
-        if (!is_array($svc)) {
+        if (! is_array($svc)) {
             return null;
         }
 
@@ -278,7 +280,7 @@ class ConsultationInvoiceService
             return (int) $proc;
         }
 
-        if (!is_array($proc)) {
+        if (! is_array($proc)) {
             return null;
         }
 
@@ -291,7 +293,7 @@ class ConsultationInvoiceService
     {
         $name = is_array($lab) ? ($lab['test_name'] ?? null) : null;
 
-        return 'Lab: ' . ($labType?->test_name ?? $name ?? 'Diagnostics');
+        return 'Lab: '.($labType?->test_name ?? $name ?? 'Diagnostics');
     }
 
     private static function serviceDescription($svc, ?LabTestType $svcType): string

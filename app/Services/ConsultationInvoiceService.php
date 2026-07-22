@@ -47,19 +47,19 @@ class ConsultationInvoiceService
 
         if (!empty($data['requested_labs'])) {
             foreach ($data['requested_labs'] as $lab) {
-                $labTypeId = $lab['test_type_id'] ?? $lab['lab_test_type_id'] ?? null;
-                if ($labTypeId && in_array($labTypeId, $existingLabTypeIds)) {
+                $labTypeId = self::resolveLabTypeId($lab);
+                if (!$labTypeId || in_array($labTypeId, $existingLabTypeIds)) {
                     continue;
                 }
 
-                $labType = $labTypeId ? LabTestType::find($labTypeId) : null;
-                $fee = $labType ? $labType->price : ($lab['price'] ?? 0);
+                $labType = LabTestType::find($labTypeId);
+                $fee = $labType ? $labType->price : (is_array($lab) ? ($lab['price'] ?? 0) : 0);
 
                 InvoiceItem::create([
                     'invoice_id' => $invoice->invoice_id,
                     'item_type' => 'lab_test',
                     'item_id_ref' => $labTypeId,
-                    'description' => 'Lab: ' . ($labType->test_name ?? $lab['test_name'] ?? 'Diagnostics'),
+                    'description' => self::labDescription($lab, $labType),
                     'quantity' => 1,
                     'unit_price' => $fee,
                     'total_price' => $fee,
@@ -82,19 +82,19 @@ class ConsultationInvoiceService
 
         if (!empty($data['requested_service_items'])) {
             foreach ($data['requested_service_items'] as $svc) {
-                $svcTypeId = $svc['test_type_id'] ?? null;
-                if ($svcTypeId && in_array($svcTypeId, $existingServiceTypeIds)) {
+                $svcTypeId = self::resolveServiceTypeId($svc);
+                if (!$svcTypeId || in_array($svcTypeId, $existingServiceTypeIds)) {
                     continue;
                 }
 
-                $svcType = $svcTypeId ? LabTestType::find($svcTypeId) : null;
-                $fee = $svcType ? $svcType->price : ($svc['price'] ?? 0);
+                $svcType = LabTestType::find($svcTypeId);
+                $fee = $svcType ? $svcType->price : (is_array($svc) ? ($svc['price'] ?? 0) : 0);
 
                 InvoiceItem::create([
                     'invoice_id' => $invoice->invoice_id,
                     'item_type' => 'service',
                     'item_id_ref' => $svcTypeId,
-                    'description' => $svcType->test_name ?? $svc['test_name'] ?? 'Service',
+                    'description' => self::serviceDescription($svc, $svcType),
                     'quantity' => 1,
                     'unit_price' => $fee,
                     'total_price' => $fee,
@@ -105,17 +105,19 @@ class ConsultationInvoiceService
 
         if (!empty($data['requested_procedures'])) {
             foreach ($data['requested_procedures'] as $proc) {
-                $procId = $proc['procedure_id'] ?? null;
-                if ($procId && in_array($procId, $existingProcedureIds)) {
+                $procId = self::resolveProcedureId($proc);
+                if (!$procId || in_array($procId, $existingProcedureIds)) {
                     continue;
                 }
 
-                $fee = $proc['standard_fee'] ?? 0;
+                $procedure = MedicalProcedure::find($procId);
+                $fee = is_array($proc) ? ($proc['standard_fee'] ?? ($procedure?->standard_fee ?? 0)) : ($procedure?->standard_fee ?? 0);
+
                 InvoiceItem::create([
                     'invoice_id' => $invoice->invoice_id,
                     'item_type' => 'procedure',
                     'item_id_ref' => $procId,
-                    'description' => $proc['name'] ?? 'Procedure',
+                    'description' => self::procedureDescription($proc, $procedure),
                     'quantity' => 1,
                     'unit_price' => $fee,
                     'total_price' => $fee,
@@ -149,12 +151,19 @@ class ConsultationInvoiceService
     {
         $total = 0;
         foreach ($procedures as $proc) {
-            $fee = $proc['standard_fee'] ?? 0;
+            $procId = self::resolveProcedureId($proc);
+            if (!$procId) {
+                continue;
+            }
+
+            $procedure = MedicalProcedure::find($procId);
+            $fee = is_array($proc) ? ($proc['standard_fee'] ?? ($procedure?->standard_fee ?? 0)) : ($procedure?->standard_fee ?? 0);
+
             InvoiceItem::create([
                 'invoice_id' => $invoice->invoice_id,
                 'item_type' => 'procedure',
-                'item_id_ref' => $proc['procedure_id'] ?? null,
-                'description' => $proc['name'] ?? 'Procedure',
+                'item_id_ref' => $procId,
+                'description' => self::procedureDescription($proc, $procedure),
                 'quantity' => 1,
                 'unit_price' => $fee,
                 'total_price' => $fee,
@@ -172,15 +181,19 @@ class ConsultationInvoiceService
         }
 
         foreach ($data['requested_labs'] as $lab) {
-            $labTypeId = $lab['test_type_id'] ?? $lab['lab_test_type_id'] ?? null;
-            $labType = $labTypeId ? LabTestType::find($labTypeId) : null;
-            $fee = $labType ? $labType->price : ($lab['price'] ?? 0);
+            $labTypeId = self::resolveLabTypeId($lab);
+            if (!$labTypeId) {
+                continue;
+            }
+
+            $labType = LabTestType::find($labTypeId);
+            $fee = $labType ? $labType->price : (is_array($lab) ? ($lab['price'] ?? 0) : 0);
 
             InvoiceItem::create([
                 'invoice_id' => $invoice->invoice_id,
                 'item_type' => 'lab_test',
                 'item_id_ref' => $labTypeId,
-                'description' => 'Lab: ' . ($labType->test_name ?? $lab['test_name'] ?? 'Diagnostics'),
+                'description' => self::labDescription($lab, $labType),
                 'quantity' => 1,
                 'unit_price' => $fee,
                 'total_price' => $fee,
@@ -207,15 +220,19 @@ class ConsultationInvoiceService
     {
         $total = 0;
         foreach ($services as $svc) {
-            $svcTypeId = $svc['test_type_id'] ?? null;
-            $svcType = $svcTypeId ? LabTestType::find($svcTypeId) : null;
-            $fee = $svcType ? $svcType->price : ($svc['price'] ?? 0);
+            $svcTypeId = self::resolveServiceTypeId($svc);
+            if (!$svcTypeId) {
+                continue;
+            }
+
+            $svcType = LabTestType::find($svcTypeId);
+            $fee = $svcType ? $svcType->price : (is_array($svc) ? ($svc['price'] ?? 0) : 0);
 
             InvoiceItem::create([
                 'invoice_id' => $invoice->invoice_id,
                 'item_type' => 'service',
                 'item_id_ref' => $svcTypeId,
-                'description' => $svcType->test_name ?? $svc['test_name'] ?? 'Service',
+                'description' => self::serviceDescription($svc, $svcType),
                 'quantity' => 1,
                 'unit_price' => $fee,
                 'total_price' => $fee,
@@ -223,5 +240,71 @@ class ConsultationInvoiceService
             $total += $fee;
         }
         return $total;
+    }
+
+    private static function resolveLabTypeId($lab): ?int
+    {
+        if (is_numeric($lab)) {
+            return (int) $lab;
+        }
+
+        if (!is_array($lab)) {
+            return null;
+        }
+
+        $id = $lab['test_type_id'] ?? $lab['lab_test_type_id'] ?? null;
+
+        return $id ? (int) $id : null;
+    }
+
+    private static function resolveServiceTypeId($svc): ?int
+    {
+        if (is_numeric($svc)) {
+            return (int) $svc;
+        }
+
+        if (!is_array($svc)) {
+            return null;
+        }
+
+        $id = $svc['test_type_id'] ?? null;
+
+        return $id ? (int) $id : null;
+    }
+
+    private static function resolveProcedureId($proc): ?int
+    {
+        if (is_numeric($proc)) {
+            return (int) $proc;
+        }
+
+        if (!is_array($proc)) {
+            return null;
+        }
+
+        $id = $proc['procedure_id'] ?? null;
+
+        return $id ? (int) $id : null;
+    }
+
+    private static function labDescription($lab, ?LabTestType $labType): string
+    {
+        $name = is_array($lab) ? ($lab['test_name'] ?? null) : null;
+
+        return 'Lab: ' . ($labType?->test_name ?? $name ?? 'Diagnostics');
+    }
+
+    private static function serviceDescription($svc, ?LabTestType $svcType): string
+    {
+        $name = is_array($svc) ? ($svc['test_name'] ?? null) : null;
+
+        return $svcType?->test_name ?? $name ?? 'Service';
+    }
+
+    private static function procedureDescription($proc, ?MedicalProcedure $procedure): string
+    {
+        $name = is_array($proc) ? ($proc['name'] ?? null) : null;
+
+        return $procedure?->name ?? $name ?? 'Procedure';
     }
 }

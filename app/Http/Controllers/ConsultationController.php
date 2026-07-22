@@ -269,6 +269,14 @@ class ConsultationController extends Controller
             return redirect()->route('dashboard')->with('success', 'Consultation completed successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+
+            \Illuminate\Support\Facades\Log::error('Consultation store failed', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'data' => $request->except(['password']),
+                'user_id' => Auth::id(),
+            ]);
+
             return back()->withErrors(['error' => 'Failed to create consultation: ' . $e->getMessage()]);
         }
     }
@@ -464,6 +472,15 @@ class ConsultationController extends Controller
             return redirect()->route('dashboard')->with('success', 'Consultation concluded successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+
+            \Illuminate\Support\Facades\Log::error('Consultation update failed', [
+                'consultation_id' => $id,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'data' => $request->except(['password']),
+                'user_id' => Auth::id(),
+            ]);
+
             return back()->withErrors(['error' => 'Failed to update consultation: ' . $e->getMessage()]);
         }
     }

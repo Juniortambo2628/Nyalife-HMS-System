@@ -15,10 +15,10 @@ class StoreConsultationRequest extends FormRequest
     {
         return [
             'patient_id' => 'required|exists:patients,patient_id',
-            'doctor_id' => 'required',
+            'doctor_id' => 'required|exists:staff,staff_id',
             'consultation_date' => 'required|date',
             'chief_complaint' => 'nullable|string',
-            'status' => 'required|string',
+            'status' => 'required|string|in:pending,in_progress,completed',
             'priority' => 'nullable|string|in:normal,emergency',
             'is_walk_in' => 'nullable|boolean',
             'history_present_illness' => 'nullable|string',

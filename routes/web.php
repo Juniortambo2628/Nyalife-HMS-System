@@ -278,15 +278,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Departments
-    Route::middleware('permission:'.Permissions::MANAGE_DEPARTMENTS)->group(function () {
+    Route::middleware('permission:'.Permissions::VIEW_DEPARTMENTS)->group(function () {
         Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
+        Route::get('/departments/{id}', [DepartmentController::class, 'show'])->name('departments.show')->whereNumber('id');
+    });
+    Route::middleware('permission:'.Permissions::MANAGE_DEPARTMENTS)->group(function () {
         Route::get('/departments/create', [DepartmentController::class, 'create'])->name('departments.create');
         Route::post('/departments', [DepartmentController::class, 'store'])->name('departments.store');
-        Route::get('/departments/{id}/edit', [DepartmentController::class, 'edit'])->name('departments.edit');
-        Route::put('/departments/{id}', [DepartmentController::class, 'update'])->name('departments.update');
-        Route::delete('/departments/{id}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
-        Route::post('/departments/{id}/toggle', [DepartmentController::class, 'toggle'])->name('departments.toggle');
-        Route::get('/departments/{id}', [DepartmentController::class, 'show'])->name('departments.show');
+        Route::get('/departments/{id}/edit', [DepartmentController::class, 'edit'])->name('departments.edit')->whereNumber('id');
+        Route::put('/departments/{id}', [DepartmentController::class, 'update'])->name('departments.update')->whereNumber('id');
+        Route::delete('/departments/{id}', [DepartmentController::class, 'destroy'])->name('departments.destroy')->whereNumber('id');
+        Route::post('/departments/{id}/toggle', [DepartmentController::class, 'toggle'])->name('departments.toggle')->whereNumber('id');
     });
     // Users
     Route::middleware('permission:'.Permissions::MANAGE_USERS)->group(function () {

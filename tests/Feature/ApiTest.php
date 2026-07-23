@@ -2,18 +2,19 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Patient;
-use App\Models\Staff;
-use App\Models\Department;
 use App\Models\Appointment;
-use App\Models\Invoice;
-use App\Models\Payment;
+use App\Models\Department;
 use App\Models\FollowUp;
+use App\Models\Invoice;
+use App\Models\Patient;
+use App\Models\Payment;
 use App\Models\Role;
-use App\Models\Insurance;
-use Laravel\Sanctum\Sanctum;
+use App\Models\Staff;
+use App\Models\User;
+use Database\Seeders\RolePermissionsSeeder;
+use Database\Seeders\SyncSpatieRolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ApiTest extends TestCase
@@ -21,10 +22,15 @@ class ApiTest extends TestCase
     use RefreshDatabase;
 
     protected User $adminUser;
+
     protected User $doctorUser;
+
     protected User $patientUser;
+
     protected Patient $patient;
+
     protected Staff $doctor;
+
     protected Department $department;
 
     protected function setUp(): void
@@ -59,8 +65,8 @@ class ApiTest extends TestCase
         foreach (['admin', 'doctor', 'nurse', 'receptionist', 'lab_technician', 'pharmacist', 'patient'] as $roleName) {
             Role::firstOrCreate(['role_name' => $roleName]);
         }
-        $this->seed(\Database\Seeders\SyncSpatieRolesSeeder::class);
-        $this->seed(\Database\Seeders\RolePermissionsSeeder::class);
+        $this->seed(SyncSpatieRolesSeeder::class);
+        $this->seed(RolePermissionsSeeder::class);
     }
 
     // =========================================================================
@@ -69,7 +75,7 @@ class ApiTest extends TestCase
 
     public function test_public_available_appointment_slots(): void
     {
-        $this->getJson('/api/appointments/available-slots?date=' . now()->addDay()->format('Y-m-d'))
+        $this->getJson('/api/appointments/available-slots?date='.now()->addDay()->format('Y-m-d'))
             ->assertOk();
     }
 
@@ -82,9 +88,9 @@ class ApiTest extends TestCase
     public function test_public_available_slots_throttle(): void
     {
         for ($i = 0; $i < 35; $i++) {
-            $this->getJson('/api/appointments/available-slots?date=' . now()->addDay()->format('Y-m-d'));
+            $this->getJson('/api/appointments/available-slots?date='.now()->addDay()->format('Y-m-d'));
         }
-        $this->getJson('/api/appointments/available-slots?date=' . now()->addDay()->format('Y-m-d'))->assertStatus(429);
+        $this->getJson('/api/appointments/available-slots?date='.now()->addDay()->format('Y-m-d'))->assertStatus(429);
     }
 
     // =========================================================================
@@ -199,7 +205,7 @@ class ApiTest extends TestCase
     {
         $followUp = FollowUp::factory()->create([
             'patient_id' => $this->patient->patient_id,
-            'doctor_id' => $this->doctor->staff_id,
+            'created_by' => $this->doctor->user_id,
         ]);
 
         Sanctum::actingAs($this->adminUser);
@@ -312,7 +318,7 @@ class ApiTest extends TestCase
 
         Sanctum::actingAs($this->adminUser);
 
-        $this->getJson('/api/v1/appointments?from=' . now()->subDay()->format('Y-m-d'))
+        $this->getJson('/api/v1/appointments?from='.now()->subDay()->format('Y-m-d'))
             ->assertOk();
     }
 

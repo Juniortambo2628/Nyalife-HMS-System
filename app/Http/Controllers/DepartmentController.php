@@ -6,6 +6,8 @@ use App\Http\Requests\StoreDepartmentRequest;
 use App\Http\Requests\UpdateDepartmentRequest;
 use App\Http\Resources\DepartmentResource;
 use App\Models\Department;
+use App\Models\Staff;
+use App\Models\User;
 use App\Services\ActivityLogger;
 use App\Support\Permissions;
 use Illuminate\Http\Request;
@@ -19,9 +21,14 @@ class DepartmentController extends Controller
         $this->requirePermission(Permissions::MANAGE_DEPARTMENTS);
     }
 
+    private function authorizeView(): void
+    {
+        $this->requirePermission(Permissions::VIEW_DEPARTMENTS);
+    }
+
     public function index(Request $request)
     {
-        $this->authorizeAdmin();
+        $this->authorizeView();
 
         $departments = Department::withCount('staffMembers')
             ->filteredQuery($request)
@@ -47,12 +54,12 @@ class DepartmentController extends Controller
     {
         $this->authorizeAdmin();
 
-        $staffUsers = \App\Models\User::whereHas('roleRelation', function ($q) {
+        $staffUsers = User::whereHas('roleRelation', function ($q) {
             $q->where('role_name', '!=', 'patient');
         })->with('staff')->get()->map(function ($user) {
             return [
                 'user_id' => $user->user_id,
-                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'name' => trim($user->first_name.' '.$user->last_name),
                 'role' => $user->role,
                 'department_id' => $user->staff?->department_id,
             ];
@@ -77,14 +84,14 @@ class DepartmentController extends Controller
 
         $assignedUserIds = $request->input('assigned_user_ids', []);
         foreach ($assignedUserIds as $userId) {
-            $user = \App\Models\User::find($userId);
+            $user = User::find($userId);
             if ($user) {
-                \App\Models\Staff::updateOrCreate(
+                Staff::updateOrCreate(
                     ['user_id' => $userId],
                     [
                         'department_id' => $department->department_id,
                         'department' => $department->department_name,
-                        'employee_id' => $user->staff?->employee_id ?? (strtoupper($user->username) . '-001'),
+                        'employee_id' => $user->staff?->employee_id ?? (strtoupper($user->username).'-001'),
                         'join_date' => $user->staff?->join_date ?? now()->toDateString(),
                     ]
                 );
@@ -104,7 +111,7 @@ class DepartmentController extends Controller
 
     public function show($id)
     {
-        $this->authorizeAdmin();
+        $this->authorizeView();
 
         $department = Department::with(['staffMembers.user'])
             ->withCount('staffMembers')
@@ -121,12 +128,12 @@ class DepartmentController extends Controller
 
         $department = Department::with('staffMembers.user')->findOrFail($id);
 
-        $staffUsers = \App\Models\User::whereHas('roleRelation', function ($q) {
+        $staffUsers = User::whereHas('roleRelation', function ($q) {
             $q->where('role_name', '!=', 'patient');
         })->with('staff')->get()->map(function ($user) {
             return [
                 'user_id' => $user->user_id,
-                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'name' => trim($user->first_name.' '.$user->last_name),
                 'role' => $user->role,
                 'department_id' => $user->staff?->department_id,
             ];
@@ -155,9 +162,9 @@ class DepartmentController extends Controller
         }
 
         $assignedUserIds = $request->input('assigned_user_ids', []);
-        
+
         // Dissociate staff no longer assigned to this department
-        \App\Models\Staff::where('department_id', $department->department_id)
+        Staff::where('department_id', $department->department_id)
             ->whereNotIn('user_id', $assignedUserIds)
             ->update([
                 'department_id' => null,
@@ -166,14 +173,14 @@ class DepartmentController extends Controller
 
         // Associate assigned staff
         foreach ($assignedUserIds as $userId) {
-            $user = \App\Models\User::find($userId);
+            $user = User::find($userId);
             if ($user) {
-                \App\Models\Staff::updateOrCreate(
+                Staff::updateOrCreate(
                     ['user_id' => $userId],
                     [
                         'department_id' => $department->department_id,
                         'department' => $department->department_name,
-                        'employee_id' => $user->staff?->employee_id ?? (strtoupper($user->username) . '-001'),
+                        'employee_id' => $user->staff?->employee_id ?? (strtoupper($user->username).'-001'),
                         'join_date' => $user->staff?->join_date ?? now()->toDateString(),
                     ]
                 );

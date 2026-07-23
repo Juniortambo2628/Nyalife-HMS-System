@@ -2,23 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Patient;
-use App\Models\Staff;
 use App\Models\Department;
-use App\Models\Consultation;
-use App\Models\Appointment;
-use App\Models\Invoice;
-use App\Models\Prescription;
-use App\Models\LabTestRequest;
-use App\Models\Vital;
-use App\Models\FollowUp;
-use App\Models\Insurance;
+use App\Models\Patient;
 use App\Models\Role;
-use App\Models\Message;
-use App\Models\ContactMessage;
-use App\Models\Blog;
-use App\Models\DoctorBlockOut;
+use App\Models\Staff;
+use App\Models\User;
+use Database\Seeders\RolePermissionsSeeder;
+use Database\Seeders\SyncSpatieRolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -27,15 +17,25 @@ class MiddlewareTest extends TestCase
     use RefreshDatabase;
 
     protected User $adminUser;
+
     protected User $doctorUser;
+
     protected User $nurseUser;
+
     protected User $receptionistUser;
+
     protected User $labTechUser;
+
     protected User $pharmacistUser;
+
     protected User $patientUser;
+
     protected Patient $patient;
+
     protected Staff $doctor;
+
     protected Staff $nurse;
+
     protected Department $department;
 
     protected function setUp(): void
@@ -90,8 +90,8 @@ class MiddlewareTest extends TestCase
         foreach (['admin', 'doctor', 'nurse', 'receptionist', 'lab_technician', 'pharmacist', 'patient'] as $roleName) {
             Role::firstOrCreate(['role_name' => $roleName]);
         }
-        $this->seed(\Database\Seeders\SyncSpatieRolesSeeder::class);
-        $this->seed(\Database\Seeders\RolePermissionsSeeder::class);
+        $this->seed(SyncSpatieRolesSeeder::class);
+        $this->seed(RolePermissionsSeeder::class);
     }
 
     // =========================================================================
@@ -206,9 +206,9 @@ class MiddlewareTest extends TestCase
         $this->actingAs($this->nurseUser)->get('/vitals')->assertOk();
     }
 
-    public function test_doctor_can_manage_vitals(): void
+    public function test_doctor_cannot_manage_vitals(): void
     {
-        $this->actingAs($this->doctorUser)->get('/vitals')->assertOk();
+        $this->actingAs($this->doctorUser)->get('/vitals')->assertStatus(403);
     }
 
     public function test_receptionist_cannot_manage_vitals(): void

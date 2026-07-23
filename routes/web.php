@@ -169,17 +169,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Prescriptions
     Route::middleware('role_or_permission:'.Permissions::staffOrPatient(Permissions::MANAGE_PRESCRIPTIONS))->group(function () {
         Route::get('/prescriptions', [PrescriptionController::class, 'index'])->name('prescriptions.index');
-        Route::get('/prescriptions/{id}', [PrescriptionController::class, 'show'])->name('prescriptions.show');
-        Route::get('/prescriptions/{id}/print', [PrescriptionController::class, 'print'])->name('prescriptions.print');
+        Route::get('/prescriptions/{id}', [PrescriptionController::class, 'show'])->name('prescriptions.show')->whereNumber('id');
+        Route::get('/prescriptions/{id}/print', [PrescriptionController::class, 'print'])->name('prescriptions.print')->whereNumber('id');
     });
     Route::middleware('permission:'.Permissions::MANAGE_PRESCRIPTIONS)->group(function () {
         Route::get('/prescriptions/create', [PrescriptionController::class, 'create'])->name('prescriptions.create');
         Route::post('/prescriptions', [PrescriptionController::class, 'store'])->name('prescriptions.store');
         Route::post('/prescriptions/bulk-action', [PrescriptionController::class, 'bulkAction'])->name('prescriptions.bulk-action');
-        Route::get('/prescriptions/{id}/edit', [PrescriptionController::class, 'edit'])->name('prescriptions.edit');
-        Route::put('/prescriptions/{id}', [PrescriptionController::class, 'update'])->name('prescriptions.update');
-        Route::delete('/prescriptions/{id}', [PrescriptionController::class, 'destroy'])->name('prescriptions.destroy');
-        Route::post('/prescriptions/{id}/dispense', [PrescriptionController::class, 'dispense'])->name('prescriptions.dispense');
+        Route::get('/prescriptions/{id}/edit', [PrescriptionController::class, 'edit'])->name('prescriptions.edit')->whereNumber('id');
+        Route::put('/prescriptions/{id}', [PrescriptionController::class, 'update'])->name('prescriptions.update')->whereNumber('id');
+        Route::delete('/prescriptions/{id}', [PrescriptionController::class, 'destroy'])->name('prescriptions.destroy')->whereNumber('id');
+        Route::post('/prescriptions/{id}/dispense', [PrescriptionController::class, 'dispense'])->name('prescriptions.dispense')->whereNumber('id');
     });
 
     // Lab

@@ -12,33 +12,12 @@ class InsuranceFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->randomElement([
-                'NHIF',
-                'AAR Insurance',
-                'Jubilee Insurance',
-                'Britam Insurance',
-                'CIC Insurance',
-                'UAP Old Mutual',
-                'Sanlam Insurance',
-                'Madison Insurance',
-                'APA Insurance',
-                'GA Insurance',
-                'Resolution Health',
-                'Metropolitan Cannon',
-                'Heritage Insurance',
-                'First Assurance',
-                'Kenindia Assurance',
-            ]),
-            'logo_path' => $this->faker->optional()->imageUrl(200, 100),
+            'name' => $this->faker->unique()->company(),
+            'logo_path' => null,
             'link' => $this->faker->optional()->url(),
-            'is_active' => $this->faker->boolean(80),
-            'sort_order' => $this->faker->numberBetween(1, 50),
+            'is_active' => true,
+            'sort_order' => 0,
         ];
-    }
-
-    public function active(): static
-    {
-        return $this->state(fn (array $attributes) => ['is_active' => true]);
     }
 
     public function inactive(): static

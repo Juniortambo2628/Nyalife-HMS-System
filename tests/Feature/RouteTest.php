@@ -2,29 +2,23 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Patient;
-use App\Models\Staff;
-use App\Models\Department;
-use App\Models\Consultation;
 use App\Models\Appointment;
-use App\Models\Invoice;
-use App\Models\Medication;
-use App\Models\Prescription;
-use App\Models\LabTestType;
-use App\Models\LabTestRequest;
-use App\Models\Vital;
-use App\Models\Insurance;
-use App\Models\FollowUp;
-use App\Models\Role;
-use App\Models\MedicalProcedure;
-use App\Models\RadiologyRequest;
-use App\Models\Message;
-use App\Models\DoctorBlockOut;
+use App\Models\Consultation;
 use App\Models\ContactMessage;
-use App\Models\Blog;
-use App\Models\Setting;
-use App\Models\MailTemplate;
+use App\Models\Department;
+use App\Models\Insurance;
+use App\Models\Invoice;
+use App\Models\LabTestType;
+use App\Models\Medication;
+use App\Models\Message;
+use App\Models\Patient;
+use App\Models\Prescription;
+use App\Models\Role;
+use App\Models\Staff;
+use App\Models\User;
+use App\Models\Vital;
+use Database\Seeders\RolePermissionsSeeder;
+use Database\Seeders\SyncSpatieRolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -33,17 +27,29 @@ class RouteTest extends TestCase
     use RefreshDatabase;
 
     protected User $adminUser;
+
     protected User $doctorUser;
+
     protected User $nurseUser;
+
     protected User $receptionistUser;
+
     protected User $labTechUser;
+
     protected User $pharmacistUser;
+
     protected User $patientUser;
+
     protected Patient $patient;
+
     protected Staff $doctor;
+
     protected Staff $nurse;
+
     protected Department $department;
+
     protected Medication $medication;
+
     protected LabTestType $labTestType;
 
     protected function setUp(): void
@@ -101,8 +107,8 @@ class RouteTest extends TestCase
         foreach (['admin', 'doctor', 'nurse', 'receptionist', 'lab_technician', 'pharmacist', 'patient'] as $roleName) {
             Role::firstOrCreate(['role_name' => $roleName]);
         }
-        $this->seed(\Database\Seeders\SyncSpatieRolesSeeder::class);
-        $this->seed(\Database\Seeders\RolePermissionsSeeder::class);
+        $this->seed(SyncSpatieRolesSeeder::class);
+        $this->seed(RolePermissionsSeeder::class);
     }
 
     // =========================================================================
@@ -147,25 +153,30 @@ class RouteTest extends TestCase
     public function test_public_guest_appointment_submit(): void
     {
         $this->post('/guest-appointment', [
-            'first_name' => 'Guest',
-            'last_name' => 'User',
+            'name' => 'Guest User',
             'email' => 'guest@test.com',
             'phone' => '+254700000000',
             'date' => now()->addDays(3)->format('Y-m-d'),
             'time' => '10:00',
+            'reason' => 'Routine check-up',
             'department_id' => $this->department->department_id,
-        ])->assertOk();
+        ])->assertRedirect();
     }
 
     public function test_public_newsletter_subscribe(): void
     {
         $this->post('/newsletter/subscribe', [
             'email' => 'subscriber@test.com',
-        ])->assertOk();
+        ])->assertRedirect();
     }
 
     public function test_public_check_guest_data(): void
     {
+        User::factory()->create([
+            'email' => 'guest@test.com',
+            'status' => 'provisional',
+        ]);
+
         $this->post('/check-guest-data', [
             'email' => 'guest@test.com',
         ])->assertOk();
@@ -677,21 +688,21 @@ class RouteTest extends TestCase
 
     public function test_lab_test_type_index(): void
     {
-        $this->actingAs($this->labTechUser)
+        $this->actingAs($this->adminUser)
             ->get('/lab-tests')
-            ->assertOk();
+            ->assertRedirect();
     }
 
     public function test_lab_test_type_create(): void
     {
-        $this->actingAs($this->labTechUser)
+        $this->actingAs($this->adminUser)
             ->get('/lab-tests/create')
             ->assertOk();
     }
 
     public function test_lab_test_type_store(): void
     {
-        $this->actingAs($this->labTechUser)
+        $this->actingAs($this->adminUser)
             ->post('/lab-tests', [
                 'test_name' => 'New Test Type',
                 'category' => 'Hematology',

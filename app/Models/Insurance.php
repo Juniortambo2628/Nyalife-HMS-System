@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Insurance extends Model
 {
+    use HasFactory;
+
     protected $table = 'insurances';
+
     protected $primaryKey = 'insurance_id';
 
     protected $fillable = [
@@ -27,7 +31,7 @@ class Insurance extends Model
      */
     public function getLogoUrlAttribute()
     {
-        if (!$this->logo_path) {
+        if (! $this->logo_path) {
             return null;
         }
 
@@ -35,7 +39,7 @@ class Insurance extends Model
             return $this->logo_path;
         }
 
-        return asset('storage/' . $this->logo_path);
+        return asset('storage/'.$this->logo_path);
     }
 
     protected $appends = ['logo_url'];

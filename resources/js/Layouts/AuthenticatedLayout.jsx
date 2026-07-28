@@ -20,90 +20,384 @@ const P = {
 const sidebarMenus = {
     admin: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'appointments', text: 'Appointments', url: '/appointments', icon: 'fas fa-calendar-alt', permissionAny: P.appts },
+        {
+            id: 'appointments',
+            text: 'Appointments',
+            url: '/appointments',
+            icon: 'fas fa-calendar-alt',
+            permissionAny: P.appts,
+        },
         { id: 'patients', text: 'Patients', url: '/patients', icon: 'fas fa-users', permission: 'manage-patients' },
-        { id: 'consultations', text: 'Consultations', url: '/consultations', icon: 'fas fa-stethoscope', permissionAny: P.consults },
-        { id: 'follow-ups', text: 'Follow-ups', url: '/follow-ups', icon: 'fas fa-calendar-check', permission: 'manage-follow-ups' },
-        { id: 'lab-requests', text: 'Lab Requests', url: route('lab.index'), icon: 'fas fa-flask', permission: 'manage-lab' },
-        { id: 'lab-results', text: 'Lab Results', url: route('lab.results'), icon: 'fas fa-file-medical-alt', permissionAny: P.labResults },
-        { id: 'lab-samples', text: 'Samples', url: route('lab.samples.index'), icon: 'fas fa-vial', permission: 'manage-lab' },
-        { id: 'prescriptions', text: 'Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription', permissionAny: P.rx },
+        {
+            id: 'consultations',
+            text: 'Consultations',
+            url: '/consultations',
+            icon: 'fas fa-stethoscope',
+            permissionAny: P.consults,
+        },
+        {
+            id: 'follow-ups',
+            text: 'Follow-ups',
+            url: '/follow-ups',
+            icon: 'fas fa-calendar-check',
+            permission: 'manage-follow-ups',
+        },
+        {
+            id: 'lab-requests',
+            text: 'Lab Requests',
+            url: route('lab.index'),
+            icon: 'fas fa-flask',
+            permission: 'manage-lab',
+        },
+        {
+            id: 'lab-results',
+            text: 'Lab Results',
+            url: route('lab.results'),
+            icon: 'fas fa-file-medical-alt',
+            permissionAny: P.labResults,
+        },
+        {
+            id: 'lab-samples',
+            text: 'Samples',
+            url: route('lab.samples.index'),
+            icon: 'fas fa-vial',
+            permission: 'manage-lab',
+        },
+        {
+            id: 'prescriptions',
+            text: 'Prescriptions',
+            url: '/prescriptions',
+            icon: 'fas fa-prescription',
+            permissionAny: P.rx,
+        },
         { id: 'invoices', text: 'Invoices', url: '/invoices', icon: 'fas fa-file-invoice', permissionAny: P.invoices },
-        { id: 'payments', text: 'Payments', url: '/payments', icon: 'fas fa-money-bill-wave', permission: 'manage-payments' },
-        { id: 'departments', text: 'Departments', url: '/departments', icon: 'fas fa-building', permission: 'manage-departments' },
+        {
+            id: 'payments',
+            text: 'Payments',
+            url: '/payments',
+            icon: 'fas fa-money-bill-wave',
+            permission: 'manage-payments',
+        },
+        {
+            id: 'departments',
+            text: 'Departments',
+            url: '/departments',
+            icon: 'fas fa-building',
+            permission: 'manage-departments',
+        },
         { id: 'users', text: 'Users', url: '/users', icon: 'fas fa-user-cog', permission: 'manage-users' },
-        { id: 'lab-catalog', text: 'Lab Catalog', url: route('lab.tests'), icon: 'fas fa-vials', permission: 'manage-lab-catalog' },
+        {
+            id: 'lab-catalog',
+            text: 'Lab Catalog',
+            url: route('lab.tests'),
+            icon: 'fas fa-vials',
+            permission: 'manage-lab-catalog',
+        },
         { id: 'reports', text: 'Reports', url: '/reports', icon: 'fas fa-chart-bar', permission: 'view-reports' },
-        { id: 'void-audit', text: 'Void Audit', url: route('admin.void-audit.index'), icon: 'fas fa-ban', permission: 'view-reports' },
-        { id: 'block-outs', text: 'Block-Out Dates', url: '/doctor-block-outs', icon: 'fas fa-calendar-minus', permission: 'manage-appointments' },
-        { id: 'blog-manage', text: 'Manage Blogs', url: route('blog.manage'), icon: 'fas fa-blog', permission: 'manage-system' },
-        { id: 'cms-manage', text: 'Landing CMS', url: route('cms.index'), icon: 'fas fa-laptop-code', permission: 'manage-system' },
-        { id: 'admin-settings', text: 'System Settings', url: route('admin.settings.index'), icon: 'fas fa-cogs', permission: 'manage-settings' },
-        { id: 'insurance-manage', text: 'Accepted Insurances', url: route('insurances.index'), icon: 'fas fa-shield-alt', permissionAny: ['manage-system', 'manage-insurance'] },
-        { id: 'mail-templates', text: 'Email Templates', url: route('mail-templates.index'), icon: 'fas fa-envelope-open-text', permission: 'manage-system' },
-        { id: 'contact-messages', text: 'Website Messages', url: route('admin.messages.index'), icon: 'fas fa-envelope-open-text', permission: 'manage-system' },
+        {
+            id: 'void-audit',
+            text: 'Void Audit',
+            url: route('admin.void-audit.index'),
+            icon: 'fas fa-ban',
+            permission: 'view-reports',
+        },
+        {
+            id: 'block-outs',
+            text: 'Block-Out Dates',
+            url: '/doctor-block-outs',
+            icon: 'fas fa-calendar-minus',
+            permission: 'manage-appointments',
+        },
+        {
+            id: 'blog-manage',
+            text: 'Manage Blogs',
+            url: route('blog.manage'),
+            icon: 'fas fa-blog',
+            permission: 'manage-system',
+        },
+        {
+            id: 'cms-manage',
+            text: 'Landing CMS',
+            url: route('cms.index'),
+            icon: 'fas fa-laptop-code',
+            permission: 'manage-system',
+        },
+        {
+            id: 'admin-settings',
+            text: 'System Settings',
+            url: route('admin.settings.index'),
+            icon: 'fas fa-cogs',
+            permission: 'manage-settings',
+        },
+        {
+            id: 'insurance-manage',
+            text: 'Accepted Insurances',
+            url: route('insurances.index'),
+            icon: 'fas fa-shield-alt',
+            permissionAny: ['manage-system', 'manage-insurance'],
+        },
+        {
+            id: 'mail-templates',
+            text: 'Email Templates',
+            url: route('mail-templates.index'),
+            icon: 'fas fa-envelope-open-text',
+            permission: 'manage-system',
+        },
+        {
+            id: 'contact-messages',
+            text: 'Website Messages',
+            url: route('admin.messages.index'),
+            icon: 'fas fa-envelope-open-text',
+            permission: 'manage-system',
+        },
     ],
     doctor: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'appointments', text: 'My Appointments', url: '/appointments', icon: 'fas fa-calendar-alt', permissionAny: P.appts },
-        { id: 'consultations', text: 'Consultations', url: '/consultations', icon: 'fas fa-stethoscope', permissionAny: P.consults },
-        { id: 'follow-ups', text: 'Follow-ups', url: '/follow-ups', icon: 'fas fa-calendar-check', permission: 'manage-follow-ups' },
-        { id: 'patients', text: 'View Patients', url: '/patients', icon: 'fas fa-users', permission: 'manage-patients' },
-        { id: 'lab-requests', text: 'Lab Requests', url: route('lab.index'), icon: 'fas fa-flask', permission: 'manage-lab' },
-        { id: 'prescriptions', text: 'Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription', permissionAny: P.rx },
-        { id: 'block-outs', text: 'Block-Out Dates', url: '/doctor-block-outs', icon: 'fas fa-calendar-minus', permission: 'manage-appointments' },
-        { id: 'schedule', text: 'My Schedule', url: '/appointments/calendar', icon: 'fas fa-clock', permission: 'manage-appointments' },
+        {
+            id: 'appointments',
+            text: 'My Appointments',
+            url: '/appointments',
+            icon: 'fas fa-calendar-alt',
+            permissionAny: P.appts,
+        },
+        {
+            id: 'consultations',
+            text: 'Consultations',
+            url: '/consultations',
+            icon: 'fas fa-stethoscope',
+            permissionAny: P.consults,
+        },
+        {
+            id: 'follow-ups',
+            text: 'Follow-ups',
+            url: '/follow-ups',
+            icon: 'fas fa-calendar-check',
+            permission: 'manage-follow-ups',
+        },
+        {
+            id: 'patients',
+            text: 'View Patients',
+            url: '/patients',
+            icon: 'fas fa-users',
+            permission: 'manage-patients',
+        },
+        {
+            id: 'lab-requests',
+            text: 'Lab Requests',
+            url: route('lab.index'),
+            icon: 'fas fa-flask',
+            permission: 'manage-lab',
+        },
+        {
+            id: 'prescriptions',
+            text: 'Prescriptions',
+            url: '/prescriptions',
+            icon: 'fas fa-prescription',
+            permissionAny: P.rx,
+        },
+        {
+            id: 'block-outs',
+            text: 'Block-Out Dates',
+            url: '/doctor-block-outs',
+            icon: 'fas fa-calendar-minus',
+            permission: 'manage-appointments',
+        },
+        {
+            id: 'schedule',
+            text: 'My Schedule',
+            url: '/appointments/calendar',
+            icon: 'fas fa-clock',
+            permission: 'manage-appointments',
+        },
     ],
     nurse: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'appointments', text: 'Appointments', url: '/appointments', icon: 'fas fa-calendar-alt', permission: 'manage-appointments' },
-        { id: 'consultations', text: 'Consultations', url: '/consultations', icon: 'fas fa-stethoscope', permission: 'manage-consultations' },
-        { id: 'prescriptions', text: 'Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription', permission: 'manage-prescriptions' },
-        { id: 'lab-requests', text: 'Lab Requests', url: route('lab.index'), icon: 'fas fa-flask', permission: 'manage-lab' },
-        { id: 'lab-results', text: 'Lab Results', url: route('lab.results'), icon: 'fas fa-file-medical-alt', permission: 'manage-lab' },
-        { id: 'follow-ups', text: 'Follow-ups', url: '/follow-ups', icon: 'fas fa-calendar-check', permission: 'manage-follow-ups' },
-        { id: 'patients', text: 'View Patients', url: '/patients', icon: 'fas fa-users', permission: 'manage-patients' },
+        {
+            id: 'appointments',
+            text: 'Appointments',
+            url: '/appointments',
+            icon: 'fas fa-calendar-alt',
+            permission: 'manage-appointments',
+        },
+        {
+            id: 'consultations',
+            text: 'Consultations',
+            url: '/consultations',
+            icon: 'fas fa-stethoscope',
+            permission: 'manage-consultations',
+        },
+        {
+            id: 'prescriptions',
+            text: 'Prescriptions',
+            url: '/prescriptions',
+            icon: 'fas fa-prescription',
+            permission: 'manage-prescriptions',
+        },
+        {
+            id: 'lab-requests',
+            text: 'Lab Requests',
+            url: route('lab.index'),
+            icon: 'fas fa-flask',
+            permission: 'manage-lab',
+        },
+        {
+            id: 'lab-results',
+            text: 'Lab Results',
+            url: route('lab.results'),
+            icon: 'fas fa-file-medical-alt',
+            permission: 'manage-lab',
+        },
+        {
+            id: 'follow-ups',
+            text: 'Follow-ups',
+            url: '/follow-ups',
+            icon: 'fas fa-calendar-check',
+            permission: 'manage-follow-ups',
+        },
+        {
+            id: 'patients',
+            text: 'View Patients',
+            url: '/patients',
+            icon: 'fas fa-users',
+            permission: 'manage-patients',
+        },
         { id: 'vitals', text: 'Record Vitals', url: '/vitals', icon: 'fas fa-heartbeat', permission: 'manage-vitals' },
     ],
     lab_technician: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'lab-requests', text: 'Lab Requests', url: route('lab.index'), icon: 'fas fa-flask', permission: 'manage-lab' },
-        { id: 'lab-results', text: 'Lab Results', url: route('lab.results'), icon: 'fas fa-file-medical-alt', permission: 'manage-lab' },
-        { id: 'lab-samples', text: 'Samples', url: route('lab.samples.index'), icon: 'fas fa-vial', permission: 'manage-lab' },
-        { id: 'lab-catalog', text: 'Test Catalog', url: route('lab.tests'), icon: 'fas fa-vial', permission: 'manage-lab' },
+        {
+            id: 'lab-requests',
+            text: 'Lab Requests',
+            url: route('lab.index'),
+            icon: 'fas fa-flask',
+            permission: 'manage-lab',
+        },
+        {
+            id: 'lab-results',
+            text: 'Lab Results',
+            url: route('lab.results'),
+            icon: 'fas fa-file-medical-alt',
+            permission: 'manage-lab',
+        },
+        {
+            id: 'lab-samples',
+            text: 'Samples',
+            url: route('lab.samples.index'),
+            icon: 'fas fa-vial',
+            permission: 'manage-lab',
+        },
+        {
+            id: 'lab-catalog',
+            text: 'Test Catalog',
+            url: route('lab.tests'),
+            icon: 'fas fa-vial',
+            permission: 'manage-lab',
+        },
     ],
     pharmacist: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'prescriptions', text: 'Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription', permissionAny: P.rx },
-        { id: 'inventory', text: 'Inventory', url: '/pharmacy/inventory', icon: 'fas fa-boxes', permission: 'manage-pharmacy' },
-        { id: 'medicines', text: 'Medicines', url: '/pharmacy/medicines', icon: 'fas fa-pills', permission: 'manage-pharmacy' },
+        {
+            id: 'prescriptions',
+            text: 'Prescriptions',
+            url: '/prescriptions',
+            icon: 'fas fa-prescription',
+            permissionAny: P.rx,
+        },
+        {
+            id: 'inventory',
+            text: 'Inventory',
+            url: '/pharmacy/inventory',
+            icon: 'fas fa-boxes',
+            permission: 'manage-pharmacy',
+        },
+        {
+            id: 'medicines',
+            text: 'Medicines',
+            url: '/pharmacy/medicines',
+            icon: 'fas fa-pills',
+            permission: 'manage-pharmacy',
+        },
     ],
     receptionist: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'appointments', text: 'Appointments', url: '/appointments', icon: 'fas fa-calendar-alt', permission: 'manage-appointments' },
+        {
+            id: 'appointments',
+            text: 'Appointments',
+            url: '/appointments',
+            icon: 'fas fa-calendar-alt',
+            permission: 'manage-appointments',
+        },
         { id: 'patients', text: 'Patients', url: '/patients', icon: 'fas fa-users', permission: 'manage-patients' },
-        { id: 'invoices', text: 'Invoices', url: '/invoices', icon: 'fas fa-file-invoice', permission: 'manage-invoices' },
-        { id: 'payments', text: 'Payments', url: '/payments', icon: 'fas fa-money-bill-wave', permission: 'manage-payments' },
-        { id: 'insurance-manage', text: 'Health Insurances', url: route('insurances.index'), icon: 'fas fa-shield-alt', permission: 'manage-insurance' },
+        {
+            id: 'invoices',
+            text: 'Invoices',
+            url: '/invoices',
+            icon: 'fas fa-file-invoice',
+            permission: 'manage-invoices',
+        },
+        {
+            id: 'payments',
+            text: 'Payments',
+            url: '/payments',
+            icon: 'fas fa-money-bill-wave',
+            permission: 'manage-payments',
+        },
+        {
+            id: 'insurance-manage',
+            text: 'Health Insurances',
+            url: route('insurances.index'),
+            icon: 'fas fa-shield-alt',
+            permission: 'manage-insurance',
+        },
     ],
     patient: [
         { id: 'dashboard', text: 'Dashboard', url: '/dashboard', icon: 'fas fa-tachometer-alt' },
-        { id: 'appointments', text: 'My Appointments', url: '/appointments', icon: 'fas fa-calendar-alt', permission: 'view-own-records' },
-        { id: 'consultations', text: 'My Consultations', url: '/consultations', icon: 'fas fa-stethoscope', permission: 'view-own-records' },
-        { id: 'lab-results', text: 'My Lab Results', url: route('lab.results'), icon: 'fas fa-file-medical-alt', permission: 'view-own-records' },
-        { id: 'prescriptions', text: 'My Prescriptions', url: '/prescriptions', icon: 'fas fa-prescription', permission: 'view-own-records' },
-        { id: 'billing', text: 'Billing & Invoices', url: '/invoices', icon: 'fas fa-file-invoice-dollar', permission: 'view-own-records' },
+        {
+            id: 'appointments',
+            text: 'My Appointments',
+            url: '/appointments',
+            icon: 'fas fa-calendar-alt',
+            permission: 'view-own-records',
+        },
+        {
+            id: 'consultations',
+            text: 'My Consultations',
+            url: '/consultations',
+            icon: 'fas fa-stethoscope',
+            permission: 'view-own-records',
+        },
+        {
+            id: 'lab-results',
+            text: 'My Lab Results',
+            url: route('lab.results'),
+            icon: 'fas fa-file-medical-alt',
+            permission: 'view-own-records',
+        },
+        {
+            id: 'prescriptions',
+            text: 'My Prescriptions',
+            url: '/prescriptions',
+            icon: 'fas fa-prescription',
+            permission: 'view-own-records',
+        },
+        {
+            id: 'billing',
+            text: 'Billing & Invoices',
+            url: '/invoices',
+            icon: 'fas fa-file-invoice-dollar',
+            permission: 'view-own-records',
+        },
         { id: 'profile', text: 'My Profile', url: '/profile', icon: 'fas fa-user' },
     ],
 };
 
-export default function AuthenticatedLayout({ 
-    header, 
-    children, 
-    toolbarActions, 
-    toolbarFilters, 
+export default function AuthenticatedLayout({
+    header,
+    children,
+    toolbarActions,
+    toolbarFilters,
     toolbarViewOptions,
-    toolbarBulkActions, 
+    toolbarBulkActions,
     selectionCount,
     autosaveStatus: propAutosaveStatus,
     drafts = [],
@@ -131,9 +425,8 @@ export default function AuthenticatedLayout({
     };
 
     // Get menu items for current user role, filtered by Spatie permissions
-    const menuItems = (sidebarMenus[userRole] || sidebarMenus.patient)
-        .filter((item) => hasPermission(item));
-    
+    const menuItems = (sidebarMenus[userRole] || sidebarMenus.patient).filter((item) => hasPermission(item));
+
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
         const saved = localStorage.getItem('sidebarCollapsed');
         return saved === 'true';
@@ -160,7 +453,7 @@ export default function AuthenticatedLayout({
     }, []);
 
     const toggleSidebar = () => {
-        setSidebarCollapsed(prev => {
+        setSidebarCollapsed((prev) => {
             const newState = !prev;
             localStorage.setItem('sidebarCollapsed', newState);
             return newState;
@@ -198,19 +491,19 @@ export default function AuthenticatedLayout({
         } else {
             document.body.classList.remove('sidebar-collapsed');
         }
-        
     }, [sidebarCollapsed]);
 
     // Get display name (safely)
-    const displayName = (user && user.first_name && user.last_name)
-        ? `${user.first_name} ${user.last_name}` 
-        : (user?.name || user?.username || 'User');
+    const displayName =
+        user && user.first_name && user.last_name
+            ? `${user.first_name} ${user.last_name}`
+            : user?.name || user?.username || 'User';
 
     return (
         <div className={`has-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-            <Toaster 
-                position="top-right" 
-                reverseOrder={false} 
+            <Toaster
+                position="top-right"
+                reverseOrder={false}
                 toastOptions={{
                     className: 'premium-toast',
                     style: {
@@ -234,53 +527,64 @@ export default function AuthenticatedLayout({
                 }}
             />
             {/* Sidebar */}
-            <aside id="nyalifeSidebar" className={`nyalife-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${sidebarOpen ? 'open' : ''}`}>
+            <aside
+                id="nyalifeSidebar"
+                className={`nyalife-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${sidebarOpen ? 'open' : ''}`}
+            >
                 {/* Sidebar Toggle Button */}
-                <button className="sidebar-toggle-btn" id="sidebarToggleBtn" title="Toggle Sidebar" onClick={toggleSidebar}>
+                <button
+                    className="sidebar-toggle-btn"
+                    id="sidebarToggleBtn"
+                    title="Toggle Sidebar"
+                    onClick={toggleSidebar}
+                >
                     <i className={`fas fa-chevron-${sidebarCollapsed ? 'right' : 'left'}`}></i>
                 </button>
-                
+
                 {/* Sidebar Header with Logo */}
                 <div className="sidebar-header h-auto">
                     <div className="sidebar-logo h-auto">
-                        <img src="/assets/logo/Logo2-transparent.png" alt="Nyalife HMS" className="logo-img me-2 bg-white rounded-2 p-1" 
-                             onError={(e) => { 
-                                 if (e.target) e.target.style.display = 'none'; 
-                                 if (e.target?.nextElementSibling) e.target.nextElementSibling.style.display = 'flex'; 
-                             }} />
+                        <img
+                            src="/assets/logo/Logo2-transparent.png"
+                            alt="Nyalife HMS"
+                            className="logo-img me-2 bg-white rounded-2 p-1"
+                            onError={(e) => {
+                                if (e.target) e.target.style.display = 'none';
+                                if (e.target?.nextElementSibling) e.target.nextElementSibling.style.display = 'flex';
+                            }}
+                        />
                     </div>
                 </div>
-                
+
                 {/* Sidebar Menu */}
                 <nav className="sidebar-nav h-auto">
                     <ul className="sidebar-menu h-auto">
                         {menuItems.map((item) => {
                             // Normalize item.url to just the path for reliable comparison
-                            const itemPath = item.url.startsWith('http') 
-                                ? new URL(item.url).pathname 
-                                : item.url;
-                                
-                            const active = currentUrl === itemPath || 
-                                         currentUrl.startsWith(itemPath + '/') || 
-                                         currentUrl.startsWith(itemPath + '?') ||
-                                         (itemPath !== '/' && currentUrl.startsWith(itemPath));
+                            const itemPath = item.url.startsWith('http') ? new URL(item.url).pathname : item.url;
+
+                            const active =
+                                currentUrl === itemPath ||
+                                currentUrl.startsWith(itemPath + '/') ||
+                                currentUrl.startsWith(itemPath + '?') ||
+                                (itemPath !== '/' && currentUrl.startsWith(itemPath));
 
                             const moduleName = {
-                                'appointments': 'appointments',
-                                'consultations': 'consultations',
+                                appointments: 'appointments',
+                                consultations: 'consultations',
                                 'lab-requests': 'lab',
                                 'lab-results': 'lab',
-                                'prescriptions': 'pharmacy',
-                                'invoices': 'billing',
-                                'billing': 'billing'
+                                prescriptions: 'pharmacy',
+                                invoices: 'billing',
+                                billing: 'billing',
                             }[item.id];
-                            
-                            const badgeCount = moduleName ? (auth.module_notifications?.[moduleName] || 0) : 0;
+
+                            const badgeCount = moduleName ? auth.module_notifications?.[moduleName] || 0 : 0;
 
                             return (
                                 <li key={item.id} className="sidebar-menu-item h-auto">
-                                    <Link 
-                                        href={item.url} 
+                                    <Link
+                                        href={item.url}
                                         className={`sidebar-link ${active ? 'active' : ''} d-flex align-items-center justify-content-between`}
                                         data-menu-id={item.id}
                                     >
@@ -289,7 +593,17 @@ export default function AuthenticatedLayout({
                                             <span className="sidebar-text">{item.text}</span>
                                         </div>
                                         {badgeCount > 0 && (
-                                            <span className="badge rounded-pill bg-pink-500 text-white ms-auto" style={{ fontSize: '0.65rem', minWidth: '1.2rem', height: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <span
+                                                className="badge rounded-pill bg-pink-500 text-white ms-auto"
+                                                style={{
+                                                    fontSize: '0.65rem',
+                                                    minWidth: '1.2rem',
+                                                    height: '1.2rem',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                }}
+                                            >
                                                 {badgeCount}
                                             </span>
                                         )}
@@ -302,12 +616,21 @@ export default function AuthenticatedLayout({
             </aside>
 
             {/* Sidebar Overlay (for mobile) */}
-            <div className={`sidebar-overlay ${sidebarOpen ? 'active' : ''}`} id="sidebarOverlay" onClick={toggleMobileSidebar}></div>
+            <div
+                className={`sidebar-overlay ${sidebarOpen ? 'active' : ''}`}
+                id="sidebarOverlay"
+                onClick={toggleMobileSidebar}
+            ></div>
 
             {/* Main Content */}
             <main className="main-content">
                 {/* Mobile Sidebar Toggle */}
-                <button className="sidebar-toggle-header d-md-none" onClick={toggleMobileSidebar} style={{ left: '15px', top: '15px' }}>
+                <button
+                    className="sidebar-toggle-header d-md-none"
+                    aria-label="Toggle sidebar"
+                    onClick={toggleMobileSidebar}
+                    style={{ left: '15px', top: '15px' }}
+                >
                     <i className="fas fa-bars"></i>
                 </button>
 
@@ -319,10 +642,14 @@ export default function AuthenticatedLayout({
                         </div>
                         <div className="d-flex align-items-center gap-2 gap-md-3 ms-auto">
                             {auth.user.role !== 'patient' && permissions.includes('manage-appointments') && (
-                                <Link 
-                                    href={route('appointments.create')} 
-                                    className="btn btn-sm text-white rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-2 shadow-sm border-0" 
-                                    style={{ background: 'linear-gradient(135deg, #db2777 0%, #be185d 100%)', fontSize: '0.8rem', transition: 'all 0.2s' }}
+                                <Link
+                                    href={route('appointments.create')}
+                                    className="btn btn-sm text-white rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-2 shadow-sm border-0"
+                                    style={{
+                                        background: 'linear-gradient(135deg, #db2777 0%, #be185d 100%)',
+                                        fontSize: '0.8rem',
+                                        transition: 'all 0.2s',
+                                    }}
                                 >
                                     <i className="fas fa-calendar-plus"></i>
                                     <span className="d-none d-sm-inline">Book Appointment</span>
@@ -331,7 +658,7 @@ export default function AuthenticatedLayout({
                             {/* Autosave Status Indicator - Hidden here, now in UnifiedToolbar center */}
                             {/* Messages Toggle */}
                             <div className="dropdown">
-                                <button 
+                                <button
                                     className="btn btn-link position-relative p-1 text-gray-500 hover:text-pink-500 transition-colors dropdown-toggle border-0 shadow-none"
                                     type="button"
                                     data-bs-toggle="dropdown"
@@ -339,23 +666,46 @@ export default function AuthenticatedLayout({
                                 >
                                     <i className="fas fa-comment-dots fa-lg"></i>
                                     {auth.unread_messages_count > 0 && (
-                                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style={{ fontSize: '0.6rem' }}>
+                                        <span
+                                            className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white"
+                                            style={{ fontSize: '0.6rem' }}
+                                        >
                                             {auth.unread_messages_count}
                                         </span>
                                     )}
                                 </button>
-                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-2xl border-0 rounded-2xl overflow-hidden mt-3 animate-in fade-in zoom-in-95 duration-200" style={{ width: '320px', maxWidth: '90vw' }}>
+                                <ul
+                                    className="dropdown-menu dropdown-menu-end p-0 shadow-2xl border-0 rounded-2xl overflow-hidden mt-3 animate-in fade-in zoom-in-95 duration-200"
+                                    style={{ width: '320px', maxWidth: '90vw' }}
+                                >
                                     <li className="px-4 py-3 bg-white border-b border-gray-100 d-flex justify-content-between align-items-center">
                                         <span className="fw-bold text-gray-900">Recent Messages</span>
-                                        <Link href="/messages" className="text-xs text-pink-500 hover:underline">View All</Link>
+                                        <Link href="/messages" className="text-xs text-pink-500 hover:underline">
+                                            View All
+                                        </Link>
                                     </li>
                                     {auth.recent_messages && auth.recent_messages.length > 0 ? (
                                         auth.recent_messages.map((message, idx) => (
-                                            <li key={idx} className="px-4 py-3 border-bottom border-light d-flex align-items-start gap-3 hover-bg-gray-50 transition-colors cursor-pointer">
+                                            <li
+                                                key={idx}
+                                                className="px-4 py-3 border-bottom border-light d-flex align-items-start gap-3 hover-bg-gray-50 transition-colors cursor-pointer"
+                                            >
                                                 <div className="flex-shrink-0 mt-1">
-                                                    <div className="avatar-xs rounded-circle bg-pink-100 text-pink-500 d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+                                                    <div
+                                                        className="avatar-xs rounded-circle bg-pink-100 text-pink-500 d-flex align-items-center justify-content-center"
+                                                        style={{ width: '32px', height: '32px' }}
+                                                    >
                                                         {message.sender_avatar ? (
-                                                            <img src={message.sender_avatar} alt="" className="rounded-circle" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            <img
+                                                                src={message.sender_avatar}
+                                                                alt=""
+                                                                className="rounded-circle"
+                                                                style={{
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    objectFit: 'cover',
+                                                                }}
+                                                            />
                                                         ) : (
                                                             <i className="fas fa-user text-xs"></i>
                                                         )}
@@ -363,18 +713,31 @@ export default function AuthenticatedLayout({
                                                 </div>
                                                 <div className="flex-grow-1 overflow-hidden">
                                                     <div className="d-flex justify-content-between align-items-center">
-                                                        <span className="fw-bold text-gray-800 small">{message.sender_name}</span>
-                                                        {!message.read_at && <span className="badge bg-danger rounded-circle p-1" style={{ width: '6px', height: '6px' }}></span>}
+                                                        <span className="fw-bold text-gray-800 small">
+                                                            {message.sender_name}
+                                                        </span>
+                                                        {!message.read_at && (
+                                                            <span
+                                                                className="badge bg-danger rounded-circle p-1"
+                                                                style={{ width: '6px', height: '6px' }}
+                                                            ></span>
+                                                        )}
                                                     </div>
-                                                    <div className="text-muted text-truncate extra-small mt-1">{message.message_text}</div>
-                                                    <div className="extra-small text-muted opacity-75 mt-1">{message.created_at_human}</div>
+                                                    <div className="text-muted text-truncate extra-small mt-1">
+                                                        {message.message_text}
+                                                    </div>
+                                                    <div className="extra-small text-muted opacity-75 mt-1">
+                                                        {message.created_at_human}
+                                                    </div>
                                                 </div>
                                             </li>
                                         ))
                                     ) : (
                                         <li className="p-4 text-center text-muted small">
                                             <i className="fas fa-comments mb-2 d-block fa-2x opacity-20"></i>
-                                            {auth.unread_messages_count > 0 ? `You have ${auth.unread_messages_count} unread messages.` : 'No new messages.'}
+                                            {auth.unread_messages_count > 0
+                                                ? `You have ${auth.unread_messages_count} unread messages.`
+                                                : 'No new messages.'}
                                         </li>
                                     )}
                                 </ul>
@@ -382,7 +745,7 @@ export default function AuthenticatedLayout({
 
                             {/* Notifications Toggle */}
                             <div className="dropdown">
-                                <button 
+                                <button
                                     className="btn btn-link position-relative p-1 text-gray-500 hover:text-pink-500 transition-colors dropdown-toggle border-0 shadow-none"
                                     type="button"
                                     data-bs-toggle="dropdown"
@@ -390,15 +753,23 @@ export default function AuthenticatedLayout({
                                 >
                                     <i className="fas fa-bell fa-lg"></i>
                                     {auth.unread_notifications_count > 0 && (
-                                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style={{ fontSize: '0.6rem' }}>
+                                        <span
+                                            className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white"
+                                            style={{ fontSize: '0.6rem' }}
+                                        >
                                             {auth.unread_notifications_count}
                                         </span>
                                     )}
                                 </button>
-                                <ul className="dropdown-menu dropdown-menu-end p-0 shadow-2xl border-0 rounded-2xl overflow-hidden mt-3 animate-in fade-in zoom-in-95 duration-200" style={{ width: '340px', maxWidth: '90vw' }}>
+                                <ul
+                                    className="dropdown-menu dropdown-menu-end p-0 shadow-2xl border-0 rounded-2xl overflow-hidden mt-3 animate-in fade-in zoom-in-95 duration-200"
+                                    style={{ width: '340px', maxWidth: '90vw' }}
+                                >
                                     <li className="px-4 py-3 bg-white border-b border-gray-100 d-flex justify-content-between align-items-center">
                                         <span className="fw-bold text-gray-900">Notifications</span>
-                                        <Link href="/notifications" className="text-xs text-pink-500 hover:underline">View All</Link>
+                                        <Link href="/notifications" className="text-xs text-pink-500 hover:underline">
+                                            View All
+                                        </Link>
                                     </li>
                                     {auth.notifications && auth.notifications.length > 0 ? (
                                         auth.notifications.slice(0, 5).map((notification, idx) => {
@@ -414,15 +785,37 @@ export default function AuthenticatedLayout({
                                             const nIcon = iconMap[notification.type] || 'fa-bell';
                                             const isUnread = !notification.read_at;
                                             return (
-                                                <li key={idx} className={`px-4 py-3 border-bottom border-light d-flex align-items-start gap-3 transition-colors cursor-pointer ${isUnread ? 'bg-primary-subtle bg-opacity-10' : 'hover-bg-gray-50'}`}>
-                                                    <div className={`avatar-xs rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-1 ${isUnread ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}`} style={{ width: '32px', height: '32px', minWidth: '32px' }}>
-                                                        <i className={`fas ${nIcon}`} style={{ fontSize: '0.7rem' }}></i>
+                                                <li
+                                                    key={idx}
+                                                    className={`px-4 py-3 border-bottom border-light d-flex align-items-start gap-3 transition-colors cursor-pointer ${isUnread ? 'bg-primary-subtle bg-opacity-10' : 'hover-bg-gray-50'}`}
+                                                >
+                                                    <div
+                                                        className={`avatar-xs rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 mt-1 ${isUnread ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}`}
+                                                        style={{ width: '32px', height: '32px', minWidth: '32px' }}
+                                                    >
+                                                        <i
+                                                            className={`fas ${nIcon}`}
+                                                            style={{ fontSize: '0.7rem' }}
+                                                        ></i>
                                                     </div>
                                                     <div className="flex-grow-1 overflow-hidden">
-                                                        <div className={`small text-truncate ${isUnread ? 'fw-bold text-gray-900' : 'fw-medium text-gray-600'}`}>{notification.data?.message || notification.message || 'New notification'}</div>
-                                                        <div className="extra-small text-muted opacity-75">{notification.created_at_human || 'Just now'}</div>
+                                                        <div
+                                                            className={`small text-truncate ${isUnread ? 'fw-bold text-gray-900' : 'fw-medium text-gray-600'}`}
+                                                        >
+                                                            {notification.data?.message ||
+                                                                notification.message ||
+                                                                'New notification'}
+                                                        </div>
+                                                        <div className="extra-small text-muted opacity-75">
+                                                            {notification.created_at_human || 'Just now'}
+                                                        </div>
                                                     </div>
-                                                    {isUnread && <span className="rounded-circle bg-primary flex-shrink-0 mt-2" style={{ width: '7px', height: '7px', minWidth: '7px' }}></span>}
+                                                    {isUnread && (
+                                                        <span
+                                                            className="rounded-circle bg-primary flex-shrink-0 mt-2"
+                                                            style={{ width: '7px', height: '7px', minWidth: '7px' }}
+                                                        ></span>
+                                                    )}
                                                 </li>
                                             );
                                         })
@@ -435,39 +828,57 @@ export default function AuthenticatedLayout({
                                 </ul>
                             </div>
 
-                            <div className="vr mx-1 mx-md-2 bg-gray-200 d-none d-sm-block" style={{ height: '24px' }}></div>
+                            <div
+                                className="vr mx-1 mx-md-2 bg-gray-200 d-none d-sm-block"
+                                style={{ height: '24px' }}
+                            ></div>
                             {/* User Info */}
                             <div className="dropdown">
-                                <button 
-                                    className="btn btn-link text-decoration-none d-flex align-items-center gap-2 dropdown-toggle border-0 shadow-none p-1" 
-                                    type="button" 
-                                    data-bs-toggle="dropdown" 
+                                <button
+                                    className="btn btn-link text-decoration-none d-flex align-items-center gap-2 dropdown-toggle border-0 shadow-none p-1"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
                                     aria-expanded="false"
                                 >
                                     <UserAvatar user={user} size="sm" showStatus={true} />
                                     <div className="d-none d-md-block text-start">
-                                        <div className="fw-bold text-gray-900" style={{ fontSize: '0.9rem' }}>{displayName}</div>
-                                        <div className="text-muted text-capitalize font-bold extra-small opacity-75">{userRole.replace('_', ' ')}</div>
+                                        <div className="fw-bold text-gray-900" style={{ fontSize: '0.9rem' }}>
+                                            {displayName}
+                                        </div>
+                                        <div className="text-muted text-capitalize font-bold extra-small opacity-75">
+                                            {userRole.replace('_', ' ')}
+                                        </div>
                                     </div>
                                 </button>
                                 <ul className="dropdown-menu dropdown-menu-end p-2 shadow-2xl border-0 rounded-2xl mt-3 animate-in fade-in zoom-in-95 duration-200">
                                     <li>
-                                        <Link className="dropdown-item py-2 rounded-xl d-flex align-items-center gap-3" href="/profile">
-                                            <div className="bg-primary-subtle text-primary rounded-lg p-2 d-flex align-items-center justify-content-center" style={{width: '32px', height: '32px'}}>
+                                        <Link
+                                            className="dropdown-item py-2 rounded-xl d-flex align-items-center gap-3"
+                                            href="/profile"
+                                        >
+                                            <div
+                                                className="bg-primary-subtle text-primary rounded-lg p-2 d-flex align-items-center justify-content-center"
+                                                style={{ width: '32px', height: '32px' }}
+                                            >
                                                 <i className="fas fa-user text-xs"></i>
                                             </div>
                                             <span className="fw-bold text-gray-700">My Profile</span>
                                         </Link>
                                     </li>
-                                    <li><hr className="dropdown-divider opacity-10 mx-2" /></li>
                                     <li>
-                                        <Link 
-                                            className="dropdown-item py-2 rounded-xl d-flex align-items-center gap-3 text-danger" 
-                                            href={route('logout')} 
-                                            method="post" 
+                                        <hr className="dropdown-divider opacity-10 mx-2" />
+                                    </li>
+                                    <li>
+                                        <Link
+                                            className="dropdown-item py-2 rounded-xl d-flex align-items-center gap-3 text-danger"
+                                            href={route('logout')}
+                                            method="post"
                                             as="button"
                                         >
-                                            <div className="bg-danger-subtle text-danger rounded-lg p-2 d-flex align-items-center justify-content-center" style={{width: '32px', height: '32px'}}>
+                                            <div
+                                                className="bg-danger-subtle text-danger rounded-lg p-2 d-flex align-items-center justify-content-center"
+                                                style={{ width: '32px', height: '32px' }}
+                                            >
                                                 <i className="fas fa-sign-out-alt text-xs"></i>
                                             </div>
                                             <span className="fw-bold">Logout System</span>
@@ -481,19 +892,20 @@ export default function AuthenticatedLayout({
 
                 {/* Page Content */}
                 <div className="content-container">
-                    {headerTitle && (
-                        <PageHeader 
-                            title={headerTitle}
-                            breadcrumbs={breadcrumbs}
-                        />
-                    )}
+                    {headerTitle && <PageHeader title={headerTitle} breadcrumbs={breadcrumbs} />}
                     {children}
                 </div>
             </main>
 
             {/* Shared Page Actions Toolbar */}
-            {(toolbarActions || toolbarFilters || toolbarViewOptions || toolbarBulkActions || autosaveStatus || propAutosaveStatus || drafts.length > 0) && (
-                <UnifiedToolbar 
+            {(toolbarActions ||
+                toolbarFilters ||
+                toolbarViewOptions ||
+                toolbarBulkActions ||
+                autosaveStatus ||
+                propAutosaveStatus ||
+                drafts.length > 0) && (
+                <UnifiedToolbar
                     actions={toolbarActions}
                     filters={toolbarFilters}
                     viewOptions={toolbarViewOptions}
@@ -506,13 +918,13 @@ export default function AuthenticatedLayout({
 
             <CookieBanner />
             <ContextSwitcher />
-            
+
             {/* Standardized Draft Switcher Modal */}
             {drafts.length > 0 && (
-                <ConsultationDraftSwitcher 
-                    drafts={drafts} 
-                    isOpen={showDraftSwitcher} 
-                    onClose={() => setShowDraftSwitcher(false)} 
+                <ConsultationDraftSwitcher
+                    drafts={drafts}
+                    isOpen={showDraftSwitcher}
+                    onClose={() => setShowDraftSwitcher(false)}
                 />
             )}
         </div>

@@ -18,17 +18,25 @@ export default function Index({ messages, users, filters = {}, auth }) {
     const [activeFilter, setActiveFilter] = useState('all');
 
     const applyContactSearch = (value = contactSearch) => {
-        router.get(route('messages.index'), {
-            search: value || undefined,
-            archived: showArchived ? 1 : undefined,
-        }, { preserveState: true, preserveScroll: true });
+        router.get(
+            route('messages.index'),
+            {
+                search: value || undefined,
+                archived: showArchived ? 1 : undefined,
+            },
+            { preserveState: true, preserveScroll: true },
+        );
     };
 
     const toggleArchived = () => {
-        router.get(route('messages.index'), {
-            search: contactSearch || undefined,
-            archived: showArchived ? undefined : 1,
-        }, { preserveState: true, preserveScroll: true });
+        router.get(
+            route('messages.index'),
+            {
+                search: contactSearch || undefined,
+                archived: showArchived ? undefined : 1,
+            },
+            { preserveState: true, preserveScroll: true },
+        );
     };
 
     const archiveConversation = () => {
@@ -55,15 +63,15 @@ export default function Index({ messages, users, filters = {}, auth }) {
         receiver_id: '',
         content: '',
         metadata: {
-            references: []
-        }
+            references: [],
+        },
     });
 
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
     useEffect(() => {
@@ -82,7 +90,7 @@ export default function Index({ messages, users, filters = {}, auth }) {
 
     useEffect(() => {
         // Fetch referenceable entities
-        axios.get(route('messages.entities')).then(res => {
+        axios.get(route('messages.entities')).then((res) => {
             setEntities(res.data);
         });
     }, []);
@@ -95,7 +103,7 @@ export default function Index({ messages, users, filters = {}, auth }) {
             '@a::': 'appointments',
             '@c::': 'consultations',
             '@l::': 'lab_requests',
-            '@m::': 'medications'
+            '@m::': 'medications',
         };
 
         for (const [trigger, type] of Object.entries(shortcuts)) {
@@ -115,7 +123,7 @@ export default function Index({ messages, users, filters = {}, auth }) {
                 reset('content');
                 setSelectedEntities([]);
                 setData('metadata', { references: [] });
-            }
+            },
         });
     };
 
@@ -125,11 +133,11 @@ export default function Index({ messages, users, filters = {}, auth }) {
         setData('metadata', { references: newRefs });
         setShowEntitySelector(false);
         setEntitySearch('');
-        
+
         // Clean up shortcut trigger if present
         const triggers = ['@p::', '@a::', '@c::', '@l::', '@m::'];
         let newContent = data.content;
-        triggers.forEach(t => {
+        triggers.forEach((t) => {
             if (newContent.endsWith(t)) {
                 newContent = newContent.slice(0, -t.length);
             }
@@ -138,13 +146,13 @@ export default function Index({ messages, users, filters = {}, auth }) {
     };
 
     const removeReference = (id) => {
-        const newRefs = selectedEntities.filter(e => e.id !== id);
+        const newRefs = selectedEntities.filter((e) => e.id !== id);
         setSelectedEntities(newRefs);
         setData('metadata', { references: newRefs });
     };
 
-    const conversationMessages = selectedUser 
-        ? messages.filter(m => m.sender_id === selectedUser.user_id || m.receiver_id === selectedUser.user_id)
+    const conversationMessages = selectedUser
+        ? messages.filter((m) => m.sender_id === selectedUser.user_id || m.receiver_id === selectedUser.user_id)
         : [];
 
     // Filtered Entities Logic
@@ -152,11 +160,9 @@ export default function Index({ messages, users, filters = {}, auth }) {
         let result = {};
         Object.entries(entities).forEach(([type, list]) => {
             if (activeFilter !== 'all' && activeFilter !== type) return;
-            
-            const filtered = list.filter(item => 
-                item.label.toLowerCase().includes(entitySearch.toLowerCase())
-            );
-            
+
+            const filtered = list.filter((item) => item.label.toLowerCase().includes(entitySearch.toLowerCase()));
+
             if (filtered.length > 0) {
                 result[type] = filtered;
             }
@@ -167,10 +173,7 @@ export default function Index({ messages, users, filters = {}, auth }) {
     const filteredEntities = getFilteredEntities();
 
     return (
-        <AuthenticatedLayout
-            headerTitle="Direct Messages"
-            breadcrumbs={[{ label: 'Messages', active: true }]}
-        >
+        <AuthenticatedLayout headerTitle="Direct Messages" breadcrumbs={[{ label: 'Messages', active: true }]}>
             <Head title="Messages" />
 
             <UnifiedToolbar
@@ -194,15 +197,18 @@ export default function Index({ messages, users, filters = {}, auth }) {
             />
 
             <div className="py-0">
-                <div className="bg-white rounded-2xl shadow-sm overflow-hidden flex" style={{ height: 'calc(100vh - 250px)' }}>
+                <div
+                    className="bg-white rounded-2xl shadow-sm overflow-hidden flex"
+                    style={{ height: 'calc(100vh - 250px)' }}
+                >
                     {/* Contacts List */}
                     <div className="w-1/3 border-r border-gray-100 flex flex-col">
                         <div className="p-4 border-b border-gray-100 space-y-2">
                             <div className="relative">
                                 <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                <input 
-                                    type="text" 
-                                    placeholder="Search people..." 
+                                <input
+                                    type="text"
+                                    placeholder="Search people..."
                                     value={contactSearch}
                                     onChange={(e) => setContactSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && applyContactSearch()}
@@ -230,12 +236,14 @@ export default function Index({ messages, users, filters = {}, auth }) {
                         <div className="flex-1 overflow-y-auto">
                             {users.length === 0 && (
                                 <div className="p-4 text-center text-muted small">
-                                    {showArchived ? 'No archived conversations.' : 'No conversations yet. Search to start a new message.'}
+                                    {showArchived
+                                        ? 'No archived conversations.'
+                                        : 'No conversations yet. Search to start a new message.'}
                                 </div>
                             )}
-                            {users.map(u => (
-                                <button 
-                                    key={u.user_id} 
+                            {users.map((u) => (
+                                <button
+                                    key={u.user_id}
                                     onClick={() => setSelectedUser(u)}
                                     className={`w-full p-4 flex align-items-center gap-3 hover:bg-gray-50 transition-colors relative border-0 border-bottom border-gray-100 bg-transparent text-start ${selectedUser?.user_id === u.user_id ? 'bg-pink-50 border-r-4 border-pink-500' : ''}`}
                                 >
@@ -244,7 +252,9 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                     </div>
                                     <div className="text-start truncate flex-1">
                                         <div className="font-bold text-gray-900 text-sm flex justify-between items-center">
-                                            <span>{u.first_name} {u.last_name}</span>
+                                            <span>
+                                                {u.first_name} {u.last_name}
+                                            </span>
                                             {u.unread_count > 0 && (
                                                 <span className="bg-danger text-white text-[10px] px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                                                     {u.unread_count}
@@ -269,56 +279,93 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                             <UserAvatar user={selectedUser} size="sm" />
                                         </div>
                                         <div>
-                                            <div className="font-bold text-gray-900">{selectedUser.first_name} {selectedUser.last_name}</div>
+                                            <div className="font-bold text-gray-900">
+                                                {selectedUser.first_name} {selectedUser.last_name}
+                                            </div>
                                             <div className="text-xs text-muted">@{selectedUser.username}</div>
                                         </div>
                                     </div>
-                                    <TableActions actions={[
-                                        showArchived
-                                            ? { icon: 'fa-inbox', label: 'Restore conversation', onClick: unarchiveConversation }
-                                            : { icon: 'fa-archive', label: 'Archive conversation', onClick: archiveConversation },
-                                        { icon: 'fa-trash', label: 'Delete conversation', color: 'danger', onClick: deleteConversation },
-                                    ]} />
+                                    <TableActions
+                                        actions={[
+                                            showArchived
+                                                ? {
+                                                      icon: 'fa-inbox',
+                                                      label: 'Restore conversation',
+                                                      onClick: unarchiveConversation,
+                                                  }
+                                                : {
+                                                      icon: 'fa-archive',
+                                                      label: 'Archive conversation',
+                                                      onClick: archiveConversation,
+                                                  },
+                                            {
+                                                icon: 'fa-trash',
+                                                label: 'Delete conversation',
+                                                color: 'danger',
+                                                onClick: deleteConversation,
+                                            },
+                                        ]}
+                                    />
                                 </div>
 
                                 {/* Messages View */}
                                 <div className="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col">
-                                    {conversationMessages.slice().reverse().map(m => (
-                                        <div key={m.id} className={`max-w-[75%] rounded-2xl p-4 shadow-sm relative group ${m.sender_id === auth.user.user_id ? 'bg-pink-700 text-white ml-auto rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'}`}>
-                                            {m.sender_id === auth.user.user_id && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => deleteMessage(m.id)}
-                                                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white text-danger border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    title="Delete message"
-                                                >
-                                                    <i className="fas fa-times text-xs"></i>
-                                                </button>
-                                            )}
-                                            <p className="mb-2 text-sm leading-relaxed">{m.content}</p>
-                                            
-                                            {/* References Rendering */}
-                                            {m.metadata?.references?.length > 0 && (
-                                                <div className="mt-2 space-y-2 border-t pt-2 border-white/20">
-                                                    {m.metadata.references.map((ref, idx) => (
-                                                        <div key={idx} className={`text-xs p-2 rounded-xl flex items-center gap-2 ${m.sender_id === auth.user.user_id ? 'bg-white/20 text-white' : 'bg-gray-50 text-gray-700 border border-gray-100'}`}>
-                                                            <i className={`fas ${
-                                                                ref.type === 'patient' ? 'fa-user-injured' : 
-                                                                ref.type === 'appointment' ? 'fa-calendar-check' :
-                                                                ref.type === 'consultation' ? 'fa-stethoscope' :
-                                                                ref.type === 'lab_request' ? 'fa-vial' : 'fa-pills'
-                                                            } opacity-60`}></i>
-                                                            <span className="font-medium truncate">{ref.label}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                    {conversationMessages
+                                        .slice()
+                                        .reverse()
+                                        .map((m) => (
+                                            <div
+                                                key={m.id}
+                                                className={`max-w-[75%] rounded-2xl p-4 shadow-sm relative group ${m.sender_id === auth.user.user_id ? 'bg-pink-700 text-white ml-auto rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'}`}
+                                            >
+                                                {m.sender_id === auth.user.user_id && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => deleteMessage(m.id)}
+                                                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white text-danger border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        title="Delete message"
+                                                    >
+                                                        <i className="fas fa-times text-xs"></i>
+                                                    </button>
+                                                )}
+                                                <p className="mb-2 text-sm leading-relaxed">{m.content}</p>
 
-                                            <small className={`text-[10px] block mt-1 ${m.sender_id === auth.user.user_id ? 'text-pink-200 text-end' : 'text-gray-400'}`}>
-                                                {formatTime(m.created_at)}
-                                            </small>
-                                        </div>
-                                    ))}
+                                                {/* References Rendering */}
+                                                {m.metadata?.references?.length > 0 && (
+                                                    <div className="mt-2 space-y-2 border-t pt-2 border-white/20">
+                                                        {m.metadata.references.map((ref, idx) => (
+                                                            <div
+                                                                key={idx}
+                                                                className={`text-xs p-2 rounded-xl flex items-center gap-2 ${m.sender_id === auth.user.user_id ? 'bg-white/20 text-white' : 'bg-gray-50 text-gray-700 border border-gray-100'}`}
+                                                            >
+                                                                <i
+                                                                    className={`fas ${
+                                                                        ref.type === 'patient'
+                                                                            ? 'fa-user-injured'
+                                                                            : ref.type === 'appointment'
+                                                                              ? 'fa-calendar-check'
+                                                                              : ref.type === 'consultation'
+                                                                                ? 'fa-stethoscope'
+                                                                                : ref.type === 'lab_request'
+                                                                                  ? 'fa-vial'
+                                                                                  : 'fa-pills'
+                                                                    } opacity-60`}
+                                                                ></i>
+                                                                <span className="font-medium truncate">
+                                                                    {ref.label}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                <small
+                                                    className={`text-[10px] block mt-1 ${m.sender_id === auth.user.user_id ? 'text-pink-200 text-end' : 'text-gray-400'}`}
+                                                >
+                                                    {formatTime(m.created_at)}
+                                                </small>
+                                            </div>
+                                        ))}
                                     <div ref={messagesEndRef} />
                                     {conversationMessages.length === 0 && (
                                         <div className="h-full flex flex-col items-center justify-center opacity-30 text-center py-20">
@@ -334,11 +381,20 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                     {/* Selected References Tags */}
                                     {selectedEntities.length > 0 && (
                                         <div className="flex flex-wrap gap-2 mb-3">
-                                            {selectedEntities.map(ent => (
-                                                <span key={ent.id} className="bg-pink-100 text-pink-600 text-xs px-3 py-1.5 rounded-full flex items-center gap-2 font-medium">
+                                            {selectedEntities.map((ent) => (
+                                                <span
+                                                    key={ent.id}
+                                                    className="bg-pink-100 text-pink-600 text-xs px-3 py-1.5 rounded-full flex items-center gap-2 font-medium"
+                                                >
                                                     <i className="fas fa-link opacity-60"></i>
                                                     {ent.label}
-                                                    <button onClick={() => removeReference(ent.id)} className="hover:text-pink-800"><i className="fas fa-times"></i></button>
+                                                    <button
+                                                        onClick={() => removeReference(ent.id)}
+                                                        aria-label={`Remove ${ent.label} reference`}
+                                                        className="hover:text-pink-800"
+                                                    >
+                                                        <i className="fas fa-times"></i>
+                                                    </button>
                                                 </span>
                                             ))}
                                         </div>
@@ -346,12 +402,12 @@ export default function Index({ messages, users, filters = {}, auth }) {
 
                                     <form onSubmit={sendMessage} className="flex gap-3 items-end">
                                         <div className="flex-1 relative">
-                                            <textarea 
+                                            <textarea
                                                 ref={textareaRef}
                                                 rows="1"
                                                 value={data.content}
                                                 onChange={(e) => setData('content', e.target.value)}
-                                                placeholder="Type your message... (Try @p:: for patients)" 
+                                                placeholder="Type your message... (Try @p:: for patients)"
                                                 className="w-full border-0 bg-gray-50 rounded-2xl px-5 py-3 pr-12 focus:ring-2 focus:ring-pink-500 resize-none min-h-[48px]"
                                                 disabled={processing}
                                                 onKeyDown={(e) => {
@@ -361,8 +417,9 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                                     }
                                                 }}
                                             />
-                                            <button 
-                                                type="button" 
+                                            <button
+                                                type="button"
+                                                aria-label="Add reference"
                                                 onClick={() => setShowEntitySelector(!showEntitySelector)}
                                                 className={`absolute right-3 bottom-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showEntitySelector ? 'bg-pink-500 text-white' : 'text-gray-400 hover:bg-gray-200'}`}
                                             >
@@ -373,11 +430,13 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                             {showEntitySelector && (
                                                 <div className="absolute bottom-full right-0 mb-4 w-80 max-h-[500px] bg-white shadow-2xl rounded-2xl border border-gray-100 overflow-hidden flex flex-col z-50">
                                                     <div className="p-3 bg-gray-50 border-b border-gray-100">
-                                                        <div className="font-bold text-xs text-gray-500 uppercase tracking-wider mb-2">Reference Hospital Records</div>
+                                                        <div className="font-bold text-xs text-gray-500 uppercase tracking-wider mb-2">
+                                                            Reference Hospital Records
+                                                        </div>
                                                         <div className="relative mb-2">
                                                             <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                                                            <input 
-                                                                type="text" 
+                                                            <input
+                                                                type="text"
                                                                 autoFocus
                                                                 value={entitySearch}
                                                                 onChange={(e) => setEntitySearch(e.target.value)}
@@ -386,15 +445,15 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                                             />
                                                         </div>
                                                         <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
-                                                            <button 
+                                                            <button
                                                                 type="button"
                                                                 onClick={() => setActiveFilter('all')}
                                                                 className={`px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap transition-colors ${activeFilter === 'all' ? 'bg-pink-500 text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-100'}`}
                                                             >
                                                                 All
                                                             </button>
-                                                            {Object.keys(entities).map(type => (
-                                                                <button 
+                                                            {Object.keys(entities).map((type) => (
+                                                                <button
                                                                     key={type}
                                                                     type="button"
                                                                     onClick={() => setActiveFilter(type)}
@@ -409,16 +468,20 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                                         {Object.entries(filteredEntities).length > 0 ? (
                                                             Object.entries(filteredEntities).map(([type, list]) => (
                                                                 <div key={type}>
-                                                                    <div className="px-2 mb-1 text-[10px] font-bold text-gray-400 uppercase">{type.replace('_', ' ')}</div>
-                                                                    {list.map(ent => (
-                                                                        <button 
+                                                                    <div className="px-2 mb-1 text-[10px] font-bold text-gray-400 uppercase">
+                                                                        {type.replace('_', ' ')}
+                                                                    </div>
+                                                                    {list.map((ent) => (
+                                                                        <button
                                                                             key={ent.id}
                                                                             type="button"
                                                                             onClick={() => addReference(ent)}
                                                                             className="w-full p-2 text-start text-xs hover:bg-pink-50 rounded-lg transition-colors flex items-center gap-2 group"
                                                                         >
                                                                             <i className="fas fa-plus text-pink-500 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                                                            <span className="truncate">{ent.label}</span>
+                                                                            <span className="truncate">
+                                                                                {ent.label}
+                                                                            </span>
                                                                         </button>
                                                                     ))}
                                                                 </div>
@@ -426,15 +489,18 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                                         ) : (
                                                             <div className="text-center py-8 opacity-40">
                                                                 <i className="fas fa-search mb-2 d-block"></i>
-                                                                <div className="text-[10px] font-bold">No results found</div>
+                                                                <div className="text-[10px] font-bold">
+                                                                    No results found
+                                                                </div>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
                                             )}
                                         </div>
-                                        <button 
-                                            type="submit" 
+                                        <button
+                                            type="submit"
+                                            aria-label="Send message"
                                             disabled={processing || !data.content.trim()}
                                             className="bg-pink-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-600/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                                         >
@@ -449,7 +515,10 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                     <i className="fas fa-paper-plane text-6xl text-gray-400"></i>
                                 </div>
                                 <h2 className="text-2xl font-bold text-gray-900">Hospital Communications</h2>
-                                <p className="max-w-xs mx-auto text-gray-500">Pick a colleague or patient to start a secure conversation. You can reference clinical records using the plus button.</p>
+                                <p className="max-w-xs mx-auto text-gray-500">
+                                    Pick a colleague or patient to start a secure conversation. You can reference
+                                    clinical records using the plus button.
+                                </p>
                             </div>
                         )}
                     </div>

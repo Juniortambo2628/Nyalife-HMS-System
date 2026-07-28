@@ -266,21 +266,6 @@ class ConsultationController extends Controller
 
             DB::commit();
 
-            ActivityLogger::log(
-                'consultations',
-                'Consultation '.($data['consultation_status'] === 'in_progress' ? 'started' : 'concluded').' for '.($consultation->patient->user->full_name ?? 'Patient'),
-                ['consultation_id' => $consultation->consultation_id, 'status' => $data['consultation_status']],
-                Auth::user(),
-                $consultation,
-                [$consultation->patient->user_id, 1]
-            );
-
-            if ($data['consultation_status'] === 'in_progress') {
-                return redirect()->route('consultations.edit', $consultation->consultation_id)
-                    ->with('success', 'Consultation saved progressively. Labs requested and invoice generated.');
-            }
-
-            return redirect()->route('dashboard')->with('success', 'Consultation completed successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -293,6 +278,22 @@ class ConsultationController extends Controller
 
             return back()->withErrors(['error' => 'Failed to create consultation: '.$e->getMessage()]);
         }
+
+        ActivityLogger::log(
+            'consultations',
+            'Consultation '.($data['consultation_status'] === 'in_progress' ? 'started' : 'concluded').' for '.($consultation->patient->user->full_name ?? 'Patient'),
+            ['consultation_id' => $consultation->consultation_id, 'status' => $data['consultation_status']],
+            Auth::user(),
+            $consultation,
+            [$consultation->patient->user_id, 1]
+        );
+
+        if ($data['consultation_status'] === 'in_progress') {
+            return redirect()->route('consultations.edit', $consultation->consultation_id)
+                ->with('success', 'Consultation saved progressively. Labs requested and invoice generated.');
+        }
+
+        return redirect()->route('dashboard')->with('success', 'Consultation completed successfully.');
     }
 
     /**

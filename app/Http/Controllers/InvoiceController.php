@@ -147,23 +147,23 @@ class InvoiceController extends Controller
 
             DB::commit();
 
-            ActivityLogger::log(
-                'billing',
-                "New invoice #{$invoice->invoice_number} created for ".($invoice->patient->user->full_name ?? 'Patient'),
-                ['invoice_id' => $invoice->invoice_id, 'amount' => $totalAmount],
-                Auth::user(),
-                $invoice,
-                [$invoice->patient->user_id, 1]
-            );
-
-            return redirect()->route('invoices.show', $invoice->invoice_id)
-                ->with('success', 'Invoice created successfully.');
-
         } catch (\Exception $e) {
             DB::rollBack();
 
             return back()->withErrors(['error' => 'Failed to create invoice: '.$e->getMessage()]);
         }
+
+        ActivityLogger::log(
+            'billing',
+            "New invoice #{$invoice->invoice_number} created for ".($invoice->patient->user->full_name ?? 'Patient'),
+            ['invoice_id' => $invoice->invoice_id, 'amount' => $totalAmount],
+            Auth::user(),
+            $invoice,
+            [$invoice->patient->user_id, 1]
+        );
+
+        return redirect()->route('invoices.show', $invoice->invoice_id)
+            ->with('success', 'Invoice created successfully.');
     }
 
     public function update(UpdateInvoiceRequest $request, $id)

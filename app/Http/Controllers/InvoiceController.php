@@ -138,6 +138,7 @@ class InvoiceController extends Controller
             foreach ($request->items as $item) {
                 InvoiceItem::create([
                     'invoice_id' => $invoice->invoice_id,
+                    'item_type' => $item['item_type'] ?? 'service',
                     'description' => $item['description'],
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],

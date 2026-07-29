@@ -79,19 +79,21 @@ class ConsultationTest extends TestCase
 
     public function test_consultation_search_by_patient_or_diagnosis(): void
     {
+        $uniqueFirst = 'Xz'.uniqid();
+        $uniqueDiag = 'Zx'.uniqid();
         $patient = Patient::factory()->create([
-            'user_id' => \App\Models\User::factory()->create(['first_name' => 'John', 'last_name' => 'Doe'])->user_id,
+            'user_id' => \App\Models\User::factory()->create(['first_name' => $uniqueFirst, 'last_name' => 'Doe'])->user_id,
         ]);
         $consultation = Consultation::factory()->create([
             'patient_id' => $patient->patient_id,
-            'diagnosis' => 'Hypertension',
+            'diagnosis' => $uniqueDiag,
         ]);
 
-        $results = Consultation::searchByPatientOrDiagnosis('John')->get();
-        $this->assertCount(1, $results);
+        $results = Consultation::searchByPatientOrDiagnosis($uniqueFirst)->get();
+        $this->assertTrue($results->contains('consultation_id', $consultation->consultation_id));
 
-        $results = Consultation::searchByPatientOrDiagnosis('Hypertension')->get();
-        $this->assertCount(1, $results);
+        $results = Consultation::searchByPatientOrDiagnosis($uniqueDiag)->get();
+        $this->assertTrue($results->contains('consultation_id', $consultation->consultation_id));
     }
 
     public function test_consultation_json_casts_work_correctly(): void

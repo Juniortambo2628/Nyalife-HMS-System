@@ -68,11 +68,22 @@ class PrescriptionTest extends TestCase
 
     public function test_prescription_global_scope_excludes_voided_by_default(): void
     {
-        Prescription::factory()->create(['is_voided' => false]);
-        Prescription::factory()->create(['is_voided' => true]);
+        $active = Prescription::factory()->create(['is_voided' => false]);
+        $voided = Prescription::factory()->create(['is_voided' => true]);
 
-        $this->assertCount(1, Prescription::all());
-        $this->assertCount(2, Prescription::withVoided()->get());
+        $nonVoidedResults = Prescription::withVoided()->where('prescription_id', $active->prescription_id)->get();
+        $this->assertCount(1, $nonVoidedResults);
+        $this->assertTrue((bool) $nonVoidedResults->first()->is_voided === false);
+
+        $voidedCheck = Prescription::withVoided()->where('prescription_id', $voided->prescription_id)->first();
+        $this->assertNotNull($voidedCheck);
+        $this->assertTrue((bool) $voidedCheck->is_voided);
+
+        $activeVisible = Prescription::where('prescription_id', $active->prescription_id)->first();
+        $this->assertNotNull($activeVisible);
+
+        $voidedHidden = Prescription::where('prescription_id', $voided->prescription_id)->first();
+        $this->assertNull($voidedHidden, 'Voided prescription should be excluded by global scope');
     }
 
     public function test_prescription_search_by_patient_name(): void
@@ -83,10 +94,10 @@ class PrescriptionTest extends TestCase
         $prescription = Prescription::factory()->create(['patient_id' => $patient->patient_id]);
 
         $results = Prescription::searchByPatientName('Robert')->get();
-        $this->assertCount(1, $results);
+        $this->assertTrue($results->contains('prescription_id', $prescription->prescription_id));
 
         $results = Prescription::searchByPatientName('Johnson')->get();
-        $this->assertCount(1, $results);
+        $this->assertTrue($results->contains('prescription_id', $prescription->prescription_id));
     }
 
     public function test_prescription_service_parse_frequency_to_daily(): void

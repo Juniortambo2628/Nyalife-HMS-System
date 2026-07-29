@@ -20,7 +20,7 @@ class ConsultationInvoiceServiceTest extends TestCase
 
         $patient = Patient::factory()->create();
         $consultation = Consultation::factory()->create(['patient_id' => $patient->patient_id]);
-        $procedure = MedicalProcedure::factory()->create(['standard_fee' => 5000, 'name' => 'Test Procedure']);
+        $procedure = MedicalProcedure::firstOrCreate(['name' => 'CIS Test Procedure'], ['standard_fee' => 5000]);
         $labRequest = LabTestRequest::factory()->create(['patient_id' => $patient->patient_id]);
         $labRequest->testType()->update(['price' => 3000, 'test_name' => 'Test Lab']);
 
@@ -49,7 +49,7 @@ class ConsultationInvoiceServiceTest extends TestCase
 
         $patient = Patient::factory()->create();
         $invoice = Invoice::factory()->create(['patient_id' => $patient->patient_id, 'status' => 'pending']);
-        $procedure = MedicalProcedure::factory()->create(['standard_fee' => 5000, 'name' => 'Test Procedure']);
+        $procedure = MedicalProcedure::firstOrCreate(['name' => 'CIS Test Procedure'], ['standard_fee' => 5000]);
         $consultation = Consultation::factory()->create(['patient_id' => $patient->patient_id]);
 
         $data = [

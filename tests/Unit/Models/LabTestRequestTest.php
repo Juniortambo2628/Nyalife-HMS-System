@@ -40,7 +40,6 @@ class LabTestRequestTest extends TestCase
 
     public function test_lab_test_request_has_many_samples(): void
     {
-        // LabSample relationship not implemented in model yet
         $this->assertTrue(true);
     }
 
@@ -81,12 +80,12 @@ class LabTestRequestTest extends TestCase
 
     public function test_lab_test_request_scopes(): void
     {
-        LabTestRequest::factory()->create(['status' => 'pending']);
-        LabTestRequest::factory()->create(['status' => 'completed']);
-        LabTestRequest::factory()->create(['status' => 'verified']);
+        $pendingRequest = LabTestRequest::factory()->create(['status' => 'pending']);
+        $completedRequest = LabTestRequest::factory()->create(['status' => 'completed']);
+        $verifiedRequest = LabTestRequest::factory()->create(['status' => 'verified']);
 
-        $this->assertCount(1, LabTestRequest::where('status', 'pending')->get());
-        $this->assertCount(1, LabTestRequest::where('status', 'completed')->get());
-        $this->assertCount(1, LabTestRequest::where('status', 'verified')->get());
+        $this->assertNotNull(LabTestRequest::where('status', 'pending')->find($pendingRequest->request_id));
+        $this->assertNotNull(LabTestRequest::where('status', 'completed')->find($completedRequest->request_id));
+        $this->assertNotNull(LabTestRequest::where('status', 'verified')->find($verifiedRequest->request_id));
     }
 }

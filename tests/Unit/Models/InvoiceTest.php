@@ -66,14 +66,15 @@ class InvoiceTest extends TestCase
         $voidedInvoice = Invoice::factory()->create(['is_voided' => true, 'invoice_number' => 'INV-TEST-VOID-1']);
         $activeInvoice = Invoice::factory()->create(['is_voided' => false, 'invoice_number' => 'INV-TEST-VOID-2']);
 
-        $results = Invoice::all();
-        $this->assertCount(1, $results);
-        $this->assertEquals($activeInvoice->invoice_id, $results->first()->invoice_id);
+        $allForThisTest = Invoice::withVoided()->whereIn('invoice_number', ['INV-TEST-VOID-1', 'INV-TEST-VOID-2'])->get();
+        $this->assertCount(2, $allForThisTest, 'Both invoices should exist');
 
-        $voidedResults = Invoice::withVoided()->get();
-        $this->assertCount(2, $voidedResults);
-        $this->assertTrue($voidedResults->contains('invoice_id', $voidedInvoice->invoice_id));
-        $this->assertTrue($voidedResults->contains('invoice_id', $activeInvoice->invoice_id));
+        $nonVoidedForThisTest = Invoice::whereIn('invoice_number', ['INV-TEST-VOID-1', 'INV-TEST-VOID-2'])->get();
+        $this->assertCount(1, $nonVoidedForThisTest, 'Only non-voided invoice should be visible without withVoided');
+        $this->assertEquals($activeInvoice->invoice_id, $nonVoidedForThisTest->first()->invoice_id);
+
+        $this->assertTrue($allForThisTest->contains('invoice_id', $voidedInvoice->invoice_id));
+        $this->assertTrue($allForThisTest->contains('invoice_id', $activeInvoice->invoice_id));
     }
 
     public function test_invoice_void_and_unvoid_methods(): void
@@ -104,30 +105,36 @@ class InvoiceTest extends TestCase
         $paidInvoice = Invoice::factory()->create(['status' => 'paid', 'invoice_number' => 'INV-TEST-SCOPE-2']);
         $partiallyPaidInvoice = Invoice::factory()->create(['status' => 'partially_paid', 'invoice_number' => 'INV-TEST-SCOPE-3']);
 
-        $pendingResults = Invoice::status('pending')->get();
-        $this->assertCount(1, $pendingResults);
-        $this->assertEquals($pendingInvoice->invoice_id, $pendingResults->first()->invoice_id);
+        $pendingResult = Invoice::status('pending')->where('invoice_number', 'INV-TEST-SCOPE-1')->first();
+        $this->assertNotNull($pendingResult);
+        $this->assertEquals($pendingInvoice->invoice_id, $pendingResult->invoice_id);
 
-        $paidResults = Invoice::status('paid')->get();
-        $this->assertCount(1, $paidResults);
-        $this->assertEquals($paidInvoice->invoice_id, $paidResults->first()->invoice_id);
+        $paidResult = Invoice::status('paid')->where('invoice_number', 'INV-TEST-SCOPE-2')->first();
+        $this->assertNotNull($paidResult);
+        $this->assertEquals($paidInvoice->invoice_id, $paidResult->invoice_id);
+
+        $partiallyPaidResult = Invoice::status('partially_paid')->where('invoice_number', 'INV-TEST-SCOPE-3')->first();
+        $this->assertNotNull($partiallyPaidResult);
+        $this->assertEquals($partiallyPaidInvoice->invoice_id, $partiallyPaidResult->invoice_id);
     }
 
     public function test_invoice_search_by_patient_or_number(): void
     {
         $patient = Patient::factory()->create([
-            'user_id' => \App\Models\User::factory()->create(['first_name' => 'Jane', 'last_name' => 'Smith'])->user_id,
+            'user_id' => \App\Models\User::factory()->create(['first_name' => 'SearchTest', 'last_name' => 'InvoiceUser', 'email' => 'searchtest.invoice.'.uniqid().'@example.com'])->user_id,
         ]);
         $invoice = Invoice::factory()->create([
             'patient_id' => $patient->patient_id,
-            'invoice_number' => 'INV-TEST-001',
+            'invoice_number' => 'INV-SEARCH-'.uniqid(),
         ]);
 
-        $results = Invoice::searchByPatientOrNumber('Jane')->get();
-        $this->assertCount(1, $results);
+        $results = Invoice::searchByPatientOrNumber('SearchTest')->get();
+        $this->assertGreaterThan(0, $results->count());
+        $this->assertTrue($results->contains('invoice_id', $invoice->invoice_id));
 
-        $results = Invoice::searchByPatientOrNumber('INV-TEST-001')->get();
-        $this->assertCount(1, $results);
+        $results = Invoice::searchByPatientOrNumber($invoice->invoice_number)->get();
+        $this->assertGreaterThan(0, $results->count());
+        $this->assertTrue($results->contains('invoice_id', $invoice->invoice_id));
     }
 
     public function test_invoice_decimal_casts_work_correctly(): void

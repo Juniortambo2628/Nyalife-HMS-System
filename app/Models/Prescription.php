@@ -9,10 +9,11 @@ use Spatie\Activitylog\LogOptions;
 use App\Traits\HasVoidFields;
 use App\Traits\SearchByPatientName;
 use App\Traits\HasStatusScope;
+use App\Traits\DescribesActivity;
 
 class Prescription extends Model
 {
-    use HasFactory, LogsActivity, HasVoidFields, SearchByPatientName, HasStatusScope;
+    use HasFactory, LogsActivity, HasVoidFields, SearchByPatientName, HasStatusScope, DescribesActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -20,6 +21,11 @@ class Prescription extends Model
             ->logFillable()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    public function getActivityLabel(): string
+    {
+        return 'Prescription';
     }
 
     protected $primaryKey = 'prescription_id';

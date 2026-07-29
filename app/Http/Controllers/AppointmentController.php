@@ -7,6 +7,7 @@ use App\Http\Requests\StoreGuestAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
+use App\Models\Consultation;
 use App\Models\Patient;
 use App\Models\Staff;
 use App\Models\User;
@@ -326,23 +327,34 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Check in a patient (update status to arrived).
+     * Check in a patient and auto-create consultation.
      */
     public function checkIn($id)
     {
-        $appointment = Appointment::findOrFail($id);
+        $appointment = Appointment::with(['patient.user', 'doctor.user'])->findOrFail($id);
         $appointment->update(['status' => 'arrived']);
 
+        $consultation = Consultation::create([
+            'patient_id' => $appointment->patient_id,
+            'doctor_id' => $appointment->doctor_id,
+            'appointment_id' => $appointment->appointment_id,
+            'consultation_date' => now(),
+            'consultation_status' => 'in_progress',
+            'complaint' => $appointment->reason_for_visit ?? null,
+            'created_by' => Auth::id(),
+        ]);
+
         ActivityLogger::log(
-            'appointments',
-            "Patient " . ($appointment->patient->user->full_name ?? 'Patient') . " checked in",
-            ['appointment_id' => $appointment->appointment_id],
+            'consultations',
+            "Consultation auto-created for " . ($appointment->patient->user->full_name ?? 'Patient') . " (check-in)",
+            ['consultation_id' => $consultation->consultation_id, 'appointment_id' => $appointment->appointment_id],
             Auth::user(),
-            $appointment,
-            [$appointment->doctor->user_id, 1] // Notify Doctor and Admin
+            $consultation,
+            [$appointment->doctor->user_id, 1]
         );
         
-        return redirect()->back()->with('success', 'Patient checked in successfully! You can now start the consultation.');
+        return redirect()->route('consultations.edit', $consultation->consultation_id)
+            ->with('success', 'Patient checked in and consultation started. Please complete the consultation details.');
     }
 
     /**

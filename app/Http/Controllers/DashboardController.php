@@ -55,12 +55,25 @@ class DashboardController extends Controller
             ->get()
             ->map(function($activity) {
                 $module = $activity->getExtraProperty('module') ?? 'general';
+                if ($module === 'general' && $activity->subject_type) {
+                    $subjectClass = class_basename($activity->subject_type);
+                    $module = match($subjectClass) {
+                        'Appointment' => 'appointments',
+                        'Consultation' => 'consultations',
+                        'LabTestRequest' => 'lab',
+                        'Medication', 'Prescription' => 'pharmacy',
+                        'Invoice', 'Payment' => 'billing',
+                        'Patient' => 'patients',
+                        default => 'general',
+                    };
+                }
                 $icons = [
                     'appointments' => 'fa-calendar-check',
                     'consultations' => 'fa-stethoscope',
                     'lab' => 'fa-vials',
                     'pharmacy' => 'fa-pills',
                     'billing' => 'fa-file-invoice-dollar',
+                    'patients' => 'fa-user-injured',
                     'general' => 'fa-bell'
                 ];
                 $colors = [
@@ -69,6 +82,7 @@ class DashboardController extends Controller
                     'lab' => 'warning',
                     'pharmacy' => 'danger',
                     'billing' => 'success',
+                    'patients' => 'info',
                     'general' => 'secondary'
                 ];
 

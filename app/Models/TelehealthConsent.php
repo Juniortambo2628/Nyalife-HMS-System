@@ -5,10 +5,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use App\Traits\DescribesActivity;
 
 class TelehealthConsent extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, DescribesActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -16,6 +17,11 @@ class TelehealthConsent extends Model
             ->logFillable()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    public function getActivityLabel(): string
+    {
+        return 'Telehealth Consent';
     }
 
     protected $primaryKey = 'id';

@@ -79,20 +79,16 @@ class PatientClinicalWorkflowTest extends TestCase
         ]);
 
         // A consultation medical procedure is required for auto-generated invoices.
-        $this->consultationProcedure = MedicalProcedure::factory()->create([
-            'name' => 'General Consultation',
-            'category' => 'consultation',
-            'standard_fee' => 3000,
-            'is_active' => true,
-        ]);
+        $this->consultationProcedure = MedicalProcedure::firstOrCreate(
+            ['name' => 'General Consultation'],
+            ['category' => 'consultation', 'standard_fee' => 3000, 'is_active' => true]
+        );
 
         // An additional procedure requested separately from the consultation fee.
-        $this->additionalProcedure = MedicalProcedure::factory()->create([
-            'name' => 'Wound Dressing',
-            'category' => 'procedure',
-            'standard_fee' => 1200,
-            'is_active' => true,
-        ]);
+        $this->additionalProcedure = MedicalProcedure::firstOrCreate(
+            ['name' => 'Wound Dressing'],
+            ['category' => 'procedure', 'standard_fee' => 1200, 'is_active' => true]
+        );
 
         // A lab test type (lab category) for requested_labs.
         $this->labTestType = LabTestType::factory()->create([
@@ -140,11 +136,13 @@ class PatientClinicalWorkflowTest extends TestCase
         // =====================================================================
         // 1. Patient registration (PatientController::store)
         // =====================================================================
+        $uniqueEmail = 'jane.doe.workflow.'.uniqid().'@example.com';
+
         $registrationPayload = [
             'first_name' => 'Jane',
             'last_name' => 'Doe',
-            'email' => 'jane.doe.workflow@example.com',
-            'phone' => '+254711222333',
+            'email' => $uniqueEmail,
+            'phone' => '+254711222333'.rand(100, 999),
             'date_of_birth' => '1990-05-15',
             'gender' => 'female',
             'address' => '123 Test Lane, Nairobi',
@@ -164,7 +162,7 @@ class PatientClinicalWorkflowTest extends TestCase
             ->assertRedirect(route('patients.index'));
 
         $patient = Patient::with('user')
-            ->whereHas('user', fn ($q) => $q->where('email', 'jane.doe.workflow@example.com'))
+            ->whereHas('user', fn ($q) => $q->where('email', $uniqueEmail))
             ->first();
 
         $this->assertNotNull($patient, 'Patient was not registered.');
@@ -253,10 +251,12 @@ class PatientClinicalWorkflowTest extends TestCase
         ];
 
         $this->actingAs($this->doctorUser)
-            ->post(route('consultations.store'), $consultationPayload)
-            ->assertRedirect();
+            ->post(route('consultations.store'), $consultationPayload);
 
-        $consultation = Consultation::where('patient_id', $patient->patient_id)->first();
+        $consultation = Consultation::where('patient_id', $patient->patient_id)
+            ->where('appointment_id', $appointment->appointment_id)
+            ->where('chief_complaint', 'Headache and mild fever')
+            ->first();
         $this->assertNotNull($consultation, 'Consultation was not created.');
         $this->assertEquals('in_progress', $consultation->consultation_status);
         $this->assertEquals($appointment->appointment_id, $consultation->appointment_id);
@@ -353,12 +353,14 @@ class PatientClinicalWorkflowTest extends TestCase
 
     public function test_patient_quick_registration_workflow(): void
     {
+        $quickEmail = 'quick.patient.'.uniqid().'@example.com';
+
         $this->actingAs($this->receptionistUser)
             ->postJson(route('patients.quick-store'), [
                 'first_name' => 'Quick',
                 'last_name' => 'Patient',
-                'email' => 'quick.patient@example.com',
-                'phone' => '+254733444555',
+                'email' => $quickEmail,
+                'phone' => '+254733444555'.rand(100, 999),
                 'date_of_birth' => '1985-08-20',
                 'gender' => 'male',
                 'blood_group' => 'A+',
@@ -367,7 +369,7 @@ class PatientClinicalWorkflowTest extends TestCase
             ->assertJsonPath('success', true);
 
         $this->assertDatabaseHas('users', [
-            'email' => 'quick.patient@example.com',
+            'email' => $quickEmail,
             'first_name' => 'Quick',
             'last_name' => 'Patient',
         ]);

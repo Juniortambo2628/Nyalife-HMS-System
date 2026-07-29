@@ -9,10 +9,11 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use App\Traits\DescribesActivity;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasApiTokens, Notifiable, LogsActivity;
+    use HasFactory, HasApiTokens, Notifiable, LogsActivity, DescribesActivity;
     use HasRoles {
         hasPermissionTo as traitHasPermissionTo;
         hasAnyPermission as traitHasAnyPermission;
@@ -24,6 +25,11 @@ class User extends Authenticatable
             ->logFillable()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    public function getActivityLabel(): string
+    {
+        return 'User';
     }
 
     protected $table = 'users';

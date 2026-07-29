@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use App\Traits\DescribesActivity;
 
 class Consultation extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, DescribesActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -17,6 +18,11 @@ class Consultation extends Model
             ->logFillable()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    public function getActivityLabel(): string
+    {
+        return 'Consultation';
     }
 
     protected $table = 'consultations';

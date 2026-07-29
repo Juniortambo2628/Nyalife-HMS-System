@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use App\Traits\HasVoidFields;
+use App\Traits\DescribesActivity;
 
 class Vital extends Model
 {
-    use HasFactory, LogsActivity, HasVoidFields;
+    use HasFactory, LogsActivity, HasVoidFields, DescribesActivity;
 
     protected $table = 'vital_signs';
     protected $primaryKey = 'vital_id';
@@ -51,6 +52,11 @@ class Vital extends Model
             ->logFillable()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    public function getActivityLabel(): string
+    {
+        return 'Vital Signs';
     }
 
     public function patient()

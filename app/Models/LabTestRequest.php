@@ -8,10 +8,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use App\Traits\SearchByPatientName;
 use App\Traits\HasStatusScope;
+use App\Traits\DescribesActivity;
 
 class LabTestRequest extends Model
 {
-    use HasFactory, LogsActivity, SearchByPatientName, HasStatusScope;
+    use HasFactory, LogsActivity, SearchByPatientName, HasStatusScope, DescribesActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -20,7 +21,12 @@ class LabTestRequest extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
-    
+
+    public function getActivityLabel(): string
+    {
+        return 'Lab Test Request';
+    }
+
     protected $table = 'lab_test_requests';
     protected $primaryKey = 'request_id';
 

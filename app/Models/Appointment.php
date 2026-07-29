@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use App\Traits\HasStatusScope;
+use App\Traits\DescribesActivity;
 
 class Appointment extends Model
 {
-    use HasFactory, LogsActivity, HasStatusScope;
+    use HasFactory, LogsActivity, HasStatusScope, DescribesActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -18,6 +19,11 @@ class Appointment extends Model
             ->logFillable()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    public function getActivityLabel(): string
+    {
+        return 'Appointment';
     }
 
     protected $primaryKey = 'appointment_id';

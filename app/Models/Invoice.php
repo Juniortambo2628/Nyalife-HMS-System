@@ -9,10 +9,11 @@ use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Builder;
 use App\Traits\HasVoidFields;
 use App\Traits\HasStatusScope;
+use App\Traits\DescribesActivity;
 
 class Invoice extends Model
 {
-    use HasFactory, LogsActivity, HasVoidFields, HasStatusScope;
+    use HasFactory, LogsActivity, HasVoidFields, HasStatusScope, DescribesActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -20,6 +21,11 @@ class Invoice extends Model
             ->logFillable()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    public function getActivityLabel(): string
+    {
+        return 'Invoice';
     }
 
     protected $primaryKey = 'invoice_id';

@@ -8,10 +8,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use App\Traits\SearchByPatientName;
 use App\Traits\HasStatusScope;
+use App\Traits\DescribesActivity;
 
 class RadiologyRequest extends Model
 {
-    use HasFactory, LogsActivity, SearchByPatientName, HasStatusScope;
+    use HasFactory, LogsActivity, SearchByPatientName, HasStatusScope, DescribesActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -19,6 +20,11 @@ class RadiologyRequest extends Model
             ->logFillable()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    public function getActivityLabel(): string
+    {
+        return 'Radiology Request';
     }
 
     protected $table = 'radiology_requests';

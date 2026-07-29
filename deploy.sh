@@ -23,7 +23,16 @@ git pull origin main
 
 # 2. Install/update PHP dependencies (production only)
 echo "📦 Installing Composer dependencies..."
-composer install --no-dev --optimize-autoloader --no-interaction 2>&1
+if command -v composer &> /dev/null; then
+    COMPOSER_CMD="composer"
+else
+    echo "⚠️ Global composer not found. Using local composer.phar..."
+    if [ ! -f "composer.phar" ]; then
+        curl -sS https://getcomposer.org/installer | php
+    fi
+    COMPOSER_CMD="php composer.phar"
+fi
+$COMPOSER_CMD install --no-dev --optimize-autoloader --no-interaction 2>&1
 
 # 3. Run new database migrations
 echo "🗄️  Running migrations..."

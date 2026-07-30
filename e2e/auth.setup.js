@@ -8,7 +8,7 @@ setup('authenticate as staff user', async ({ page }) => {
     const password = process.env.E2E_STAFF_PASSWORD || 'password';
 
     // Override the per-test timeout so the Inertia/React hydration has time to mount.
-    test.setTimeout(180000);
+    setup.setTimeout(180000);
 
     await page.goto('/login/staff', { waitUntil: 'domcontentloaded' });
 

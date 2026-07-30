@@ -2,26 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Models\Patient;
 use App\Models\Appointment;
-use App\Models\LabTestRequest;
-use App\Models\Prescription;
-use App\Models\Staff;
-use App\Models\Invoice;
 use App\Models\Consultation;
+use App\Models\Invoice;
+use App\Models\LabTestRequest;
+use App\Models\Patient;
+use App\Models\Prescription;
+use App\Models\PrescriptionItem;
+use App\Models\Staff;
+use App\Models\User;
+use App\Models\Vital;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Spatie\Activitylog\Models\Activity;
 
 class DashboardController extends Controller
 {
     public function index(Request $request, $role = null)
     {
         $user = Auth::user();
-        if (!$role) {
-            $role = $user->role ?? 'patient'; 
+        if (! $role) {
+            $role = $user->role ?? 'patient';
         }
 
         return match ($role) {
@@ -35,7 +38,7 @@ class DashboardController extends Controller
                 'user' => $user,
                 'role' => $role,
                 'stats' => [],
-                'recentActivity' => []
+                'recentActivity' => [],
             ]),
         };
     }
@@ -46,18 +49,18 @@ class DashboardController extends Controller
             'total_users' => User::where('is_active', 1)->count(),
             'active_patients' => Patient::count(),
             'pending_appointments' => Appointment::where('status', 'pending')->count(),
-            'today_appointments' => Appointment::whereDate('appointment_date', today())->count()
+            'today_appointments' => Appointment::whereDate('appointment_date', today())->count(),
         ];
-        
-        $recent_activity = \Spatie\Activitylog\Models\Activity::with(['causer', 'subject'])
+
+        $recent_activity = Activity::with(['causer', 'subject'])
             ->latest()
             ->limit(10)
             ->get()
-            ->map(function($activity) {
+            ->map(function ($activity) {
                 $module = $activity->getExtraProperty('module') ?? 'general';
                 if ($module === 'general' && $activity->subject_type) {
                     $subjectClass = class_basename($activity->subject_type);
-                    $module = match($subjectClass) {
+                    $module = match ($subjectClass) {
                         'Appointment' => 'appointments',
                         'Consultation' => 'consultations',
                         'LabTestRequest' => 'lab',
@@ -74,7 +77,7 @@ class DashboardController extends Controller
                     'pharmacy' => 'fa-pills',
                     'billing' => 'fa-file-invoice-dollar',
                     'patients' => 'fa-user-injured',
-                    'general' => 'fa-bell'
+                    'general' => 'fa-bell',
                 ];
                 $colors = [
                     'appointments' => 'primary',
@@ -83,23 +86,23 @@ class DashboardController extends Controller
                     'pharmacy' => 'danger',
                     'billing' => 'success',
                     'patients' => 'info',
-                    'general' => 'secondary'
+                    'general' => 'secondary',
                 ];
 
                 return [
                     'id' => $activity->id,
                     'type' => $module,
                     'title' => $activity->description,
-                    'user' => $activity->causer ? ($activity->causer->first_name . ' ' . $activity->causer->last_name) : 'System',
+                    'user' => $activity->causer ? ($activity->causer->first_name.' '.$activity->causer->last_name) : 'System',
                     'time' => $activity->created_at->diffForHumans(),
                     'icon' => $icons[$module] ?? 'fa-bell',
-                    'color' => $colors[$module] ?? 'primary'
+                    'color' => $colors[$module] ?? 'primary',
                 ];
             });
 
         $performance = [];
         $labels = [];
-        for($i = 6; $i >= 0; $i--) {
+        for ($i = 6; $i >= 0; $i--) {
             $date = today()->subDays($i);
             $labels[] = $date->format('D');
             $performance[] = Appointment::whereDate('appointment_date', $date)->count();
@@ -107,14 +110,14 @@ class DashboardController extends Controller
 
         $stats['performance'] = [
             'labels' => $labels,
-            'data' => $performance
+            'data' => $performance,
         ];
 
         return Inertia::render('Dashboard/Admin', [
             'user' => $user,
             'role' => 'admin',
             'stats' => $stats,
-            'recentActivity' => $recent_activity
+            'recentActivity' => $recent_activity,
         ]);
     }
 
@@ -122,40 +125,40 @@ class DashboardController extends Controller
     {
         $stats = [];
         $staff = Staff::where('user_id', $user->user_id)->first();
-        
+
         if ($staff) {
             $todayAppointments = Appointment::where('doctor_id', $staff->staff_id)
                 ->whereDate('appointment_date', today())
                 ->with('patient.user')
                 ->get();
 
-            $walkInVitals = \App\Models\Vital::where('measured_at', '>=', now()->subHours(24))
-                ->whereDoesntHave('patient.appointments', function($q) use ($staff) {
+            $walkInVitals = Vital::where('measured_at', '>=', now()->subHours(24))
+                ->whereDoesntHave('patient.appointments', function ($q) use ($staff) {
                     $q->whereDate('appointment_date', today())
-                      ->where('doctor_id', $staff->staff_id);
+                        ->where('doctor_id', $staff->staff_id);
                 })
                 ->with('patient.user')
                 ->latest('measured_at')
                 ->get()
                 ->unique('patient_id');
 
-            $walkIns = $walkInVitals->map(function($vital) {
+            $walkIns = $walkInVitals->map(function ($vital) {
                 return [
                     'appointment_id' => null,
                     'patient_id' => $vital->patient_id,
                     'patient' => $vital->patient,
                     'appointment_time' => Carbon::parse($vital->measured_at)->format('H:i:s'),
                     'appointment_type' => 'walk-in',
-                    'status' => 'arrived'
+                    'status' => 'arrived',
                 ];
             });
 
             $stats['today_appointments'] = collect($todayAppointments)->concat($walkIns)->sortBy('appointment_time')->values();
-                
+
             $stats['pending_appointments'] = Appointment::where('doctor_id', $staff->staff_id)
                 ->where('status', 'pending')
                 ->count();
-                
+
             $stats['completed_this_week'] = Consultation::where('doctor_id', $staff->staff_id)
                 ->where('consultation_status', 'completed')
                 ->where('consultation_date', '>=', now()->startOfWeek())
@@ -170,7 +173,7 @@ class DashboardController extends Controller
 
             $stats['in_progress_consultations'] = Consultation::where('doctor_id', $staff->staff_id)
                 ->whereIn('consultation_status', ['pending', 'in_progress'])
-                ->whereDoesntHave('labTestRequests', function($q) {
+                ->whereDoesntHave('labTestRequests', function ($q) {
                     $q->where('status', 'pending');
                 })
                 ->with('patient.user')
@@ -179,7 +182,7 @@ class DashboardController extends Controller
                 ->get();
 
             $stats['pending_lab_consultations'] = Consultation::where('doctor_id', $staff->staff_id)
-                ->whereHas('labTestRequests', function($q) {
+                ->whereHas('labTestRequests', function ($q) {
                     $q->where('status', 'pending');
                 })
                 ->with('patient.user')
@@ -189,7 +192,7 @@ class DashboardController extends Controller
 
             $stats['released_labs'] = Consultation::where('doctor_id', $staff->staff_id)
                 ->where('consultation_status', '!=', 'completed')
-                ->whereHas('labTestRequests', function($q) {
+                ->whereHas('labTestRequests', function ($q) {
                     $q->where('status', 'completed')
                         ->where('completed_at', '>=', now()->subDays(2));
                 })
@@ -203,14 +206,14 @@ class DashboardController extends Controller
             'user' => $user,
             'role' => 'doctor',
             'stats' => $stats,
-            'recentActivity' => []
+            'recentActivity' => [],
         ]);
     }
 
     private function nurseDashboard($user)
     {
-        $walkinVitalsCount = \App\Models\Vital::where('measured_at', '>=', now()->subHours(24))
-            ->whereDoesntHave('patient.appointments', function($q) {
+        $walkinVitalsCount = Vital::where('measured_at', '>=', now()->subHours(24))
+            ->whereDoesntHave('patient.appointments', function ($q) {
                 $q->whereDate('appointment_date', today());
             })->distinct('patient_id')->count('patient_id');
 
@@ -220,11 +223,11 @@ class DashboardController extends Controller
 
         $stats = [
             'triage_queue' => $appointmentsTodayCount + $walkinVitalsCount,
-            
+
             'checked_in_patients' => Appointment::whereDate('appointment_date', today())
                 ->whereIn('status', ['confirmed', 'arrived'])
                 ->count() + $walkinVitalsCount,
-                
+
             'upcoming_appointments' => collect(Appointment::whereDate('appointment_date', today())
                 ->whereIn('status', ['scheduled', 'pending', 'confirmed', 'arrived'])
                 ->orderBy('appointment_date')
@@ -233,15 +236,15 @@ class DashboardController extends Controller
                 ->with(['patient.user', 'doctor.user'])
                 ->get())
                 ->concat(
-                    \App\Models\Vital::where('measured_at', '>=', now()->subHours(24))
-                        ->whereDoesntHave('patient.appointments', function($q) {
+                    Vital::where('measured_at', '>=', now()->subHours(24))
+                        ->whereDoesntHave('patient.appointments', function ($q) {
                             $q->whereDate('appointment_date', today());
                         })
                         ->with('patient.user')
                         ->latest('measured_at')
                         ->get()
                         ->unique('patient_id')
-                        ->map(function($vital) {
+                        ->map(function ($vital) {
                             return [
                                 'appointment_id' => null,
                                 'patient_id' => $vital->patient_id,
@@ -249,20 +252,20 @@ class DashboardController extends Controller
                                 'appointment_time' => Carbon::parse($vital->measured_at)->format('H:i:s'),
                                 'appointment_type' => 'walk-in',
                                 'status' => 'vitals_recorded',
-                                'doctor' => ['user' => ['last_name' => 'Pending Assignment']]
+                                'doctor' => ['user' => ['last_name' => 'Pending Assignment']],
                             ];
                         })
                 )
                 ->sortBy('appointment_time')
                 ->values()
-                ->take(10)
+                ->take(10),
         ];
 
         return Inertia::render('Dashboard/Nurse', [
             'user' => $user,
             'role' => 'nurse',
             'stats' => $stats,
-            'recentActivity' => []
+            'recentActivity' => [],
         ]);
     }
 
@@ -278,14 +281,14 @@ class DashboardController extends Controller
                 ->orderByRaw("FIELD(status, 'processing', 'pending')")
                 ->orderBy('created_at', 'desc')
                 ->limit(10)
-                ->get()
+                ->get(),
         ];
 
         return Inertia::render('Dashboard/LabTechnician', [
             'user' => $user,
             'role' => 'lab_technician',
             'stats' => $stats,
-            'recentActivity' => []
+            'recentActivity' => [],
         ]);
     }
 
@@ -297,14 +300,14 @@ class DashboardController extends Controller
                 ->where('status', 'pending')
                 ->orderBy('created_at', 'desc')
                 ->limit(10)
-                ->get()
+                ->get(),
         ];
 
         return Inertia::render('Dashboard/Pharmacist', [
             'user' => $user,
             'role' => 'pharmacist',
             'stats' => $stats,
-            'recentActivity' => []
+            'recentActivity' => [],
         ]);
     }
 
@@ -313,7 +316,7 @@ class DashboardController extends Controller
         $stats = [];
         $recentActivity = collect();
         $patient = Patient::where('user_id', $user->user_id)->first();
-        
+
         if ($patient) {
             // 1. Appointments
             $stats['my_appointments'] = Appointment::where('patient_id', $patient->patient_id)
@@ -321,7 +324,7 @@ class DashboardController extends Controller
                 ->orderBy('appointment_date')
                 ->with('doctor.user')
                 ->get();
-                
+
             // 2. Prescriptions
             $stats['my_prescriptions'] = Prescription::where('patient_id', $patient->patient_id)
                 ->orderBy('created_at', 'desc')
@@ -359,15 +362,19 @@ class DashboardController extends Controller
                             ->where('test_type_id', $item->item_id_ref)
                             ->where('status', 'completed')
                             ->exists();
-                        if ($isCompleted) $actualCost += $item->total_price;
+                        if ($isCompleted) {
+                            $actualCost += $item->total_price;
+                        }
                     } elseif ($item->item_type === 'medication') {
-                        $isDispensed = \App\Models\PrescriptionItem::whereHas('prescription', function($q) use ($invoice) {
-                                $q->where('consultation_id', $invoice->consultation_id)
-                                  ->where('status', 'dispensed');
-                            })
+                        $isDispensed = PrescriptionItem::whereHas('prescription', function ($q) use ($invoice) {
+                            $q->where('consultation_id', $invoice->consultation_id)
+                                ->where('status', 'dispensed');
+                        })
                             ->where('medication_id', $item->item_id_ref)
                             ->exists();
-                        if ($isDispensed) $actualCost += $item->total_price;
+                        if ($isDispensed) {
+                            $actualCost += $item->total_price;
+                        }
                     } else {
                         // Services, Procedures, Consultations are generally considered done if billed
                         $actualCost += $item->total_price;
@@ -377,12 +384,12 @@ class DashboardController extends Controller
             $stats['dynamic_billing'] = [
                 'actual_cost' => $actualCost,
                 'recommended_cost' => $recommendedCost,
-                'pending_invoices_count' => $invoices->count()
+                'pending_invoices_count' => $invoices->count(),
             ];
 
             // 6. Recent Activity Feed (Developments)
             // Get newest labs
-            $recentLabs = $stats['my_labs']->take(2)->map(function($lab) {
+            $recentLabs = $stats['my_labs']->take(2)->map(function ($lab) {
                 return [
                     'type' => 'lab',
                     'title' => 'Laboratory Result Ready',
@@ -392,22 +399,22 @@ class DashboardController extends Controller
                     'color' => 'success',
                     'url' => route('lab.show', $lab->request_id),
                     'btnText' => 'View Report',
-                    'date' => $lab->completed_at
+                    'date' => $lab->completed_at,
                 ];
             });
-            
+
             // Get newest consultations
-            $recentConsultations = $stats['my_consultations']->take(2)->map(function($c) {
+            $recentConsultations = $stats['my_consultations']->take(2)->map(function ($c) {
                 return [
                     'type' => 'consultation',
                     'title' => 'Consultation Concluded',
-                    'subtitle' => 'Dr. ' . ($c->doctor->user->last_name ?? ''),
+                    'subtitle' => 'Dr. '.($c->doctor->user->last_name ?? ''),
                     'time' => $c->updated_at ? $c->updated_at->diffForHumans() : 'Recently',
                     'icon' => 'fa-stethoscope',
                     'color' => 'primary',
                     'url' => route('consultations.show', $c->consultation_id),
                     'btnText' => 'Review Record',
-                    'date' => $c->updated_at
+                    'date' => $c->updated_at,
                 ];
             });
 
@@ -421,7 +428,7 @@ class DashboardController extends Controller
             'user' => $user,
             'role' => 'patient',
             'stats' => $stats,
-            'recentActivity' => $recentActivity
+            'recentActivity' => $recentActivity,
         ]);
     }
 }

@@ -2,13 +2,14 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\Invoice;
-use App\Models\Patient;
 use App\Models\Consultation;
+use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\Patient;
 use App\Models\Payment;
-use Tests\TestCase;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class InvoiceTest extends TestCase
 {
@@ -33,7 +34,7 @@ class InvoiceTest extends TestCase
     public function test_invoice_has_many_items(): void
     {
         $invoice = Invoice::factory()
-            ->has(\App\Models\InvoiceItem::factory()->count(4), 'items')
+            ->has(InvoiceItem::factory()->count(4), 'items')
             ->create();
 
         $this->assertCount(4, $invoice->items);
@@ -51,7 +52,7 @@ class InvoiceTest extends TestCase
         $invoice = Invoice::factory()->create([
             'is_voided' => true,
             'void_reason' => 'Duplicate invoice',
-            'voided_by' => \App\Models\User::factory()->create()->user_id,
+            'voided_by' => User::factory()->create()->user_id,
             'voided_at' => now()->format('Y-m-d H:i:s'),
         ]);
 
@@ -79,7 +80,7 @@ class InvoiceTest extends TestCase
 
     public function test_invoice_void_and_unvoid_methods(): void
     {
-        $user = \App\Models\User::factory()->create();
+        $user = User::factory()->create();
         $this->actingAs($user);
 
         $invoice = Invoice::factory()->create(['is_voided' => false, 'invoice_number' => 'INV-TEST-UNVOID-1']);
@@ -121,7 +122,7 @@ class InvoiceTest extends TestCase
     public function test_invoice_search_by_patient_or_number(): void
     {
         $patient = Patient::factory()->create([
-            'user_id' => \App\Models\User::factory()->create(['first_name' => 'SearchTest', 'last_name' => 'InvoiceUser', 'email' => 'searchtest.invoice.'.uniqid().'@example.com'])->user_id,
+            'user_id' => User::factory()->create(['first_name' => 'SearchTest', 'last_name' => 'InvoiceUser', 'email' => 'searchtest.invoice.'.uniqid().'@example.com'])->user_id,
         ]);
         $invoice = Invoice::factory()->create([
             'patient_id' => $patient->patient_id,

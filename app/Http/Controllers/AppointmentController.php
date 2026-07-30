@@ -9,27 +9,25 @@ use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
 use App\Models\Consultation;
 use App\Models\Patient;
+use App\Models\Role;
 use App\Models\Staff;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
-
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use App\Models\Role;
 use App\Services\ActivityLogger;
-use App\Support\PatientId;
 use App\Services\AppointmentQueryService;
-use App\Mail\TelehealthInvitation;
-use App\Mail\TelehealthPaymentNotification;
-use Illuminate\Support\Facades\Mail;
+use App\Services\TelehealthNotificationService;
+use App\Support\PatientId;
 use App\Support\Permissions;
 use App\Traits\HasBulkActions;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class AppointmentController extends Controller
 {
     use HasBulkActions;
+
     /**
      * Search doctors via AJAX.
      */
@@ -37,26 +35,26 @@ class AppointmentController extends Controller
     {
         $search = $request->query('q');
 
-        $doctors = Staff::whereHas('user', function($q) use ($search) {
-                $q->whereHas('roleRelation', function($r) {
-                    $r->where('role_name', 'doctor');
+        $doctors = Staff::whereHas('user', function ($q) use ($search) {
+            $q->whereHas('roleRelation', function ($r) {
+                $r->where('role_name', 'doctor');
+            });
+
+            if ($search) {
+                $q->where(function ($sq) use ($search) {
+                    $sq->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('username', 'like', "%{$search}%");
                 });
-                
-                if ($search) {
-                    $q->where(function($sq) use ($search) {
-                        $sq->where('first_name', 'like', "%{$search}%")
-                           ->orWhere('last_name', 'like', "%{$search}%")
-                           ->orWhere('username', 'like', "%{$search}%");
-                    });
-                }
-            })
+            }
+        })
             ->with('user')
             ->limit(20)
             ->get()
             ->map(function ($doctor) {
                 return [
                     'value' => $doctor->staff_id,
-                    'label' => "Dr. {$doctor->user->first_name} {$doctor->user->last_name} ({$doctor->specialization})"
+                    'label' => "Dr. {$doctor->user->first_name} {$doctor->user->last_name} ({$doctor->specialization})",
                 ];
             });
 
@@ -74,9 +72,9 @@ class AppointmentController extends Controller
         $user = User::where('email', $validated['email'])->first();
 
         // 2. If not, create user
-        if (!$user) {
+        if (! $user) {
             $password = Str::random(10); // Generate random password
-            $username = 'guest_' . time() . '_' . Str::random(4);
+            $username = 'guest_'.time().'_'.Str::random(4);
 
             $user = User::create([
                 'first_name' => explode(' ', $validated['name'])[0],
@@ -96,9 +94,9 @@ class AppointmentController extends Controller
                 'user_id' => $user->user_id,
                 'patient_number' => Patient::generateNumber($user->user_id),
             ]);
-            
+
             // Send guest credentials email
-            \App\Services\TelehealthNotificationService::sendGuestCredentials($user->email, $validated['name'], $password);
+            TelehealthNotificationService::sendGuestCredentials($user->email, $validated['name'], $password);
 
             // Assign Spatie patient role
             $user->assignRole('patient');
@@ -106,9 +104,9 @@ class AppointmentController extends Controller
 
         // 3. Get Patient ID
         $patient = Patient::where('user_id', $user->user_id)->first();
-        
-        if (!$patient) {
-             $patient = Patient::create([
+
+        if (! $patient) {
+            $patient = Patient::create([
                 'user_id' => $user->user_id,
                 'patient_number' => Patient::generateNumber($user->user_id),
             ]);
@@ -118,11 +116,11 @@ class AppointmentController extends Controller
         // Assign to a default doctor or rotate? For now, pick the first available doctor or leave null if constraints allow.
         // Looking at schema, doctor_id might be required. Let's find a default doctor or making it nullable if DB allows.
         // Assuming strict schema, let's pick the first doctor.
-        $doctor = Staff::whereHas('user', function($q) {
-                $q->whereHas('roleRelation', function($r) {
-                    $r->where('role_name', 'doctor');
-                });
-            })->first();
+        $doctor = Staff::whereHas('user', function ($q) {
+            $q->whereHas('roleRelation', function ($r) {
+                $r->where('role_name', 'doctor');
+            });
+        })->first();
 
         $appointment_type = ($validated['type'] ?? '') === 'telehealth' ? 'telehealth' : 'consultation';
 
@@ -139,7 +137,7 @@ class AppointmentController extends Controller
 
         // Send payment notification for telehealth guest appointments
         if ($appointment_type === 'telehealth' && $user->email) {
-            \App\Services\TelehealthNotificationService::sendPaymentNotification($appointment, $user->email);
+            TelehealthNotificationService::sendPaymentNotification($appointment, $user->email);
         }
 
         ActivityLogger::log(
@@ -159,7 +157,7 @@ class AppointmentController extends Controller
     {
         $appointmentId = session('guest_appointment_id');
 
-        if (!$appointmentId) {
+        if (! $appointmentId) {
             return redirect()->route('welcome');
         }
 
@@ -174,7 +172,7 @@ class AppointmentController extends Controller
                 'appointment_type' => $appointment->appointment_type,
                 'reason' => $appointment->reason,
                 'status' => $appointment->status,
-                'patient_name' => trim(($appointment->patient->user->first_name ?? '') . ' ' . ($appointment->patient->user->last_name ?? '')),
+                'patient_name' => trim(($appointment->patient->user->first_name ?? '').' '.($appointment->patient->user->last_name ?? '')),
                 'patient_email' => $appointment->patient->user->email ?? null,
                 'patient_phone' => $appointment->patient->user->phone ?? null,
             ],
@@ -231,7 +229,7 @@ class AppointmentController extends Controller
             'preselected_patient_id' => $patientId,
             'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
             'preselected_doctor_id' => $doctorId,
-            'preselected_doctor_label' => $doctor ? ("Dr. " . $doctor->user->first_name . " " . $doctor->user->last_name) : null,
+            'preselected_doctor_label' => $doctor ? ('Dr. '.$doctor->user->first_name.' '.$doctor->user->last_name) : null,
             'preselected_type' => $appointmentType,
         ]);
     }
@@ -244,28 +242,28 @@ class AppointmentController extends Controller
         $validated = $request->validated();
         $validated['status'] = 'scheduled';
         $validated['created_by'] = Auth::id();
-        
+
         $appointment = Appointment::create($validated);
 
         // Send payment notification for telehealth appointments
         if (($validated['appointment_type'] ?? '') === 'telehealth') {
             $patientEmail = $appointment->patient->user->email ?? null;
             if ($patientEmail) {
-                \App\Services\TelehealthNotificationService::sendPaymentNotification($appointment, $patientEmail);
+                TelehealthNotificationService::sendPaymentNotification($appointment, $patientEmail);
             }
         }
 
         ActivityLogger::log(
             'appointments',
-            "New appointment scheduled for " . ($appointment->patient->user->full_name ?? 'Patient'),
+            'New appointment scheduled for '.($appointment->patient->user->full_name ?? 'Patient'),
             ['appointment_id' => $appointment->appointment_id],
             Auth::user(),
             $appointment,
             [1] // Notify Admin (assuming ID 1 is admin)
         );
-        
+
         return redirect()->route('appointments.index')
-                         ->with('success', 'Appointment scheduled successfully.');
+            ->with('success', 'Appointment scheduled successfully.');
     }
 
     /**
@@ -287,7 +285,7 @@ class AppointmentController extends Controller
             $appointment->patient_id,
             Permissions::MANAGE_APPOINTMENTS
         );
-        
+
         return Inertia::render('Appointments/Show', [
             'appointment' => AppointmentResource::make($appointment),
         ]);
@@ -310,7 +308,7 @@ class AppointmentController extends Controller
             $appointment,
             [1]
         );
-        
+
         return redirect()->back()->with('success', 'Appointment updated successfully.');
     }
 
@@ -321,9 +319,9 @@ class AppointmentController extends Controller
     {
         $appointment = Appointment::findOrFail($id);
         $appointment->delete();
-        
+
         return redirect()->route('appointments.index')
-                         ->with('success', 'Appointment deleted successfully.');
+            ->with('success', 'Appointment deleted successfully.');
     }
 
     /**
@@ -346,13 +344,13 @@ class AppointmentController extends Controller
 
         ActivityLogger::log(
             'consultations',
-            "Consultation auto-created for " . ($appointment->patient->user->full_name ?? 'Patient') . " (check-in)",
+            'Consultation auto-created for '.($appointment->patient->user->full_name ?? 'Patient').' (check-in)',
             ['consultation_id' => $consultation->consultation_id, 'appointment_id' => $appointment->appointment_id],
             Auth::user(),
             $consultation,
             [$appointment->doctor->user_id, 1]
         );
-        
+
         return redirect()->route('consultations.edit', $consultation->consultation_id)
             ->with('success', 'Patient checked in and consultation started. Please complete the consultation details.');
     }
@@ -364,7 +362,7 @@ class AppointmentController extends Controller
     {
         $user = Auth::user();
         $query = Appointment::with(['patient.user', 'doctor.user']);
-        
+
         // Filter by role
         if ($user->role === 'doctor') {
             $staff = Staff::where('user_id', $user->user_id)->first();
@@ -372,16 +370,16 @@ class AppointmentController extends Controller
                 $query->where('doctor_id', $staff->staff_id);
             }
         }
-        
+
         $appointments = $query->get()->map(function ($apt) {
             return [
                 'id' => $apt->appointment_id,
-                'title' => $apt->patient->user->first_name . ' ' . $apt->patient->user->last_name,
-                'start' => $apt->appointment_date . ' ' . $apt->appointment_time,
+                'title' => $apt->patient->user->first_name.' '.$apt->patient->user->last_name,
+                'start' => $apt->appointment_date.' '.$apt->appointment_time,
                 'status' => $apt->status,
             ];
         });
-        
+
         return Inertia::render('Appointments/Calendar', [
             'appointments' => $appointments,
         ]);
@@ -402,7 +400,7 @@ class AppointmentController extends Controller
             return redirect()->back()->with('error', 'This appointment has been cancelled.');
         }
 
-        $link = \App\Services\TelehealthNotificationService::confirmPaymentAndSendInvite($appointment);
+        $link = TelehealthNotificationService::confirmPaymentAndSendInvite($appointment);
 
         ActivityLogger::log(
             'appointments',
@@ -424,14 +422,17 @@ class AppointmentController extends Controller
         return [
             'confirm' => function (array $ids, int $count) {
                 Appointment::whereIn('appointment_id', $ids)->update(['status' => 'confirmed']);
+
                 return redirect()->back()->with('success', "{$count} appointment(s) confirmed.");
             },
             'cancel' => function (array $ids, int $count) {
                 Appointment::whereIn('appointment_id', $ids)->update(['status' => 'cancelled']);
+
                 return redirect()->back()->with('success', "{$count} appointment(s) cancelled.");
             },
             'delete' => function (array $ids, int $count) {
                 Appointment::whereIn('appointment_id', $ids)->delete();
+
                 return redirect()->back()->with('success', "{$count} appointment(s) deleted.");
             },
         ];

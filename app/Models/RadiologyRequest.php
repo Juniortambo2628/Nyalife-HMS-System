@@ -2,17 +2,17 @@
 
 namespace App\Models;
 
+use App\Traits\DescribesActivity;
+use App\Traits\HasStatusScope;
+use App\Traits\SearchByPatientName;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use App\Traits\SearchByPatientName;
-use App\Traits\HasStatusScope;
-use App\Traits\DescribesActivity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class RadiologyRequest extends Model
 {
-    use HasFactory, LogsActivity, SearchByPatientName, HasStatusScope, DescribesActivity;
+    use DescribesActivity, HasFactory, HasStatusScope, LogsActivity, SearchByPatientName;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -28,6 +28,7 @@ class RadiologyRequest extends Model
     }
 
     protected $table = 'radiology_requests';
+
     protected $primaryKey = 'request_id';
 
     protected $fillable = [
@@ -47,12 +48,12 @@ class RadiologyRequest extends Model
         'verified_at',
         'completed_at',
         'consultation_id',
-        'appointment_id'
+        'appointment_id',
     ];
 
     protected $casts = [
         'verified_at' => 'datetime',
-        'completed_at' => 'datetime'
+        'completed_at' => 'datetime',
     ];
 
     public function patient()

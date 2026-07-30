@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\DescribesActivity;
+use App\Traits\HasStatusScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use App\Traits\HasStatusScope;
-use App\Traits\DescribesActivity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Appointment extends Model
 {
-    use HasFactory, LogsActivity, HasStatusScope, DescribesActivity;
+    use DescribesActivity, HasFactory, HasStatusScope, LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -38,7 +38,7 @@ class Appointment extends Model
         'status', // scheduled, confirmed, completed, cancelled, no_show, pending
         'reason',
         'notes',
-        'created_by'
+        'created_by',
     ];
 
     public function patient()
@@ -78,6 +78,7 @@ class Appointment extends Model
         if (empty($staffId)) {
             return $query;
         }
+
         return $query->where('doctor_id', $staffId);
     }
 
@@ -86,6 +87,7 @@ class Appointment extends Model
         if (empty($patientId)) {
             return $query;
         }
+
         return $query->where('patient_id', $patientId);
     }
 

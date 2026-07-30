@@ -1,15 +1,16 @@
 <?php
+
 namespace App\Models;
 
+use App\Traits\DescribesActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use App\Traits\DescribesActivity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class TelehealthConsent extends Model
 {
-    use HasFactory, LogsActivity, DescribesActivity;
+    use DescribesActivity, HasFactory, LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -37,7 +38,7 @@ class TelehealthConsent extends Model
         'verbal_consent_obtained',
         'doctor_signature_path',
         'signed_at',
-        'ip_address'
+        'ip_address',
     ];
 
     protected $casts = [

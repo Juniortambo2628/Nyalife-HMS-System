@@ -2,18 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
+use App\Traits\DescribesActivity;
+use App\Traits\HasStatusScope;
 use App\Traits\HasVoidFields;
 use App\Traits\SearchByPatientName;
-use App\Traits\HasStatusScope;
-use App\Traits\DescribesActivity;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Prescription extends Model
 {
-    use HasFactory, LogsActivity, HasVoidFields, SearchByPatientName, HasStatusScope, DescribesActivity;
+    use DescribesActivity, HasFactory, HasStatusScope, HasVoidFields, LogsActivity, SearchByPatientName;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -44,7 +44,7 @@ class Prescription extends Model
         'is_voided',
         'void_reason',
         'voided_by',
-        'voided_at'
+        'voided_at',
     ];
 
     protected $casts = [

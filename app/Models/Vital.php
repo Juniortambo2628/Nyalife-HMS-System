@@ -2,18 +2,19 @@
 
 namespace App\Models;
 
+use App\Traits\DescribesActivity;
+use App\Traits\HasVoidFields;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use App\Traits\HasVoidFields;
-use App\Traits\DescribesActivity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Vital extends Model
 {
-    use HasFactory, LogsActivity, HasVoidFields, DescribesActivity;
+    use DescribesActivity, HasFactory, HasVoidFields, LogsActivity;
 
     protected $table = 'vital_signs';
+
     protected $primaryKey = 'vital_id';
 
     protected $fillable = [
@@ -35,7 +36,7 @@ class Vital extends Model
         'is_voided',
         'void_reason',
         'voided_by',
-        'voided_at'
+        'voided_at',
     ];
 
     protected $casts = [

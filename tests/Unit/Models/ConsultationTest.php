@@ -2,12 +2,17 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\Consultation;
-use App\Models\Patient;
-use App\Models\Staff;
 use App\Models\Appointment;
-use Tests\TestCase;
+use App\Models\Consultation;
+use App\Models\FollowUp;
+use App\Models\Invoice;
+use App\Models\LabTestRequest;
+use App\Models\Patient;
+use App\Models\Prescription;
+use App\Models\Staff;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class ConsultationTest extends TestCase
 {
@@ -39,36 +44,36 @@ class ConsultationTest extends TestCase
 
     public function test_consultation_has_many_prescriptions(): void
     {
-        $consultation = Consultation::factory()->has(\App\Models\Prescription::factory()->count(3))->create();
+        $consultation = Consultation::factory()->has(Prescription::factory()->count(3))->create();
 
         $this->assertCount(3, $consultation->prescriptions);
     }
 
     public function test_consultation_has_many_lab_test_requests(): void
     {
-        $consultation = Consultation::factory()->has(\App\Models\LabTestRequest::factory()->count(2))->create();
+        $consultation = Consultation::factory()->has(LabTestRequest::factory()->count(2))->create();
 
         $this->assertCount(2, $consultation->labTestRequests);
     }
 
     public function test_consultation_has_many_invoices(): void
     {
-        $consultation = Consultation::factory()->has(\App\Models\Invoice::factory()->count(2))->create();
+        $consultation = Consultation::factory()->has(Invoice::factory()->count(2))->create();
 
         $this->assertCount(2, $consultation->invoices);
     }
 
     public function test_consultation_has_many_follow_ups(): void
     {
-        $consultation = Consultation::factory()->has(\App\Models\FollowUp::factory()->count(2))->create();
+        $consultation = Consultation::factory()->has(FollowUp::factory()->count(2))->create();
 
         $this->assertCount(2, $consultation->followUps);
     }
 
     public function test_consultation_scopes_work_correctly(): void
     {
-        $doctor = \App\Models\Staff::factory()->create();
-        $patient = \App\Models\Patient::factory()->create();
+        $doctor = Staff::factory()->create();
+        $patient = Patient::factory()->create();
 
         Consultation::factory()->create(['doctor_id' => $doctor->staff_id]);
         Consultation::factory()->create(['patient_id' => $patient->patient_id]);
@@ -82,7 +87,7 @@ class ConsultationTest extends TestCase
         $uniqueFirst = 'Xz'.uniqid();
         $uniqueDiag = 'Zx'.uniqid();
         $patient = Patient::factory()->create([
-            'user_id' => \App\Models\User::factory()->create(['first_name' => $uniqueFirst, 'last_name' => 'Doe'])->user_id,
+            'user_id' => User::factory()->create(['first_name' => $uniqueFirst, 'last_name' => 'Doe'])->user_id,
         ]);
         $consultation = Consultation::factory()->create([
             'patient_id' => $patient->patient_id,

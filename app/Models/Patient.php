@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\DescribesActivity;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use App\Traits\DescribesActivity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Patient extends Model
 {
-    use HasFactory, LogsActivity, DescribesActivity;
+    use DescribesActivity, HasFactory, LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -47,6 +48,7 @@ class Patient extends Model
         'insurance_number',
         'insurance_expiry',
     ];
+
     protected $casts = [
         'date_of_birth' => 'date',
         'height' => 'decimal:2',
@@ -56,10 +58,12 @@ class Patient extends Model
     public function getAgeAttribute()
     {
         $dob = $this->date_of_birth ?? $this->user?->date_of_birth;
-        if (!$dob) return null;
-        
+        if (! $dob) {
+            return null;
+        }
+
         try {
-            return \Carbon\Carbon::parse($dob)->age;
+            return Carbon::parse($dob)->age;
         } catch (\Exception $e) {
             return null;
         }
@@ -79,7 +83,7 @@ class Patient extends Model
     {
         return $this->hasMany(Prescription::class, 'patient_id', 'patient_id');
     }
-    
+
     public function labTestRequests()
     {
         return $this->hasMany(LabTestRequest::class, 'patient_id', 'patient_id');
@@ -100,6 +104,7 @@ class Patient extends Model
         if (empty($search)) {
             return $query;
         }
+
         return $query->whereHas('user', function ($q) use ($search) {
             $q->where('first_name', 'like', "%{$search}%")
                 ->orWhere('last_name', 'like', "%{$search}%")
@@ -112,6 +117,6 @@ class Patient extends Model
      */
     public static function generateNumber(int $userId): string
     {
-        return 'PAT-' . date('Ymd') . '-' . str_pad($userId, 4, '0', STR_PAD_LEFT);
+        return 'PAT-'.date('Ymd').'-'.str_pad($userId, 4, '0', STR_PAD_LEFT);
     }
 }

@@ -18,7 +18,7 @@ trait DescribesActivity
             'created' => $activity->description = "{$label} #{$key} created",
             'updated' => $activity->description = "{$label} #{$key} updated",
             'deleted' => $activity->description = "{$label} #{$key} deleted",
-            default   => $activity->description = "{$label} #{$key} {$eventName}",
+            default => $activity->description = "{$label} #{$key} {$eventName}",
         };
     }
 

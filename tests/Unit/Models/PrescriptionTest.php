@@ -2,14 +2,14 @@
 
 namespace Tests\Unit\Models;
 
+use App\Models\Consultation;
+use App\Models\Patient;
 use App\Models\Prescription;
 use App\Models\PrescriptionItem;
-use App\Models\Patient;
 use App\Models\User;
-use App\Models\Consultation;
-use App\Models\Medication;
-use Tests\TestCase;
+use App\Services\PrescriptionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class PrescriptionTest extends TestCase
 {
@@ -102,14 +102,14 @@ class PrescriptionTest extends TestCase
 
     public function test_prescription_service_parse_frequency_to_daily(): void
     {
-        $this->assertEquals(1, \App\Services\PrescriptionService::parseFrequencyToDaily('once daily'));
-        $this->assertEquals(2, \App\Services\PrescriptionService::parseFrequencyToDaily('twice daily'));
-        $this->assertEquals(3, \App\Services\PrescriptionService::parseFrequencyToDaily('three times daily'));
-        $this->assertEquals(4, \App\Services\PrescriptionService::parseFrequencyToDaily('four times daily'));
-        $this->assertEquals(4, \App\Services\PrescriptionService::parseFrequencyToDaily('every 6 hours'));
-        $this->assertEquals(3, \App\Services\PrescriptionService::parseFrequencyToDaily('every 8 hours'));
-        $this->assertEquals(1, \App\Services\PrescriptionService::parseFrequencyToDaily('at bedtime'));
-        $this->assertEquals(1, \App\Services\PrescriptionService::parseFrequencyToDaily('as needed'));
-        $this->assertEquals(1, \App\Services\PrescriptionService::parseFrequencyToDaily('unknown'));
+        $this->assertEquals(1, PrescriptionService::parseFrequencyToDaily('once daily'));
+        $this->assertEquals(2, PrescriptionService::parseFrequencyToDaily('twice daily'));
+        $this->assertEquals(3, PrescriptionService::parseFrequencyToDaily('three times daily'));
+        $this->assertEquals(4, PrescriptionService::parseFrequencyToDaily('four times daily'));
+        $this->assertEquals(4, PrescriptionService::parseFrequencyToDaily('every 6 hours'));
+        $this->assertEquals(3, PrescriptionService::parseFrequencyToDaily('every 8 hours'));
+        $this->assertEquals(1, PrescriptionService::parseFrequencyToDaily('at bedtime'));
+        $this->assertEquals(1, PrescriptionService::parseFrequencyToDaily('as needed'));
+        $this->assertEquals(1, PrescriptionService::parseFrequencyToDaily('unknown'));
     }
 }

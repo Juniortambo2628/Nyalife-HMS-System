@@ -2,13 +2,15 @@
 
 namespace Tests\Unit\Services;
 
-use App\Models\Invoice;
 use App\Models\Consultation;
-use App\Models\Patient;
-use App\Models\MedicalProcedure;
+use App\Models\Invoice;
 use App\Models\LabTestRequest;
-use Tests\TestCase;
+use App\Models\MedicalProcedure;
+use App\Models\Patient;
+use App\Services\ConsultationInvoiceService;
+use Database\Seeders\RolePermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class ConsultationInvoiceServiceTest extends TestCase
 {
@@ -16,7 +18,7 @@ class ConsultationInvoiceServiceTest extends TestCase
 
     public function test_create_for_consultation_creates_invoice(): void
     {
-        $this->seed(\Database\Seeders\RolePermissionsSeeder::class);
+        $this->seed(RolePermissionsSeeder::class);
 
         $patient = Patient::factory()->create();
         $consultation = Consultation::factory()->create(['patient_id' => $patient->patient_id]);
@@ -34,7 +36,7 @@ class ConsultationInvoiceServiceTest extends TestCase
             ],
         ];
 
-        $invoice = \App\Services\ConsultationInvoiceService::createForConsultation($data, $consultation->consultation_id);
+        $invoice = ConsultationInvoiceService::createForConsultation($data, $consultation->consultation_id);
 
         $this->assertInstanceOf(Invoice::class, $invoice);
         $this->assertEquals($patient->patient_id, $invoice->patient_id);
@@ -45,7 +47,7 @@ class ConsultationInvoiceServiceTest extends TestCase
 
     public function test_add_new_items_to_existing(): void
     {
-        $this->seed(\Database\Seeders\RolePermissionsSeeder::class);
+        $this->seed(RolePermissionsSeeder::class);
 
         $patient = Patient::factory()->create();
         $invoice = Invoice::factory()->create(['patient_id' => $patient->patient_id, 'status' => 'pending']);
@@ -58,7 +60,7 @@ class ConsultationInvoiceServiceTest extends TestCase
             ],
         ];
 
-        \App\Services\ConsultationInvoiceService::addNewItemsToExisting($invoice, $data, $consultation->consultation_id);
+        ConsultationInvoiceService::addNewItemsToExisting($invoice, $data, $consultation->consultation_id);
 
         $invoice->refresh();
         $this->assertCount(1, $invoice->items);

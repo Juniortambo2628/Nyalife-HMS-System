@@ -3,12 +3,11 @@
 namespace Tests\Unit\Models;
 
 use App\Models\LabTestRequest;
+use App\Models\LabTestType;
 use App\Models\Patient;
 use App\Models\Staff;
-use App\Models\LabTestType;
-use App\Models\LabSample;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class LabTestRequestTest extends TestCase
 {

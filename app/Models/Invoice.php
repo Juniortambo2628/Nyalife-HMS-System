@@ -2,18 +2,18 @@
 
 namespace App\Models;
 
+use App\Traits\DescribesActivity;
+use App\Traits\HasStatusScope;
+use App\Traits\HasVoidFields;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use Illuminate\Database\Eloquent\Builder;
-use App\Traits\HasVoidFields;
-use App\Traits\HasStatusScope;
-use App\Traits\DescribesActivity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Invoice extends Model
 {
-    use HasFactory, LogsActivity, HasVoidFields, HasStatusScope, DescribesActivity;
+    use DescribesActivity, HasFactory, HasStatusScope, HasVoidFields, LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -50,7 +50,7 @@ class Invoice extends Model
         'is_voided',
         'void_reason',
         'voided_by',
-        'voided_at'
+        'voided_at',
     ];
 
     protected $casts = [
@@ -88,6 +88,7 @@ class Invoice extends Model
         if (empty($search)) {
             return $query;
         }
+
         return $query->where(function ($q) use ($search) {
             $q->whereHas('patient.user', function ($uq) use ($search) {
                 $uq->where('first_name', 'like', "%{$search}%")

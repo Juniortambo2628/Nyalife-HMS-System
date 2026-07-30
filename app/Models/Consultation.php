@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\DescribesActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use App\Traits\DescribesActivity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Consultation extends Model
 {
-    use HasFactory, LogsActivity, DescribesActivity;
+    use DescribesActivity, HasFactory, LogsActivity;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -26,6 +26,7 @@ class Consultation extends Model
     }
 
     protected $table = 'consultations';
+
     protected $primaryKey = 'consultation_id';
 
     protected $fillable = [
@@ -92,7 +93,7 @@ class Consultation extends Model
     {
         return $this->belongsTo(Staff::class, 'doctor_id', 'staff_id'); // Legacy uses staff_id for doctor_id in consultations
     }
-    
+
     // Sometimes we need the User model for the doctor directly if staff link is complex, but Staff is safer
     public function doctorUser()
     {
@@ -129,6 +130,7 @@ class Consultation extends Model
         if (empty($search)) {
             return $query;
         }
+
         return $query->where(function ($q) use ($search) {
             $q->whereHas('patient.user', function ($uq) use ($search) {
                 $uq->where('first_name', 'like', "%{$search}%")
@@ -142,6 +144,7 @@ class Consultation extends Model
         if (empty($doctorId)) {
             return $query;
         }
+
         return $query->where('doctor_id', $doctorId);
     }
 
@@ -150,6 +153,7 @@ class Consultation extends Model
         if (empty($patientId)) {
             return $query;
         }
+
         return $query->where('patient_id', $patientId);
     }
 

@@ -7,17 +7,20 @@ setup('authenticate as staff user', async ({ page }) => {
     const email = process.env.E2E_STAFF_EMAIL || 'admin@nyalife.com';
     const password = process.env.E2E_STAFF_PASSWORD || 'password';
 
-    await page.goto('/login/staff');
+    await page.goto('/login/staff', { waitUntil: 'domcontentloaded' });
+
+    // Wait for the Inertia/React app to hydrate before looking for the input.
+    await page.waitForLoadState('networkidle', { timeout: 60000 });
 
     // Wait for the login form to render.
-    await page.waitForSelector('input#email');
+    await page.waitForSelector('input#email', { state: 'visible', timeout: 60000 });
 
     await page.fill('input#email', email);
     await page.fill('input#password', password);
     await page.click('button[type="submit"]');
 
     // After login the user is usually redirected to /dashboard.
-    await page.waitForURL('/dashboard', { timeout: 10000 });
+    await page.waitForURL('/dashboard', { timeout: 15000 });
     await expect(page.locator('body')).toContainText('Dashboard');
 
     await page.context().storageState({ path: authFile });

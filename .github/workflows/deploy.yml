@@ -87,6 +87,19 @@ jobs:
             **/*.sql
             **/docs/production/**
 
+      # NOTE: Production deploys via FTP only — there is no `php artisan migrate`
+      # step in this workflow. cPanel shared hosting typically exposes the
+      # deployed files but not a CI-runnable PHP CLI. After each deploy an
+      # operator must run `php artisan migrate --force` manually via cPanel
+      # Terminal (or `php-cli` over SSH if available) from
+      # /home1/nyalifew/nyalife_core. Schema changes shipped in this deploy
+      # are not active until that command is run.
+      #
+      # The defensive controller guard in `ConsultationController::store`
+      # (mb_substr($parity, 0, 50)) prevents silent data loss even before
+      # migrations are run, but the underlying schema still needs the ALTER
+      # to commit. See docs/MIGRATIONS.md for the full runbook.
+
       - name: 🌐 Deploy public assets to public_html
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:

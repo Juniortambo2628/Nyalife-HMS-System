@@ -5845,6 +5845,15 @@ body.has-sidebar {
     50%      { opacity: .7; }
 }
 
+@keyframes nyl-pulse-slow {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50%      { opacity: 0.4; transform: scale(1.05); }
+}
+
+.pulse-slow {
+    animation: nyl-pulse-slow 4s infinite ease-in-out;
+}
+
 @keyframes nyl-page-fade-in {
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -6356,6 +6365,145 @@ th:hover .sort-icon {
 
 .toolbar-filters-slot {
     min-width: 0;
+}
+
+/* =========================================================================
+   Entity Reference Picker
+   ------------------------------------------------------------------------- */
+/* Used by EntityReferencePicker.jsx — the dropdown attached to the chat
+   composer. Reuses .nyl-tb-filter-* tokens for consistency with the
+   toolbar filter menu; only adds the picker-specific surfaces below. */
+.nyl-entity-picker {
+    position: relative;
+    display: inline-flex;
+}
+
+.nyl-entity-picker-trigger {
+    background: #f3f4f6 !important;
+    color: #6b7280 !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+.nyl-entity-picker-trigger:hover,
+.nyl-entity-picker-trigger:focus {
+    background: #e5e7eb !important;
+    color: #374151 !important;
+}
+
+.nyl-entity-picker.is-open .nyl-entity-picker-trigger {
+    background: #fce7f3 !important;
+    color: #be185d !important;
+    border-color: #f9a8d4 !important;
+}
+
+.nyl-entity-picker-search {
+    padding: 0.55rem 0.65rem;
+    border-bottom: 1px solid #eef2f7;
+    background: #fafafa;
+}
+
+.nyl-entity-picker-options {
+    max-height: 360px;
+    padding-bottom: 0.5rem;
+}
+
+.nyl-entity-picker-section + .nyl-entity-picker-section {
+    margin-top: 0.4rem;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 0.35rem;
+}
+
+.nyl-entity-picker-option {
+    gap: 0.65rem;
+}
+
+.nyl-entity-picker-option .fa-plus {
+    font-size: 0.7rem;
+}
+
+.nyl-entity-picker-empty {
+    padding: 1.25rem 1rem;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9ca3af;
+}
+
+/* =========================================================================
+   Reference Tags
+   ------------------------------------------------------------------------- */
+/* Visual surface for attached entity references. Shared by the chat
+   composer (input chips) and message bodies. */
+.nyl-ref-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.2;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.nyl-ref-tag i {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+}
+
+.nyl-ref-tag .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+/* Input variant — appears in the composer. */
+.nyl-ref-tag--input {
+    background: #fce7f3;
+    color: #be185d;
+    padding: 0.35rem 0.55rem 0.35rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid #f9a8d4;
+}
+
+.nyl-ref-tag-remove {
+    background: transparent;
+    border: 0;
+    padding: 0 0.1rem;
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    transition: background 120ms ease;
+}
+
+.nyl-ref-tag-remove:hover {
+    background: rgba(190, 24, 93, 0.12);
+}
+
+/* Message variant — used inside sent message bodies. Two color schemes
+   depending on whether the message is the author's own. */
+.nyl-ref-tag--message {
+    padding: 0.3rem 0.55rem;
+    border-radius: 0.65rem;
+    background: #f9fafb;
+    color: #374151;
+    border: 1px solid #eef2f7;
+}
+
+.nyl-ref-tag--message.is-own {
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.nyl-ref-tag--message.is-peer {
+    background: #f9fafb;
+    color: #374151;
+    border-color: #eef2f7;
 }
 
 .nyl-toolbar-toggle {

@@ -11,8 +11,8 @@ use App\Models\Message;
 use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class MessageController extends Controller
 {
@@ -184,56 +184,77 @@ class MessageController extends Controller
         $role = $user->role;
         $entities = [];
 
-        if ($role !== 'patient') {
-            $entities['patients'] = Patient::with('user')->limit(100)->get()->map(function ($p) {
-                return [
-                    'id' => $p->patient_id,
-                    'label' => $p->user->first_name . ' ' . $p->user->last_name . ' (' . $p->patient_number . ')',
-                    'type' => 'patient',
-                ];
-            });
-        }
+        foreach (self::entitySources() as $key => $source) {
+            // 'all' = visible to every non-patient role; otherwise explicit role list.
+            $allowed = $source['roles'] === 'all'
+                ? $role !== 'patient'
+                : in_array($role, $source['roles'], true);
 
-        if (in_array($role, ['admin', 'doctor', 'nurse', 'receptionist'], true)) {
-            $entities['appointments'] = Appointment::with('patient.user')->latest()->limit(50)->get()->map(function ($a) {
-                return [
-                    'id' => $a->appointment_id,
-                    'label' => 'Apt #' . $a->appointment_id . ': ' . $a->patient->user->first_name . ' (' . $a->appointment_date . ')',
-                    'type' => 'appointment',
-                ];
-            });
-        }
+            if (! $allowed) {
+                continue;
+            }
 
-        if (in_array($role, ['admin', 'doctor', 'nurse'], true)) {
-            $entities['consultations'] = Consultation::with('patient.user')->latest()->limit(50)->get()->map(function ($c) {
+            $entities[$key] = $source['query']()->map(function ($model) use ($source) {
                 return [
-                    'id' => $c->consultation_id,
-                    'label' => 'Consultation #' . $c->consultation_id . ' - ' . $c->patient->user->first_name,
-                    'type' => 'consultation',
-                ];
-            });
-        }
-
-        if (in_array($role, ['admin', 'doctor', 'nurse', 'lab_technician'], true)) {
-            $entities['lab_requests'] = LabTestRequest::with(['patient.user', 'testType'])->latest()->limit(50)->get()->map(function ($l) {
-                return [
-                    'id' => $l->request_id,
-                    'label' => 'Lab #' . $l->request_id . ' - ' . ($l->testType->test_name ?? 'Test') . ' (' . $l->patient->user->first_name . ')',
-                    'type' => 'lab_request',
-                ];
-            });
-        }
-
-        if (in_array($role, ['admin', 'doctor', 'nurse', 'pharmacist'], true)) {
-            $entities['medications'] = Medication::limit(100)->get()->map(function ($m) {
-                return [
-                    'id' => $m->medication_id,
-                    'label' => $m->medication_name . ' (' . $m->strength . ')',
-                    'type' => 'medication',
+                    'id' => $source['id']($model),
+                    'label' => $source['label']($model),
+                    'type' => $source['type'],
                 ];
             });
         }
 
         return response()->json($entities);
+    }
+
+    /**
+     * Data-driven registry of entity sources available to the messaging
+     * reference picker. Each entry exposes:
+     *   - roles:   list of legacy role names allowed to see it, or 'all'
+     *              (meaning every non-patient role).
+     *   - query:   closure returning the Eloquent query (eager-loaded).
+     *   - id, label: closures producing the payload shape used by the picker.
+     *   - type:    singular lowercase identifier sent to the frontend.
+     *
+     * @return array<string, array{roles: array<int, string>|'all', query: \Closure, id: \Closure, label: \Closure, type: string}>
+     */
+    private static function entitySources(): array
+    {
+        return [
+            'patients' => [
+                'roles' => 'all',
+                'type' => 'patient',
+                'query' => fn () => Patient::with('user')->limit(100)->get(),
+                'id' => fn ($p) => $p->patient_id,
+                'label' => fn ($p) => $p->user->first_name.' '.$p->user->last_name.' ('.$p->patient_number.')',
+            ],
+            'appointments' => [
+                'roles' => ['admin', 'doctor', 'nurse', 'receptionist'],
+                'type' => 'appointment',
+                'query' => fn () => Appointment::with('patient.user')->latest()->limit(50)->get(),
+                'id' => fn ($a) => $a->appointment_id,
+                'label' => fn ($a) => 'Apt #'.$a->appointment_id.': '.$a->patient->user->first_name.' ('.$a->appointment_date.')',
+            ],
+            'consultations' => [
+                'roles' => ['admin', 'doctor', 'nurse'],
+                'type' => 'consultation',
+                'query' => fn () => Consultation::with('patient.user')->latest()->limit(50)->get(),
+                'id' => fn ($c) => $c->consultation_id,
+                'label' => fn ($c) => 'Consultation #'.$c->consultation_id.' - '.$c->patient->user->first_name,
+            ],
+            'lab_requests' => [
+                'roles' => ['admin', 'doctor', 'nurse', 'lab_technician'],
+                'type' => 'lab_request',
+                'query' => fn () => LabTestRequest::with(['patient.user', 'testType'])->latest()->limit(50)->get(),
+                'id' => fn ($l) => $l->request_id,
+                'label' => fn ($l) => 'Lab #'.$l->request_id.' - '.($l->testType->test_name ?? 'Test').' ('.$l->patient->user->first_name.')',
+            ],
+            'medications' => [
+                'roles' => ['admin', 'doctor', 'nurse', 'pharmacist'],
+                'type' => 'medication',
+                'query' => fn () => Medication::limit(100)->get(),
+                'id' => fn ($m) => $m->medication_id,
+                'label' => fn ($m) => $m->medication_name.' ('.$m->strength.')',
+            ],
+        ];
     }
 }

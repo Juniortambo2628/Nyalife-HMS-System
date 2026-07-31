@@ -244,6 +244,14 @@ class ConsultationController extends Controller
             $data['follow_up_instructions'] = $data['follow_up_instructions'] ?? '';
             $data['notes'] = $data['notes'] ?? '';
 
+            // Trim obstetric `parity` notation ("1+0", "G2P1+0") to fit a
+            // defensive 50-char ceiling. The migration widens the column to
+            // varchar(50), but if the operator hasn't run migrations yet this
+            // keeps the store from blowing up.
+            if (! empty($data['parity'])) {
+                $data['parity'] = mb_substr(trim((string) $data['parity']), 0, 50);
+            }
+
             // Map 'status' to 'consultation_status' if specific name used in legacy
             $data['consultation_status'] = $data['status'];
             $data['created_by'] = Auth::id();

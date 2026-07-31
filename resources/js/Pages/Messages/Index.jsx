@@ -4,18 +4,18 @@ import { useState, useEffect, useRef } from 'react';
 import UserAvatar from '@/Components/UserAvatar';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import TableActions from '@/Components/TableActions';
+import EntityReferencePicker from '@/Components/EntityReferencePicker';
+import ReferenceTag from '@/Components/ReferenceTag';
 import axios from 'axios';
 import { formatTime } from '@/Utils/dateUtils';
 
 export default function Index({ messages, users, filters = {}, auth }) {
     const [selectedUser, setSelectedUser] = useState(null);
     const [entities, setEntities] = useState({});
-    const [showEntitySelector, setShowEntitySelector] = useState(false);
     const [selectedEntities, setSelectedEntities] = useState([]);
     const [contactSearch, setContactSearch] = useState(filters.search || '');
     const showArchived = filters.archived || false;
-    const [entitySearch, setEntitySearch] = useState('');
-    const [activeFilter, setActiveFilter] = useState('all');
+    const textareaRef = useRef(null);
 
     const applyContactSearch = (value = contactSearch) => {
         router.get(
@@ -68,7 +68,6 @@ export default function Index({ messages, users, filters = {}, auth }) {
     });
 
     const messagesEndRef = useRef(null);
-    const textareaRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -95,9 +94,10 @@ export default function Index({ messages, users, filters = {}, auth }) {
         });
     }, []);
 
-    // Shortcut detection
+    // Shortcut detection: typing @type:: into the composer opens the picker
+    // pre-filtered to that type. The shortcut list is derived from the
+    // entities payload so it stays in sync with backend permissions.
     useEffect(() => {
-        const content = data.content;
         const shortcuts = {
             '@p::': 'patients',
             '@a::': 'appointments',
@@ -105,12 +105,10 @@ export default function Index({ messages, users, filters = {}, auth }) {
             '@l::': 'lab_requests',
             '@m::': 'medications',
         };
-
+        const content = data.content;
         for (const [trigger, type] of Object.entries(shortcuts)) {
             if (content.endsWith(trigger)) {
-                setActiveFilter(type);
-                setShowEntitySelector(true);
-                // Highlight trigger visually? or just open selector
+                setData((prev) => ({ ...prev, _pendingShortcut: type }));
                 break;
             }
         }
@@ -127,26 +125,29 @@ export default function Index({ messages, users, filters = {}, auth }) {
         });
     };
 
-    const addReference = (entity) => {
-        const newRefs = [...selectedEntities, entity];
+    const handleAddReference = (entity) => {
+        // Prevent duplicates.
+        if (selectedEntities.some((e) => e.id === entity.id && e.type === entity.type)) {
+            return;
+        }
+        const newRefs = [...selectedEntities, { ...entity, type: entity.type }];
         setSelectedEntities(newRefs);
         setData('metadata', { references: newRefs });
-        setShowEntitySelector(false);
-        setEntitySearch('');
 
-        // Clean up shortcut trigger if present
+        // Strip shortcut trigger if present.
         const triggers = ['@p::', '@a::', '@c::', '@l::', '@m::'];
         let newContent = data.content;
-        triggers.forEach((t) => {
+        for (const t of triggers) {
             if (newContent.endsWith(t)) {
                 newContent = newContent.slice(0, -t.length);
+                break;
             }
-        });
+        }
         setData('content', newContent);
     };
 
-    const removeReference = (id) => {
-        const newRefs = selectedEntities.filter((e) => e.id !== id);
+    const removeReference = (reference) => {
+        const newRefs = selectedEntities.filter((e) => !(e.id === reference.id && e.type === reference.type));
         setSelectedEntities(newRefs);
         setData('metadata', { references: newRefs });
     };
@@ -154,23 +155,6 @@ export default function Index({ messages, users, filters = {}, auth }) {
     const conversationMessages = selectedUser
         ? messages.filter((m) => m.sender_id === selectedUser.user_id || m.receiver_id === selectedUser.user_id)
         : [];
-
-    // Filtered Entities Logic
-    const getFilteredEntities = () => {
-        let result = {};
-        Object.entries(entities).forEach(([type, list]) => {
-            if (activeFilter !== 'all' && activeFilter !== type) return;
-
-            const filtered = list.filter((item) => item.label.toLowerCase().includes(entitySearch.toLowerCase()));
-
-            if (filtered.length > 0) {
-                result[type] = filtered;
-            }
-        });
-        return result;
-    };
-
-    const filteredEntities = getFilteredEntities();
 
     return (
         <AuthenticatedLayout headerTitle="Direct Messages" breadcrumbs={[{ label: 'Messages', active: true }]}>
@@ -210,7 +194,7 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                     type="text"
                                     placeholder="Search people..."
                                     value={contactSearch}
-                                    onChange={(e) => setContactSearch(e.target.value)}
+                                    onChange={(e) => setContactSearch(e.targetvalue ?? e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && applyContactSearch()}
                                     className="w-full pl-10 pr-4 py-2 bg-gray-50 border-0 rounded-full text-sm focus:ring-2 focus:ring-pink-500"
                                 />
@@ -313,59 +297,54 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                     {conversationMessages
                                         .slice()
                                         .reverse()
-                                        .map((m) => (
-                                            <div
-                                                key={m.id}
-                                                className={`max-w-[75%] rounded-2xl p-4 shadow-sm relative group ${m.sender_id === auth.user.user_id ? 'bg-pink-700 text-white ml-auto rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'}`}
-                                            >
-                                                {m.sender_id === auth.user.user_id && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => deleteMessage(m.id)}
-                                                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white text-danger border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        title="Delete message"
-                                                    >
-                                                        <i className="fas fa-times text-xs"></i>
-                                                    </button>
-                                                )}
-                                                <p className="mb-2 text-sm leading-relaxed">{m.content}</p>
-
-                                                {/* References Rendering */}
-                                                {m.metadata?.references?.length > 0 && (
-                                                    <div className="mt-2 space-y-2 border-t pt-2 border-white/20">
-                                                        {m.metadata.references.map((ref, idx) => (
-                                                            <div
-                                                                key={idx}
-                                                                className={`text-xs p-2 rounded-xl flex items-center gap-2 ${m.sender_id === auth.user.user_id ? 'bg-white/20 text-white' : 'bg-gray-50 text-gray-700 border border-gray-100'}`}
-                                                            >
-                                                                <i
-                                                                    className={`fas ${
-                                                                        ref.type === 'patient'
-                                                                            ? 'fa-user-injured'
-                                                                            : ref.type === 'appointment'
-                                                                              ? 'fa-calendar-check'
-                                                                              : ref.type === 'consultation'
-                                                                                ? 'fa-stethoscope'
-                                                                                : ref.type === 'lab_request'
-                                                                                  ? 'fa-vial'
-                                                                                  : 'fa-pills'
-                                                                    } opacity-60`}
-                                                                ></i>
-                                                                <span className="font-medium truncate">
-                                                                    {ref.label}
-                                                                </span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-
-                                                <small
-                                                    className={`text-[10px] block mt-1 ${m.sender_id === auth.user.user_id ? 'text-pink-200 text-end' : 'text-gray-400'}`}
+                                        .map((m) => {
+                                            const isOwn = m.sender_id === auth.user.user_id;
+                                            return (
+                                                <div
+                                                    key={m.id}
+                                                    className={`max-w-[75%] rounded-2xl p-4 shadow-sm relative group ${
+                                                        isOwn
+                                                            ? 'bg-pink-700 text-white ml-auto rounded-tr-none'
+                                                            : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
+                                                    }`}
                                                 >
-                                                    {formatTime(m.created_at)}
-                                                </small>
-                                            </div>
-                                        ))}
+                                                    {isOwn && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => deleteMessage(m.id)}
+                                                            className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white text-danger border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            title="Delete message"
+                                                            aria-label="Delete message"
+                                                        >
+                                                            <i className="fas fa-times text-xs"></i>
+                                                        </button>
+                                                    )}
+                                                    <p className="mb-2 text-sm leading-relaxed">{m.content}</p>
+
+                                                    {/* References Rendering */}
+                                                    {m.metadata?.references?.length > 0 && (
+                                                        <div className="mt-2 space-y-2 border-t pt-2 border-white/20">
+                                                            {m.metadata.references.map((ref, idx) => (
+                                                                <ReferenceTag
+                                                                    key={`${m.id}-${idx}-${ref.type}-${ref.id}`}
+                                                                    reference={ref}
+                                                                    variant="message"
+                                                                    isOwnMessage={isOwn}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    <small
+                                                        className={`text-[10px] block mt-1 ${
+                                                            isOwn ? 'text-pink-200 text-end' : 'text-gray-400'
+                                                        }`}
+                                                    >
+                                                        {formatTime(m.created_at)}
+                                                    </small>
+                                                </div>
+                                            );
+                                        })}
                                     <div ref={messagesEndRef} />
                                     {conversationMessages.length === 0 && (
                                         <div className="h-full flex flex-col items-center justify-center opacity-30 text-center py-20">
@@ -382,20 +361,12 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                     {selectedEntities.length > 0 && (
                                         <div className="flex flex-wrap gap-2 mb-3">
                                             {selectedEntities.map((ent) => (
-                                                <span
-                                                    key={ent.id}
-                                                    className="bg-pink-100 text-pink-600 text-xs px-3 py-1.5 rounded-full flex items-center gap-2 font-medium"
-                                                >
-                                                    <i className="fas fa-link opacity-60"></i>
-                                                    {ent.label}
-                                                    <button
-                                                        onClick={() => removeReference(ent.id)}
-                                                        aria-label={`Remove ${ent.label} reference`}
-                                                        className="hover:text-pink-800"
-                                                    >
-                                                        <i className="fas fa-times"></i>
-                                                    </button>
-                                                </span>
+                                                <ReferenceTag
+                                                    key={`${ent.type}-${ent.id}`}
+                                                    reference={ent}
+                                                    variant="input"
+                                                    onRemove={removeReference}
+                                                />
                                             ))}
                                         </div>
                                     )}
@@ -408,7 +379,7 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                                 value={data.content}
                                                 onChange={(e) => setData('content', e.target.value)}
                                                 placeholder="Type your message... (Try @p:: for patients)"
-                                                className="w-full border-0 bg-gray-50 rounded-2xl px-5 py-3 pr-12 focus:ring-2 focus:ring-pink-500 resize-none min-h-[48px]"
+                                                className="w-full border-0 bg-gray-50 rounded-2xl px-5 py-3 pr-14 focus:ring-2 focus:ring-pink-500 resize-none min-h-[48px]"
                                                 disabled={processing}
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -417,86 +388,12 @@ export default function Index({ messages, users, filters = {}, auth }) {
                                                     }
                                                 }}
                                             />
-                                            <button
-                                                type="button"
-                                                aria-label="Add reference"
-                                                onClick={() => setShowEntitySelector(!showEntitySelector)}
-                                                className={`absolute right-3 bottom-2.5 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showEntitySelector ? 'bg-pink-500 text-white' : 'text-gray-400 hover:bg-gray-200'}`}
-                                            >
-                                                <i className="fas fa-plus"></i>
-                                            </button>
-
-                                            {/* Advanced Entity Selector Dropdown */}
-                                            {showEntitySelector && (
-                                                <div className="absolute bottom-full right-0 mb-4 w-80 max-h-[500px] bg-white shadow-2xl rounded-2xl border border-gray-100 overflow-hidden flex flex-col z-50">
-                                                    <div className="p-3 bg-gray-50 border-b border-gray-100">
-                                                        <div className="font-bold text-xs text-gray-500 uppercase tracking-wider mb-2">
-                                                            Reference Hospital Records
-                                                        </div>
-                                                        <div className="relative mb-2">
-                                                            <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                                                            <input
-                                                                type="text"
-                                                                autoFocus
-                                                                value={entitySearch}
-                                                                onChange={(e) => setEntitySearch(e.target.value)}
-                                                                placeholder="Search entities..."
-                                                                className="w-full pl-8 pr-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-pink-500"
-                                                            />
-                                                        </div>
-                                                        <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setActiveFilter('all')}
-                                                                className={`px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap transition-colors ${activeFilter === 'all' ? 'bg-pink-500 text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-100'}`}
-                                                            >
-                                                                All
-                                                            </button>
-                                                            {Object.keys(entities).map((type) => (
-                                                                <button
-                                                                    key={type}
-                                                                    type="button"
-                                                                    onClick={() => setActiveFilter(type)}
-                                                                    className={`px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap transition-colors uppercase ${activeFilter === type ? 'bg-pink-500 text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-100'}`}
-                                                                >
-                                                                    {type.replace('_', ' ')}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                    <div className="overflow-y-auto p-2 space-y-4">
-                                                        {Object.entries(filteredEntities).length > 0 ? (
-                                                            Object.entries(filteredEntities).map(([type, list]) => (
-                                                                <div key={type}>
-                                                                    <div className="px-2 mb-1 text-[10px] font-bold text-gray-400 uppercase">
-                                                                        {type.replace('_', ' ')}
-                                                                    </div>
-                                                                    {list.map((ent) => (
-                                                                        <button
-                                                                            key={ent.id}
-                                                                            type="button"
-                                                                            onClick={() => addReference(ent)}
-                                                                            className="w-full p-2 text-start text-xs hover:bg-pink-50 rounded-lg transition-colors flex items-center gap-2 group"
-                                                                        >
-                                                                            <i className="fas fa-plus text-pink-500 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                                                            <span className="truncate">
-                                                                                {ent.label}
-                                                                            </span>
-                                                                        </button>
-                                                                    ))}
-                                                                </div>
-                                                            ))
-                                                        ) : (
-                                                            <div className="text-center py-8 opacity-40">
-                                                                <i className="fas fa-search mb-2 d-block"></i>
-                                                                <div className="text-[10px] font-bold">
-                                                                    No results found
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
+                                            <div className="absolute right-2 bottom-2">
+                                                <EntityReferencePicker
+                                                    entities={entities}
+                                                    onSelect={handleAddReference}
+                                                />
+                                            </div>
                                         </div>
                                         <button
                                             type="submit"
@@ -524,16 +421,6 @@ export default function Index({ messages, users, filters = {}, auth }) {
                     </div>
                 </div>
             </div>
-
-            <style>{`
-                @keyframes pulse-slow {
-                    0%, 100% { opacity: 0.3; transform: scale(1); }
-                    50% { opacity: 0.4; transform: scale(1.05); }
-                }
-                .pulse-slow { animation: pulse-slow 4s infinite ease-in-out; }
-                .no-scrollbar::-webkit-scrollbar { display: none; }
-                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-            `}</style>
         </AuthenticatedLayout>
     );
 }

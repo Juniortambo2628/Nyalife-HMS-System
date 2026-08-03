@@ -2,25 +2,21 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Patient;
-use App\Models\Staff;
-use App\Models\Department;
-use App\Models\Consultation;
 use App\Models\Appointment;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\Medication;
-use App\Models\Prescription;
-use App\Models\LabTestType;
-use App\Models\LabTestRequest;
-use App\Models\LabSample;
-use App\Models\Vital;
+use App\Models\Consultation;
+use App\Models\Department;
 use App\Models\Insurance;
-use App\Models\FollowUp;
+use App\Models\Invoice;
+use App\Models\LabTestType;
+use App\Models\Medication;
+use App\Models\Patient;
+use App\Models\Prescription;
 use App\Models\Role;
-use App\Models\MedicalProcedure;
-use App\Models\RadiologyRequest;
+use App\Models\Staff;
+use App\Models\User;
+use App\Models\Vital;
+use Database\Seeders\RolePermissionsSeeder;
+use Database\Seeders\SyncSpatieRolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -29,11 +25,17 @@ class FormSubmissionTest extends TestCase
     use RefreshDatabase;
 
     protected User $adminUser;
+
     protected User $doctorUser;
+
     protected Patient $patient;
+
     protected Staff $doctor;
+
     protected Department $department;
+
     protected Medication $medication;
+
     protected LabTestType $labTestType;
 
     protected function setUp(): void
@@ -74,8 +76,8 @@ class FormSubmissionTest extends TestCase
         foreach (['admin', 'doctor', 'nurse', 'receptionist', 'lab_technician', 'pharmacist', 'patient'] as $roleName) {
             Role::firstOrCreate(['role_name' => $roleName]);
         }
-        $this->seed(\Database\Seeders\SyncSpatieRolesSeeder::class);
-        $this->seed(\Database\Seeders\RolePermissionsSeeder::class);
+        $this->seed(SyncSpatieRolesSeeder::class);
+        $this->seed(RolePermissionsSeeder::class);
     }
 
     // =========================================================================
@@ -130,11 +132,11 @@ class FormSubmissionTest extends TestCase
         $response = $this->actingAs($this->adminUser)
             ->post(route('patients.store'), [
                 'first_name' => "O'Brien",
-                'last_name' => "Mwangi-Kamau",
+                'last_name' => 'Mwangi-Kamau',
                 'phone' => '+254 712 345 678',
                 'date_of_birth' => '1995-03-10',
                 'gender' => 'other',
-                'address' => "Kenyatta Ave, Block C #42, Apt. 3B (Nairobi)",
+                'address' => 'Kenyatta Ave, Block C #42, Apt. 3B (Nairobi)',
                 'allergies' => 'Peanuts, Penicillin',
             ]);
 

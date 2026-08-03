@@ -21,6 +21,7 @@ use App\Models\User;
 use App\Models\Vital;
 use App\Services\ActivityLogger;
 use App\Services\ConsultationInvoiceService;
+use App\Support\ParityValue;
 use App\Support\PatientId;
 use App\Support\Permissions;
 use App\Traits\HasBulkActions;
@@ -244,13 +245,16 @@ class ConsultationController extends Controller
             $data['follow_up_instructions'] = $data['follow_up_instructions'] ?? '';
             $data['notes'] = $data['notes'] ?? '';
 
-            // Trim obstetric `parity` notation ("1+0", "G2P1+0") to fit a
-            // defensive 50-char ceiling. The migration widens the column to
-            // varchar(50), but if the operator hasn't run migrations yet this
-            // keeps the store from blowing up.
-            if (! empty($data['parity'])) {
-                $data['parity'] = mb_substr(trim((string) $data['parity']), 0, 50);
-            }
+            // Normalise `parity` to whatever the live column can hold.
+            // Production (2026-08-01) had `parity` as int; doctors paste
+            // notes like "Para 0+0", "G1P0", "1+0" — none of which fit a
+            // numeric column, causing error 1366 and a rolled-back
+            // transaction. `ParityValue::normaliseForColumn` inspects the
+            // schema and returns an integer (parsed from the leading digits
+            // of the free-form value) when the column is numeric, or a
+            // trimmed string when it is text. Returns null only when the
+            // input is empty or the column is missing.
+            $data['parity'] = ParityValue::normaliseForColumn($data['parity'] ?? null);
 
             // Map 'status' to 'consultation_status' if specific name used in legacy
             $data['consultation_status'] = $data['status'];

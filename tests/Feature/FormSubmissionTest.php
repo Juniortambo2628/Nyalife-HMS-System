@@ -186,6 +186,7 @@ class FormSubmissionTest extends TestCase
 
     public function test_appointment_store_with_all_types(): void
     {
+        $countBefore = \DB::table('appointments')->count();
         foreach (['general', 'follow_up', 'telehealth', 'emergency'] as $type) {
             $response = $this->actingAs($this->doctorUser)
                 ->post(route('appointments.store'), [
@@ -200,7 +201,7 @@ class FormSubmissionTest extends TestCase
             $response->assertRedirect();
         }
 
-        $this->assertDatabaseCount('appointments', 4);
+        $this->assertDatabaseCount('appointments', $countBefore + 4);
     }
 
     // =========================================================================

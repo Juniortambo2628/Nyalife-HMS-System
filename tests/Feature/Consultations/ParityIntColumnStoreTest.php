@@ -10,12 +10,20 @@ use App\Models\User;
 use App\Support\ParityValue;
 use App\Support\Permissions;
 use Database\Seeders\SyncSpatieRolesSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-class ConsultationStoreParityTest extends TestCase
+/**
+ * End-to-end tests proving the controller store succeeds even when the
+ * consultations.parity column is a legacy INT.
+ *
+ * Uses DatabaseMigrations because tests ALTER TABLE (DDL), which auto-commits
+ * in MySQL and breaks RefreshDatabase's transaction wrapping.
+ */
+class ParityIntColumnStoreTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseMigrations;
 
     protected User $doctor;
 
@@ -48,88 +56,84 @@ class ConsultationStoreParityTest extends TestCase
         $this->patient = Patient::factory()->create();
     }
 
-    public function test_consultation_store_accepts_obstetric_parity_notation(): void
+    protected function tearDown(): void
     {
-        $payload = $this->basePayload([
-            'parity' => '2+0',
-            'status' => 'completed',
-        ]);
+        DB::statement('ALTER TABLE consultations MODIFY parity VARCHAR(50) NULL');
+        ParityValue::flushCache();
+        parent::tearDown();
+    }
 
+    /**
+     * The production incident: doctor enters "Para 0+0" into a legacy INT
+     * parity column. Without ParityValue::normaliseForColumn the store
+     * would throw 1366 and the consultation is never saved.
+     */
+    public function test_store_succeeds_with_para_notation_on_int_column(): void
+    {
+        DB::statement('ALTER TABLE consultations MODIFY parity INT NULL');
+
+        $payload = $this->basePayload(['parity' => 'Para 0+0']);
         $this->actingAs($this->doctor)
             ->post(route('consultations.store'), $payload)
             ->assertRedirect(route('dashboard'));
 
         $row = Consultation::where('patient_id', $this->patient->patient_id)->first();
         $this->assertNotNull($row);
-        $this->assertSame('2+0', $row->parity);
         $this->assertSame('completed', $row->consultation_status);
+        // ParityValue extracts leading digits: "Para 0+0" → 0
+        $this->assertSame(0, $row->parity);
     }
 
-    public function test_consultation_store_handles_gp_notation(): void
+    public function test_store_succeeds_with_gp_notation_on_int_column(): void
     {
-        $payload = $this->basePayload([
-            'parity' => 'G1P0',
-            'status' => 'completed',
-        ]);
+        DB::statement('ALTER TABLE consultations MODIFY parity INT NULL');
 
+        $payload = $this->basePayload(['parity' => 'G1P0']);
         $this->actingAs($this->doctor)
             ->post(route('consultations.store'), $payload)
             ->assertRedirect(route('dashboard'));
 
         $row = Consultation::where('patient_id', $this->patient->patient_id)->first();
-        $this->assertSame('G1P0', $row->parity);
+        $this->assertSame(1, $row->parity);
     }
 
-    public function test_consultation_store_truncates_unreasonably_long_parity(): void
+    public function test_store_succeeds_with_plus_notation_on_int_column(): void
     {
-        $longValue = str_repeat('G1P0+', 30); // 150 chars
+        DB::statement('ALTER TABLE consultations MODIFY parity INT NULL');
 
-        $payload = $this->basePayload([
-            'parity' => $longValue,
-            'status' => 'completed',
-        ]);
-
+        $payload = $this->basePayload(['parity' => '2+0']);
         $this->actingAs($this->doctor)
             ->post(route('consultations.store'), $payload)
             ->assertRedirect(route('dashboard'));
 
         $row = Consultation::where('patient_id', $this->patient->patient_id)->first();
-        $this->assertLessThanOrEqual(50, mb_strlen((string) $row->parity));
+        $this->assertSame(2, $row->parity);
     }
 
-    public function test_patient_history_returns_latest_completed_consultation(): void
+    public function test_store_succeeds_with_null_parity_on_int_column(): void
     {
-        // Two completed + one in_progress. Clinical summary should pull from
-        // the most recent completed one.
-        $completed1 = Consultation::create([
-            'patient_id' => $this->patient->patient_id,
-            'doctor_id' => $this->staffId,
-            'consultation_date' => now()->subDays(10),
-            'consultation_status' => 'completed',
-            'past_medical_history' => 'Asthma',
-            'created_by' => $this->doctor->user_id,
-        ]);
-        Consultation::create([
-            'patient_id' => $this->patient->patient_id,
-            'doctor_id' => $this->staffId,
-            'consultation_date' => now()->subDays(2),
-            'consultation_status' => 'in_progress',
-            'past_medical_history' => 'Asthma + new finding',
-            'created_by' => $this->doctor->user_id,
-        ]);
-        $completed2 = Consultation::create([
-            'patient_id' => $this->patient->patient_id,
-            'doctor_id' => $this->staffId,
-            'consultation_date' => now()->subDay(),
-            'consultation_status' => 'completed',
-            'past_medical_history' => 'Diabetes',
-            'created_by' => $this->doctor->user_id,
-        ]);
+        DB::statement('ALTER TABLE consultations MODIFY parity INT NULL');
 
-        $latest = Consultation::latestHistoryForPatient($this->patient->patient_id);
-        $this->assertNotNull($latest);
-        $this->assertSame($completed2->consultation_id, $latest->consultation_id);
-        $this->assertSame('Diabetes', $latest->past_medical_history);
+        $payload = $this->basePayload(['parity' => null]);
+        $this->actingAs($this->doctor)
+            ->post(route('consultations.store'), $payload)
+            ->assertRedirect(route('dashboard'));
+
+        $row = Consultation::where('patient_id', $this->patient->patient_id)->first();
+        $this->assertNotNull($row);
+        $this->assertNull($row->parity);
+    }
+
+    public function test_store_succeeds_with_parity_on_varchar_column(): void
+    {
+        // Default varchar(50) schema — parity is stored as-is.
+        $payload = $this->basePayload(['parity' => 'G2P1+0']);
+        $this->actingAs($this->doctor)
+            ->post(route('consultations.store'), $payload)
+            ->assertRedirect(route('dashboard'));
+
+        $row = Consultation::where('patient_id', $this->patient->patient_id)->first();
+        $this->assertSame('G2P1+0', $row->parity);
     }
 
     private function basePayload(array $overrides = []): array

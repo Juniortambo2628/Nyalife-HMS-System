@@ -117,6 +117,6 @@ class Patient extends Model
      */
     public static function generateNumber(int $userId): string
     {
-        return 'PAT-'.date('Ymd').'-'.str_pad($userId, 4, '0', STR_PAD_LEFT);
+        return 'PAT-'.date('Ymd').'-'.str_pad((string) $userId, 4, '0', STR_PAD_LEFT);
     }
 }

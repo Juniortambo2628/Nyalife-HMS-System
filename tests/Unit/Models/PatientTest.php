@@ -2,10 +2,16 @@
 
 namespace Tests\Unit\Models;
 
+use App\Models\Appointment;
+use App\Models\Consultation;
+use App\Models\LabTestRequest;
 use App\Models\Patient;
+use App\Models\Prescription;
 use App\Models\User;
-use Tests\TestCase;
+use App\Models\Vital;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+use Tests\TestCase;
 
 class PatientTest extends TestCase
 {
@@ -21,7 +27,7 @@ class PatientTest extends TestCase
 
     public function test_patient_has_many_appointments(): void
     {
-        $patient = Patient::factory()->has(\App\Models\Appointment::factory()->count(3))->create();
+        $patient = Patient::factory()->has(Appointment::factory()->count(3))->create();
 
         $this->assertCount(3, $patient->appointments);
         $patient->appointments->each(fn ($appointment) => $this->assertEquals($patient->patient_id, $appointment->patient_id));
@@ -29,28 +35,28 @@ class PatientTest extends TestCase
 
     public function test_patient_has_many_prescriptions(): void
     {
-        $patient = Patient::factory()->has(\App\Models\Prescription::factory()->count(2))->create();
+        $patient = Patient::factory()->has(Prescription::factory()->count(2))->create();
 
         $this->assertCount(2, $patient->prescriptions);
     }
 
     public function test_patient_has_many_lab_test_requests(): void
     {
-        $patient = Patient::factory()->has(\App\Models\LabTestRequest::factory()->count(2))->create();
+        $patient = Patient::factory()->has(LabTestRequest::factory()->count(2))->create();
 
         $this->assertCount(2, $patient->labTestRequests);
     }
 
     public function test_patient_has_many_consultations(): void
     {
-        $patient = Patient::factory()->has(\App\Models\Consultation::factory()->count(2))->create();
+        $patient = Patient::factory()->has(Consultation::factory()->count(2))->create();
 
         $this->assertCount(2, $patient->consultations);
     }
 
     public function test_patient_has_many_vitals(): void
     {
-        $patient = Patient::factory()->has(\App\Models\Vital::factory()->count(3))->create();
+        $patient = Patient::factory()->has(Vital::factory()->count(3))->create();
 
         $this->assertCount(3, $patient->vitals);
     }
@@ -61,7 +67,9 @@ class PatientTest extends TestCase
         $number = Patient::generateNumber($user->user_id);
 
         $this->assertStringStartsWith('PAT-', $number);
-        $this->assertMatchesRegularExpression('/PAT-\d{8}-\d{4}/', $number);
+        // PAT-YYYYMMDD-NNNN — the suffix is zero-padded to at least 4 digits
+        // and can grow as the users table accumulates rows.
+        $this->assertMatchesRegularExpression('/PAT-\d{8}-\d{4,}/', $number);
     }
 
     public function test_patient_scope_search_by_user_name(): void
@@ -115,7 +123,7 @@ class PatientTest extends TestCase
             if ($key !== 'user_id') {
                 $actual = $patient->{$key};
                 // Handle date comparison (Carbon vs string)
-                if ($actual instanceof \Illuminate\Support\Carbon) {
+                if ($actual instanceof Carbon) {
                     $this->assertEquals($value, $actual->format('Y-m-d'));
                 } else {
                     $this->assertEquals($value, $actual);

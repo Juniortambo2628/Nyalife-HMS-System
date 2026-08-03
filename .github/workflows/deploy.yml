@@ -113,3 +113,14 @@ jobs:
             **/index.php
             **/.htaccess
             **/storage/**
+
+      # Truncate the production laravel.log after deploy. The log file is
+      # excluded from FTP uploads (storage/logs/**), so it persists across
+      # deploys and can grow to hundreds of KB when consultation-store
+      # errors repeat.  This curls the log-cleanup.php script that was
+      # just deployed to /public_html/ and passes the shared secret token.
+      # The token is stored in the LOG_CLEANUP_TOKEN GitHub secret and
+      # also set in the production .env (used by the script to authenticate).
+      - name: 🧹 Truncate production laravel.log
+        run: |
+          curl -sf "https://nyalifewomensclinic.net/log-cleanup.php?key=${{ secrets.LOG_CLEANUP_TOKEN }}" || echo "::warning::Log cleanup script not reachable or token not set"

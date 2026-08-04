@@ -3,10 +3,15 @@
 namespace Tests\Unit\Models;
 
 use App\Models\Appointment;
+use App\Models\Consultation;
+use App\Models\LabTestRequest;
 use App\Models\Patient;
+use App\Models\Prescription;
 use App\Models\Staff;
-use Tests\TestCase;
+use App\Models\TelehealthConsent;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class AppointmentTest extends TestCase
 {
@@ -30,28 +35,28 @@ class AppointmentTest extends TestCase
 
     public function test_appointment_has_many_prescriptions(): void
     {
-        $appointment = Appointment::factory()->has(\App\Models\Prescription::factory()->count(2))->create();
+        $appointment = Appointment::factory()->has(Prescription::factory()->count(2))->create();
 
         $this->assertCount(2, $appointment->prescriptions);
     }
 
     public function test_appointment_has_many_lab_test_requests(): void
     {
-        $appointment = Appointment::factory()->has(\App\Models\LabTestRequest::factory()->count(2))->create();
+        $appointment = Appointment::factory()->has(LabTestRequest::factory()->count(2))->create();
 
         $this->assertCount(2, $appointment->labTestRequests);
     }
 
     public function test_appointment_has_many_consultations(): void
     {
-        $appointment = Appointment::factory()->has(\App\Models\Consultation::factory()->count(2))->create();
+        $appointment = Appointment::factory()->has(Consultation::factory()->count(2))->create();
 
         $this->assertCount(2, $appointment->consultations);
     }
 
     public function test_appointment_has_many_telehealth_consents(): void
     {
-        $appointment = Appointment::factory()->has(\App\Models\TelehealthConsent::factory()->count(2))->create();
+        $appointment = Appointment::factory()->has(TelehealthConsent::factory()->count(2))->create();
 
         $this->assertCount(2, $appointment->telehealthConsents);
     }
@@ -94,7 +99,7 @@ class AppointmentTest extends TestCase
             'status' => 'scheduled',
             'reason' => 'Routine checkup',
             'notes' => 'Patient requested morning slot',
-            'created_by' => \App\Models\User::factory()->create()->user_id,
+            'created_by' => User::factory()->create()->user_id,
         ];
 
         $appointment = Appointment::create($data);

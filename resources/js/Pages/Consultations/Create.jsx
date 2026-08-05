@@ -130,6 +130,7 @@ export default function Create({
         cervical_screening: initialDraft.current?.cervical_screening || prefill.cervical_screening || '',
         contraceptive_history: initialDraft.current?.contraceptive_history || prefill.contraceptive_history || '',
         sexual_history: initialDraft.current?.sexual_history || prefill.sexual_history || '',
+        gynecological_history: initialDraft.current?.gynecological_history || prefill.gynecological_history || '',
 
         // Obstetric History
         parity: initialDraft.current?.parity || prefill.parity || '',
@@ -828,6 +829,15 @@ export default function Create({
                                                     />
                                                 </FormField>
                                             </div>
+                                            <FormField label="Gynecological History / Notes" className="mt-3">
+                                                <textarea
+                                                    className="form-control"
+                                                    rows="3"
+                                                    placeholder="Previous gynecological conditions, surgeries, findings..."
+                                                    value={data.gynecological_history}
+                                                    onChange={(e) => setData('gynecological_history', e.target.value)}
+                                                />
+                                            </FormField>
                                         </div>
                                     </div>
                                 </FormSection>

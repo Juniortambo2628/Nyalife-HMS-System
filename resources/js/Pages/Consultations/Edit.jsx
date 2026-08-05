@@ -86,6 +86,7 @@ export default function Edit({
         cervical_screening: consultation.cervical_screening || '',
         contraceptive_history: consultation.contraceptive_history || '',
         sexual_history: consultation.sexual_history || '',
+        gynecological_history: consultation.gynecological_history || '',
 
         parity: consultation.parity || '',
         current_pregnancy: consultation.current_pregnancy || '',
@@ -929,6 +930,15 @@ export default function Edit({
                                                 />
                                             </FormField>
                                         </div>
+                                        <FormField label="Gynecological History / Notes" className="mt-3">
+                                            <textarea
+                                                className="form-control"
+                                                rows="3"
+                                                placeholder="Previous gynecological conditions, surgeries, findings..."
+                                                value={data.gynecological_history}
+                                                onChange={(e) => setData('gynecological_history', e.target.value)}
+                                            />
+                                        </FormField>
                                     </div>
                                 </div>
                             </FormSection>

@@ -11,6 +11,8 @@ use App\Models\Consultation;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Medication;
+use App\Models\Setting;
+use App\Services\PrescriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +25,7 @@ use App\Traits\HasBulkActions;
 class PrescriptionController extends Controller
 {
     use HasBulkActions;
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -92,7 +95,7 @@ class PrescriptionController extends Controller
     public function store(StorePrescriptionRequest $request)
     {
         try {
-            \App\Services\PrescriptionService::create($request->validated());
+            PrescriptionService::create($request->validated());
             return redirect()->route('prescriptions.index')->with('success', 'Prescription created successfully. Invoice auto-generated.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to process prescription: ' . $e->getMessage()]);
@@ -124,7 +127,7 @@ class PrescriptionController extends Controller
             Permissions::MANAGE_PHARMACY
         );
 
-        $settings = \App\Models\Setting::clinicContactSettings();
+        $settings = Setting::clinicContactSettings();
 
         return Inertia::render('Prescriptions/Print', [
             'prescription' => PrescriptionResource::make($prescription),
@@ -140,7 +143,7 @@ class PrescriptionController extends Controller
             return back()->withErrors(['error' => 'Prescription is already dispensed or cancelled.']);
         }
 
-        \App\Services\PrescriptionService::dispense($prescription);
+        PrescriptionService::dispense($prescription);
 
         return back()->with('success', 'Prescription marked as dispensed.');
     }
@@ -179,7 +182,7 @@ class PrescriptionController extends Controller
         ]);
 
         try {
-            \App\Services\PrescriptionService::update($prescription, $validated);
+            PrescriptionService::update($prescription, $validated);
 
             return redirect()->route('prescriptions.show', $prescription->prescription_id)
                 ->with('success', 'Prescription updated successfully.');

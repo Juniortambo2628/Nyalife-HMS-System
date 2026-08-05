@@ -7,6 +7,7 @@ use App\Http\Resources\LabTestRequestResource;
 use App\Models\LabTestRequest;
 use App\Models\LabTestType;
 use App\Models\Patient;
+use App\Models\User;
 use App\Support\Permissions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,10 +18,11 @@ use App\Traits\HasBulkActions;
 class LabController extends Controller
 {
     use HasBulkActions;
+
     /**
      * Base query scoped to the authenticated user's lab access.
      */
-    private function scopedRequestsQuery(?\App\Models\User $user)
+    private function scopedRequestsQuery(?User $user)
     {
         $query = LabTestRequest::query();
 
@@ -36,7 +38,7 @@ class LabController extends Controller
         return $query;
     }
 
-    private function labRequestStats(?\App\Models\User $user): array
+    private function labRequestStats(?User $user): array
     {
         $base = $this->scopedRequestsQuery($user);
 
@@ -286,7 +288,7 @@ class LabController extends Controller
 
         ActivityLogger::log(
             'lab',
-            "Lab request " . ($validated['status'] === 'verified' ? 'results verified' : ($validated['status'] === 'pending_verification' ? 'awaiting verification' : "updated to {$validated['status']}")),
+            'Lab request ' . ($validated['status'] === 'verified' ? 'results verified' : ($validated['status'] === 'pending_verification' ? 'awaiting verification' : "updated to {$validated['status']}")),
             ['request_id' => $labRequest->request_id, 'status' => $validated['status']],
             Auth::user(),
             $labRequest,

@@ -7,6 +7,8 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Department;
+use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
@@ -15,6 +17,7 @@ use App\Traits\HasBulkActions;
 class UserController extends Controller
 {
     use HasBulkActions;
+
     public function index(Request $request)
     {
         $sort = $request->sort ?? 'created_at';
@@ -61,7 +64,7 @@ class UserController extends Controller
     {
         return Inertia::render('Users/Create', [
             'roles' => Role::all(),
-            'departments' => \App\Models\Department::all(),
+            'departments' => Department::all(),
         ]);
     }
 
@@ -101,9 +104,9 @@ class UserController extends Controller
             $deptId = $request->input('department_id');
             $departmentName = null;
             if ($deptId) {
-                $departmentName = \App\Models\Department::where('department_id', $deptId)->value('department_name');
+                $departmentName = Department::where('department_id', $deptId)->value('department_name');
             }
-            \App\Models\Staff::create([
+            Staff::create([
                 'user_id' => $user->user_id,
                 'department_id' => $deptId,
                 'department' => $departmentName,
@@ -128,7 +131,7 @@ class UserController extends Controller
         return Inertia::render('Users/Edit', [
             'user' => UserResource::make($user),
             'roles' => Role::all(),
-            'departments' => \App\Models\Department::all(),
+            'departments' => Department::all(),
         ]);
     }
 
@@ -153,14 +156,14 @@ class UserController extends Controller
 
         $roleName = $user->role;
         if ($roleName === 'patient') {
-            \App\Models\Staff::where('user_id', $user->user_id)->delete();
+            Staff::where('user_id', $user->user_id)->delete();
         } else {
             $deptId = $request->input('department_id');
             $departmentName = null;
             if ($deptId) {
-                $departmentName = \App\Models\Department::where('department_id', $deptId)->value('department_name');
+                $departmentName = Department::where('department_id', $deptId)->value('department_name');
             }
-            \App\Models\Staff::updateOrCreate(
+            Staff::updateOrCreate(
                 ['user_id' => $user->user_id],
                 [
                     'department_id' => $deptId,

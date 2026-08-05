@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Spatie\Permission\Models\Role as SpatieRole;
 
 class UserController extends Controller
 {
@@ -45,7 +46,7 @@ class UserController extends Controller
             })
             ->orderBy($sort, $direction);
 
-        $users = $query->paginate(12)->withQueryString();
+        $users = $query->paginate(15)->withQueryString();
         $users->through(fn ($user) => (new UserResource($user))->resolve());
 
         $stats = [
@@ -83,7 +84,7 @@ class UserController extends Controller
             ?? (isset($validated['role']) ? Role::where('role_name', $validated['role'])->first()?->role_id : null)
             ?? Role::where('role_name', 'patient')->first()?->role_id;
 
-        $password = ! empty($validated['password'])
+        $password = !empty($validated['password'])
             ? Hash::make($validated['password'])
             : Hash::make(Str::random(12));
 
@@ -98,7 +99,7 @@ class UserController extends Controller
         ]);
 
         $roleName = $validated['role'] ?? Role::find($roleId)?->role_name ?? 'patient';
-        if (\Spatie\Permission\Models\Role::where('name', $roleName)->where('guard_name', 'web')->exists()) {
+        if (SpatieRole::where('name', $roleName)->where('guard_name', 'web')->exists()) {
             $user->assignRole($roleName);
         }
 
@@ -149,7 +150,7 @@ class UserController extends Controller
                 $validated['role_id'] = $role->role_id;
 
                 // Sync Spatie roles if applicable
-                if (\Spatie\Permission\Models\Role::where('name', $role->role_name)->where('guard_name', 'web')->exists()) {
+                if (SpatieRole::where('name', $role->role_name)->where('guard_name', 'web')->exists()) {
                     $user->syncRoles([$role->role_name]);
                 }
             }
@@ -173,7 +174,7 @@ class UserController extends Controller
                     'department' => $departmentName,
                     'employee_id' => $user->staff?->employee_id ?? (strtoupper($user->username).'-001'),
                     'join_date' => $user->staff?->join_date ?? now()->toDateString(),
-                ]
+                ],
             );
         }
 

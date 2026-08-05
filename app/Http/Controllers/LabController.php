@@ -92,7 +92,7 @@ class LabController extends Controller
             ->status($request->status);
 
         return Inertia::render('Lab/Index', [
-            'requests' => LabTestRequestResource::collection($query->latest()->paginate(15)),
+            'requests' => LabTestRequestResource::collection($query->latest()->paginate(15)->withQueryString()),
             'filters' => (object) $request->only(['search', 'status', 'quick_filter']),
             'stats' => $this->labRequestStats($user),
         ]);
@@ -288,7 +288,7 @@ class LabController extends Controller
 
         ActivityLogger::log(
             'lab',
-            'Lab request '.($validated['status'] === 'verified' ? 'results verified' : ($validated['status'] === 'pending_verification' ? 'awaiting verification' : "updated to {$validated['status']}")),
+            'Lab request'.($validated['status'] === 'verified' ? 'results verified' : ($validated['status'] === 'pending_verification' ? 'awaiting verification' : "updated to {$validated['status']}")),
             ['request_id' => $labRequest->request_id, 'status' => $validated['status']],
             Auth::user(),
             $labRequest,
@@ -320,7 +320,7 @@ class LabController extends Controller
             'complete' => function (array $ids, int $count) {
                 $updated = $this->bulkProcessWithLog(
                     LabTestRequest::class, 'request_id', $ids,
-                    fn ($item) => ! in_array($item->status, ['completed', 'cancelled']),
+                    fn ($item) => !in_array($item->status, ['completed', 'cancelled']),
                     fn ($item) => ['status' => 'completed', 'completed_at' => now(), 'assigned_to' => Auth::id()],
                     'lab', 'Lab request',
                     fn ($item) => [$item->requested_by, $item->patient->user_id, 1]
@@ -331,7 +331,7 @@ class LabController extends Controller
             'cancel' => function (array $ids, int $count) {
                 $updated = $this->bulkProcessWithLog(
                     LabTestRequest::class, 'request_id', $ids,
-                    fn ($item) => ! in_array($item->status, ['completed', 'cancelled']),
+                    fn ($item) => !in_array($item->status, ['completed', 'cancelled']),
                     fn ($item) => ['status' => 'cancelled'],
                     'lab', 'Lab request',
                     fn ($item) => [$item->requested_by, $item->patient->user_id, 1]

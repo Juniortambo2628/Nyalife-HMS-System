@@ -79,7 +79,8 @@ class ConsultationController extends Controller
             ->forDoctor($request->doctor_id)
             ->when($request->patient_id, fn ($q) => $q->where('patient_id', $request->patient_id))
             ->orderBy('consultation_date', 'desc')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         $activeDrafts = Consultation::with(['patient.user', 'doctor.user'])
             ->where('consultation_status', 'in_progress')

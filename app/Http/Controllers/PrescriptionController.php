@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePrescriptionRequest;
 use App\Http\Requests\VoidRequest;
 use App\Http\Resources\PrescriptionResource;
+use App\Models\Consultation;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
+use App\Models\Medication;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Models\Setting;
@@ -15,6 +19,7 @@ use App\Support\Permissions;
 use App\Traits\HasBulkActions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class PrescriptionController extends Controller
@@ -57,7 +62,8 @@ class PrescriptionController extends Controller
             ->searchByPatientName($request->search)
             ->status($request->status)
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         $stats = [
             'total' => Prescription::count(),
@@ -90,7 +96,6 @@ class PrescriptionController extends Controller
     {
         try {
             PrescriptionService::create($request->validated());
-
             return redirect()->route('prescriptions.index')->with('success', 'Prescription created successfully. Invoice auto-generated.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to process prescription: '.$e->getMessage()]);
@@ -181,7 +186,6 @@ class PrescriptionController extends Controller
 
             return redirect()->route('prescriptions.show', $prescription->prescription_id)
                 ->with('success', 'Prescription updated successfully.');
-
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to update prescription: '.$e->getMessage()]);
         }
@@ -221,7 +225,7 @@ class PrescriptionController extends Controller
             'dispense' => function (array $ids, int $count) {
                 $updated = $this->bulkProcessWithLog(
                     Prescription::class, 'prescription_id', $ids,
-                    fn ($item) => $item->status !== 'dispensed' && ! $item->is_voided,
+                    fn ($item) => $item->status !== 'dispensed' && !$item->is_voided,
                     fn ($item) => ['status' => 'dispensed', 'dispensed_by' => Auth::id(), 'dispensed_at' => now()],
                     'pharmacy', 'Prescription',
                     fn ($item) => [$item->patient->user_id, 1]
@@ -232,7 +236,7 @@ class PrescriptionController extends Controller
             'void' => function (array $ids, int $count) {
                 $updated = $this->bulkProcessWithLog(
                     Prescription::class, 'prescription_id', $ids,
-                    fn ($item) => ! $item->is_voided && $item->status !== 'dispensed',
+                    fn ($item) => !$item->is_voided && $item->status !== 'dispensed',
                     fn ($item) => ['is_voided' => true, 'void_reason' => 'Bulk voided via toolbar', 'voided_by' => Auth::id(), 'voided_at' => now()],
                     'pharmacy', 'Prescription',
                     fn ($item) => [$item->patient->user_id, 1]

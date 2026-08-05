@@ -86,7 +86,7 @@ class HospitalSeeder extends Seeder
                 ['user_id' => $docUser->user_id],
                 [
                     'specialization' => 'General Physician',
-                    'department' => 'OPD',
+                    'department' => 'Obstetrics & Gynecology',
                 ]
             );
         }

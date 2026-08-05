@@ -67,7 +67,7 @@ class UserController extends Controller
     {
         return Inertia::render('Users/Create', [
             'roles' => Role::all(),
-            'departments' => Department::all(),
+            'departments' => Department::active()->get(),
         ]);
     }
 
@@ -135,7 +135,7 @@ class UserController extends Controller
         return Inertia::render('Users/Edit', [
             'user' => UserResource::make($user),
             'roles' => Role::all(),
-            'departments' => Department::all(),
+            'departments' => Department::active()->get(),
         ]);
     }
 

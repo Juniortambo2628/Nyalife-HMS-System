@@ -865,6 +865,31 @@ export default function Edit({
                                                     ]}
                                                 />
                                             </FormField>
+                                            <FormField label="Duration (Days)" className="col-md-6">
+                                                <input
+                                                    type="number"
+                                                    className="form-control"
+                                                    placeholder="e.g. 5"
+                                                    value={data.menstrual_history.flow_duration}
+                                                    onChange={(e) =>
+                                                        setNestedData('menstrual_history', 'flow_duration', e.target.value)
+                                                    }
+                                                />
+                                            </FormField>
+                                            <FormField label="Dysmenorrhea" className="col-md-6">
+                                                <FormSelect
+                                                    value={data.menstrual_history.dysmenorrhea}
+                                                    onChange={(e) =>
+                                                        setNestedData('menstrual_history', 'dysmenorrhea', e.target.value)
+                                                    }
+                                                    options={[
+                                                        { value: 'none', label: 'None' },
+                                                        { value: 'mild', label: 'Mild' },
+                                                        { value: 'moderate', label: 'Moderate' },
+                                                        { value: 'severe', label: 'Severe' },
+                                                    ]}
+                                                />
+                                            </FormField>
                                         </div>
                                     </div>
                                     <div className="col-lg-6">
@@ -876,6 +901,34 @@ export default function Edit({
                                                 onChange={(e) => setData('cervical_screening', e.target.value)}
                                             />
                                         </FormField>
+                                        <div className="row g-2">
+                                            <FormField label="Contraceptive Method" className="col-md-7 mb-3">
+                                                <FormSelect
+                                                    value={data.contraceptive_history}
+                                                    onChange={(e) => setData('contraceptive_history', e.target.value)}
+                                                    options={[
+                                                        { value: '', label: 'Select Method...' },
+                                                        { value: 'none', label: 'None / Barrier' },
+                                                        { value: 'pill', label: 'Oral Combined Pill' },
+                                                        { value: 'injection', label: 'Depo Injection' },
+                                                        { value: 'implant', label: 'Hormonal Implant' },
+                                                        { value: 'iud', label: 'IUD (Coil)' },
+                                                        { value: 'tubal', label: 'Tubal Ligation' },
+                                                        { value: 'vasectomy', label: 'Vasectomy' },
+                                                        { value: 'natural', label: 'Natural / Calendar' },
+                                                        { value: 'emergency', label: 'Emergency Pill' },
+                                                    ]}
+                                                />
+                                            </FormField>
+                                            <FormField label="Sexual Health Notes" className="col-md-5 mb-3">
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    value={data.sexual_history}
+                                                    onChange={(e) => setData('sexual_history', e.target.value)}
+                                                />
+                                            </FormField>
+                                        </div>
                                     </div>
                                 </div>
                             </FormSection>

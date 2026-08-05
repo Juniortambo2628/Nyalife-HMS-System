@@ -104,7 +104,7 @@ class LabController extends Controller
 
         // Search
         if ($request->has('search') && $request->search) {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('test_name', 'like', '%' . $request->search . '%')
                   ->orWhere('category', 'like', '%' . $request->search . '%');
             });
@@ -114,7 +114,7 @@ class LabController extends Controller
         $sortColumn = $request->get('sort', 'test_name');
         $sortDirection = $request->get('direction', 'asc');
         $allowedSorts = ['test_name', 'category', 'price', 'is_active'];
-        
+
         if (in_array($sortColumn, $allowedSorts)) {
             $query->orderBy($sortColumn, $sortDirection);
         } else {
@@ -256,7 +256,7 @@ class LabController extends Controller
         $validated = $request->validated();
 
         $labRequest = LabTestRequest::findOrFail($id);
-        
+
         $updateData = [
             'status' => $validated['status'],
             'results' => $validated['results'] ?? $labRequest->results,

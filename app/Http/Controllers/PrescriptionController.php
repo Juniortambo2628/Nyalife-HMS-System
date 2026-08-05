@@ -30,14 +30,14 @@ class PrescriptionController extends Controller
     {
         $user = Auth::user();
         $query = Prescription::with(['patient.user', 'doctor', 'items.medication']);
-        
+
         if ($user && $user->role === 'patient') {
             $patient = Patient::where('user_id', $user->user_id)->first();
             if ($patient) {
                 $query->where('patient_id', $patient->patient_id);
             }
         } elseif ($user && $user->role === 'doctor') {
-             $query->where('prescribed_by', $user->user_id);
+            $query->where('prescribed_by', $user->user_id);
         }
 
         if ($request->has('consultation_id')) {
@@ -138,7 +138,7 @@ class PrescriptionController extends Controller
     public function dispense(Request $request, $id)
     {
         $prescription = Prescription::findOrFail($id);
-        
+
         if ($prescription->status !== 'pending') {
             return back()->withErrors(['error' => 'Prescription is already dispensed or cancelled.']);
         }

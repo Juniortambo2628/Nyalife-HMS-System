@@ -11,8 +11,11 @@ use App\Models\Department;
 use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use App\Traits\HasBulkActions;
+use Spatie\Permission\Models\Role as SpatieRole;
 
 class UserController extends Controller
 {
@@ -73,7 +76,7 @@ class UserController extends Controller
         $validated = $request->validated();
 
         $username = $validated['username'] ?? strtolower(
-            \Illuminate\Support\Str::slug($validated['first_name'] . '.' . $validated['last_name'])
+            Str::slug($validated['first_name'] . '.' . $validated['last_name'])
             . '.' . substr(uniqid(), -4)
         );
 
@@ -83,7 +86,7 @@ class UserController extends Controller
 
         $password = ! empty($validated['password'])
             ? Hash::make($validated['password'])
-            : Hash::make(\Illuminate\Support\Str::random(12));
+            : Hash::make(Str::random(12));
 
         $user = User::create([
             'first_name' => $validated['first_name'],
@@ -96,7 +99,7 @@ class UserController extends Controller
         ]);
 
         $roleName = $validated['role'] ?? Role::find($roleId)?->role_name ?? 'patient';
-        if (\Spatie\Permission\Models\Role::where('name', $roleName)->where('guard_name', 'web')->exists()) {
+        if (SpatieRole::where('name', $roleName)->where('guard_name', 'web')->exists()) {
             $user->assignRole($roleName);
         }
 
@@ -139,14 +142,14 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         $validated = $request->validated();
-        
+
         if (isset($validated['role'])) {
             $role = Role::where('role_name', $validated['role'])->first();
             if ($role) {
                 $validated['role_id'] = $role->role_id;
-                
+
                 // Sync Spatie roles if applicable
-                if (\Spatie\Permission\Models\Role::where('name', $role->role_name)->where('guard_name', 'web')->exists()) {
+                if (SpatieRole::where('name', $role->role_name)->where('guard_name', 'web')->exists()) {
                     $user->syncRoles([$role->role_name]);
                 }
             }
@@ -196,7 +199,7 @@ class UserController extends Controller
                 return redirect()->back()->with('success', "{$count} user(s) activated.");
             },
             'deactivate' => function (array $ids, int $count) {
-                $ids = array_diff($ids, [\Illuminate\Support\Facades\Auth::id()]);
+                $ids = array_diff($ids, [Auth::id()]);
                 $count = count($ids);
                 if ($count > 0) {
                     User::whereIn('user_id', $ids)->update(['is_active' => false]);
@@ -204,7 +207,7 @@ class UserController extends Controller
                 return redirect()->back()->with('success', "{$count} user(s) deactivated.");
             },
             'delete' => function (array $ids, int $count) {
-                $ids = array_diff($ids, [\Illuminate\Support\Facades\Auth::id()]);
+                $ids = array_diff($ids, [Auth::id()]);
                 $count = count($ids);
                 if ($count > 0) {
                     User::whereIn('user_id', $ids)->delete();

@@ -5,22 +5,22 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePrescriptionRequest;
 use App\Http\Requests\VoidRequest;
 use App\Http\Resources\PrescriptionResource;
-use App\Models\Prescription;
-use App\Models\Patient;
 use App\Models\Consultation;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Medication;
+use App\Models\Patient;
+use App\Models\Prescription;
 use App\Models\Setting;
+use App\Services\ActivityLogger;
 use App\Services\PrescriptionService;
+use App\Support\PatientId;
+use App\Support\Permissions;
+use App\Traits\HasBulkActions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use App\Services\ActivityLogger;
-use App\Support\PatientId;
-use App\Support\Permissions;
-use App\Traits\HasBulkActions;
 
 class PrescriptionController extends Controller
 {
@@ -98,7 +98,7 @@ class PrescriptionController extends Controller
             PrescriptionService::create($request->validated());
             return redirect()->route('prescriptions.index')->with('success', 'Prescription created successfully. Invoice auto-generated.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to process prescription: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to process prescription: '.$e->getMessage()]);
         }
     }
 
@@ -186,9 +186,8 @@ class PrescriptionController extends Controller
 
             return redirect()->route('prescriptions.show', $prescription->prescription_id)
                 ->with('success', 'Prescription updated successfully.');
-
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to update prescription: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to update prescription: '.$e->getMessage()]);
         }
     }
 

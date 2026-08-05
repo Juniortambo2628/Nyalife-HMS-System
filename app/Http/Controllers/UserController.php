@@ -76,8 +76,8 @@ class UserController extends Controller
         $validated = $request->validated();
 
         $username = $validated['username'] ?? strtolower(
-            Str::slug($validated['first_name'] . '.' . $validated['last_name'])
-            . '.' . substr(uniqid(), -4)
+            Str::slug($validated['first_name'].'.'.$validated['last_name'])
+            .'.'.substr(uniqid(), -4)
         );
 
         $roleId = $validated['role_id']
@@ -113,7 +113,7 @@ class UserController extends Controller
                 'user_id' => $user->user_id,
                 'department_id' => $deptId,
                 'department' => $departmentName,
-                'employee_id' => strtoupper($user->username) . '-001',
+                'employee_id' => strtoupper($user->username).'-001',
                 'join_date' => now()->toDateString(),
             ]);
         }
@@ -124,7 +124,7 @@ class UserController extends Controller
     public function show($id)
     {
         return Inertia::render('Users/Show', [
-            'user' => UserResource::make(User::with('roleRelation')->findOrFail($id))
+            'user' => UserResource::make(User::with('roleRelation')->findOrFail($id)),
         ]);
     }
 
@@ -171,9 +171,9 @@ class UserController extends Controller
                 [
                     'department_id' => $deptId,
                     'department' => $departmentName,
-                    'employee_id' => $user->staff?->employee_id ?? (strtoupper($user->username) . '-001'),
+                    'employee_id' => $user->staff?->employee_id ?? (strtoupper($user->username).'-001'),
                     'join_date' => $user->staff?->join_date ?? now()->toDateString(),
-                ]
+                ],
             );
         }
 

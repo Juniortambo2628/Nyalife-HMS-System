@@ -8,12 +8,12 @@ use App\Models\LabTestRequest;
 use App\Models\LabTestType;
 use App\Models\Patient;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use App\Support\Permissions;
+use App\Traits\HasBulkActions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use App\Services\ActivityLogger;
-use App\Traits\HasBulkActions;
 
 class LabController extends Controller
 {
@@ -105,8 +105,8 @@ class LabController extends Controller
         // Search
         if ($request->has('search') && $request->search) {
             $query->where(function ($q) use ($request) {
-                $q->where('test_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('category', 'like', '%' . $request->search . '%');
+                $q->where('test_name', 'like', '%'.$request->search.'%')
+                    ->orWhere('category', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -163,7 +163,7 @@ class LabController extends Controller
 
         $results = $query
             ->searchByPatientName($request->search)
-            ->when($request->request_number, fn ($q) => $q->where('request_number', 'like', '%' . $request->request_number . '%'))
+            ->when($request->request_number, fn ($q) => $q->where('request_number', 'like', '%'.$request->request_number.'%'))
             ->latest('completed_at')
             ->latest('request_id')
             ->paginate(15)
@@ -288,14 +288,14 @@ class LabController extends Controller
 
         ActivityLogger::log(
             'lab',
-            'Lab request ' . ($validated['status'] === 'verified' ? 'results verified' : ($validated['status'] === 'pending_verification' ? 'awaiting verification' : "updated to {$validated['status']}")),
+            'Lab request'.($validated['status'] === 'verified' ? 'results verified' : ($validated['status'] === 'pending_verification' ? 'awaiting verification' : "updated to {$validated['status']}")),
             ['request_id' => $labRequest->request_id, 'status' => $validated['status']],
             Auth::user(),
             $labRequest,
             [$labRequest->requested_by, $labRequest->patient->user_id, 1]
         );
 
-        return redirect()->back()->with('success', 'Lab request status updated to ' . $validated['status']);
+        return redirect()->back()->with('success', 'Lab request status updated to '.$validated['status']);
     }
 
     public function print($id)

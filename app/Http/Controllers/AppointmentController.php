@@ -338,6 +338,7 @@ class AppointmentController extends Controller
             'appointment_id' => $appointment->appointment_id,
             'consultation_date' => now(),
             'consultation_status' => 'in_progress',
+            'diagnosis' => null,
             'complaint' => $appointment->reason_for_visit ?? null,
             'created_by' => Auth::id(),
         ]);

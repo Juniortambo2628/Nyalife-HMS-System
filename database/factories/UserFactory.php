@@ -20,7 +20,7 @@ class UserFactory extends Factory
             'username' => fake()->userName().'_'.uniqid(),
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
-            'email' => fake()->safeEmail(),
+            'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->numerify('07########'),
             'email_verified_at' => now(),
             'password' => static::$password ??= 'password',

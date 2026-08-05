@@ -17,7 +17,7 @@ return new class extends Migration
         if (DB::getDriverName() === 'sqlite') {
             return;
         }
-        
+
         if (! Schema::hasTable('invoices')) {
             return;
         }

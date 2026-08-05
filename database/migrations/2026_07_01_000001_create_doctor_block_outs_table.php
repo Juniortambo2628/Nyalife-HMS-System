@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['doctor_id', 'block_date', 'start_time']);
-            
+
             // Note: Foreign key to staff table omitted due to production schema mismatch
             // Production staff table uses 'id' as PK, not 'staff_id'
             // $table->foreign('doctor_id')->references('id')->on('staff')->onDelete('cascade');

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('insurances', function (Illuminate\Database\Schema\Blueprint $table) {
+        Schema::create('insurances', function (Blueprint $table) {
             $table->id('insurance_id');
             $table->string('name');
             $table->string('logo_path')->nullable();

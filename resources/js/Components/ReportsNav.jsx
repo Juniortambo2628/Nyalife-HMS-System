@@ -27,9 +27,7 @@ export default function ReportsNav({ active }) {
                     key={item.key}
                     href={route(item.route)}
                     className={`btn btn-sm rounded-pill px-3 py-2 fw-bold extra-small ${
-                        active === item.key
-                            ? 'btn-primary shadow-sm'
-                            : 'btn-light border text-muted'
+                        active === item.key ? 'btn-primary shadow-sm' : 'btn-light border text-muted'
                     }`}
                 >
                     <i className={`fas ${item.icon} me-1 opacity-75`}></i>
@@ -70,20 +68,33 @@ export function ReportDateFilter({
             <div className="d-flex flex-wrap align-items-end gap-3">
                 <div>
                     <label className="extra-small fw-bold text-muted d-block mb-1">From</label>
-                    <input type="date" className="form-control form-control-sm rounded-pill px-3" value={from} onChange={(e) => onFromChange(e.target.value)} />
+                    <input
+                        type="date"
+                        className="form-control form-control-sm rounded-pill px-3"
+                        value={from}
+                        onChange={(e) => onFromChange(e.target.value)}
+                    />
                 </div>
                 <div>
                     <label className="extra-small fw-bold text-muted d-block mb-1">To</label>
-                    <input type="date" className="form-control form-control-sm rounded-pill px-3" value={to} onChange={(e) => onToChange(e.target.value)} />
+                    <input
+                        type="date"
+                        className="form-control form-control-sm rounded-pill px-3"
+                        value={to}
+                        onChange={(e) => onToChange(e.target.value)}
+                    />
                 </div>
                 <button onClick={onApply} className="btn btn-primary rounded-pill px-4 py-2 fw-bold small shadow-sm">
                     <i className="fas fa-filter me-1"></i> Apply
                 </button>
-                {(exportType || multiExport) && (
-                    multiExport ? (
+                {(exportType || multiExport) &&
+                    (multiExport ? (
                         <div className="ms-auto d-flex gap-2">
                             <div className="dropdown">
-                                <button className="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold small dropdown-toggle" data-bs-toggle="dropdown">
+                                <button
+                                    className="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold small dropdown-toggle"
+                                    data-bs-toggle="dropdown"
+                                >
                                     <i className="fas fa-download me-1"></i> Export CSV
                                 </button>
                                 <ul className="dropdown-menu shadow-lg border-0 rounded-3">
@@ -100,11 +111,13 @@ export function ReportDateFilter({
                             </div>
                         </div>
                     ) : (
-                        <button onClick={() => exportCsv()} className="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold small ms-auto">
+                        <button
+                            onClick={() => exportCsv()}
+                            className="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold small ms-auto"
+                        >
                             <i className="fas fa-download me-1"></i> Export CSV
                         </button>
-                    )
-                )}
+                    ))}
             </div>
         </div>
     );

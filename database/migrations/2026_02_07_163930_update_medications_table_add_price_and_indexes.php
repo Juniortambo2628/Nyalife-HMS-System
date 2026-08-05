@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('medications', function (Blueprint $table) {
-            if (!Schema::hasColumn('medications', 'price_per_unit')) {
+            if (! Schema::hasColumn('medications', 'price_per_unit')) {
                 $table->decimal('price_per_unit', 10, 2)->default(0.00)->after('unit');
             }
             $table->index('medication_name', 'idx_medications_name');

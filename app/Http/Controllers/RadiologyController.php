@@ -3,19 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\RadiologyRequestResource;
-use App\Models\RadiologyRequest;
 use App\Models\Patient;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
+use App\Models\RadiologyRequest;
 use App\Services\ActivityLogger;
 use App\Support\PatientId;
 use App\Support\Permissions;
 use App\Traits\HasBulkActions;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class RadiologyController extends Controller
 {
     use HasBulkActions;
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -70,13 +71,13 @@ class RadiologyController extends Controller
     {
         $patientId = $request->query('patient_id');
         $consultationId = $request->query('consultation_id');
-        
+
         $patient = $patientId ? Patient::with('user')->find($patientId) : null;
 
         return Inertia::render('Radiology/Create', [
             'preselected_patient_id' => $patientId,
             'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
-            'consultation_id' => $consultationId
+            'consultation_id' => $consultationId,
         ]);
     }
 
@@ -92,7 +93,7 @@ class RadiologyController extends Controller
         ]);
 
         $radRequest = RadiologyRequest::create([
-            'request_number' => 'RAD-' . strtoupper(substr(uniqid(), -6)),
+            'request_number' => 'RAD-'.strtoupper(substr(uniqid(), -6)),
             'patient_id' => $validated['patient_id'],
             'consultation_id' => $validated['consultation_id'] ?? null,
             'scan_type' => $validated['scan_type'],
@@ -106,7 +107,7 @@ class RadiologyController extends Controller
 
         ActivityLogger::log(
             'radiology',
-            "New radiology scan requested: " . $radRequest->scan_type,
+            'New radiology scan requested: '.$radRequest->scan_type,
             ['request_id' => $radRequest->request_id],
             Auth::user(),
             $radRequest,
@@ -151,7 +152,7 @@ class RadiologyController extends Controller
 
         ActivityLogger::log(
             'radiology',
-            "Radiology request updated: " . $radRequest->scan_type,
+            'Radiology request updated: '.$radRequest->scan_type,
             ['request_id' => $radRequest->request_id],
             Auth::user(),
             $radRequest,
@@ -173,7 +174,7 @@ class RadiologyController extends Controller
         );
 
         return Inertia::render('Radiology/Show', [
-            'request' => RadiologyRequestResource::make($request)
+            'request' => RadiologyRequestResource::make($request),
         ]);
     }
 
@@ -187,14 +188,20 @@ class RadiologyController extends Controller
         ]);
 
         $radRequest = RadiologyRequest::findOrFail($id);
-        
+
         $updateData = [
             'status' => $validated['status'],
         ];
 
-        if (array_key_exists('findings', $validated)) $updateData['findings'] = $validated['findings'];
-        if (array_key_exists('impression', $validated)) $updateData['impression'] = $validated['impression'];
-        if (array_key_exists('scan_details', $validated)) $updateData['scan_details'] = $validated['scan_details'];
+        if (array_key_exists('findings', $validated)) {
+            $updateData['findings'] = $validated['findings'];
+        }
+        if (array_key_exists('impression', $validated)) {
+            $updateData['impression'] = $validated['impression'];
+        }
+        if (array_key_exists('scan_details', $validated)) {
+            $updateData['scan_details'] = $validated['scan_details'];
+        }
 
         // Technician submits results → pending_verification
         if ($validated['status'] === 'pending_verification') {
@@ -221,20 +228,20 @@ class RadiologyController extends Controller
 
         ActivityLogger::log(
             'radiology',
-            "Radiology request " . ($validated['status'] === 'verified' ? 'results verified' : ($validated['status'] === 'pending_verification' ? 'awaiting verification' : "updated to {$validated['status']}")),
+            'Radiology request '.($validated['status'] === 'verified' ? 'results verified' : ($validated['status'] === 'pending_verification' ? 'awaiting verification' : "updated to {$validated['status']}")),
             ['request_id' => $radRequest->request_id, 'status' => $validated['status']],
             Auth::user(),
             $radRequest,
             [$radRequest->requested_by, $radRequest->patient->user_id, 1]
         );
 
-        return redirect()->back()->with('success', 'Radiology request status updated to ' . $validated['status']);
+        return redirect()->back()->with('success', 'Radiology request status updated to '.$validated['status']);
     }
 
     public function destroy($id)
     {
         $radRequest = RadiologyRequest::findOrFail($id);
-        
+
         if ($radRequest->status !== 'pending') {
             return back()->with('error', 'Only pending radiology requests can be removed.');
         }
@@ -243,7 +250,7 @@ class RadiologyController extends Controller
 
         ActivityLogger::log(
             'radiology',
-            "Radiology request removed: " . $radRequest->scan_type,
+            'Radiology request removed: '.$radRequest->scan_type,
             ['request_id' => $radRequest->request_id],
             Auth::user(),
             null,
@@ -267,6 +274,7 @@ class RadiologyController extends Controller
                     'radiology', 'Radiology request',
                     fn ($item) => [$item->requested_by, $item->patient->user_id, 1]
                 );
+
                 return redirect()->back()->with('success', "{$updated} radiology request(s) completed.");
             },
             'cancel' => function (array $ids, int $count) {
@@ -277,10 +285,12 @@ class RadiologyController extends Controller
                     'radiology', 'Radiology request',
                     fn ($item) => [$item->requested_by, $item->patient->user_id, 1]
                 );
+
                 return redirect()->back()->with('success', "{$updated} radiology request(s) cancelled.");
             },
             'delete' => function (array $ids, int $count) {
                 $deleted = $this->bulkDelete(RadiologyRequest::class, 'request_id', $ids, 'status', 'completed');
+
                 return redirect()->back()->with('success', "{$deleted} radiology request(s) deleted.");
             },
         ];

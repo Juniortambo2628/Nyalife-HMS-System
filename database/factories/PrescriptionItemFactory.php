@@ -2,9 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Models\PrescriptionItem;
-use App\Models\Prescription;
 use App\Models\Medication;
+use App\Models\Prescription;
+use App\Models\PrescriptionItem;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PrescriptionItemFactory extends Factory
@@ -29,7 +30,7 @@ class PrescriptionItemFactory extends Factory
             'duration' => $this->faker->randomElement($durations),
             'instructions' => $this->faker->boolean(50) ? $this->faker->sentence() : null,
             'status' => $this->faker->randomElement(['pending', 'dispensed', 'partial']),
-            'dispensed_by' => \App\Models\User::factory(),
+            'dispensed_by' => User::factory(),
             'dispensed_at' => $dispensedAt,
         ];
     }

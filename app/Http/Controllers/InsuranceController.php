@@ -15,7 +15,7 @@ class InsuranceController extends Controller
     public function index()
     {
         return Inertia::render('Insurances/Index', [
-            'insurances' => Insurance::orderBy('sort_order')->get()
+            'insurances' => Insurance::orderBy('sort_order')->get(),
         ]);
     }
 
@@ -58,6 +58,7 @@ class InsuranceController extends Controller
         }
 
         Insurance::create($validated);
+
         return redirect()->route('insurances.index')->with('success', 'Insurance added successfully.');
     }
 
@@ -67,8 +68,9 @@ class InsuranceController extends Controller
     public function edit($id)
     {
         $insurance = Insurance::findOrFail($id);
+
         return Inertia::render('Insurances/Edit', [
-            'insurance' => $insurance
+            'insurance' => $insurance,
         ]);
     }
 
@@ -97,6 +99,7 @@ class InsuranceController extends Controller
         }
 
         $insurance->update($validated);
+
         return redirect()->route('insurances.index')->with('success', 'Insurance updated successfully.');
     }
 
@@ -106,11 +109,11 @@ class InsuranceController extends Controller
     public function destroy($id)
     {
         $insurance = Insurance::findOrFail($id);
-        
+
         if ($insurance->logo_path) {
             Storage::disk('public')->delete($insurance->logo_path);
         }
-        
+
         $insurance->delete();
 
         return redirect()->back()->with('success', 'Insurance removed successfully.');
@@ -122,7 +125,7 @@ class InsuranceController extends Controller
     public function toggle($id)
     {
         $insurance = Insurance::findOrFail($id);
-        $insurance->update(['is_active' => !$insurance->is_active]);
+        $insurance->update(['is_active' => ! $insurance->is_active]);
 
         return redirect()->back()->with('success', 'Status updated.');
     }

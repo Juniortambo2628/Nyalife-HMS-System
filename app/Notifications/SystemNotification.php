@@ -6,14 +6,13 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\EmailTemplate;
-use Spatie\DatabaseMailTemplates\HasDatabaseMailTemplate;
 
 class SystemNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     protected $data;
+
     protected $module;
 
     /**
@@ -33,12 +32,12 @@ class SystemNotification extends Notification implements ShouldQueue
     public function via(object $notifiable): array
     {
         $channels = ['database'];
-        
+
         // Add mail if user has email and template exists
         if ($notifiable->email) {
             $channels[] = 'mail';
         }
-        
+
         return $channels;
     }
 
@@ -52,10 +51,10 @@ class SystemNotification extends Notification implements ShouldQueue
         // Actually, the package expects a Mailable.
         // I'll create a Mailable instead.
         return (new MailMessage)
-                    ->subject($this->data['subject'] ?? 'Nyalife HMS Notification')
-                    ->line($this->data['message'] ?? 'You have a new activity in ' . $this->module)
-                    ->action('View Dashboard', url('/dashboard'))
-                    ->line('Thank you for using our application!');
+            ->subject($this->data['subject'] ?? 'Nyalife HMS Notification')
+            ->line($this->data['message'] ?? 'You have a new activity in '.$this->module)
+            ->action('View Dashboard', url('/dashboard'))
+            ->line('Thank you for using our application!');
     }
 
     /**

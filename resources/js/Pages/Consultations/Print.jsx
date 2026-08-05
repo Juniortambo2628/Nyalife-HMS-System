@@ -36,7 +36,9 @@ export default function Print({ consultation, clinic_settings = {} }) {
                 <img src="/assets/logo/Logo2-transparent.png" alt="Nyalife" className="hospital-logo" />
                 <h1 className="hospital-name">Nyalife Women&apos;s Clinic</h1>
                 <p className="hospital-tagline">{clinic_settings.contact_address || 'Nairobi, Kenya'}</p>
-                <p className="hospital-tagline">{clinic_settings.contact_phone} | {clinic_settings.contact_email}</p>
+                <p className="hospital-tagline">
+                    {clinic_settings.contact_phone} | {clinic_settings.contact_email}
+                </p>
             </div>
 
             <div className="d-flex justify-content-between mb-4">
@@ -45,8 +47,12 @@ export default function Print({ consultation, clinic_settings = {} }) {
                     <div className="text-muted small">CON-{consultation.consultation_id}</div>
                 </div>
                 <div className="text-end">
-                    <div className="fw-bold">{consultation.consultation_date?.slice?.(0, 10) || consultation.consultation_date}</div>
-                    <div className="text-muted small text-uppercase">{consultation.consultation_status?.replace('_', ' ')}</div>
+                    <div className="fw-bold">
+                        {consultation.consultation_date?.slice?.(0, 10) || consultation.consultation_date}
+                    </div>
+                    <div className="text-muted small text-uppercase">
+                        {consultation.consultation_status?.replace('_', ' ')}
+                    </div>
                 </div>
             </div>
 
@@ -79,7 +85,11 @@ export default function Print({ consultation, clinic_settings = {} }) {
                 </div>
             </Section>
 
-            {(consultation.parity || consultation.current_pregnancy || consultation.contraceptive_history || consultation.obstetric_history || consultation.past_obstetric?.length > 0) && (
+            {(consultation.parity ||
+                consultation.current_pregnancy ||
+                consultation.contraceptive_history ||
+                consultation.obstetric_history ||
+                consultation.past_obstetric?.length > 0) && (
                 <Section title="Reproductive History">
                     <Field label="Parity" value={consultation.parity} />
                     <Field label="Current Pregnancy" value={consultation.current_pregnancy} />
@@ -124,10 +134,26 @@ export default function Print({ consultation, clinic_settings = {} }) {
             {Object.keys(vitals).some((k) => vitals[k]) && (
                 <Section title="Vital Signs">
                     <div className="row small">
-                        {vitals.blood_pressure && <div className="col-3">BP: <strong>{vitals.blood_pressure}</strong></div>}
-                        {vitals.temperature && <div className="col-3">Temp: <strong>{vitals.temperature}°C</strong></div>}
-                        {vitals.heart_rate && <div className="col-3">Pulse: <strong>{vitals.heart_rate}</strong></div>}
-                        {vitals.weight && <div className="col-3">Weight: <strong>{vitals.weight} kg</strong></div>}
+                        {vitals.blood_pressure && (
+                            <div className="col-3">
+                                BP: <strong>{vitals.blood_pressure}</strong>
+                            </div>
+                        )}
+                        {vitals.temperature && (
+                            <div className="col-3">
+                                Temp: <strong>{vitals.temperature}°C</strong>
+                            </div>
+                        )}
+                        {vitals.heart_rate && (
+                            <div className="col-3">
+                                Pulse: <strong>{vitals.heart_rate}</strong>
+                            </div>
+                        )}
+                        {vitals.weight && (
+                            <div className="col-3">
+                                Weight: <strong>{vitals.weight} kg</strong>
+                            </div>
+                        )}
                     </div>
                 </Section>
             )}
@@ -150,9 +176,7 @@ export default function Print({ consultation, clinic_settings = {} }) {
                 <div className="small text-muted">Attending Physician Signature</div>
             </div>
 
-            <div className="footer">
-                Computer-generated clinical record — Nyalife Women&apos;s Clinic
-            </div>
+            <div className="footer">Computer-generated clinical record — Nyalife Women&apos;s Clinic</div>
 
             <style>{`
                 @page { size: A4; margin: 1cm; }

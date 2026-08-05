@@ -8,7 +8,6 @@ use App\Http\Resources\LabTestRequestResource;
 use App\Models\LabSample;
 use App\Models\LabTestRequest;
 use App\Models\LabTestType;
-use App\Models\Patient;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,7 +51,7 @@ class LabSampleController extends Controller
         $now = now();
 
         $sample = LabSample::create([
-            'sample_id' => 'SMP-' . strtoupper(substr(uniqid(), -8)),
+            'sample_id' => 'SMP-'.strtoupper(substr(uniqid(), -8)),
             'patient_id' => $validated['patient_id'],
             'test_type_id' => $validated['test_type_id'],
             'sample_type' => $validated['sample_type'],

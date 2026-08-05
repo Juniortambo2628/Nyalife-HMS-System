@@ -14,9 +14,13 @@ export default function Index({ messages, auth }) {
 
     const markAsRead = (id) => {
         setProcessing(id);
-        router.post(route('admin.messages.read', id), {}, {
-            onFinish: () => setProcessing(null)
-        });
+        router.post(
+            route('admin.messages.read', id),
+            {},
+            {
+                onFinish: () => setProcessing(null),
+            },
+        );
     };
 
     const deleteMessage = (id) => {
@@ -44,22 +48,19 @@ export default function Index({ messages, auth }) {
                         {
                             header: 'Status',
                             accessorKey: 'status',
-                            cell: info => <StatusBadge status={info.getValue()} />,
+                            cell: (info) => <StatusBadge status={info.getValue()} />,
                         },
                         {
                             header: 'From',
                             accessorKey: 'name',
-                            cell: info => (
-                                <TableCellStack
-                                    primary={info.getValue()}
-                                    secondary={info.row.original.email}
-                                />
+                            cell: (info) => (
+                                <TableCellStack primary={info.getValue()} secondary={info.row.original.email} />
                             ),
                         },
                         {
                             header: 'Message Preview',
                             accessorKey: 'message',
-                            cell: info => (
+                            cell: (info) => (
                                 <TableCellPrimary className="text-muted text-truncate" style={{ maxWidth: '300px' }}>
                                     {info.getValue()}
                                 </TableCellPrimary>
@@ -68,7 +69,7 @@ export default function Index({ messages, auth }) {
                         {
                             header: 'Received',
                             accessorKey: 'created_at',
-                            cell: info => (
+                            cell: (info) => (
                                 <TableCellStack
                                     primary={formatDateOnly(info.getValue())}
                                     secondary={formatDateTime(info.getValue())}
@@ -78,17 +79,30 @@ export default function Index({ messages, auth }) {
                         {
                             header: 'Actions',
                             id: 'actions',
-                            cell: info => {
+                            cell: (info) => {
                                 const actions = [
-                                    { icon: 'fa-eye', label: 'View Message', href: route('admin.messages.show', info.row.original.contact_message_id) },
+                                    {
+                                        icon: 'fa-eye',
+                                        label: 'View Message',
+                                        href: route('admin.messages.show', info.row.original.contact_message_id),
+                                    },
                                 ];
                                 if (info.row.original.status === 'pending') {
-                                    actions.push({ icon: 'fa-check', label: 'Mark as Read', onClick: () => markAsRead(info.row.original.contact_message_id) });
+                                    actions.push({
+                                        icon: 'fa-check',
+                                        label: 'Mark as Read',
+                                        onClick: () => markAsRead(info.row.original.contact_message_id),
+                                    });
                                 }
-                                actions.push({ icon: 'fa-trash', label: 'Delete', color: 'danger', onClick: () => deleteMessage(info.row.original.contact_message_id) });
+                                actions.push({
+                                    icon: 'fa-trash',
+                                    label: 'Delete',
+                                    color: 'danger',
+                                    onClick: () => deleteMessage(info.row.original.contact_message_id),
+                                });
                                 return <TableActions actions={actions} />;
-                            }
-                        }
+                            },
+                        },
                     ]}
                     emptyMessage="No messages yet"
                     selectable={true}
@@ -96,7 +110,6 @@ export default function Index({ messages, auth }) {
                     onSelectionChange={setSelectedIds}
                     idField="contact_message_id"
                 />
-
             </div>
         </AuthenticatedLayout>
     );

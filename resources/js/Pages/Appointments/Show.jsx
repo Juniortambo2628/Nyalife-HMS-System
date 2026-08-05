@@ -35,38 +35,52 @@ export default function Show({ appointment, auth }) {
     const labRequests = appointment.lab_test_requests || [];
     const prescriptions = appointment.prescriptions || [];
 
-    const prescriptionRows = useMemo(() =>
-        prescriptions.flatMap((rx) =>
-            (rx.items || []).map((item) => ({
-                ...item,
-                prescription_id: rx.prescription_id,
-                prescription_status: rx.status,
-                prescription_date: rx.prescription_date,
-            }))
-        ),
-    [prescriptions]);
+    const prescriptionRows = useMemo(
+        () =>
+            prescriptions.flatMap((rx) =>
+                (rx.items || []).map((item) => ({
+                    ...item,
+                    prescription_id: rx.prescription_id,
+                    prescription_status: rx.status,
+                    prescription_date: rx.prescription_date,
+                })),
+            ),
+        [prescriptions],
+    );
 
     const updateStatus = (status) => {
         if (confirm(`Change visit status to "${formatLabel(status)}"?`)) {
-            router.patch(route('appointments.update', appointment.appointment_id), { status }, {
-                preserveScroll: true,
-            });
+            router.patch(
+                route('appointments.update', appointment.appointment_id),
+                { status },
+                {
+                    preserveScroll: true,
+                },
+            );
         }
     };
 
     const checkIn = () => {
         if (confirm('Confirm patient arrival for this visit?')) {
-            router.post(route('appointments.check-in', appointment.appointment_id), {}, {
-                preserveScroll: true,
-            });
+            router.post(
+                route('appointments.check-in', appointment.appointment_id),
+                {},
+                {
+                    preserveScroll: true,
+                },
+            );
         }
     };
 
     const confirmTelehealthPayment = () => {
         if (confirm('Confirm payment received? This will generate the meeting link and send it to the patient.')) {
-            router.post(route('appointments.confirm-telehealth-payment', appointment.appointment_id), {}, {
-                preserveScroll: true,
-            });
+            router.post(
+                route('appointments.confirm-telehealth-payment', appointment.appointment_id),
+                {},
+                {
+                    preserveScroll: true,
+                },
+            );
         }
     };
 
@@ -95,128 +109,160 @@ export default function Show({ appointment, auth }) {
             label: 'Visit status',
             value: formatLabel(appointment.status),
             icon: 'fa-info-circle',
-            color: appointment.status === 'completed' ? 'success' : appointment.status === 'cancelled' ? 'danger' : 'warning',
+            color:
+                appointment.status === 'completed'
+                    ? 'success'
+                    : appointment.status === 'cancelled'
+                      ? 'danger'
+                      : 'warning',
             sub: `${consultations.length} consultation${consultations.length === 1 ? '' : 's'}`,
         },
     ];
 
-    const consultationColumns = useMemo(() => [
-        {
-            header: 'Record',
-            accessorKey: 'consultation_id',
-            cell: ({ row }) => <RefBadge variant="info">CON-{row.original.consultation_id}</RefBadge>,
-        },
-        {
-            header: 'Date',
-            accessorKey: 'consultation_date',
-            cell: ({ row }) => (
-                <TableCellPrimary>{formatDateTime(row.original.consultation_date)}</TableCellPrimary>
-            ),
-        },
-        {
-            header: 'Diagnosis',
-            accessorKey: 'diagnosis',
-            cell: ({ row }) => (
-                <TableCellStack
-                    primary={row.original.diagnosis || 'General assessment'}
-                    secondary={row.original.chief_complaint}
-                />
-            ),
-        },
-        {
-            header: 'Status',
-            accessorKey: 'consultation_status',
-            cell: ({ row }) => <StatusBadge status={row.original.consultation_status || 'in_progress'} />,
-        },
-        {
-            header: 'Actions',
-            id: 'actions',
-            cell: ({ row }) => (
-                <TableActions actions={[
-                    { icon: 'fa-eye', label: 'View consultation', href: route('consultations.show', row.original.consultation_id) },
-                    { icon: 'fa-edit', label: 'Edit record', href: route('consultations.edit', row.original.consultation_id) },
-                ]} />
-            ),
-        },
-    ], []);
+    const consultationColumns = useMemo(
+        () => [
+            {
+                header: 'Record',
+                accessorKey: 'consultation_id',
+                cell: ({ row }) => <RefBadge variant="info">CON-{row.original.consultation_id}</RefBadge>,
+            },
+            {
+                header: 'Date',
+                accessorKey: 'consultation_date',
+                cell: ({ row }) => (
+                    <TableCellPrimary>{formatDateTime(row.original.consultation_date)}</TableCellPrimary>
+                ),
+            },
+            {
+                header: 'Diagnosis',
+                accessorKey: 'diagnosis',
+                cell: ({ row }) => (
+                    <TableCellStack
+                        primary={row.original.diagnosis || 'General assessment'}
+                        secondary={row.original.chief_complaint}
+                    />
+                ),
+            },
+            {
+                header: 'Status',
+                accessorKey: 'consultation_status',
+                cell: ({ row }) => <StatusBadge status={row.original.consultation_status || 'in_progress'} />,
+            },
+            {
+                header: 'Actions',
+                id: 'actions',
+                cell: ({ row }) => (
+                    <TableActions
+                        actions={[
+                            {
+                                icon: 'fa-eye',
+                                label: 'View consultation',
+                                href: route('consultations.show', row.original.consultation_id),
+                            },
+                            {
+                                icon: 'fa-edit',
+                                label: 'Edit record',
+                                href: route('consultations.edit', row.original.consultation_id),
+                            },
+                        ]}
+                    />
+                ),
+            },
+        ],
+        [],
+    );
 
-    const labColumns = useMemo(() => [
-        {
-            header: 'Request',
-            accessorKey: 'request_id',
-            cell: ({ row }) => <RefBadge variant="info">LAB-{row.original.request_id}</RefBadge>,
-        },
-        {
-            header: 'Test',
-            id: 'test',
-            cell: ({ row }) => (
-                <TableCellStack
-                    primary={row.original.test_type?.test_name || 'Lab test'}
-                    secondary={row.original.test_type?.category}
-                />
-            ),
-        },
-        {
-            header: 'Priority',
-            accessorKey: 'priority',
-            cell: ({ row }) => <PriorityBadge priority={row.original.priority || 'normal'} />,
-        },
-        {
-            header: 'Status',
-            accessorKey: 'status',
-            cell: ({ row }) => <StatusBadge status={row.original.status} />,
-        },
-        {
-            header: 'Actions',
-            id: 'actions',
-            cell: ({ row }) => (
-                <TableActions actions={[
-                    { icon: 'fa-eye', label: 'View request', href: route('lab.show', row.original.request_id) },
-                ]} />
-            ),
-        },
-    ], []);
+    const labColumns = useMemo(
+        () => [
+            {
+                header: 'Request',
+                accessorKey: 'request_id',
+                cell: ({ row }) => <RefBadge variant="info">LAB-{row.original.request_id}</RefBadge>,
+            },
+            {
+                header: 'Test',
+                id: 'test',
+                cell: ({ row }) => (
+                    <TableCellStack
+                        primary={row.original.test_type?.test_name || 'Lab test'}
+                        secondary={row.original.test_type?.category}
+                    />
+                ),
+            },
+            {
+                header: 'Priority',
+                accessorKey: 'priority',
+                cell: ({ row }) => <PriorityBadge priority={row.original.priority || 'normal'} />,
+            },
+            {
+                header: 'Status',
+                accessorKey: 'status',
+                cell: ({ row }) => <StatusBadge status={row.original.status} />,
+            },
+            {
+                header: 'Actions',
+                id: 'actions',
+                cell: ({ row }) => (
+                    <TableActions
+                        actions={[
+                            { icon: 'fa-eye', label: 'View request', href: route('lab.show', row.original.request_id) },
+                        ]}
+                    />
+                ),
+            },
+        ],
+        [],
+    );
 
-    const prescriptionColumns = useMemo(() => [
-        {
-            header: 'Prescription',
-            accessorKey: 'prescription_id',
-            cell: ({ row }) => <RefBadge variant="info">RX-{row.original.prescription_id}</RefBadge>,
-        },
-        {
-            header: 'Medication',
-            id: 'medication',
-            cell: ({ row }) => (
-                <TableCellStack
-                    primary={row.original.medication?.medication_name || row.original.medicine_name || 'Medication'}
-                    secondary={[row.original.medication?.strength, row.original.dosage].filter(Boolean).join(' · ')}
-                />
-            ),
-        },
-        {
-            header: 'Regimen',
-            id: 'regimen',
-            cell: ({ row }) => (
-                <TableCellPrimary className="text-muted small">
-                    {[row.original.frequency, row.original.duration].filter(Boolean).join(' · ') || '—'}
-                </TableCellPrimary>
-            ),
-        },
-        {
-            header: 'Status',
-            accessorKey: 'prescription_status',
-            cell: ({ row }) => <StatusBadge status={row.original.prescription_status || 'pending'} />,
-        },
-        {
-            header: 'Actions',
-            id: 'actions',
-            cell: ({ row }) => (
-                <TableActions actions={[
-                    { icon: 'fa-eye', label: 'View prescription', onClick: () => router.visit(route('prescriptions.show', row.original.prescription_id)) },
-                ]} />
-            ),
-        },
-    ], []);
+    const prescriptionColumns = useMemo(
+        () => [
+            {
+                header: 'Prescription',
+                accessorKey: 'prescription_id',
+                cell: ({ row }) => <RefBadge variant="info">RX-{row.original.prescription_id}</RefBadge>,
+            },
+            {
+                header: 'Medication',
+                id: 'medication',
+                cell: ({ row }) => (
+                    <TableCellStack
+                        primary={row.original.medication?.medication_name || row.original.medicine_name || 'Medication'}
+                        secondary={[row.original.medication?.strength, row.original.dosage].filter(Boolean).join(' · ')}
+                    />
+                ),
+            },
+            {
+                header: 'Regimen',
+                id: 'regimen',
+                cell: ({ row }) => (
+                    <TableCellPrimary className="text-muted small">
+                        {[row.original.frequency, row.original.duration].filter(Boolean).join(' · ') || '—'}
+                    </TableCellPrimary>
+                ),
+            },
+            {
+                header: 'Status',
+                accessorKey: 'prescription_status',
+                cell: ({ row }) => <StatusBadge status={row.original.prescription_status || 'pending'} />,
+            },
+            {
+                header: 'Actions',
+                id: 'actions',
+                cell: ({ row }) => (
+                    <TableActions
+                        actions={[
+                            {
+                                icon: 'fa-eye',
+                                label: 'View prescription',
+                                onClick: () => router.visit(route('prescriptions.show', row.original.prescription_id)),
+                            },
+                        ]}
+                    />
+                ),
+            },
+        ],
+        [],
+    );
 
     return (
         <AuthenticatedLayout
@@ -261,7 +307,9 @@ export default function Show({ appointment, auth }) {
                                 </div>
                                 <div className="nyl-meta-item">
                                     <div className="nyl-meta-item__label">Email</div>
-                                    <div className="nyl-meta-item__value text-truncate">{patient?.user?.email || '—'}</div>
+                                    <div className="nyl-meta-item__value text-truncate">
+                                        {patient?.user?.email || '—'}
+                                    </div>
                                 </div>
                             </div>
 
@@ -303,7 +351,9 @@ export default function Show({ appointment, auth }) {
                             </div>
                             <div className="nyl-detail-meta-row">
                                 <span className="extra-small fw-bold text-muted text-uppercase">Specialization</span>
-                                <span className="fw-bold text-gray-800 small">{doctor?.specialization || 'General practice'}</span>
+                                <span className="fw-bold text-gray-800 small">
+                                    {doctor?.specialization || 'General practice'}
+                                </span>
                             </div>
                             <div className="nyl-detail-meta-row">
                                 <span className="extra-small fw-bold text-muted text-uppercase">Department</span>
@@ -338,14 +388,22 @@ export default function Show({ appointment, auth }) {
                                 </div>
                                 {appointment.appointment_type === 'telehealth' && (
                                     <div className="col-12 mt-3">
-                                        <div className={`alert d-flex align-items-center gap-3 rounded-4 py-3 px-4 mb-0 ${appointment.status === 'confirmed' ? 'alert-success' : 'alert-info'}`}>
+                                        <div
+                                            className={`alert d-flex align-items-center gap-3 rounded-4 py-3 px-4 mb-0 ${appointment.status === 'confirmed' ? 'alert-success' : 'alert-info'}`}
+                                        >
                                             <i className="fas fa-video fa-lg"></i>
                                             <div>
                                                 <strong className="d-block">Telehealth Appointment</strong>
                                                 {appointment.status === 'confirmed' ? (
-                                                    <span className="small">Payment confirmed. Meeting link has been sent to the patient.</span>
+                                                    <span className="small">
+                                                        Payment confirmed. Meeting link has been sent to the patient.
+                                                    </span>
                                                 ) : (
-                                                    <span className="small">Waiting for payment confirmation. Once payment is received (KES 4,000 via Till 9344367), click "CONFIRM PAYMENT" to generate and send the meeting link.</span>
+                                                    <span className="small">
+                                                        Waiting for payment confirmation. Once payment is received (KES
+                                                        4,000 via Till 9344367), click "CONFIRM PAYMENT" to generate and
+                                                        send the meeting link.
+                                                    </span>
                                                 )}
                                             </div>
                                         </div>
@@ -411,8 +469,8 @@ export default function Show({ appointment, auth }) {
                         {isReceptionist && (
                             <DashboardPanel title="Clinical records" icon="fa-lock" headerVariant="section">
                                 <p className="text-muted mb-0 small">
-                                    Clinical consultations, lab results, and pharmacy orders are restricted to clinical staff.
-                                    Use check-in and status actions from the toolbar below.
+                                    Clinical consultations, lab results, and pharmacy orders are restricted to clinical
+                                    staff. Use check-in and status actions from the toolbar below.
                                 </p>
                             </DashboardPanel>
                         )}
@@ -441,11 +499,11 @@ export default function Show({ appointment, auth }) {
                     ['admin', 'receptionist'].includes(auth.user.role) &&
                         appointment.appointment_type === 'telehealth' &&
                         !['completed', 'cancelled', 'confirmed'].includes(appointment.status) && {
-                        label: 'CONFIRM PAYMENT',
-                        icon: 'fa-credit-card',
-                        onClick: confirmTelehealthPayment,
-                        color: 'success',
-                    },
+                            label: 'CONFIRM PAYMENT',
+                            icon: 'fa-credit-card',
+                            onClick: confirmTelehealthPayment,
+                            color: 'success',
+                        },
                     ['admin', 'doctor'].includes(auth.user.role) && {
                         label: 'NEW PRESCRIPTION',
                         icon: 'fa-prescription',
@@ -456,32 +514,32 @@ export default function Show({ appointment, auth }) {
                     },
                     ['admin', 'doctor', 'receptionist'].includes(auth.user.role) &&
                         ['scheduled', 'confirmed'].includes(appointment.status) && {
-                        label: 'CONFIRM ARRIVAL',
-                        icon: 'fa-check-circle',
-                        onClick: checkIn,
-                        color: 'success',
-                    },
+                            label: 'CONFIRM ARRIVAL',
+                            icon: 'fa-check-circle',
+                            onClick: checkIn,
+                            color: 'success',
+                        },
                     ['admin', 'doctor', 'receptionist'].includes(auth.user.role) &&
                         ['arrived', 'confirmed'].includes(appointment.status) && {
-                        label: 'MARK COMPLETE',
-                        icon: 'fa-flag-checkered',
-                        onClick: () => updateStatus('completed'),
-                        color: 'success',
-                    },
+                            label: 'MARK COMPLETE',
+                            icon: 'fa-flag-checkered',
+                            onClick: () => updateStatus('completed'),
+                            color: 'success',
+                        },
                     ['admin', 'doctor', 'receptionist'].includes(auth.user.role) &&
                         !['completed', 'cancelled', 'no_show'].includes(appointment.status) && {
-                        label: 'MARK NO-SHOW',
-                        icon: 'fa-user-slash',
-                        onClick: () => updateStatus('no_show'),
-                        color: 'gray',
-                    },
+                            label: 'MARK NO-SHOW',
+                            icon: 'fa-user-slash',
+                            onClick: () => updateStatus('no_show'),
+                            color: 'gray',
+                        },
                     ['admin', 'doctor', 'receptionist'].includes(auth.user.role) &&
                         !['completed', 'cancelled'].includes(appointment.status) && {
-                        label: 'CANCEL VISIT',
-                        icon: 'fa-times-circle',
-                        onClick: () => updateStatus('cancelled'),
-                        color: 'danger',
-                    },
+                            label: 'CANCEL VISIT',
+                            icon: 'fa-times-circle',
+                            onClick: () => updateStatus('cancelled'),
+                            color: 'danger',
+                        },
                     {
                         label: 'BACK TO REGISTRY',
                         icon: 'fa-arrow-left',

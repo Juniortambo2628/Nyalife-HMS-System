@@ -5,10 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePrescriptionRequest;
 use App\Http\Requests\VoidRequest;
 use App\Http\Resources\PrescriptionResource;
-use App\Models\Consultation;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\Medication;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Models\Setting;
@@ -19,7 +15,6 @@ use App\Support\Permissions;
 use App\Traits\HasBulkActions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class PrescriptionController extends Controller
@@ -96,6 +91,7 @@ class PrescriptionController extends Controller
     {
         try {
             PrescriptionService::create($request->validated());
+
             return redirect()->route('prescriptions.index')->with('success', 'Prescription created successfully. Invoice auto-generated.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to process prescription: '.$e->getMessage()]);
@@ -225,25 +221,28 @@ class PrescriptionController extends Controller
             'dispense' => function (array $ids, int $count) {
                 $updated = $this->bulkProcessWithLog(
                     Prescription::class, 'prescription_id', $ids,
-                    fn ($item) => $item->status !== 'dispensed' && !$item->is_voided,
+                    fn ($item) => $item->status !== 'dispensed' && ! $item->is_voided,
                     fn ($item) => ['status' => 'dispensed', 'dispensed_by' => Auth::id(), 'dispensed_at' => now()],
                     'pharmacy', 'Prescription',
                     fn ($item) => [$item->patient->user_id, 1]
                 );
+
                 return redirect()->back()->with('success', "{$updated} prescription(s) dispensed.");
             },
             'void' => function (array $ids, int $count) {
                 $updated = $this->bulkProcessWithLog(
                     Prescription::class, 'prescription_id', $ids,
-                    fn ($item) => !$item->is_voided && $item->status !== 'dispensed',
+                    fn ($item) => ! $item->is_voided && $item->status !== 'dispensed',
                     fn ($item) => ['is_voided' => true, 'void_reason' => 'Bulk voided via toolbar', 'voided_by' => Auth::id(), 'voided_at' => now()],
                     'pharmacy', 'Prescription',
                     fn ($item) => [$item->patient->user_id, 1]
                 );
+
                 return redirect()->back()->with('success', "{$updated} prescription(s) voided.");
             },
             'delete' => function (array $ids, int $count) {
                 $deleted = $this->bulkDelete(Prescription::class, 'prescription_id', $ids, 'status', 'dispensed');
+
                 return redirect()->back()->with('success', "{$deleted} prescription(s) deleted.");
             },
         ];

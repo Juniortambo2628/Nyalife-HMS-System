@@ -6,7 +6,7 @@ import { formatDateTime } from '@/Utils/dateUtils';
 
 export default function ConsultationDraftSwitcher({ drafts = [], isOpen: propIsOpen, onClose: propOnClose }) {
     const [internalIsOpen, setInternalIsOpen] = useState(false);
-    
+
     const isOpen = propIsOpen !== undefined ? propIsOpen : internalIsOpen;
     const setIsOpen = propOnClose !== undefined ? propOnClose : setInternalIsOpen;
 
@@ -30,7 +30,7 @@ export default function ConsultationDraftSwitcher({ drafts = [], isOpen: propIsO
                                     In-Progress Consultations
                                 </p>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setIsOpen(false)}
                                 className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
                             >
@@ -90,7 +90,7 @@ export default function ConsultationDraftSwitcher({ drafts = [], isOpen: propIsO
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4">
                             New session required?
                         </p>
-                        <Link 
+                        <Link
                             href={route('consultations.create')}
                             className="inline-flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-white border-2 border-dashed border-gray-200 text-gray-400 font-bold hover:border-pink-300 hover:text-pink-500 transition-all"
                         >

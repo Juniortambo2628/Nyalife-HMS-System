@@ -4,14 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\DoctorBlockOut;
 use App\Models\Staff;
+use App\Traits\HasBulkActions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use App\Traits\HasBulkActions;
 
 class DoctorBlockOutController extends Controller
 {
     use HasBulkActions;
+
     public function index(Request $request)
     {
         $user = Auth::user();

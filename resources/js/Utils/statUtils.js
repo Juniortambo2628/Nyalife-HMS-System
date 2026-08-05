@@ -11,9 +11,7 @@ export function buildBreakdownStats({
     icon = 'fa-circle',
     color = 'info',
 } = {}) {
-    const items = [
-        { label: totalLabel, value: total, icon: totalIcon, color: totalColor },
-    ];
+    const items = [{ label: totalLabel, value: total, icon: totalIcon, color: totalColor }];
 
     Object.entries(byKey).forEach(([key, count]) => {
         items.push({

@@ -7,8 +7,11 @@ use Spatie\MailTemplates\TemplateMailable;
 class GuestCredentialsEmail extends TemplateMailable
 {
     public $patient_name;
+
     public $email;
+
     public $password;
+
     public $login_url;
 
     public function __construct(array $data)

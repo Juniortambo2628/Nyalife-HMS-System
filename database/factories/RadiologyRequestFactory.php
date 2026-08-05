@@ -2,9 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\RadiologyRequest;
+use App\Models\Appointment;
+use App\Models\Consultation;
 use App\Models\Patient;
+use App\Models\RadiologyRequest;
 use App\Models\Staff;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RadiologyRequestFactory extends Factory
@@ -14,7 +17,7 @@ class RadiologyRequestFactory extends Factory
     public function definition(): array
     {
         return [
-            'request_number' => 'RAD-' . strtoupper(uniqid()),
+            'request_number' => 'RAD-'.strtoupper(uniqid()),
             'patient_id' => Patient::factory(),
             'doctor_id' => Staff::factory(),
             'scan_type' => $this->faker->randomElement([
@@ -42,13 +45,13 @@ class RadiologyRequestFactory extends Factory
             'impression' => $this->faker->optional()->paragraph(),
             'priority' => $this->faker->randomElement(['routine', 'urgent', 'stat']),
             'status' => $this->faker->randomElement(['pending', 'processing', 'pending_verification', 'verified', 'completed', 'cancelled']),
-            'requested_by' => \App\Models\User::factory(),
-            'assigned_to' => \App\Models\User::factory(),
-            'verified_by' => \App\Models\User::factory(),
+            'requested_by' => User::factory(),
+            'assigned_to' => User::factory(),
+            'verified_by' => User::factory(),
             'verified_at' => $this->faker->optional()->dateTimeBetween('-5 days', 'now')->format('Y-m-d H:i:s'),
             'completed_at' => $this->faker->optional()->dateTimeBetween('-10 days', 'now')->format('Y-m-d H:i:s'),
-            'consultation_id' => \App\Models\Consultation::factory(),
-            'appointment_id' => \App\Models\Appointment::factory(),
+            'consultation_id' => Consultation::factory(),
+            'appointment_id' => Appointment::factory(),
         ];
     }
 

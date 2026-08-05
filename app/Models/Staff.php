@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Staff extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'staff';
+
     protected $primaryKey = 'staff_id';
 
     protected $fillable = [
@@ -35,7 +36,7 @@ class Staff extends Model
     {
         return $this->belongsTo(Department::class, 'department_id', 'department_id');
     }
-    
+
     public function appointments()
     {
         return $this->hasMany(Appointment::class, 'doctor_id', 'staff_id');

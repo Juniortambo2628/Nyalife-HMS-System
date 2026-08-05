@@ -9,7 +9,10 @@ function normalizeIcon(icon) {
 function inferHeaderVariant(headerClassName = '') {
     const h = headerClassName || '';
 
-    if (h.includes('bg-gradient') || (h.includes('text-white') && (h.includes('bg-primary') || h.includes('gradient')))) {
+    if (
+        h.includes('bg-gradient') ||
+        (h.includes('text-white') && (h.includes('bg-primary') || h.includes('gradient')))
+    ) {
         return 'gradient';
     }
     if (h.includes('bg-pink-500') || (h.includes('text-white') && !h.includes('bg-white'))) {

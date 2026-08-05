@@ -50,7 +50,7 @@ class BlogSeeder extends Seeder
 
         foreach ($posts as $post) {
             Blog::create(array_merge($post, [
-                'slug' => Str::slug($post['title']) . '-' . rand(100, 999),
+                'slug' => Str::slug($post['title']).'-'.rand(100, 999),
                 'author_id' => $authorId,
                 'is_published' => true,
                 'published_at' => now(),

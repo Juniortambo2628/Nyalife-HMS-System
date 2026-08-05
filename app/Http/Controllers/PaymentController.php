@@ -7,6 +7,7 @@ use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\PaymentResource;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\Setting;
 use App\Services\ActivityLogger;
 use App\Services\PaymentService;
 use App\Support\Permissions;
@@ -102,7 +103,7 @@ class PaymentController extends Controller
 
         ActivityLogger::log(
             'billing',
-            'Payment of Ksh ' . number_format((float) $payment->amount, 2) . ' recorded for invoice #' . ($payment->invoice->invoice_number ?? $payment->invoice_id),
+            'Payment of Ksh '.number_format((float) $payment->amount, 2).' recorded for invoice #'.($payment->invoice->invoice_number ?? $payment->invoice_id),
             ['payment_id' => $payment->payment_id, 'invoice_id' => $payment->invoice_id],
             Auth::user(),
             $payment,
@@ -120,7 +121,7 @@ class PaymentController extends Controller
         $payment = Payment::with(['invoice.patient.user', 'invoice.items', 'receivedBy'])
             ->findOrFail($id);
 
-        $settings = \App\Models\Setting::whereIn('key', [
+        $settings = Setting::whereIn('key', [
             'contact_address',
             'contact_email',
             'contact_phone',
@@ -157,7 +158,7 @@ class PaymentController extends Controller
 
         ActivityLogger::log(
             'billing',
-            'Payment #' . $payment->payment_id . ' marked as completed',
+            'Payment #'.$payment->payment_id.' marked as completed',
             ['payment_id' => $payment->payment_id],
             Auth::user(),
             $payment
@@ -173,7 +174,7 @@ class PaymentController extends Controller
         $payment = Payment::with(['invoice.patient.user', 'receivedBy'])
             ->findOrFail($id);
 
-        $settings = \App\Models\Setting::whereIn('key', [
+        $settings = Setting::whereIn('key', [
             'contact_address',
             'contact_email',
             'contact_phone',
@@ -194,7 +195,7 @@ class PaymentController extends Controller
             ->latest('payment_date')
             ->get();
 
-        $filename = 'payments-' . now()->format('Y-m-d') . '.csv';
+        $filename = 'payments-'.now()->format('Y-m-d').'.csv';
 
         return response()->streamDownload(function () use ($payments) {
             $handle = fopen('php://output', 'w');
@@ -204,13 +205,13 @@ class PaymentController extends Controller
                 fputcsv($handle, [
                     $payment->payment_id,
                     $payment->invoice?->invoice_number,
-                    trim(($payment->invoice?->patient?->user?->first_name ?? '') . ' ' . ($payment->invoice?->patient?->user?->last_name ?? '')),
+                    trim(($payment->invoice?->patient?->user?->first_name ?? '').' '.($payment->invoice?->patient?->user?->last_name ?? '')),
                     $payment->amount,
                     Payment::METHODS[$payment->payment_method] ?? $payment->payment_method,
                     $payment->payment_status,
                     $payment->payment_date?->format('Y-m-d H:i'),
                     $payment->transaction_reference,
-                    trim(($payment->receivedBy?->first_name ?? '') . ' ' . ($payment->receivedBy?->last_name ?? '')),
+                    trim(($payment->receivedBy?->first_name ?? '').' '.($payment->receivedBy?->last_name ?? '')),
                 ]);
             }
 

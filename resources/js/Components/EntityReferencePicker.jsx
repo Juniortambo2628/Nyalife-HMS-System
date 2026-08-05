@@ -25,14 +25,15 @@ export const formatReferenceType = (type) => {
         lab_request: 'Lab Request',
     };
     if (overrides[type]) return overrides[type];
-    return String(type).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return String(type)
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase());
 };
 
 /**
  * Get the icon class for a reference type, falling back to a generic icon.
  */
-export const getReferenceIcon = (type) =>
-    REFERENCE_TYPE_ICONS[type] || 'fa-link';
+export const getReferenceIcon = (type) => REFERENCE_TYPE_ICONS[type] || 'fa-link';
 
 /**
  * EntityReferencePicker — A consistent, accessible entity-reference dropdown.
@@ -77,10 +78,7 @@ export default function EntityReferencePicker({
     const searchRef = useRef(null);
 
     const types = useMemo(() => Object.keys(entities), [entities]);
-    const totalCount = useMemo(
-        () => types.reduce((sum, t) => sum + (entities[t]?.length || 0), 0),
-        [entities, types],
-    );
+    const totalCount = useMemo(() => types.reduce((sum, t) => sum + (entities[t]?.length || 0), 0), [entities, types]);
 
     useEffect(() => {
         if (!isOpen) {
@@ -144,10 +142,7 @@ export default function EntityReferencePicker({
     };
 
     return (
-        <div
-            className={`toolbar-filter-menu nyl-entity-picker ${isOpen ? 'is-open' : ''} ${className}`}
-            ref={rootRef}
-        >
+        <div className={`toolbar-filter-menu nyl-entity-picker ${isOpen ? 'is-open' : ''} ${className}`} ref={rootRef}>
             <button
                 ref={triggerRef}
                 type="button"

@@ -20,7 +20,7 @@ class InvoiceItem extends Model
         'unit_price',
         'total_price',
         'discount',
-        'tax'
+        'tax',
     ];
 
     public function invoice()

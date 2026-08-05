@@ -12,10 +12,7 @@ import StatCardGrid from '@/Components/StatCardGrid';
 import UserAvatar from '@/Components/UserAvatar';
 import { formatDateOnly } from '@/Utils/dateUtils';
 
-const formatRole = (role) =>
-    (role || 'user')
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, (c) => c.toUpperCase());
+const formatRole = (role) => (role || 'user').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 export default function Edit({ mustVerifyEmail, status, staff }) {
     const { auth } = usePage().props;
@@ -29,35 +26,38 @@ export default function Edit({ mustVerifyEmail, status, staff }) {
         { id: 'danger', label: 'Danger zone', icon: 'fa-shield-alt', show: true, danger: true },
     ].filter((tab) => tab.show !== false);
 
-    const statItems = useMemo(() => [
-        {
-            label: 'Role',
-            value: formatRole(user.role),
-            icon: 'fa-id-badge',
-            color: 'pink',
-        },
-        {
-            label: 'Email',
-            value: user.email_verified_at ? 'Verified' : 'Unverified',
-            icon: user.email_verified_at ? 'fa-check-circle' : 'fa-envelope-open',
-            color: user.email_verified_at ? 'success' : 'warning',
-            sub: user.email,
-        },
-        {
-            label: 'Phone',
-            value: user.phone || '—',
-            icon: 'fa-phone',
-            color: 'teal',
-        },
-        {
-            label: staff ? 'Department' : 'Member since',
-            value: staff
-                ? (staff.departmentRelation?.department_name || staff.department || '—')
-                : formatDateOnly(user.created_at),
-            icon: staff ? 'fa-hospital' : 'fa-calendar-check',
-            color: 'info',
-        },
-    ], [user, staff]);
+    const statItems = useMemo(
+        () => [
+            {
+                label: 'Role',
+                value: formatRole(user.role),
+                icon: 'fa-id-badge',
+                color: 'pink',
+            },
+            {
+                label: 'Email',
+                value: user.email_verified_at ? 'Verified' : 'Unverified',
+                icon: user.email_verified_at ? 'fa-check-circle' : 'fa-envelope-open',
+                color: user.email_verified_at ? 'success' : 'warning',
+                sub: user.email,
+            },
+            {
+                label: 'Phone',
+                value: user.phone || '—',
+                icon: 'fa-phone',
+                color: 'teal',
+            },
+            {
+                label: staff ? 'Department' : 'Member since',
+                value: staff
+                    ? staff.departmentRelation?.department_name || staff.department || '—'
+                    : formatDateOnly(user.created_at),
+                icon: staff ? 'fa-hospital' : 'fa-calendar-check',
+                color: 'info',
+            },
+        ],
+        [user, staff],
+    );
 
     return (
         <AuthenticatedLayout
@@ -91,9 +91,7 @@ export default function Edit({ mustVerifyEmail, status, staff }) {
                                     {formatRole(user.role)}
                                 </span>
                                 {staff?.specialization && (
-                                    <div className="extra-small text-muted fw-bold mt-2">
-                                        {staff.specialization}
-                                    </div>
+                                    <div className="extra-small text-muted fw-bold mt-2">{staff.specialization}</div>
                                 )}
                             </div>
 
@@ -134,8 +132,8 @@ export default function Edit({ mustVerifyEmail, status, staff }) {
                                                         ? 'btn-danger shadow-sm'
                                                         : 'btn-primary shadow-sm'
                                                     : tab.danger
-                                                        ? 'btn-outline-danger'
-                                                        : 'btn-light text-muted'
+                                                      ? 'btn-outline-danger'
+                                                      : 'btn-light text-muted'
                                             }`}
                                         >
                                             <i className={`fas ${tab.icon}`} style={{ width: '16px' }} />
@@ -164,10 +162,7 @@ export default function Edit({ mustVerifyEmail, status, staff }) {
                         {activeTab === 'personal' && (
                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 <UpdateProfileImageForm className="mb-4" />
-                                <UpdatePersonalInformationForm
-                                    mustVerifyEmail={mustVerifyEmail}
-                                    status={status}
-                                />
+                                <UpdatePersonalInformationForm mustVerifyEmail={mustVerifyEmail} status={status} />
                             </div>
                         )}
 

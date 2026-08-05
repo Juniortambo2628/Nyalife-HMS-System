@@ -16,25 +16,30 @@ export default function Register({
 }) {
     const requests = pendingRequests?.data || pendingRequests || [];
 
-    const requestOptions = useMemo(() =>
-        requests.map((r) => ({
-            value: String(r.request_id),
-            label: `LAB-${r.request_id} — ${r.patient?.user?.first_name || ''} ${r.patient?.user?.last_name || ''} (${r.test_type?.test_name || 'Test'})`,
-            patient_id: r.patient_id,
-            test_type_id: r.test_type_id,
-        })),
-    [requests]);
+    const requestOptions = useMemo(
+        () =>
+            requests.map((r) => ({
+                value: String(r.request_id),
+                label: `LAB-${r.request_id} — ${r.patient?.user?.first_name || ''} ${r.patient?.user?.last_name || ''} (${r.test_type?.test_name || 'Test'})`,
+                patient_id: r.patient_id,
+                test_type_id: r.test_type_id,
+            })),
+        [requests],
+    );
 
-    const testTypeOptions = useMemo(() =>
-        (testTypes || []).map((t) => ({
-            value: String(t.test_type_id),
-            label: `${t.test_name}${t.category ? ` (${t.category})` : ''}`,
-        })),
-    [testTypes]);
+    const testTypeOptions = useMemo(
+        () =>
+            (testTypes || []).map((t) => ({
+                value: String(t.test_type_id),
+                label: `${t.test_name}${t.category ? ` (${t.category})` : ''}`,
+            })),
+        [testTypes],
+    );
 
-    const sampleTypeOptions = useMemo(() =>
-        Object.entries(sampleTypes || {}).map(([value, label]) => ({ label, value })),
-    [sampleTypes]);
+    const sampleTypeOptions = useMemo(
+        () => Object.entries(sampleTypes || {}).map(([value, label]) => ({ label, value })),
+        [sampleTypes],
+    );
 
     const today = new Date().toISOString().slice(0, 10);
     const nowLocal = new Date().toISOString().slice(0, 16);
@@ -77,12 +82,25 @@ export default function Register({
         >
             <Head title="Register Lab Sample" />
 
-            <form onSubmit={(e) => { e.preventDefault(); post(route('lab.samples.store')); }}>
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    post(route('lab.samples.store'));
+                }}
+            >
                 <div className="row g-4">
                     <div className="col-lg-8">
-                        <FormSection title="Sample Details" icon="fas fa-vial" headerClassName="bg-success text-white p-3">
+                        <FormSection
+                            title="Sample Details"
+                            icon="fas fa-vial"
+                            headerClassName="bg-success text-white p-3"
+                        >
                             <div className="row g-3">
-                                <FormField label="Link to Lab Request (optional)" className="col-12" error={errors.lab_request_id}>
+                                <FormField
+                                    label="Link to Lab Request (optional)"
+                                    className="col-12"
+                                    error={errors.lab_request_id}
+                                >
                                     <DashboardSelect
                                         options={requestOptions}
                                         value={data.lab_request_id ? String(data.lab_request_id) : ''}
@@ -159,16 +177,19 @@ export default function Register({
                         <FormSection title="Patient" icon="fas fa-user" headerClassName="bg-primary text-white p-3">
                             {data.patient_id ? (
                                 <p className="mb-0 text-muted small">
-                                    Patient ID: <span className="fw-bold text-dark">{formatPatientId(data.patient_id)}</span>
+                                    Patient ID:{' '}
+                                    <span className="fw-bold text-dark">{formatPatientId(data.patient_id)}</span>
                                     {prefillRequest?.patient?.user && (
                                         <span className="d-block mt-2 fw-bold text-dark">
-                                            {prefillRequest.patient.user.first_name} {prefillRequest.patient.user.last_name}
+                                            {prefillRequest.patient.user.first_name}{' '}
+                                            {prefillRequest.patient.user.last_name}
                                         </span>
                                     )}
                                 </p>
                             ) : (
                                 <p className="mb-0 text-muted small">
-                                    Select a lab request above to auto-fill the patient, or ensure patient_id is set via a linked request.
+                                    Select a lab request above to auto-fill the patient, or ensure patient_id is set via
+                                    a linked request.
                                 </p>
                             )}
                             {errors.patient_id && <div className="text-danger small mt-2">{errors.patient_id}</div>}
@@ -178,7 +199,12 @@ export default function Register({
 
                 <UnifiedToolbar
                     actions={[
-                        { label: processing ? 'SAVING...' : 'REGISTER SAMPLE', icon: 'fa-check', type: 'submit', color: 'success' },
+                        {
+                            label: processing ? 'SAVING...' : 'REGISTER SAMPLE',
+                            icon: 'fa-check',
+                            type: 'submit',
+                            color: 'success',
+                        },
                         { label: 'CANCEL', icon: 'fa-times', href: route('lab.samples.index'), color: 'gray' },
                     ]}
                 />

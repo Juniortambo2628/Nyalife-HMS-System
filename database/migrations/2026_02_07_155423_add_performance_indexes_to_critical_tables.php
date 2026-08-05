@@ -18,10 +18,12 @@ return new class extends Migration
                     return true;
                 }
             }
+
             return false;
         }
-        
+
         $rows = DB::select("SHOW INDEX FROM {$table} WHERE Key_name = ?", [$indexName]);
+
         return count($rows) > 0;
     }
 

@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Models\Prescription;
-use App\Models\Patient;
-use App\Models\User;
-use App\Models\Consultation;
 use App\Models\Appointment;
+use App\Models\Consultation;
+use App\Models\Patient;
+use App\Models\Prescription;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PrescriptionFactory extends Factory
@@ -26,7 +26,7 @@ class PrescriptionFactory extends Factory
             'appointment_id' => Appointment::factory(),
             'consultation_id' => Consultation::factory(),
             'prescription_date' => $this->faker->dateTimeBetween('-30 days', 'now')->format('Y-m-d'),
-            'prescription_number' => 'RX-' . strtoupper(uniqid()),
+            'prescription_number' => 'RX-'.strtoupper(uniqid()),
             'status' => $this->faker->randomElement(['pending', 'dispensed', 'partially_dispensed', 'cancelled']),
             'is_voided' => false,
             'void_reason' => null,

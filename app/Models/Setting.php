@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class Setting extends Model
 {
@@ -11,17 +12,17 @@ class Setting extends Model
         'value',
         'type',
         'group',
-        'label'
+        'label',
     ];
 
-    public static function clinicContactSettings(): \Illuminate\Support\Collection
+    public static function clinicContactSettings(): Collection
     {
         return static::whereIn('key', [
             'contact_address', 'contact_email', 'contact_phone',
         ])->pluck('value', 'key');
     }
 
-    public static function clinicInvoiceSettings(): \Illuminate\Support\Collection
+    public static function clinicInvoiceSettings(): Collection
     {
         return static::whereIn('key', [
             'contact_address', 'contact_email', 'contact_phone', 'tax_rate',

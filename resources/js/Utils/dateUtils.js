@@ -5,7 +5,7 @@
 export const toLocalISO = (date) => {
     const d = date ? new Date(date) : new Date();
     const tzOffset = d.getTimezoneOffset() * 60000;
-    const localISOTime = (new Date(d.getTime() - tzOffset)).toISOString().slice(0, 16);
+    const localISOTime = new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
     return localISOTime;
 };
 
@@ -15,7 +15,7 @@ export const toLocalISO = (date) => {
  */
 export const formatDateTime = (dateString, options = {}) => {
     if (!dateString) return 'N/A';
-    
+
     try {
         const date = new Date(dateString);
         return new Intl.DateTimeFormat('en-US', {
@@ -25,7 +25,7 @@ export const formatDateTime = (dateString, options = {}) => {
             hour: 'numeric',
             minute: '2-digit',
             hour12: true,
-            ...options
+            ...options,
         }).format(date);
     } catch (e) {
         return dateString;

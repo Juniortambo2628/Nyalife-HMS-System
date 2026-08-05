@@ -28,26 +28,29 @@ export default function Index({ users, filters, roles, auth, stats }) {
         clearSelection: () => setSelectedIds([]),
     });
 
-    const statItems = useMemo(() => [
-        {
-            label: 'Total Users',
-            value: stats?.total ?? 0,
-            icon: 'fa-users',
-            color: 'primary',
-        },
-        {
-            label: 'Active Staff',
-            value: stats?.active ?? 0,
-            icon: 'fa-user-check',
-            color: 'success',
-        },
-        {
-            label: 'Inactive Staff',
-            value: stats?.inactive ?? 0,
-            icon: 'fa-user-slash',
-            color: 'danger',
-        },
-    ], [stats]);
+    const statItems = useMemo(
+        () => [
+            {
+                label: 'Total Users',
+                value: stats?.total ?? 0,
+                icon: 'fa-users',
+                color: 'primary',
+            },
+            {
+                label: 'Active Staff',
+                value: stats?.active ?? 0,
+                icon: 'fa-user-check',
+                color: 'success',
+            },
+            {
+                label: 'Inactive Staff',
+                value: stats?.inactive ?? 0,
+                icon: 'fa-user-slash',
+                color: 'danger',
+            },
+        ],
+        [stats],
+    );
 
     const handleSearch = (searchValue, quickFilterValue = filters?.quick_filter) => {
         const query = { search: searchValue };
@@ -68,77 +71,94 @@ export default function Index({ users, filters, roles, auth, stats }) {
 
     // Update filters when roles or sorts change
     useEffect(() => {
-        if (search === (filters?.search || '') && 
-            roleFilter === (filters?.role || '') && 
-            sortBy === (filters?.sort || 'created_at') && 
-            direction === (filters?.direction || 'desc')) return;
+        if (
+            search === (filters?.search || '') &&
+            roleFilter === (filters?.role || '') &&
+            sortBy === (filters?.sort || 'created_at') &&
+            direction === (filters?.direction || 'desc')
+        )
+            return;
 
         handleSearch(search);
     }, [roleFilter, sortBy, direction]);
 
-    const columns = useMemo(() => [
-        {
-            header: 'User',
-            accessorKey: 'first_name', // Sort key
-            cell: info => (
-                <TableCellStack
-                    primary={`${info.row.original.first_name} ${info.row.original.last_name}`}
-                    secondary={`@${info.row.original.username}`}
-                />
-            ),
-            enableSorting: true
-        },
-        {
-            header: 'Role',
-            accessorKey: 'role',
-            cell: info => (
-                <TableCellPrimary className="text-uppercase">
-                    {info.row.original.role?.replace('_', ' ') || info.row.original.role_relation?.role_name}
-                </TableCellPrimary>
-            ),
-            enableSorting: false
-        },
-        {
-            header: 'Department',
-            accessorKey: 'department_name',
-            cell: info => <TableCellPrimary className="text-muted">{info.row.original.department_name || '—'}</TableCellPrimary>,
-            enableSorting: false
-        },
-        {
-            header: 'Email',
-            accessorKey: 'email',
-            cell: info => <TableCellPrimary className="text-muted">{info.getValue()}</TableCellPrimary>,
-            enableSorting: true
-        },
-        {
-            header: 'Status',
-            accessorKey: 'is_active',
-            cell: info => <StatusBadge status={info.getValue() ? 'active' : 'inactive'} />,
-            enableSorting: true
-        },
-        {
-            header: 'Actions',
-            id: 'actions',
-            headerClassName: 'pe-5 text-end',
-            cell: info => (
-                <TableActions actions={[
-                    { icon: 'fa-eye', label: 'View profile', href: route('users.show', info.row.original.user_id) },
-                    { icon: 'fa-edit', label: 'Edit permissions', href: route('users.edit', info.row.original.user_id) },
-                ]} />
-            )
-        }
-    ], [sortBy, direction]);
+    const columns = useMemo(
+        () => [
+            {
+                header: 'User',
+                accessorKey: 'first_name', // Sort key
+                cell: (info) => (
+                    <TableCellStack
+                        primary={`${info.row.original.first_name} ${info.row.original.last_name}`}
+                        secondary={`@${info.row.original.username}`}
+                    />
+                ),
+                enableSorting: true,
+            },
+            {
+                header: 'Role',
+                accessorKey: 'role',
+                cell: (info) => (
+                    <TableCellPrimary className="text-uppercase">
+                        {info.row.original.role?.replace('_', ' ') || info.row.original.role_relation?.role_name}
+                    </TableCellPrimary>
+                ),
+                enableSorting: false,
+            },
+            {
+                header: 'Department',
+                accessorKey: 'department_name',
+                cell: (info) => (
+                    <TableCellPrimary className="text-muted">
+                        {info.row.original.department_name || '—'}
+                    </TableCellPrimary>
+                ),
+                enableSorting: false,
+            },
+            {
+                header: 'Email',
+                accessorKey: 'email',
+                cell: (info) => <TableCellPrimary className="text-muted">{info.getValue()}</TableCellPrimary>,
+                enableSorting: true,
+            },
+            {
+                header: 'Status',
+                accessorKey: 'is_active',
+                cell: (info) => <StatusBadge status={info.getValue() ? 'active' : 'inactive'} />,
+                enableSorting: true,
+            },
+            {
+                header: 'Actions',
+                id: 'actions',
+                headerClassName: 'pe-5 text-end',
+                cell: (info) => (
+                    <TableActions
+                        actions={[
+                            {
+                                icon: 'fa-eye',
+                                label: 'View profile',
+                                href: route('users.show', info.row.original.user_id),
+                            },
+                            {
+                                icon: 'fa-edit',
+                                label: 'Edit permissions',
+                                href: route('users.edit', info.row.original.user_id),
+                            },
+                        ]}
+                    />
+                ),
+            },
+        ],
+        [sortBy, direction],
+    );
 
     return (
-        <AuthenticatedLayout 
-            headerTitle="Staff & Access"
-            breadcrumbs={[{ label: 'Users Registry', active: true }]}
-        >
+        <AuthenticatedLayout headerTitle="Staff & Access" breadcrumbs={[{ label: 'Users Registry', active: true }]}>
             <Head title="Users Registry" />
 
             <StatCardGrid items={statItems} cols={3} />
 
-            <UnifiedToolbar 
+            <UnifiedToolbar
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
                 filterGroups={[
@@ -154,20 +174,32 @@ export default function Index({ users, filters, roles, auth, stats }) {
                         })),
                     },
                 ]}
-                actions={[
-                    { label: 'CREATE USER', icon: 'fa-user-plus', href: route('users.create') }
-                ]}
+                actions={[{ label: 'CREATE USER', icon: 'fa-user-plus', href: route('users.create') }]}
                 bulkActions={[
-                    { label: 'ACTIVATE SELECTED', icon: 'fa-check-circle', onClick: () => handleBulkAction('activate') },
-                    { label: 'DEACTIVATE SELECTED', icon: 'fa-user-slash', onClick: () => handleBulkAction('deactivate'), color: 'warning' },
-                    { label: 'DELETE SELECTED', icon: 'fa-trash-alt', onClick: () => handleBulkAction('delete'), color: 'danger' }
+                    {
+                        label: 'ACTIVATE SELECTED',
+                        icon: 'fa-check-circle',
+                        onClick: () => handleBulkAction('activate'),
+                    },
+                    {
+                        label: 'DEACTIVATE SELECTED',
+                        icon: 'fa-user-slash',
+                        onClick: () => handleBulkAction('deactivate'),
+                        color: 'warning',
+                    },
+                    {
+                        label: 'DELETE SELECTED',
+                        icon: 'fa-trash-alt',
+                        onClick: () => handleBulkAction('delete'),
+                        color: 'danger',
+                    },
                 ]}
                 selectionCount={selectedIds.length}
             />
 
             <div className="py-0">
-                <DashboardSearch 
-                    placeholder="Search by name, email, or username..." 
+                <DashboardSearch
+                    placeholder="Search by name, email, or username..."
                     value={search}
                     onChange={setSearch}
                     onSubmit={handleSearch}
@@ -189,7 +221,13 @@ export default function Index({ users, filters, roles, auth, stats }) {
                         columns={columns}
                         pagination={users}
                         onSort={(columnId) => {
-                            if (columnId === 'first_name' || columnId === 'email' || columnId === 'created_at' || columnId === 'last_name' || columnId === 'is_active') {
+                            if (
+                                columnId === 'first_name' ||
+                                columnId === 'email' ||
+                                columnId === 'created_at' ||
+                                columnId === 'last_name' ||
+                                columnId === 'is_active'
+                            ) {
                                 if (sortBy === columnId) {
                                     setDirection(direction === 'asc' ? 'desc' : 'asc');
                                 } else {
@@ -216,26 +254,38 @@ export default function Index({ users, filters, roles, auth, stats }) {
                                             <div className="mx-auto mb-4">
                                                 <UserAvatar user={user} size="xl" showStatus={true} />
                                             </div>
-                                            <h5 className="fw-bold text-gray-900 mb-1">{user.first_name} {user.last_name}</h5>
-                                            <p className="text-muted extra-small font-bold uppercase tracking-widest opacity-50 mb-3">@{user.username}</p>
+                                            <h5 className="fw-bold text-gray-900 mb-1">
+                                                {user.first_name} {user.last_name}
+                                            </h5>
+                                            <p className="text-muted extra-small font-bold uppercase tracking-widest opacity-50 mb-3">
+                                                @{user.username}
+                                            </p>
                                             <div className="mb-3 d-flex flex-column gap-1 align-items-center">
                                                 <span className="badge bg-soft-primary text-primary rounded-pill px-3 py-2 text-capitalize border border-primary-subtle fw-bold extra-small">
                                                     {user.role?.replace('_', ' ') || user.role_relation?.role_name}
                                                 </span>
                                                 {user.department_name && (
-                                                    <span className="small text-muted font-bold mt-1" style={{ fontSize: '0.75rem' }}>
+                                                    <span
+                                                        className="small text-muted font-bold mt-1"
+                                                        style={{ fontSize: '0.75rem' }}
+                                                    >
                                                         {user.department_name}
                                                     </span>
                                                 )}
                                             </div>
                                             <div className="small text-muted mb-4 text-truncate px-2">{user.email}</div>
                                             <div className="mt-auto pt-2">
-                                                <Link href={route('users.show', user.user_id)} className="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm w-100">View Profile</Link>
+                                                <Link
+                                                    href={route('users.show', user.user_id)}
+                                                    className="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm w-100"
+                                                >
+                                                    View Profile
+                                                </Link>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
-                                
+
                                 {/* Pagination for Grid View */}
                                 <div className="col-12 mt-4">
                                     <PaginationFooter pagination={users} />
@@ -250,7 +300,6 @@ export default function Index({ users, filters, roles, auth, stats }) {
                     </div>
                 )}
             </div>
-
         </AuthenticatedLayout>
     );
 }

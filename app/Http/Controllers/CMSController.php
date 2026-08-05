@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ServiceTab;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,21 +13,21 @@ class CMSController extends Controller
     {
         return Inertia::render('CMS/Settings', [
             'settings' => Setting::all()->groupBy('group'),
-            'serviceTabs' => \App\Models\ServiceTab::orderBy('sort_order')->get()
+            'serviceTabs' => ServiceTab::orderBy('sort_order')->get(),
         ]);
     }
 
     public function update(Request $request)
     {
         $settings = $request->input('settings', []);
-        
+
         foreach ($settings as $key => $value) {
             // Handle file uploads if any
             if ($request->hasFile("settings.$key")) {
                 $path = $request->file("settings.$key")->store('cms', 'public');
                 $value = $path; // Store relative path
             }
-            
+
             Setting::where('key', $key)->update(['value' => $value]);
         }
 
@@ -36,7 +37,7 @@ class CMSController extends Controller
     public function updateServiceTabs(Request $request)
     {
         $tabs = $request->input('tabs', []);
-        
+
         foreach ($tabs as $index => $tabData) {
             $id = $tabData['id'] ?? null;
             $data = [
@@ -49,9 +50,9 @@ class CMSController extends Controller
             ];
 
             if ($id) {
-                \App\Models\ServiceTab::where('id', $id)->update($data);
+                ServiceTab::where('id', $id)->update($data);
             } else {
-                \App\Models\ServiceTab::create($data);
+                ServiceTab::create($data);
             }
         }
 

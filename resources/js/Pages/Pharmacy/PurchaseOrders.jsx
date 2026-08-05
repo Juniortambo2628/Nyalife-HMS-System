@@ -42,76 +42,79 @@ export default function PurchaseOrders({ orders, lowStockMedications, auth }) {
         }
     };
 
-    const columns = useMemo(() => [
-        {
-            header: 'PO Number',
-            accessorKey: 'order_number',
-            cell: ({ row }) => <TableCellPrimary>{row.original.order_number}</TableCellPrimary>,
-        },
-        {
-            header: 'Medication',
-            accessorKey: 'medication_name',
-            cell: ({ row }) => <TableCellPrimary>{row.original.medication_name}</TableCellPrimary>,
-        },
-        {
-            header: 'Quantity',
-            accessorKey: 'quantity',
-            cell: ({ row }) => <TableCellPrimary>{row.original.quantity} units</TableCellPrimary>,
-        },
-        {
-            header: 'Supplier',
-            accessorKey: 'supplier_name',
-            cell: ({ row }) => <TableCellPrimary className="text-muted">{row.original.supplier_name}</TableCellPrimary>,
-        },
-        {
-            header: 'Est. Cost',
-            accessorKey: 'estimated_cost',
-            cell: ({ row }) => (
-                <TableCellPrimary>{formatCurrency(row.original.estimated_cost)}</TableCellPrimary>
-            ),
-        },
-        {
-            header: 'Status',
-            accessorKey: 'status',
-            cell: ({ row }) => <StatusBadge status={row.original.status} />,
-        },
-        {
-            header: 'Actions',
-            id: 'actions',
-            cell: ({ row }) => {
-                const order = row.original;
-                if (order.status === 'received' || order.status === 'cancelled') {
-                    return null;
-                }
-
-                const actions = [];
-                if (order.status === 'pending') {
-                    actions.push({
-                        icon: 'fa-truck',
-                        label: 'Mark ordered',
-                        onClick: () => updateStatus(order.id, 'ordered'),
-                        color: 'info',
-                    });
-                }
-                if (order.status === 'ordered') {
-                    actions.push({
-                        icon: 'fa-box-open',
-                        label: 'Mark received',
-                        onClick: () => updateStatus(order.id, 'received'),
-                        color: 'success',
-                    });
-                }
-                actions.push({
-                    icon: 'fa-times',
-                    label: 'Cancel order',
-                    onClick: () => updateStatus(order.id, 'cancelled'),
-                    color: 'danger',
-                });
-
-                return <TableActions actions={actions} />;
+    const columns = useMemo(
+        () => [
+            {
+                header: 'PO Number',
+                accessorKey: 'order_number',
+                cell: ({ row }) => <TableCellPrimary>{row.original.order_number}</TableCellPrimary>,
             },
-        },
-    ], [lowStockMedications]);
+            {
+                header: 'Medication',
+                accessorKey: 'medication_name',
+                cell: ({ row }) => <TableCellPrimary>{row.original.medication_name}</TableCellPrimary>,
+            },
+            {
+                header: 'Quantity',
+                accessorKey: 'quantity',
+                cell: ({ row }) => <TableCellPrimary>{row.original.quantity} units</TableCellPrimary>,
+            },
+            {
+                header: 'Supplier',
+                accessorKey: 'supplier_name',
+                cell: ({ row }) => (
+                    <TableCellPrimary className="text-muted">{row.original.supplier_name}</TableCellPrimary>
+                ),
+            },
+            {
+                header: 'Est. Cost',
+                accessorKey: 'estimated_cost',
+                cell: ({ row }) => <TableCellPrimary>{formatCurrency(row.original.estimated_cost)}</TableCellPrimary>,
+            },
+            {
+                header: 'Status',
+                accessorKey: 'status',
+                cell: ({ row }) => <StatusBadge status={row.original.status} />,
+            },
+            {
+                header: 'Actions',
+                id: 'actions',
+                cell: ({ row }) => {
+                    const order = row.original;
+                    if (order.status === 'received' || order.status === 'cancelled') {
+                        return null;
+                    }
+
+                    const actions = [];
+                    if (order.status === 'pending') {
+                        actions.push({
+                            icon: 'fa-truck',
+                            label: 'Mark ordered',
+                            onClick: () => updateStatus(order.id, 'ordered'),
+                            color: 'info',
+                        });
+                    }
+                    if (order.status === 'ordered') {
+                        actions.push({
+                            icon: 'fa-box-open',
+                            label: 'Mark received',
+                            onClick: () => updateStatus(order.id, 'received'),
+                            color: 'success',
+                        });
+                    }
+                    actions.push({
+                        icon: 'fa-times',
+                        label: 'Cancel order',
+                        onClick: () => updateStatus(order.id, 'cancelled'),
+                        color: 'danger',
+                    });
+
+                    return <TableActions actions={actions} />;
+                },
+            },
+        ],
+        [lowStockMedications],
+    );
 
     return (
         <AuthenticatedLayout
@@ -140,17 +143,22 @@ export default function PurchaseOrders({ orders, lowStockMedications, auth }) {
                             <h6 className="fw-bold mb-3 text-secondary">Low Stock Alerts (&lt;= 20 units)</h6>
                             {lowStockMedications && lowStockMedications.length > 0 ? (
                                 <div className="d-flex flex-wrap gap-2">
-                                    {lowStockMedications.map(med => (
-                                        <div key={med.medication_id} className="badge bg-soft-danger text-danger border border-danger-subtle rounded-pill p-2 d-flex align-items-center gap-2">
-                                            <span>{med.medication_name} ({med.stock_quantity} left)</span>
-                                            <button 
+                                    {lowStockMedications.map((med) => (
+                                        <div
+                                            key={med.medication_id}
+                                            className="badge bg-soft-danger text-danger border border-danger-subtle rounded-pill p-2 d-flex align-items-center gap-2"
+                                        >
+                                            <span>
+                                                {med.medication_name} ({med.stock_quantity} left)
+                                            </span>
+                                            <button
                                                 onClick={() => {
-                                                    setData(prev => ({
+                                                    setData((prev) => ({
                                                         ...prev,
                                                         medication_id: med.medication_id,
                                                         supplier_name: 'Global Pharma Distributors',
                                                         quantity: 100,
-                                                        estimated_cost: (med.price_per_unit * 100 * 0.8).toFixed(0) // 20% bulk discount estimate
+                                                        estimated_cost: (med.price_per_unit * 100 * 0.8).toFixed(0), // 20% bulk discount estimate
                                                     }));
                                                     setShowModal(true);
                                                 }}
@@ -164,7 +172,9 @@ export default function PurchaseOrders({ orders, lowStockMedications, auth }) {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-muted mb-0 small">No low stock items. All stock levels look healthy!</p>
+                                <p className="text-muted mb-0 small">
+                                    No low stock items. All stock levels look healthy!
+                                </p>
                             )}
                         </div>
                     </div>
@@ -183,25 +193,27 @@ export default function PurchaseOrders({ orders, lowStockMedications, auth }) {
             <Modal show={showModal} onClose={closeModal} maxWidth="lg">
                 <form onSubmit={submit} className="p-4">
                     <h5 className="fw-bold mb-4 text-primary">Create Purchase Order</h5>
-                    
+
                     <div className="mb-3">
                         <label className="form-label small fw-bold text-muted">Select Medication</label>
-                        <select 
+                        <select
                             className={`form-select ${errors.medication_id ? 'is-invalid' : ''}`}
                             value={data.medication_id}
-                            onChange={e => {
+                            onChange={(e) => {
                                 const selectedId = e.target.value;
-                                const med = lowStockMedications?.find(m => m.medication_id === Number(selectedId));
-                                setData(prev => ({
+                                const med = lowStockMedications?.find((m) => m.medication_id === Number(selectedId));
+                                setData((prev) => ({
                                     ...prev,
                                     medication_id: selectedId,
-                                    estimated_cost: med ? (med.price_per_unit * (prev.quantity || 1) * 0.8).toFixed(0) : prev.estimated_cost
+                                    estimated_cost: med
+                                        ? (med.price_per_unit * (prev.quantity || 1) * 0.8).toFixed(0)
+                                        : prev.estimated_cost,
                                 }));
                             }}
                             required
                         >
                             <option value="">-- Choose Medication --</option>
-                            {lowStockMedications?.map(med => (
+                            {lowStockMedications?.map((med) => (
                                 <option key={med.medication_id} value={med.medication_id}>
                                     {med.medication_name} ({med.strength} {med.unit}) - Stock: {med.stock_quantity}
                                 </option>
@@ -213,17 +225,21 @@ export default function PurchaseOrders({ orders, lowStockMedications, auth }) {
                     <div className="row g-3 mb-3">
                         <div className="col-md-6">
                             <label className="form-label small fw-bold text-muted">Quantity to Order</label>
-                            <input 
-                                type="number" 
+                            <input
+                                type="number"
                                 className={`form-control ${errors.quantity ? 'is-invalid' : ''}`}
                                 value={data.quantity}
-                                onChange={e => {
+                                onChange={(e) => {
                                     const qty = e.target.value;
-                                    const med = lowStockMedications?.find(m => m.medication_id === Number(data.medication_id));
-                                    setData(prev => ({
+                                    const med = lowStockMedications?.find(
+                                        (m) => m.medication_id === Number(data.medication_id),
+                                    );
+                                    setData((prev) => ({
                                         ...prev,
                                         quantity: qty,
-                                        estimated_cost: med ? (med.price_per_unit * Number(qty) * 0.8).toFixed(0) : prev.estimated_cost
+                                        estimated_cost: med
+                                            ? (med.price_per_unit * Number(qty) * 0.8).toFixed(0)
+                                            : prev.estimated_cost,
                                     }));
                                 }}
                                 required
@@ -233,11 +249,11 @@ export default function PurchaseOrders({ orders, lowStockMedications, auth }) {
                         </div>
                         <div className="col-md-6">
                             <label className="form-label small fw-bold text-muted">Estimated Cost (Ksh)</label>
-                            <input 
-                                type="number" 
+                            <input
+                                type="number"
                                 className={`form-control ${errors.estimated_cost ? 'is-invalid' : ''}`}
                                 value={data.estimated_cost}
-                                onChange={e => setData('estimated_cost', e.target.value)}
+                                onChange={(e) => setData('estimated_cost', e.target.value)}
                                 required
                                 min="0"
                             />
@@ -247,19 +263,25 @@ export default function PurchaseOrders({ orders, lowStockMedications, auth }) {
 
                     <div className="mb-4">
                         <label className="form-label small fw-bold text-muted">Supplier Name</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             className={`form-control ${errors.supplier_name ? 'is-invalid' : ''}`}
                             value={data.supplier_name}
-                            onChange={e => setData('supplier_name', e.target.value)}
+                            onChange={(e) => setData('supplier_name', e.target.value)}
                             required
                         />
                         {errors.supplier_name && <div className="invalid-feedback">{errors.supplier_name}</div>}
                     </div>
 
                     <div className="d-flex justify-content-end gap-2">
-                        <button type="button" onClick={closeModal} className="btn btn-light rounded-pill px-4">Cancel</button>
-                        <button type="submit" disabled={processing} className="btn btn-primary rounded-pill px-4 fw-bold">
+                        <button type="button" onClick={closeModal} className="btn btn-light rounded-pill px-4">
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="btn btn-primary rounded-pill px-4 fw-bold"
+                        >
                             {processing ? 'Creating...' : 'Submit Order'}
                         </button>
                     </div>

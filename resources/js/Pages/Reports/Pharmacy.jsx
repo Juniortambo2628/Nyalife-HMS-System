@@ -17,54 +17,74 @@ export default function Pharmacy({ prescriptions, stats, filters }) {
         router.get(route('reports.pharmacy'), { from, to, status: statusValue }, { preserveState: true });
     };
 
-    const columns = useMemo(() => [
-        {
-            header: 'Prescription',
-            accessorKey: 'prescription_id',
-            cell: info => (
-                <Link href={route('prescriptions.show', info.getValue())} className="fw-bold text-primary text-decoration-none">
-                    RX-{info.getValue()}
-                </Link>
-            ),
-        },
-        {
-            header: 'Patient',
-            id: 'patient',
-            cell: info => {
-                const u = info.row.original.patient?.user;
-                return u ? `${u.first_name} ${u.last_name}` : '—';
+    const columns = useMemo(
+        () => [
+            {
+                header: 'Prescription',
+                accessorKey: 'prescription_id',
+                cell: (info) => (
+                    <Link
+                        href={route('prescriptions.show', info.getValue())}
+                        className="fw-bold text-primary text-decoration-none"
+                    >
+                        RX-{info.getValue()}
+                    </Link>
+                ),
             },
-        },
-        {
-            header: 'Medications',
-            id: 'items',
-            cell: info => (info.row.original.items || []).map(i => i.medicine_name).join(', ') || '—',
-        },
-        { header: 'Date', accessorKey: 'prescription_date' },
-        {
-            header: 'Status',
-            accessorKey: 'status',
-            cell: info => <StatusBadge status={info.getValue()} />,
-        },
-    ], []);
+            {
+                header: 'Patient',
+                id: 'patient',
+                cell: (info) => {
+                    const u = info.row.original.patient?.user;
+                    return u ? `${u.first_name} ${u.last_name}` : '—';
+                },
+            },
+            {
+                header: 'Medications',
+                id: 'items',
+                cell: (info) => (info.row.original.items || []).map((i) => i.medicine_name).join(', ') || '—',
+            },
+            { header: 'Date', accessorKey: 'prescription_date' },
+            {
+                header: 'Status',
+                accessorKey: 'status',
+                cell: (info) => <StatusBadge status={info.getValue()} />,
+            },
+        ],
+        [],
+    );
 
-    const statItems = useMemo(() => buildBreakdownStats({
-        total: stats.total,
-        totalLabel: 'Total prescriptions',
-        totalIcon: 'fa-prescription-bottle-alt',
-        byKey: stats.by_status,
-        icon: 'fa-pills',
-        color: 'warning',
-    }), [stats]);
+    const statItems = useMemo(
+        () =>
+            buildBreakdownStats({
+                total: stats.total,
+                totalLabel: 'Total prescriptions',
+                totalIcon: 'fa-prescription-bottle-alt',
+                byKey: stats.by_status,
+                icon: 'fa-pills',
+                color: 'warning',
+            }),
+        [stats],
+    );
 
     return (
         <AuthenticatedLayout
             headerTitle="Pharmacy Report"
-            breadcrumbs={[{ label: 'Reports', url: route('reports.index') }, { label: 'Pharmacy', active: true }]}
+            breadcrumbs={[
+                { label: 'Reports', url: route('reports.index') },
+                { label: 'Pharmacy', active: true },
+            ]}
         >
             <Head title="Pharmacy Report" />
             <ReportsNav active="pharmacy" />
-            <ReportDateFilter from={from} to={to} onFromChange={setFrom} onToChange={setTo} onApply={() => applyFilters()} exportType="pharmacy" />
+            <ReportDateFilter
+                from={from}
+                to={to}
+                onFromChange={setFrom}
+                onToChange={setTo}
+                onApply={() => applyFilters()}
+                exportType="pharmacy"
+            />
 
             <StatCardGrid items={statItems} gap={3} cols={4} />
 
@@ -72,12 +92,23 @@ export default function Pharmacy({ prescriptions, stats, filters }) {
                 <DashboardSelect
                     options={Object.keys(stats.by_status || {}).map((s) => ({ label: s, value: s }))}
                     value={status}
-                    onChange={(val) => { setStatus(val || ''); applyFilters(val || ''); }}
+                    onChange={(val) => {
+                        setStatus(val || '');
+                        applyFilters(val || '');
+                    }}
                     placeholder="Filter by status..."
                 />
             </div>
 
-            <RegistryTablePanel title="Prescriptions in period" icon="fa-pills" data={prescriptions.data} columns={columns} pagination={prescriptions} emptyMessage="No prescriptions in this period." idField="prescription_id" />
+            <RegistryTablePanel
+                title="Prescriptions in period"
+                icon="fa-pills"
+                data={prescriptions.data}
+                columns={columns}
+                pagination={prescriptions}
+                emptyMessage="No prescriptions in this period."
+                idField="prescription_id"
+            />
         </AuthenticatedLayout>
     );
 }

@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Patient;
 use App\Models\Appointment;
-use App\Models\Consultation;
+use App\Models\Patient;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ContextSwitcherController extends Controller
 {
@@ -25,14 +23,14 @@ class ContextSwitcherController extends Controller
                 ->latest()
                 ->take(5)
                 ->get();
-            
+
             foreach ($patients as $p) {
                 $subjects[] = [
                     'id' => $p->patient_id,
-                    'name' => $p->user->first_name . ' ' . $p->user->last_name,
-                    'initials' => strtoupper(substr($p->user->first_name, 0, 1) . substr($p->user->last_name, 0, 1)),
+                    'name' => $p->user->first_name.' '.$p->user->last_name,
+                    'initials' => strtoupper(substr($p->user->first_name, 0, 1).substr($p->user->last_name, 0, 1)),
                     'subtext' => 'Recent Clinical Visit',
-                    'url' => route('consultations.index', ['patient_id' => $p->patient_id])
+                    'url' => route('consultations.index', ['patient_id' => $p->patient_id]),
                 ];
             }
         } elseif (str_contains($url, '/patients')) {
@@ -41,14 +39,14 @@ class ContextSwitcherController extends Controller
                 ->latest()
                 ->take(5)
                 ->get();
-            
+
             foreach ($patients as $p) {
                 $subjects[] = [
                     'id' => $p->patient_id,
-                    'name' => $p->user->first_name . ' ' . $p->user->last_name,
-                    'initials' => strtoupper(substr($p->user->first_name, 0, 1) . substr($p->user->last_name, 0, 1)),
-                    'subtext' => 'Registered: ' . $p->created_at->format('M d, Y'),
-                    'url' => route('patients.show', $p->patient_id)
+                    'name' => $p->user->first_name.' '.$p->user->last_name,
+                    'initials' => strtoupper(substr($p->user->first_name, 0, 1).substr($p->user->last_name, 0, 1)),
+                    'subtext' => 'Registered: '.$p->created_at->format('M d, Y'),
+                    'url' => route('patients.show', $p->patient_id),
                 ];
             }
         } elseif (str_contains($url, '/appointments')) {
@@ -65,10 +63,10 @@ class ContextSwitcherController extends Controller
                 if ($p) {
                     $subjects[] = [
                         'id' => $p->patient_id,
-                        'name' => $p->user->first_name . ' ' . $p->user->last_name,
-                        'initials' => strtoupper(substr($p->user->first_name, 0, 1) . substr($p->user->last_name, 0, 1)),
-                        'subtext' => 'Appointment: ' . $a->appointment_date,
-                        'url' => route('appointments.index', ['patient_id' => $p->patient_id])
+                        'name' => $p->user->first_name.' '.$p->user->last_name,
+                        'initials' => strtoupper(substr($p->user->first_name, 0, 1).substr($p->user->last_name, 0, 1)),
+                        'subtext' => 'Appointment: '.$a->appointment_date,
+                        'url' => route('appointments.index', ['patient_id' => $p->patient_id]),
                     ];
                 }
             }
@@ -76,7 +74,7 @@ class ContextSwitcherController extends Controller
 
         return response()->json([
             'subjects' => $subjects,
-            'subject_type' => $subjectType
+            'subject_type' => $subjectType,
         ]);
     }
 }

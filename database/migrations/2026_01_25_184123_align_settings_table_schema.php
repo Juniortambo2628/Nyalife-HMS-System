@@ -21,14 +21,14 @@ return new class extends Migration
             if (Schema::hasColumn('settings', 'setting_value')) {
                 $table->renameColumn('setting_value', 'value');
             }
-            
-            if (!Schema::hasColumn('settings', 'type')) {
+
+            if (! Schema::hasColumn('settings', 'type')) {
                 $table->string('type')->default('text');
             }
-            if (!Schema::hasColumn('settings', 'group')) {
+            if (! Schema::hasColumn('settings', 'group')) {
                 $table->string('group')->default('general');
             }
-            if (!Schema::hasColumn('settings', 'label')) {
+            if (! Schema::hasColumn('settings', 'label')) {
                 $table->string('label')->nullable();
             }
         });

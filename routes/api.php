@@ -23,21 +23,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->name('api.context-switching');
 
     Route::prefix('v1')->group(function () {
-        Route::middleware('role_or_permission:' . Permissions::staffOrPatient(Permissions::MANAGE_APPOINTMENTS))->group(function () {
+        Route::middleware('role_or_permission:'.Permissions::staffOrPatient(Permissions::MANAGE_APPOINTMENTS))->group(function () {
             Route::get('/appointments', [ApiAppointmentController::class, 'index'])->name('api.appointments.index');
         });
 
-        Route::middleware('permission:' . Permissions::VIEW_DEPARTMENTS)->group(function () {
+        Route::middleware('permission:'.Permissions::VIEW_DEPARTMENTS)->group(function () {
             Route::get('/departments', [ApiDepartmentController::class, 'index'])->name('api.departments.index');
             Route::get('/departments/{id}', [ApiDepartmentController::class, 'show'])->name('api.departments.show');
         });
 
-        Route::middleware('permission:' . Permissions::MANAGE_PAYMENTS)->group(function () {
+        Route::middleware('permission:'.Permissions::MANAGE_PAYMENTS)->group(function () {
             Route::get('/payments', [ApiPaymentController::class, 'index'])->name('api.payments.index');
             Route::get('/payments/{id}', [ApiPaymentController::class, 'show'])->name('api.payments.show');
         });
 
-        Route::middleware('permission:' . Permissions::MANAGE_FOLLOW_UPS)->group(function () {
+        Route::middleware('permission:'.Permissions::MANAGE_FOLLOW_UPS)->group(function () {
             Route::get('/follow-ups', [ApiFollowUpController::class, 'index'])->name('api.follow-ups.index');
             Route::get('/follow-ups/upcoming', [ApiFollowUpController::class, 'upcoming'])->name('api.follow-ups.upcoming');
             Route::get('/follow-ups/{id}', [ApiFollowUpController::class, 'show'])->name('api.follow-ups.show');

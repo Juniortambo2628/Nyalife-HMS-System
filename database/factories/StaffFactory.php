@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Department;
 use App\Models\Staff;
 use App\Models\User;
-use App\Models\Department;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class StaffFactory extends Factory
@@ -15,7 +15,7 @@ class StaffFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'employee_id' => 'EMP-' . str_pad($this->faker->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
+            'employee_id' => 'EMP-'.str_pad($this->faker->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
             'specialization' => $this->faker->randomElement([
                 'Obstetrics & Gynecology',
                 'Internal Medicine',

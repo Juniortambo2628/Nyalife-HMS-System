@@ -36,9 +36,7 @@ export default function Index({ blogs }) {
             <UnifiedToolbar
                 viewMode={viewMode}
                 onViewModeChange={handleViewChange}
-                actions={[
-                    { label: 'NEW POST', icon: 'fa-plus', href: route('blog.create') },
-                ]}
+                actions={[{ label: 'NEW POST', icon: 'fa-plus', href: route('blog.create') }]}
             />
 
             <div className="py-0">
@@ -51,63 +49,76 @@ export default function Index({ blogs }) {
                             {
                                 header: 'Article',
                                 accessorKey: 'title',
-                                cell: info => (
+                                cell: (info) => (
                                     <div className="d-flex align-items-center">
-                                        <div 
+                                        <div
                                             className="rounded-lg bg-light me-3 flex-shrink-0"
-                                            style={{ 
-                                                width: '50px', 
-                                                height: '50px', 
-                                                backgroundImage: info.row.original.image_path ? `url(${getImageUrl(info.row.original.image_path)})` : 'none',
+                                            style={{
+                                                width: '50px',
+                                                height: '50px',
+                                                backgroundImage: info.row.original.image_path
+                                                    ? `url(${getImageUrl(info.row.original.image_path)})`
+                                                    : 'none',
                                                 backgroundSize: 'cover',
                                                 backgroundPosition: 'center',
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                justifyContent: 'center'
-                                        }}>
-                                            {!info.row.original.image_path && <i className="fas fa-image text-muted"></i>}
+                                                justifyContent: 'center',
+                                            }}
+                                        >
+                                            {!info.row.original.image_path && (
+                                                <i className="fas fa-image text-muted"></i>
+                                            )}
                                         </div>
                                         <div>
                                             <div className="fw-bold text-gray-900">{info.getValue()}</div>
-                                            <div className="text-pink-500 extra-small font-semibold">/{info.row.original.slug}</div>
+                                            <div className="text-pink-500 extra-small font-semibold">
+                                                /{info.row.original.slug}
+                                            </div>
                                         </div>
                                     </div>
-                                )
+                                ),
                             },
                             {
                                 header: 'Details',
                                 accessorKey: 'author',
-                                cell: info => (
+                                cell: (info) => (
                                     <div>
-                                        <div className="small"><i className="fas fa-user-circle me-1 text-muted"></i> {info.row.original.author?.first_name} {info.row.original.author?.last_name}</div>
-                                        <div className="extra-small text-muted"><i className="fas fa-calendar-alt me-1"></i> {formatDateOnly(info.row.original.created_at)}</div>
+                                        <div className="small">
+                                            <i className="fas fa-user-circle me-1 text-muted"></i>{' '}
+                                            {info.row.original.author?.first_name} {info.row.original.author?.last_name}
+                                        </div>
+                                        <div className="extra-small text-muted">
+                                            <i className="fas fa-calendar-alt me-1"></i>{' '}
+                                            {formatDateOnly(info.row.original.created_at)}
+                                        </div>
                                     </div>
-                                )
+                                ),
                             },
                             {
                                 header: 'Status',
                                 accessorKey: 'is_published',
-                                cell: info => (
-                                    <StatusBadge status={info.getValue() ? 'published' : 'draft'} />
-                                ),
+                                cell: (info) => <StatusBadge status={info.getValue() ? 'published' : 'draft'} />,
                             },
                             {
                                 header: 'Actions',
                                 id: 'actions',
-                                cell: info => (
-                                    <TableActions actions={[
-                                        {
-                                            icon: 'fa-edit',
-                                            label: 'Edit post',
-                                            href: route('blog.edit', info.row.original.id),
-                                        },
-                                        {
-                                            icon: 'fa-trash',
-                                            label: 'Delete post',
-                                            color: 'danger',
-                                            onClick: () => handleDelete(info.row.original.id),
-                                        },
-                                    ]} />
+                                cell: (info) => (
+                                    <TableActions
+                                        actions={[
+                                            {
+                                                icon: 'fa-edit',
+                                                label: 'Edit post',
+                                                href: route('blog.edit', info.row.original.id),
+                                            },
+                                            {
+                                                icon: 'fa-trash',
+                                                label: 'Delete post',
+                                                color: 'danger',
+                                                onClick: () => handleDelete(info.row.original.id),
+                                            },
+                                        ]}
+                                    />
                                 ),
                             },
                         ]}
@@ -119,21 +130,25 @@ export default function Index({ blogs }) {
                             blogs.map((post) => (
                                 <div key={post.id} className="col-md-4">
                                     <div className="card h-100 shadow-sm border-0 rounded-2xl overflow-hidden bg-white hover-lift transition-all">
-                                        <div 
-                                            className="card-img-top bg-light" 
-                                            style={{ 
-                                                height: '180px', 
-                                                backgroundImage: post.image_path ? `url(${getImageUrl(post.image_path)})` : 'none',
+                                        <div
+                                            className="card-img-top bg-light"
+                                            style={{
+                                                height: '180px',
+                                                backgroundImage: post.image_path
+                                                    ? `url(${getImageUrl(post.image_path)})`
+                                                    : 'none',
                                                 backgroundSize: 'cover',
                                                 backgroundPosition: 'center',
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                justifyContent: 'center'
+                                                justifyContent: 'center',
                                             }}
                                         >
                                             {!post.image_path && <i className="fas fa-image fa-3x text-gray-200"></i>}
                                             <div className="position-absolute top-0 end-0 m-3">
-                                                <span className={`badge rounded-pill shadow-sm px-3 py-2 ${post.is_published ? 'bg-success' : 'bg-secondary'}`}>
+                                                <span
+                                                    className={`badge rounded-pill shadow-sm px-3 py-2 ${post.is_published ? 'bg-success' : 'bg-secondary'}`}
+                                                >
                                                     {post.is_published ? 'Published' : 'Draft'}
                                                 </span>
                                             </div>
@@ -141,13 +156,25 @@ export default function Index({ blogs }) {
                                         <div className="card-body p-4 d-flex flex-column">
                                             <h5 className="fw-bold text-gray-900 mb-2 line-clamp-2">{post.title}</h5>
                                             <p className="small text-muted mb-4 line-clamp-3">
-                                                {post.excerpt || (post.content?.substring(0, 100) + '...')}
+                                                {post.excerpt || post.content?.substring(0, 100) + '...'}
                                             </p>
                                             <div className="mt-auto pt-3 border-top d-flex justify-content-end">
-                                                <GridCardActions actions={[
-                                                    { icon: 'fa-edit', label: 'Edit post', href: route('blog.edit', post.id) },
-                                                    { icon: 'fa-trash', label: 'Delete post', color: 'danger', onClick: () => handleDelete(post.id) },
-                                                ]} className="border-0 pt-0 w-100" />
+                                                <GridCardActions
+                                                    actions={[
+                                                        {
+                                                            icon: 'fa-edit',
+                                                            label: 'Edit post',
+                                                            href: route('blog.edit', post.id),
+                                                        },
+                                                        {
+                                                            icon: 'fa-trash',
+                                                            label: 'Delete post',
+                                                            color: 'danger',
+                                                            onClick: () => handleDelete(post.id),
+                                                        },
+                                                    ]}
+                                                    className="border-0 pt-0 w-100"
+                                                />
                                             </div>
                                         </div>
                                     </div>

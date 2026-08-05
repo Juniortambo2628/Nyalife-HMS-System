@@ -1,8 +1,11 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
-$app = require __DIR__ . '/../bootstrap/app.php';
-$app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\DB;
+
+require __DIR__.'/../vendor/autoload.php';
+$app = require __DIR__.'/../bootstrap/app.php';
+$app->make(Kernel::class)->bootstrap();
 
 $tables = [
     'lab_requests', 'lab_results', 'lab_attachments', 'medical_history',
@@ -16,7 +19,7 @@ $tables = [
 
 foreach ($tables as $table) {
     try {
-        $count = Illuminate\Support\Facades\DB::table($table)->count();
+        $count = DB::table($table)->count();
         echo "{$table}:{$count}\n";
     } catch (Throwable $e) {
         echo "{$table}:ERR\n";

@@ -9,17 +9,17 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-     public function up(): void
+    public function up(): void
     {
         if (! Schema::hasTable('lab_test_requests')) {
             return;
         }
 
         Schema::table('lab_test_requests', function (Blueprint $table) {
-            if (!Schema::hasColumn('lab_test_requests', 'priority')) {
-                 // Check if we can use an 'after' column that definitely exists
-                 $after = Schema::hasColumn('lab_test_requests', 'test_id') ? 'test_id' : 'patient_id';
-                 $table->string('priority')->default('normal')->after($after);
+            if (! Schema::hasColumn('lab_test_requests', 'priority')) {
+                // Check if we can use an 'after' column that definitely exists
+                $after = Schema::hasColumn('lab_test_requests', 'test_id') ? 'test_id' : 'patient_id';
+                $table->string('priority')->default('normal')->after($after);
             }
         });
     }

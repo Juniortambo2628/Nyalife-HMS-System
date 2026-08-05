@@ -23,7 +23,11 @@ export default function Medicines({ medicines, filters, auth }) {
     });
 
     const handleSearch = (searchValue, quickFilterValue = filters?.quick_filter) => {
-        router.get(route('pharmacy.medicines'), { search: searchValue, quick_filter: quickFilterValue }, { preserveState: true });
+        router.get(
+            route('pharmacy.medicines'),
+            { search: searchValue, quick_filter: quickFilterValue },
+            { preserveState: true },
+        );
     };
 
     const handleQuickFilterChange = (val) => {
@@ -96,7 +100,7 @@ export default function Medicines({ medicines, filters, auth }) {
             />
 
             <DashboardSearch
-                placeholder="Search medication catalog..." 
+                placeholder="Search medication catalog..."
                 value={search}
                 onChange={setSearch}
                 onSubmit={handleSearch}
@@ -112,25 +116,46 @@ export default function Medicines({ medicines, filters, auth }) {
             <div className="py-0">
                 <div className="row g-4">
                     {medicines.data && medicines.data.length > 0 ? (
-                        medicines.data.filter(med => med !== null).map((med) => (
-                            <div key={med.medication_id || `med-${Math.random()}`} className="col-md-3">
-                                <div className="card h-100 shadow-sm border-0 rounded-2xl bg-white overflow-hidden hover-lift p-4 text-center">
-                                    <div className="avatar-lg bg-soft-success text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style={{ width: '48px', height: '48px' }}>
-                                        <i className="fas fa-pills fs-5"></i>
-                                    </div>
-                                    <h6 className="fw-bold mb-1">{med.medication_name}</h6>
-                                    <p className="text-gray-400 font-bold uppercase text-xs mb-2">{med.medication_type || 'General'}</p>
-                                    <div className="mt-auto">
-                                        <small className="text-muted d-block mb-2">{med.strength} {med.unit}</small>
-                                        <div className="text-primary fw-bold mb-2">{formatCurrency(med.price_per_unit || 0)}</div>
-                                        <div className="d-flex gap-2">
-                                            <button onClick={() => openEditModal(med)} className="btn btn-sm btn-light w-100 rounded-pill font-bold border">Edit</button>
-                                            <button onClick={() => deleteMed(med.medication_id)} className="btn btn-sm btn-light w-100 rounded-pill font-bold border text-danger">Delete</button>
+                        medicines.data
+                            .filter((med) => med !== null)
+                            .map((med) => (
+                                <div key={med.medication_id || `med-${Math.random()}`} className="col-md-3">
+                                    <div className="card h-100 shadow-sm border-0 rounded-2xl bg-white overflow-hidden hover-lift p-4 text-center">
+                                        <div
+                                            className="avatar-lg bg-soft-success text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3 mx-auto"
+                                            style={{ width: '48px', height: '48px' }}
+                                        >
+                                            <i className="fas fa-pills fs-5"></i>
+                                        </div>
+                                        <h6 className="fw-bold mb-1">{med.medication_name}</h6>
+                                        <p className="text-gray-400 font-bold uppercase text-xs mb-2">
+                                            {med.medication_type || 'General'}
+                                        </p>
+                                        <div className="mt-auto">
+                                            <small className="text-muted d-block mb-2">
+                                                {med.strength} {med.unit}
+                                            </small>
+                                            <div className="text-primary fw-bold mb-2">
+                                                {formatCurrency(med.price_per_unit || 0)}
+                                            </div>
+                                            <div className="d-flex gap-2">
+                                                <button
+                                                    onClick={() => openEditModal(med)}
+                                                    className="btn btn-sm btn-light w-100 rounded-pill font-bold border"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => deleteMed(med.medication_id)}
+                                                    className="btn btn-sm btn-light w-100 rounded-pill font-bold border text-danger"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
+                            ))
                     ) : (
                         <div className="col-12 text-center py-5">
                             <p className="text-muted">No medicines available in the catalog.</p>
@@ -146,14 +171,14 @@ export default function Medicines({ medicines, filters, auth }) {
             <Modal show={showModal} onClose={closeModal} maxWidth="lg">
                 <form onSubmit={submit} className="p-4">
                     <h5 className="fw-bold mb-4">{editingMed ? 'Edit Medicine' : 'Add New Medicine'}</h5>
-                    
+
                     <div className="mb-3">
                         <label className="form-label small fw-bold text-muted">Medicine Name</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             className={`form-control ${errors.medication_name ? 'is-invalid' : ''}`}
                             value={data.medication_name}
-                            onChange={e => setData('medication_name', e.target.value)}
+                            onChange={(e) => setData('medication_name', e.target.value)}
                             required
                         />
                         {errors.medication_name && <div className="invalid-feedback">{errors.medication_name}</div>}
@@ -162,10 +187,10 @@ export default function Medicines({ medicines, filters, auth }) {
                     <div className="row g-3 mb-3">
                         <div className="col-md-6">
                             <label className="form-label small fw-bold text-muted">Type</label>
-                            <select 
+                            <select
                                 className="form-select"
                                 value={data.medication_type}
-                                onChange={e => setData('medication_type', e.target.value)}
+                                onChange={(e) => setData('medication_type', e.target.value)}
                             >
                                 <option value="Tablet">Tablet</option>
                                 <option value="Capsule">Capsule</option>
@@ -178,12 +203,12 @@ export default function Medicines({ medicines, filters, auth }) {
                         </div>
                         <div className="col-md-6">
                             <label className="form-label small fw-bold text-muted">Price per Unit (Ksh)</label>
-                            <input 
-                                type="number" 
+                            <input
+                                type="number"
                                 step="0.01"
                                 className="form-control"
                                 value={data.price_per_unit}
-                                onChange={e => setData('price_per_unit', e.target.value)}
+                                onChange={(e) => setData('price_per_unit', e.target.value)}
                                 required
                             />
                         </div>
@@ -192,23 +217,23 @@ export default function Medicines({ medicines, filters, auth }) {
                     <div className="row g-3 mb-3">
                         <div className="col-md-6">
                             <label className="form-label small fw-bold text-muted">Strength</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 className="form-control"
                                 placeholder="e.g. 500mg"
                                 value={data.strength}
-                                onChange={e => setData('strength', e.target.value)}
+                                onChange={(e) => setData('strength', e.target.value)}
                                 required
                             />
                         </div>
                         <div className="col-md-6">
                             <label className="form-label small fw-bold text-muted">Unit</label>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 className="form-control"
                                 placeholder="e.g. Pills, ml"
                                 value={data.unit}
-                                onChange={e => setData('unit', e.target.value)}
+                                onChange={(e) => setData('unit', e.target.value)}
                                 required
                             />
                         </div>
@@ -216,29 +241,35 @@ export default function Medicines({ medicines, filters, auth }) {
 
                     <div className="mb-3">
                         <label className="form-label small fw-bold text-muted">Expiry Date (Optional)</label>
-                        <input 
-                            type="date" 
+                        <input
+                            type="date"
                             className={`form-control ${errors.expiry_date ? 'is-invalid' : ''}`}
                             value={data.expiry_date || ''}
-                            onChange={e => setData('expiry_date', e.target.value)}
+                            onChange={(e) => setData('expiry_date', e.target.value)}
                         />
                         {errors.expiry_date && <div className="invalid-feedback">{errors.expiry_date}</div>}
                     </div>
 
                     <div className="mb-4">
                         <label className="form-label small fw-bold text-muted">Description (Optional)</label>
-                        <textarea 
+                        <textarea
                             className="form-control"
                             rows="2"
                             value={data.description}
-                            onChange={e => setData('description', e.target.value)}
+                            onChange={(e) => setData('description', e.target.value)}
                         />
                     </div>
 
                     <div className="d-flex justify-content-end gap-2">
-                        <button type="button" onClick={closeModal} className="btn btn-light rounded-pill px-4">Cancel</button>
-                        <button type="submit" disabled={processing} className="btn btn-primary rounded-pill px-4 fw-bold">
-                            {processing ? 'Saving...' : (editingMed ? 'Update Medicine' : 'Add to Catalog')}
+                        <button type="button" onClick={closeModal} className="btn btn-light rounded-pill px-4">
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="btn btn-primary rounded-pill px-4 fw-bold"
+                        >
+                            {processing ? 'Saving...' : editingMed ? 'Update Medicine' : 'Add to Catalog'}
                         </button>
                     </div>
                 </form>

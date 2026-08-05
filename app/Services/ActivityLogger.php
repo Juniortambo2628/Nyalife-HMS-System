@@ -4,20 +4,21 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Notifications\SystemNotification;
-use Spatie\Activitylog\Models\Activity;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Notification;
+use Spatie\Activitylog\Models\Activity;
 
 class ActivityLogger
 {
     /**
      * Log an activity and notify relevant users.
-     * 
-     * @param string $module The module/category (appointments, consultations, lab, pharmacy, billing)
-     * @param string $description Human readable description
-     * @param array $properties Extra data for the log
-     * @param User|null $causer The user who performed the action
-     * @param mixed $subject The model being acted upon
-     * @param array $notifyUserIds IDs of users to notify
+     *
+     * @param  string  $module  The module/category (appointments, consultations, lab, pharmacy, billing)
+     * @param  string  $description  Human readable description
+     * @param  array  $properties  Extra data for the log
+     * @param  User|null  $causer  The user who performed the action
+     * @param  mixed  $subject  The model being acted upon
+     * @param  array  $notifyUserIds  IDs of users to notify
      */
     public static function log($module, $description, $properties = [], $causer = null, $subject = null, $notifyUserIds = [])
     {
@@ -25,7 +26,7 @@ class ActivityLogger
         $activity = activity()
             ->causedBy($causer ?? auth()->user());
 
-        if ($subject instanceof \Illuminate\Database\Eloquent\Model) {
+        if ($subject instanceof Model) {
             $activity->performedOn($subject);
         }
 
@@ -33,11 +34,11 @@ class ActivityLogger
             ->log($description);
 
         // 2. Send Notifications
-        if (!empty($notifyUserIds)) {
+        if (! empty($notifyUserIds)) {
             $users = User::whereIn('user_id', $notifyUserIds)->get();
-            
+
             $notificationData = [
-                'subject' => $module . ' Activity',
+                'subject' => $module.' Activity',
                 'message' => $description,
                 'activity_id' => $activity->id,
                 'link' => self::getModuleLink($module, $subject),
@@ -45,7 +46,7 @@ class ActivityLogger
 
             Notification::send($users, new SystemNotification($module, $notificationData));
         }
-        
+
         return $activity;
     }
 

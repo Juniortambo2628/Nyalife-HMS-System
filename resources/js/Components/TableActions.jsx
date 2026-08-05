@@ -24,7 +24,11 @@ export default function TableActions({ actions = [] }) {
             <ul className="dropdown-menu dropdown-menu-end nyl-table-actions-menu">
                 {validActions.map((action, idx) => {
                     if (action.isDivider) {
-                        return <li key={idx}><hr className="dropdown-divider opacity-10 mx-3" /></li>;
+                        return (
+                            <li key={idx}>
+                                <hr className="dropdown-divider opacity-10 mx-3" />
+                            </li>
+                        );
                     }
 
                     const color = action.color || 'primary';
@@ -55,11 +59,7 @@ export default function TableActions({ actions = [] }) {
                                     {content}
                                 </Link>
                             ) : (
-                                <button
-                                    onClick={action.onClick}
-                                    className={itemClass}
-                                    type="button"
-                                >
+                                <button onClick={action.onClick} className={itemClass} type="button">
                                     {content}
                                 </button>
                             )}

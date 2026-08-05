@@ -4,9 +4,9 @@ namespace Tests\Unit\Services;
 
 use App\Models\Invoice;
 use App\Models\Payment;
-use App\Models\Patient;
-use Tests\TestCase;
+use App\Services\PaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class PaymentServiceTest extends TestCase
 {
@@ -32,7 +32,7 @@ class PaymentServiceTest extends TestCase
             'payment_status' => 'pending',
         ]);
 
-        $total = \App\Services\PaymentService::completedTotalForInvoice($invoice->invoice_id);
+        $total = PaymentService::completedTotalForInvoice($invoice->invoice_id);
         $this->assertEquals(5000, $total);
     }
 
@@ -46,7 +46,7 @@ class PaymentServiceTest extends TestCase
             'payment_status' => 'completed',
         ]);
 
-        $balance = \App\Services\PaymentService::remainingBalance($invoice);
+        $balance = PaymentService::remainingBalance($invoice);
         $this->assertEquals(6000, $balance);
     }
 
@@ -60,7 +60,7 @@ class PaymentServiceTest extends TestCase
             'payment_status' => 'completed',
         ]);
 
-        $balance = \App\Services\PaymentService::remainingBalance($invoice);
+        $balance = PaymentService::remainingBalance($invoice);
         $this->assertEquals(0, $balance);
     }
 
@@ -69,7 +69,7 @@ class PaymentServiceTest extends TestCase
         $invoice = Invoice::factory()->create(['total_amount' => 10000, 'status' => 'pending']);
 
         // No payments
-        \App\Services\PaymentService::syncInvoiceStatus($invoice);
+        PaymentService::syncInvoiceStatus($invoice);
         $invoice->refresh();
         $this->assertEquals('pending', $invoice->status);
 
@@ -81,7 +81,7 @@ class PaymentServiceTest extends TestCase
             'payment_method' => 'cash',
             'payment_date' => now()->format('Y-m-d H:i:s'),
         ]);
-        \App\Services\PaymentService::syncInvoiceStatus($invoice);
+        PaymentService::syncInvoiceStatus($invoice);
         $invoice->refresh();
         $this->assertEquals('partially_paid', $invoice->status);
         $this->assertEquals('cash', $invoice->payment_method);
@@ -94,7 +94,7 @@ class PaymentServiceTest extends TestCase
             'payment_method' => 'mpesa',
             'payment_date' => now()->addMinutes(1)->format('Y-m-d H:i:s'),
         ]);
-        \App\Services\PaymentService::syncInvoiceStatus($invoice);
+        PaymentService::syncInvoiceStatus($invoice);
         $invoice->refresh();
         $this->assertEquals('paid', $invoice->status);
         $this->assertEquals('mpesa', $invoice->payment_method);

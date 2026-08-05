@@ -9,7 +9,10 @@ export default function Print({ request, clinic_name, clinic_address, clinic_pho
         window.print();
     }, []);
 
-    const hasTemplate = request.test_type?.template && Array.isArray(request.test_type.template) && request.test_type.template.length > 0;
+    const hasTemplate =
+        request.test_type?.template &&
+        Array.isArray(request.test_type.template) &&
+        request.test_type.template.length > 0;
     const results = request.results || {};
 
     return (
@@ -20,15 +23,17 @@ export default function Print({ request, clinic_name, clinic_address, clinic_pho
             <div className="d-flex justify-content-between align-items-center mb-5 border-bottom pb-4">
                 <div className="d-flex align-items-center">
                     <div className="me-3 nyl-print-logo-wrap">
-                        <img 
-                            src="/assets/logo/Logo2-transparent.png" 
-                            alt="Nyalife HMS" 
+                        <img
+                            src="/assets/logo/Logo2-transparent.png"
+                            alt="Nyalife HMS"
                             className="nyl-print-logo-img"
                         />
                     </div>
                     <div>
                         <h2 className="fw-bold mb-0 text-primary">{clinic_name}</h2>
-                        <div className="text-muted small">{clinic_address} | {clinic_phone}</div>
+                        <div className="text-muted small">
+                            {clinic_address} | {clinic_phone}
+                        </div>
                     </div>
                 </div>
                 <div className="text-end">
@@ -41,19 +46,24 @@ export default function Print({ request, clinic_name, clinic_address, clinic_pho
             <div className="row mb-5 g-0 border rounded-3 overflow-hidden">
                 <div className="col-6 border-end p-4 bg-light">
                     <h6 className="text-muted text-uppercase extra-small fw-bold mb-3">Patient Information</h6>
-                    <div className="mb-1 fw-bold fs-5">{request.patient?.user?.first_name} {request.patient?.user?.last_name}</div>
+                    <div className="mb-1 fw-bold fs-5">
+                        {request.patient?.user?.first_name} {request.patient?.user?.last_name}
+                    </div>
                     <PatientIdLabel id={request.patient_id} variant="print" />
-                    <div className="text-muted small">Gender: {request.patient?.gender || request.patient?.user?.gender || 'N/A'} | Age: {request.patient?.age ?? 'N/A'}</div>
+                    <div className="text-muted small">
+                        Gender: {request.patient?.gender || request.patient?.user?.gender || 'N/A'} | Age:{' '}
+                        {request.patient?.age ?? 'N/A'}
+                    </div>
                 </div>
                 <div className="col-6 p-4">
                     <h6 className="text-muted text-uppercase extra-small fw-bold mb-3">Request Details</h6>
                     <div className="row small">
                         <div className="col-6 text-muted">Requested By:</div>
                         <div className="col-6 fw-bold text-end">Dr. {request.doctor?.user?.last_name || 'System'}</div>
-                        
+
                         <div className="col-6 text-muted mt-2">Request Date:</div>
                         <div className="col-6 fw-bold text-end mt-2">{formatDateOnly(request.created_at)}</div>
-                        
+
                         <div className="col-6 text-muted mt-2">Report Date:</div>
                         <div className="col-6 fw-bold text-end mt-2">{formatDateOnly(new Date())}</div>
                     </div>
@@ -81,7 +91,9 @@ export default function Print({ request, clinic_name, clinic_address, clinic_pho
                             {request.test_type.template.map((item, idx) => (
                                 <tr key={idx}>
                                     <td className="fw-bold">{item.label}</td>
-                                    <td className="fw-extrabold text-primary">{results.lab_results?.[item.label] || '—'}</td>
+                                    <td className="fw-extrabold text-primary">
+                                        {results.lab_results?.[item.label] || '—'}
+                                    </td>
                                     <td>{item.unit || '—'}</td>
                                     <td className="text-muted small">{item.normalRange || '—'}</td>
                                 </tr>
@@ -91,7 +103,9 @@ export default function Print({ request, clinic_name, clinic_address, clinic_pho
                 ) : (
                     <div className="p-4 border rounded-3 bg-light-blue mb-4">
                         <h6 className="extra-small fw-bold text-uppercase text-muted mb-2">Findings Narrative</h6>
-                        <div className="whitespace-pre-wrap leading-relaxed">{results.lab_results || 'No quantitative results recorded.'}</div>
+                        <div className="whitespace-pre-wrap leading-relaxed">
+                            {results.lab_results || 'No quantitative results recorded.'}
+                        </div>
                     </div>
                 )}
             </div>
@@ -100,7 +114,9 @@ export default function Print({ request, clinic_name, clinic_address, clinic_pho
             <div className="row g-4 mb-5">
                 <div className="col-6">
                     <div className="p-4 border rounded-3 h-100">
-                        <h6 className="extra-small fw-bold text-uppercase text-muted mb-3 border-bottom pb-2">Clinical Observations</h6>
+                        <h6 className="extra-small fw-bold text-uppercase text-muted mb-3 border-bottom pb-2">
+                            Clinical Observations
+                        </h6>
                         <div className="small italic text-gray-700 leading-relaxed">
                             {results.observations || 'No specific clinical observations noted.'}
                         </div>
@@ -108,7 +124,9 @@ export default function Print({ request, clinic_name, clinic_address, clinic_pho
                 </div>
                 <div className="col-6">
                     <div className="p-4 border border-primary-subtle bg-primary-subtle rounded-3 h-100">
-                        <h6 className="extra-small fw-bold text-uppercase text-primary mb-3 border-bottom border-primary-subtle pb-2">Professional Conclusion</h6>
+                        <h6 className="extra-small fw-bold text-uppercase text-primary mb-3 border-bottom border-primary-subtle pb-2">
+                            Professional Conclusion
+                        </h6>
                         <div className="fw-bold text-primary-emphasis leading-relaxed">
                             {results.conclusions || 'No final conclusion recorded.'}
                         </div>

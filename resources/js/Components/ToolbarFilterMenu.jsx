@@ -61,10 +61,11 @@ export default function ToolbarFilterMenu({ groups = [], dropup = true }) {
             >
                 <i className="fas fa-filter" aria-hidden="true"></i>
                 <span className="d-none d-sm-inline">Filters</span>
-                {activeCount > 0 && (
-                    <span className="nyl-tb-filter-count">{activeCount}</span>
-                )}
-                <i className={`fas fa-chevron-${isOpen ? (dropup ? 'up' : 'down') : (dropup ? 'down' : 'up')} nyl-tb-filter-chevron`} aria-hidden="true"></i>
+                {activeCount > 0 && <span className="nyl-tb-filter-count">{activeCount}</span>}
+                <i
+                    className={`fas fa-chevron-${isOpen ? (dropup ? 'up' : 'down') : dropup ? 'down' : 'up'} nyl-tb-filter-chevron`}
+                    aria-hidden="true"
+                ></i>
             </button>
 
             <div
@@ -97,9 +98,7 @@ export default function ToolbarFilterMenu({ groups = [], dropup = true }) {
                 )}
 
                 <div className="nyl-tb-filter-options">
-                    {validGroups.length === 1 && (
-                        <div className="nyl-tb-filter-section-label">{activeGroup.label}</div>
-                    )}
+                    {validGroups.length === 1 && <div className="nyl-tb-filter-section-label">{activeGroup.label}</div>}
                     {getOptions(activeGroup).map((opt) => {
                         const isSelected = activeGroup.value == opt.value;
                         return (

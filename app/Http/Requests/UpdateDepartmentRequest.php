@@ -27,7 +27,7 @@ class UpdateDepartmentRequest extends FormRequest
             ],
             'description' => 'nullable|string|max:2000',
             'code' => 'nullable|string|max:10',
-            'type' => 'nullable|in:' . implode(',', array_keys(Department::TYPES)),
+            'type' => 'nullable|in:'.implode(',', array_keys(Department::TYPES)),
             'head_name' => 'nullable|string|max:100',
             'head_position' => 'nullable|string|max:100',
             'is_active' => 'nullable|boolean',

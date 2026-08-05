@@ -38,17 +38,19 @@ export default function Create() {
                         <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
                             <div className="bg-primary-gradient p-4 text-white">
                                 <h5 className="fw-bold mb-0">Provider Details</h5>
-                                <p className="small mb-0 opacity-75">Fill in the information below to register a new insurance partner.</p>
+                                <p className="small mb-0 opacity-75">
+                                    Fill in the information below to register a new insurance partner.
+                                </p>
                             </div>
                             <div className="card-body p-4 text-dark">
                                 <form onSubmit={handleSubmit}>
                                     <div className="mb-3">
                                         <label className="form-label small fw-bold">Insurance Name</label>
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             className={`form-control ${errors.name ? 'is-invalid' : ''}`}
                                             value={data.name}
-                                            onChange={e => setData('name', e.target.value)}
+                                            onChange={(e) => setData('name', e.target.value)}
                                             placeholder="e.g. NHIF, AAR, Jubilee"
                                             required
                                         />
@@ -59,26 +61,32 @@ export default function Create() {
                                         <label className="form-label small fw-bold">Provider Logo</label>
                                         <div className="bg-light rounded-3 p-2 border border-dashed text-center">
                                             <FilePond
-                                                onupdatefiles={fileItems => setData('logo', fileItems[0]?.file)}
+                                                onupdatefiles={(fileItems) => setData('logo', fileItems[0]?.file)}
                                                 allowMultiple={false}
                                                 maxFiles={1}
                                                 labelIdle='Drop logo or <span class="filepond--label-action">Browse</span>'
                                                 acceptedFileTypes={['image/*']}
                                             />
                                         </div>
-                                        {errors.logo && <div className="text-danger small mt-2 fw-bold">{errors.logo}</div>}
-                                        <div className="small text-muted mt-2">Recommended size: 300x200px. formats: PNG, JPG, WebP.</div>
+                                        {errors.logo && (
+                                            <div className="text-danger small mt-2 fw-bold">{errors.logo}</div>
+                                        )}
+                                        <div className="small text-muted mt-2">
+                                            Recommended size: 300x200px. formats: PNG, JPG, WebP.
+                                        </div>
                                     </div>
 
                                     <div className="mb-3">
                                         <label className="form-label small fw-bold">Website Link (Optional)</label>
                                         <div className="input-group">
-                                            <span className="input-group-text bg-light border-end-0 text-muted"><i className="fas fa-globe"></i></span>
-                                            <input 
-                                                type="url" 
+                                            <span className="input-group-text bg-light border-end-0 text-muted">
+                                                <i className="fas fa-globe"></i>
+                                            </span>
+                                            <input
+                                                type="url"
                                                 className="form-control border-start-0 ps-0"
                                                 value={data.link}
-                                                onChange={e => setData('link', e.target.value)}
+                                                onChange={(e) => setData('link', e.target.value)}
                                                 placeholder="https://www.provider.com"
                                             />
                                         </div>
@@ -87,45 +95,57 @@ export default function Create() {
                                     <div className="row g-3 mb-4 pt-2 border-top mt-4">
                                         <div className="col-6">
                                             <label className="form-label small fw-bold">Display Priority</label>
-                                            <input 
-                                                type="number" 
+                                            <input
+                                                type="number"
                                                 className="form-control"
                                                 value={data.sort_order}
-                                                onChange={e => setData('sort_order', e.target.value)}
+                                                onChange={(e) => setData('sort_order', e.target.value)}
                                                 placeholder="0"
                                             />
-                                            <div className="extra-small text-muted mt-1">Lower numbers appear first.</div>
+                                            <div className="extra-small text-muted mt-1">
+                                                Lower numbers appear first.
+                                            </div>
                                         </div>
                                         <div className="col-6 d-flex align-items-center justify-content-end">
                                             <div className="form-check form-switch mt-3">
-                                                <input 
-                                                    className="form-check-input" 
-                                                    type="checkbox" 
-                                                    id="isActive" 
+                                                <input
+                                                    className="form-check-input"
+                                                    type="checkbox"
+                                                    id="isActive"
                                                     checked={data.is_active}
-                                                    onChange={e => setData('is_active', e.target.checked)}
+                                                    onChange={(e) => setData('is_active', e.target.checked)}
                                                 />
-                                                <label className="form-check-label small fw-bold ms-2" htmlFor="isActive">Active/Visible</label>
+                                                <label
+                                                    className="form-check-label small fw-bold ms-2"
+                                                    htmlFor="isActive"
+                                                >
+                                                    Active/Visible
+                                                </label>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="d-flex gap-3 mt-5">
-                                        <Link 
-                                            href={route('insurances.index')} 
+                                        <Link
+                                            href={route('insurances.index')}
                                             className="btn btn-light px-4 py-2 border fw-bold text-muted flex-fill"
                                         >
                                             <i className="fas fa-arrow-left me-2"></i>Back to List
                                         </Link>
-                                        <button 
-                                            type="submit" 
-                                            className="btn btn-primary px-5 py-2 fw-bold flex-fill shadow-sm" 
+                                        <button
+                                            type="submit"
+                                            className="btn btn-primary px-5 py-2 fw-bold flex-fill shadow-sm"
                                             disabled={processing}
                                         >
                                             {processing ? (
-                                                <><span className="spinner-border spinner-border-sm me-2"></span>Saving...</>
+                                                <>
+                                                    <span className="spinner-border spinner-border-sm me-2"></span>
+                                                    Saving...
+                                                </>
                                             ) : (
-                                                <><i className="fas fa-save me-2"></i>Save Provider</>
+                                                <>
+                                                    <i className="fas fa-save me-2"></i>Save Provider
+                                                </>
                                             )}
                                         </button>
                                     </div>

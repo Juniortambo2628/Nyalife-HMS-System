@@ -38,16 +38,17 @@ class SendAppointmentReminders extends Command
         foreach ($appointments as $appointment) {
             $patientEmail = $appointment->patient->user->email ?? null;
             $patientName = trim(
-                ($appointment->patient->user->first_name ?? '') . ' ' .
+                ($appointment->patient->user->first_name ?? '').' '.
                 ($appointment->patient->user->last_name ?? '')
             );
             $doctorName = trim(
-                'Dr. ' . ($appointment->doctor->user->first_name ?? '') . ' ' .
+                'Dr. '.($appointment->doctor->user->first_name ?? '').' '.
                 ($appointment->doctor->user->last_name ?? '')
             );
 
             if (! $patientEmail) {
                 $this->warn("Skipping appointment #{$appointment->appointment_id} — no patient email.");
+
                 continue;
             }
 
@@ -60,7 +61,7 @@ class SendAppointmentReminders extends Command
                 ]));
                 $sent++;
             } catch (\Exception $e) {
-                Log::warning("Appointment reminder failed for #{$appointment->appointment_id}: " . $e->getMessage());
+                Log::warning("Appointment reminder failed for #{$appointment->appointment_id}: ".$e->getMessage());
                 $failed++;
             }
         }

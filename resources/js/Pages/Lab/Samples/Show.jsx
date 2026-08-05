@@ -21,7 +21,12 @@ export default function Show({ sample }) {
 
             <UnifiedToolbar
                 actions={[
-                    { label: 'Register another', icon: 'fa-plus', href: route('lab.samples.register'), color: 'success' },
+                    {
+                        label: 'Register another',
+                        icon: 'fa-plus',
+                        href: route('lab.samples.register'),
+                        color: 'success',
+                    },
                     { label: 'All samples', icon: 'fa-list', href: route('lab.samples.index'), color: 'gray' },
                     { label: 'Lab requests', icon: 'fa-flask', href: route('lab.index') },
                 ]}
@@ -84,9 +89,18 @@ export default function Show({ sample }) {
                     <DashboardPanel title="Patient" icon="fa-user-injured" bodyClassName="p-4">
                         {patient ? (
                             <>
-                                <div className="fw-extrabold fs-5 mb-1">{patient.first_name} {patient.last_name}</div>
-                                <PatientIdLabel id={sample.patient_id} variant="short" className="text-muted small mb-3" />
-                                <Link href={route('patients.show', sample.patient_id)} className="btn btn-sm btn-outline-primary rounded-pill">
+                                <div className="fw-extrabold fs-5 mb-1">
+                                    {patient.first_name} {patient.last_name}
+                                </div>
+                                <PatientIdLabel
+                                    id={sample.patient_id}
+                                    variant="short"
+                                    className="text-muted small mb-3"
+                                />
+                                <Link
+                                    href={route('patients.show', sample.patient_id)}
+                                    className="btn btn-sm btn-outline-primary rounded-pill"
+                                >
                                     View patient record
                                 </Link>
                             </>

@@ -3,10 +3,11 @@
 namespace Tests\Unit\Services;
 
 use App\Models\Patient;
-use App\Models\User;
 use App\Models\Role;
-use Tests\TestCase;
+use App\Models\User;
+use App\Services\PatientRegistrationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class PatientRegistrationServiceTest extends TestCase
 {
@@ -15,7 +16,7 @@ class PatientRegistrationServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create legacy roles so Role::idFromName() works
         Role::firstOrCreate(['role_name' => 'admin']);
         Role::firstOrCreate(['role_name' => 'doctor']);
@@ -51,7 +52,7 @@ class PatientRegistrationServiceTest extends TestCase
             'insurance_expiry' => '2025-12-31',
         ];
 
-        $result = \App\Services\PatientRegistrationService::register($data);
+        $result = PatientRegistrationService::register($data);
 
         $this->assertArrayHasKey('user', $result);
         $this->assertArrayHasKey('patient', $result);
@@ -75,7 +76,7 @@ class PatientRegistrationServiceTest extends TestCase
             'date_of_birth' => '1995-06-15',
         ];
 
-        $result = \App\Services\PatientRegistrationService::quickRegister($data);
+        $result = PatientRegistrationService::quickRegister($data);
 
         $this->assertArrayHasKey('user', $result);
         $this->assertArrayHasKey('patient', $result);

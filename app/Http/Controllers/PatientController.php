@@ -8,17 +8,23 @@ use App\Http\Requests\UpdatePatientRequest;
 use App\Http\Resources\PatientResource;
 use App\Models\Consultation;
 use App\Models\Patient;
+use App\Models\Role;
 use App\Models\User;
+use App\Services\PatientRegistrationService;
 use App\Support\PatientId;
+use App\Traits\HasBulkActions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
-use App\Traits\HasBulkActions;
 
 class PatientController extends Controller
 {
     use HasBulkActions;
+
     /**
      * Display a listing of patients.
      */
@@ -40,16 +46,23 @@ class PatientController extends Controller
         }
 
         $patients = $query->searchByUserName($request->search)
-            ->when($request->status, function($q, $status) {
-                if ($status === 'male') return $q->where('gender', 'male');
-                if ($status === 'female') return $q->where('gender', 'female');
-                if ($status === 'recent') return $q->where('created_at', '>=', now()->subDays(7));
+            ->when($request->status, function ($q, $status) {
+                if ($status === 'male') {
+                    return $q->where('gender', 'male');
+                }
+                if ($status === 'female') {
+                    return $q->where('gender', 'female');
+                }
+                if ($status === 'recent') {
+                    return $q->where('created_at', '>=', now()->subDays(7));
+                }
+
                 return $q;
             })
             ->orderBy('created_at', 'desc')
             ->paginate(15)
             ->withQueryString();
-        
+
         $stats = [
             'total' => Patient::count(),
             'male' => Patient::where('gender', 'male')->count(),
@@ -77,10 +90,10 @@ class PatientController extends Controller
      */
     public function store(StorePatientRequest $request)
     {
-        \App\Services\PatientRegistrationService::register($request->validated());
-        
+        PatientRegistrationService::register($request->validated());
+
         return redirect()->route('patients.index')
-                         ->with('success', 'Patient registered successfully.');
+            ->with('success', 'Patient registered successfully.');
     }
 
     /**
@@ -113,7 +126,7 @@ class PatientController extends Controller
                 $clinicalSummary = $latestConsultation->toClinicalSummary();
             }
         }
-        
+
         return Inertia::render('Patients/Show', [
             'patient' => PatientResource::make($patient),
             'clinical_summary' => $clinicalSummary,
@@ -126,6 +139,7 @@ class PatientController extends Controller
     public function edit($id)
     {
         $patient = Patient::with('user')->findOrFail($id);
+
         return Inertia::render('Patients/Edit', [
             'patient' => PatientResource::make($patient),
         ]);
@@ -169,7 +183,7 @@ class PatientController extends Controller
             'emergency_contact',
         ]);
         $patient->update($patientData);
-        
+
         return redirect()->route('patients.show', $id)->with('success', 'Patient updated successfully.');
     }
 
@@ -178,17 +192,17 @@ class PatientController extends Controller
      */
     public function quickStore(QuickStorePatientRequest $request)
     {
-        $result = \App\Services\PatientRegistrationService::quickRegister($request->validated());
+        $result = PatientRegistrationService::quickRegister($request->validated());
         $user = $result['user'];
         $patient = $result['patient'];
-        
+
         return response()->json([
             'success' => true,
             'patient_id' => $patient->patient_id,
-            'full_name' => $user->first_name . ' ' . $user->last_name,
+            'full_name' => $user->first_name.' '.$user->last_name,
             'select_label' => PatientId::fromPatient($patient),
             'gender' => $patient->gender,
-            'message' => 'Patient created successfully.'
+            'message' => 'Patient created successfully.',
         ]);
     }
 
@@ -198,21 +212,21 @@ class PatientController extends Controller
     public function searchAjax(Request $request)
     {
         $search = $request->query('q');
-        
+
         $patients = Patient::with('user')
-            ->whereHas('user', function($q) use ($search) {
+            ->whereHas('user', function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%");
+                    ->orWhere('last_name', 'like', "%{$search}%");
             })
             ->orWhere('patient_id', 'like', "%{$search}%")
             ->limit(20)
             ->get();
-            
-        return response()->json($patients->map(function($p) {
+
+        return response()->json($patients->map(function ($p) {
             return [
                 'value' => $p->patient_id,
                 'label' => PatientId::fromPatient($p),
-                'id' => $p->patient_id
+                'id' => $p->patient_id,
             ];
         }));
     }
@@ -230,18 +244,19 @@ class PatientController extends Controller
         $filePath = $file->getRealPath();
 
         $handle = fopen($filePath, 'r');
-        if (!$handle) {
+        if (! $handle) {
             return redirect()->back()->with('error', 'Unable to open uploaded CSV file.');
         }
 
         $header = fgetcsv($handle, 1000, ',');
-        if (!$header) {
+        if (! $header) {
             fclose($handle);
+
             return redirect()->back()->with('error', 'CSV file is empty or malformed.');
         }
 
         // Clean headers (remove BOM/spaces/lowercase)
-        $header = array_map(function($h) {
+        $header = array_map(function ($h) {
             return strtolower(trim(preg_replace('/[\x00-\x1F\x7F-\x9F\xEF\xBB\xBF]/', '', $h)));
         }, $header);
 
@@ -250,14 +265,15 @@ class PatientController extends Controller
 
         if (count($missing) > 0) {
             fclose($handle);
-            return redirect()->back()->with('error', 'Missing required CSV headers: ' . implode(', ', $missing) . '. Please ensure headers are present.');
+
+            return redirect()->back()->with('error', 'Missing required CSV headers: '.implode(', ', $missing).'. Please ensure headers are present.');
         }
 
         $importedCount = 0;
         $skippedCount = 0;
-        $roleId = \App\Models\Role::idFromName('patient');
+        $roleId = Role::idFromName('patient');
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             while (($row = fgetcsv($handle, 1000, ',')) !== false) {
                 if (count($row) < count($header)) {
@@ -273,12 +289,13 @@ class PatientController extends Controller
 
                 if ($existingUser) {
                     $skippedCount++;
+
                     continue;
                 }
 
                 $safeFirstName = str_replace(' ', '', $data['first_name']);
                 $safeLastName = str_replace(' ', '', $data['last_name']);
-                $username = strtolower($safeFirstName . '.' . $safeLastName . '.' . rand(1000, 9999));
+                $username = strtolower($safeFirstName.'.'.$safeLastName.'.'.rand(1000, 9999));
 
                 $user = User::create([
                     'first_name' => trim($data['first_name']),
@@ -286,7 +303,7 @@ class PatientController extends Controller
                     'email' => trim($data['email']),
                     'phone' => trim($data['phone']),
                     'username' => $username,
-                    'password' => Hash::make(\Illuminate\Support\Str::random(12)),
+                    'password' => Hash::make(Str::random(12)),
                     'role_id' => $roleId,
                     'is_active' => true,
                     'gender' => trim(strtolower($data['gender'])),
@@ -307,14 +324,15 @@ class PatientController extends Controller
 
                 $importedCount++;
             }
-            
+
             fclose($handle);
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (\Exception $e) {
             fclose($handle);
-            \Illuminate\Support\Facades\DB::rollBack();
-            \Illuminate\Support\Facades\Log::error('Patient CSV Import failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'An error occurred during import: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Patient CSV Import failed: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'An error occurred during import: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success', "CSV Import completed. Imported: {$importedCount}, Skipped (Duplicates): {$skippedCount}.");
@@ -328,14 +346,14 @@ class PatientController extends Controller
         $ids = $request->ids ? explode(',', $request->ids) : [];
 
         $query = Patient::with('user');
-        if (!empty($ids)) {
+        if (! empty($ids)) {
             $query->whereIn('patient_id', $ids);
         }
         $patients = $query->get();
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="patients-export-' . date('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="patients-export-'.date('Y-m-d').'.csv"',
         ];
 
         $callback = function () use ($patients) {
@@ -344,7 +362,7 @@ class PatientController extends Controller
             fputcsv($handle, ['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Gender', 'Date of Birth', 'Blood Group', 'Address', 'Registered']);
             foreach ($patients as $p) {
                 fputcsv($handle, [
-                    'PAT-' . $p->patient_id,
+                    'PAT-'.$p->patient_id,
                     $p->user->first_name ?? '',
                     $p->user->last_name ?? '',
                     $p->user->email ?? '',
@@ -370,7 +388,7 @@ class PatientController extends Controller
         $ids = $request->ids ? explode(',', $request->ids) : [];
 
         $query = Patient::with('user');
-        if (!empty($ids)) {
+        if (! empty($ids)) {
             $query->whereIn('patient_id', $ids);
         }
         $patients = $query->get();

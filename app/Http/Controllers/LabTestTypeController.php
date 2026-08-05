@@ -31,8 +31,9 @@ class LabTestTypeController extends Controller
     public function edit($id)
     {
         $test = LabTestType::findOrFail($id);
+
         return Inertia::render('Lab/Tests/Form', [
-            'test' => $test
+            'test' => $test,
         ]);
     }
 
@@ -48,12 +49,12 @@ class LabTestTypeController extends Controller
     public function destroy($id)
     {
         $test = LabTestType::findOrFail($id);
-        
-        // Soft delete/deactivate if there are requests? 
-        // For now, let's just allow deletion if no requests exist, 
+
+        // Soft delete/deactivate if there are requests?
+        // For now, let's just allow deletion if no requests exist,
         // or just toggle is_active if it's easier.
         // Let's just toggle is_active for safety.
-        $test->update(['is_active' => !$test->is_active]);
+        $test->update(['is_active' => ! $test->is_active]);
 
         return redirect()->route('lab.tests')->with('success', 'Lab test status toggled.');
     }

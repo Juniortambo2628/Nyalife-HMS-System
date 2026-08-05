@@ -7,6 +7,7 @@ use Spatie\MailTemplates\TemplateMailable;
 class WelcomeEmail extends TemplateMailable
 {
     public $user_name;
+
     public $clinic_name;
 
     public function __construct(array $data)

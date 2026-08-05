@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Appointment;
 use App\Models\Consultation;
 use App\Models\Patient;
 use App\Models\Staff;
-use App\Models\Appointment;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ConsultationFactory extends Factory
@@ -65,7 +66,7 @@ class ConsultationFactory extends Factory
                 json_encode(['previous_cs' => 0, 'vaginal_deliveries' => 3]),
             ]),
             'surgical_history' => $this->faker->optional()->paragraph(),
-            'created_by' => \App\Models\User::factory(),
+            'created_by' => User::factory(),
         ];
     }
 

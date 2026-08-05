@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Consultation;
 use App\Models\Invoice;
 use App\Models\Patient;
-use App\Models\Consultation;
 use App\Models\Staff;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,7 +23,7 @@ class InvoiceFactory extends Factory
             'patient_id' => Patient::factory(),
             'consultation_id' => Consultation::factory(),
             'doctor_id' => Staff::factory(),
-            'invoice_number' => 'INV-' . strtoupper(uniqid()),
+            'invoice_number' => 'INV-'.strtoupper(uniqid()),
             'invoice_date' => $this->faker->dateTimeBetween('-30 days', 'now')->format('Y-m-d'),
             'due_date' => $this->faker->dateTimeBetween('now', '+30 days')->format('Y-m-d'),
             'total_amount' => $totalAmount,

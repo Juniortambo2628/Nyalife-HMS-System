@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 use App\Http\Requests\StoreContactMessageRequest;
 use App\Models\ContactMessage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
-use Carbon\Carbon;
 
 class ContactMessageController extends Controller
 {
@@ -18,31 +17,32 @@ class ContactMessageController extends Controller
 
         return response()->json([
             'message' => 'Your message has been sent successfully. We will get back to you soon!',
-            'status' => 'success'
+            'status' => 'success',
         ]);
     }
 
     public function index()
     {
         $messages = ContactMessage::latest()->get();
+
         return Inertia::render('ContactMessages/Index', [
-            'messages' => $messages
+            'messages' => $messages,
         ]);
     }
 
     public function show(ContactMessage $contactMessage)
     {
-        if (!$contactMessage->read_at) {
+        if (! $contactMessage->read_at) {
             $contactMessage->update([
                 'read_at' => now(),
-                'status' => 'read'
+                'status' => 'read',
             ]);
         }
 
         $contactMessage->load('replier');
 
         return Inertia::render('ContactMessages/Show', [
-            'message' => $contactMessage
+            'message' => $contactMessage,
         ]);
     }
 
@@ -50,7 +50,7 @@ class ContactMessageController extends Controller
     {
         $contactMessage->update([
             'read_at' => now(),
-            'status' => 'read'
+            'status' => 'read',
         ]);
 
         return back()->with('success', 'Message marked as read');
@@ -59,6 +59,7 @@ class ContactMessageController extends Controller
     public function destroy(ContactMessage $contactMessage)
     {
         $contactMessage->delete();
+
         return back()->with('success', 'Message deleted successfully');
     }
 
@@ -77,15 +78,15 @@ class ContactMessageController extends Controller
 
         // Send email if configured
         try {
-            \Illuminate\Support\Facades\Mail::raw($request->reply_message, function ($mail) use ($contactMessage) {
+            Mail::raw($request->reply_message, function ($mail) use ($contactMessage) {
                 $mail->to($contactMessage->email)
                     ->subject('Re: Your Inquiry — Nyalife Hospital');
             });
         } catch (\Exception $e) {
             // Log but don't fail — email delivery is best-effort
-            \Log::warning('Contact reply email failed: ' . $e->getMessage());
+            \Log::warning('Contact reply email failed: '.$e->getMessage());
         }
 
-        return back()->with('success', 'Reply sent successfully to ' . $contactMessage->email);
+        return back()->with('success', 'Reply sent successfully to '.$contactMessage->email);
     }
 }

@@ -10,24 +10,26 @@ export default function Index({ templates }) {
         {
             header: 'Mailable Class',
             accessorKey: 'mailable',
-            cell: info => <TableCellPrimary>{info.getValue()}</TableCellPrimary>,
+            cell: (info) => <TableCellPrimary>{info.getValue()}</TableCellPrimary>,
         },
         {
             header: 'Subject',
             accessorKey: 'subject',
-            cell: info => <TableCellPrimary className="text-muted">{info.getValue()}</TableCellPrimary>,
+            cell: (info) => <TableCellPrimary className="text-muted">{info.getValue()}</TableCellPrimary>,
         },
         {
             header: 'Actions',
             id: 'actions',
-            cell: info => (
-                <TableActions actions={[
-                    {
-                        icon: 'fa-edit',
-                        label: 'Edit template',
-                        href: route('mail-templates.edit', info.row.original.id),
-                    },
-                ]} />
+            cell: (info) => (
+                <TableActions
+                    actions={[
+                        {
+                            icon: 'fa-edit',
+                            label: 'Edit template',
+                            href: route('mail-templates.edit', info.row.original.id),
+                        },
+                    ]}
+                />
             ),
         },
     ];

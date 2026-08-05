@@ -8,16 +8,12 @@ const ENTITIES = {
         { id: 1, label: 'Jane Doe (P-001)', type: 'patient' },
         { id: 2, label: 'John Roe (P-002)', type: 'patient' },
     ],
-    appointments: [
-        { id: 11, label: 'Apt #11: Jane (2026-08-01)', type: 'appointment' },
-    ],
+    appointments: [{ id: 11, label: 'Apt #11: Jane (2026-08-01)', type: 'appointment' }],
     lab_requests: [
         { id: 21, label: 'Lab #21 - Full Blood Count (Jane)', type: 'lab_request' },
         { id: 22, label: 'Lab #22 - Urinalysis (John)', type: 'lab_request' },
     ],
-    medications: [
-        { id: 31, label: 'Paracetamol 500mg', type: 'medication' },
-    ],
+    medications: [{ id: 31, label: 'Paracetamol 500mg', type: 'medication' }],
 };
 
 describe('EntityReferencePicker', () => {
@@ -29,10 +25,7 @@ describe('EntityReferencePicker', () => {
     it('renders a closed trigger by default', () => {
         render(<EntityReferencePicker entities={ENTITIES} onSelect={vi.fn()} />);
 
-        expect(screen.getByRole('button', { name: /^add reference$/i })).toHaveAttribute(
-            'aria-expanded',
-            'false',
-        );
+        expect(screen.getByRole('button', { name: /^add reference$/i })).toHaveAttribute('aria-expanded', 'false');
     });
 
     it('opens the dropdown when the trigger is clicked', async () => {

@@ -32,23 +32,29 @@ export default function Show({ department }) {
                             <div className="d-flex justify-content-between align-items-start mb-4">
                                 <div>
                                     {department.code && (
-                                        <span className="badge bg-light text-primary font-mono mb-2">{department.code}</span>
+                                        <span className="badge bg-light text-primary font-mono mb-2">
+                                            {department.code}
+                                        </span>
                                     )}
                                     <h3 className="fw-extrabold text-gray-900 mb-1">{department.department_name}</h3>
-                                    <span className="badge bg-primary-subtle text-primary">{department.type_label}</span>
+                                    <span className="badge bg-primary-subtle text-primary">
+                                        {department.type_label}
+                                    </span>
                                 </div>
-                                <span className={`badge rounded-pill px-3 py-2 ${department.is_active ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'}`}>
+                                <span
+                                    className={`badge rounded-pill px-3 py-2 ${department.is_active ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'}`}
+                                >
                                     {department.is_active ? 'Active' : 'Inactive'}
                                 </span>
                             </div>
 
-                            {department.description && (
-                                <p className="text-muted mb-4">{department.description}</p>
-                            )}
+                            {department.description && <p className="text-muted mb-4">{department.description}</p>}
 
                             {(department.head_name || department.head_position) && (
                                 <div className="p-4 rounded-4 bg-gray-50 border mb-4">
-                                    <h6 className="extra-small fw-extrabold text-muted text-uppercase mb-2">Department Head</h6>
+                                    <h6 className="extra-small fw-extrabold text-muted text-uppercase mb-2">
+                                        Department Head
+                                    </h6>
                                     <div className="fw-bold">{department.head_name || '—'}</div>
                                     {department.head_position && (
                                         <div className="small text-muted">{department.head_position}</div>
@@ -64,11 +70,16 @@ export default function Show({ department }) {
                             ) : (
                                 <ul className="list-group list-group-flush">
                                     {staff.map((member) => (
-                                        <li key={member.staff_id} className="list-group-item px-0 d-flex justify-content-between">
+                                        <li
+                                            key={member.staff_id}
+                                            className="list-group-item px-0 d-flex justify-content-between"
+                                        >
                                             <span className="fw-bold">
                                                 {member.user?.first_name} {member.user?.last_name}
                                             </span>
-                                            <span className="text-muted small">{member.position || member.specialization || 'Staff'}</span>
+                                            <span className="text-muted small">
+                                                {member.position || member.specialization || 'Staff'}
+                                            </span>
                                         </li>
                                     ))}
                                 </ul>
@@ -80,7 +91,12 @@ export default function Show({ department }) {
 
             <UnifiedToolbar
                 actions={[
-                    { label: department.is_active ? 'DEACTIVATE' : 'ACTIVATE', icon: 'fa-power-off', onClick: toggleActive, color: department.is_active ? 'warning' : 'success' },
+                    {
+                        label: department.is_active ? 'DEACTIVATE' : 'ACTIVATE',
+                        icon: 'fa-power-off',
+                        onClick: toggleActive,
+                        color: department.is_active ? 'warning' : 'success',
+                    },
                     { label: 'EDIT', icon: 'fa-edit', href: route('departments.edit', department.department_id) },
                     staff.length === 0 && { label: 'DELETE', icon: 'fa-trash', onClick: handleDelete, color: 'danger' },
                     { label: 'ALL DEPARTMENTS', icon: 'fa-list', href: route('departments.index'), color: 'gray' },

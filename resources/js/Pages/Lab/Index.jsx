@@ -25,10 +25,14 @@ export default function LabRequestsIndex({ requests, filters, stats = {}, auth }
     });
 
     const applyFilters = (searchValue, statusValue = status, quickFilterValue = quickFilter) => {
-        router.get(route('lab.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {
-            preserveState: true,
-            replace: true,
-        });
+        router.get(
+            route('lab.index'),
+            { search: searchValue, status: statusValue, quick_filter: quickFilterValue },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
     const handleStatusChange = (val) => {
@@ -43,98 +47,107 @@ export default function LabRequestsIndex({ requests, filters, stats = {}, auth }
 
     const handleProcess = (id) => {
         if (confirm('Start processing this lab request?')) {
-            router.post(route('lab.update-status', id), {
-                status: 'processing'
-            }, {
-                preserveScroll: true
-            });
+            router.post(
+                route('lab.update-status', id),
+                {
+                    status: 'processing',
+                },
+                {
+                    preserveScroll: true,
+                },
+            );
         }
     };
 
-    const columns = useMemo(() => [
-        {
-            header: 'Req ID',
-            accessorKey: 'request_id',
-            cell: ({ row }) => (
-                <RefBadge>LAB-{row.original.request_id}</RefBadge>
-            )
-        },
-        {
-            header: 'Patient',
-            accessorKey: 'patient_id',
-            cell: ({ row }) => (
-                <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
-            )
-        },
-        {
-            header: 'Test Type',
-            accessorKey: 'test_type.test_name',
-            cell: ({ row }) => (
-                <TableCellPrimary>{row.original.test_type?.test_name || 'N/A'}</TableCellPrimary>
-            )
-        },
-        {
-            header: 'Priority',
-            accessorKey: 'priority',
-            cell: ({ row }) => <PriorityBadge priority={row.original.priority} />
-        },
-        {
-            header: 'Status',
-            accessorKey: 'status',
-            cell: ({ row }) => <StatusBadge status={row.original.status} />
-        },
-        {
-            header: 'Requested By',
-            accessorKey: 'doctor.user.last_name',
-            cell: ({ row }) => (
-                <TableCellSub>
-                    Dr. {row.original.doctor?.user?.last_name || 'System'}
-                </TableCellSub>
-            )
-        },
-        {
-            header: 'Actions',
-            id: 'actions',
-            cell: ({ row }) => {
-                const actions = [
-                    {
-                        label: 'View details',
-                        icon: 'fa-eye',
-                        href: route('lab.show', row.original.request_id),
-                    },
-                    auth.user.role === 'lab_technician' && row.original.status === 'pending' && {
-                        label: 'Start processing',
-                        icon: 'fa-vial',
-                        onClick: () => handleProcess(row.original.request_id),
-                    },
-                ].filter(Boolean);
+    const columns = useMemo(
+        () => [
+            {
+                header: 'Req ID',
+                accessorKey: 'request_id',
+                cell: ({ row }) => <RefBadge>LAB-{row.original.request_id}</RefBadge>,
+            },
+            {
+                header: 'Patient',
+                accessorKey: 'patient_id',
+                cell: ({ row }) => (
+                    <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
+                ),
+            },
+            {
+                header: 'Test Type',
+                accessorKey: 'test_type.test_name',
+                cell: ({ row }) => <TableCellPrimary>{row.original.test_type?.test_name || 'N/A'}</TableCellPrimary>,
+            },
+            {
+                header: 'Priority',
+                accessorKey: 'priority',
+                cell: ({ row }) => <PriorityBadge priority={row.original.priority} />,
+            },
+            {
+                header: 'Status',
+                accessorKey: 'status',
+                cell: ({ row }) => <StatusBadge status={row.original.status} />,
+            },
+            {
+                header: 'Requested By',
+                accessorKey: 'doctor.user.last_name',
+                cell: ({ row }) => <TableCellSub>Dr. {row.original.doctor?.user?.last_name || 'System'}</TableCellSub>,
+            },
+            {
+                header: 'Actions',
+                id: 'actions',
+                cell: ({ row }) => {
+                    const actions = [
+                        {
+                            label: 'View details',
+                            icon: 'fa-eye',
+                            href: route('lab.show', row.original.request_id),
+                        },
+                        auth.user.role === 'lab_technician' &&
+                            row.original.status === 'pending' && {
+                                label: 'Start processing',
+                                icon: 'fa-vial',
+                                onClick: () => handleProcess(row.original.request_id),
+                            },
+                    ].filter(Boolean);
 
-                return <TableActions actions={actions} />;
-            }
-        }
-    ], [auth.user.role]);
+                    return <TableActions actions={actions} />;
+                },
+            },
+        ],
+        [auth.user.role],
+    );
 
-    const statItems = useMemo(() => [
-        { label: 'Pending', value: stats.pending || 0, icon: 'fa-clock', color: 'warning' },
-        { label: 'Processing', value: stats.processing || 0, icon: 'fa-vial', color: 'info' },
-        { label: 'Completed', value: stats.completed || 0, icon: 'fa-check-circle', color: 'success' },
-        { label: 'Urgent', value: stats.urgent || 0, icon: 'fa-bolt', color: 'danger' },
-    ], [stats]);
+    const statItems = useMemo(
+        () => [
+            { label: 'Pending', value: stats.pending || 0, icon: 'fa-clock', color: 'warning' },
+            { label: 'Processing', value: stats.processing || 0, icon: 'fa-vial', color: 'info' },
+            { label: 'Completed', value: stats.completed || 0, icon: 'fa-check-circle', color: 'success' },
+            { label: 'Urgent', value: stats.urgent || 0, icon: 'fa-bolt', color: 'danger' },
+        ],
+        [stats],
+    );
 
     const showStats = auth.user.role !== 'patient';
 
     return (
-        <AuthenticatedLayout 
+        <AuthenticatedLayout
             headerTitle={auth.user.role === 'patient' ? 'Laboratory Results' : 'Laboratory Registry'}
             breadcrumbs={
                 auth.user.role === 'patient'
-                    ? [{ label: 'Dashboard', url: route('dashboard') }, { label: 'Lab Results', active: true }]
-                    : [{ label: 'Dashboard', url: route('dashboard') }, { label: 'Lab Requests', active: true }]
+                    ? [
+                          { label: 'Dashboard', url: route('dashboard') },
+                          { label: 'Lab Results', active: true },
+                      ]
+                    : [
+                          { label: 'Dashboard', url: route('dashboard') },
+                          { label: 'Lab Requests', active: true },
+                      ]
             }
         >
             <Head title={auth.user.role === 'patient' ? 'My Labs' : 'Laboratory'} />
 
-            <UnifiedToolbar 
+            <UnifiedToolbar
                 filterGroups={[
                     {
                         id: 'status',
@@ -181,8 +194,18 @@ export default function LabRequestsIndex({ requests, filters, stats = {}, auth }
                 ].filter(Boolean)}
                 bulkActions={[
                     { label: 'MARK COMPLETE', icon: 'fa-check-circle', onClick: () => handleBulkAction('complete') },
-                    { label: 'CANCEL SELECTED', icon: 'fa-times-circle', onClick: () => handleBulkAction('cancel'), color: 'danger' },
-                    { label: 'DELETE SELECTED', icon: 'fa-trash-alt', onClick: () => handleBulkAction('delete'), color: 'danger' }
+                    {
+                        label: 'CANCEL SELECTED',
+                        icon: 'fa-times-circle',
+                        onClick: () => handleBulkAction('cancel'),
+                        color: 'danger',
+                    },
+                    {
+                        label: 'DELETE SELECTED',
+                        icon: 'fa-trash-alt',
+                        onClick: () => handleBulkAction('delete'),
+                        color: 'danger',
+                    },
                 ]}
                 selectionCount={selectedIds.length}
             />
@@ -190,8 +213,8 @@ export default function LabRequestsIndex({ requests, filters, stats = {}, auth }
             <div className="px-0">
                 {showStats && <StatCardGrid items={statItems} />}
 
-                <DashboardSearch 
-                    placeholder="Search by patient name or request ID..." 
+                <DashboardSearch
+                    placeholder="Search by patient name or request ID..."
                     value={search}
                     onChange={setSearch}
                     onSubmit={(val) => applyFilters(val, status, quickFilter)}

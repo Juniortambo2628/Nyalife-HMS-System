@@ -54,9 +54,9 @@ class BlogPublicController extends Controller
     public function show($slug)
     {
         $blog = Blog::with('author')->where('slug', $slug)->firstOrFail();
-        
+
         return Inertia::render('Blog/Show', [
-            'blog' => $blog
+            'blog' => $blog,
         ]);
     }
 }

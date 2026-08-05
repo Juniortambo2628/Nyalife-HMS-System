@@ -58,8 +58,8 @@ class AppointmentSlotController extends Controller
             ->all();
 
         $slots = [];
-        $cursor = Carbon::parse($date . ' 08:00');
-        $end = Carbon::parse($date . ' 17:00');
+        $cursor = Carbon::parse($date.' 08:00');
+        $end = Carbon::parse($date.' 17:00');
 
         while ($cursor <= $end) {
             $label = $cursor->format('H:i');
@@ -68,8 +68,8 @@ class AppointmentSlotController extends Controller
             // Check if slot falls within any block-out period
             $isBlocked = false;
             foreach ($blockOuts as $block) {
-                $blockStart = Carbon::parse($date . ' ' . $block->start_time);
-                $blockEnd = Carbon::parse($date . ' ' . $block->end_time);
+                $blockStart = Carbon::parse($date.' '.$block->start_time);
+                $blockEnd = Carbon::parse($date.' '.$block->end_time);
                 if ($slotTime->gte($blockStart) && $slotTime->lt($blockEnd)) {
                     $isBlocked = true;
                     break;

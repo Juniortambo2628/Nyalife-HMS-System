@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\TelehealthConsent;
-use App\Models\Patient;
 use App\Models\Appointment;
+use App\Models\Patient;
+use App\Models\TelehealthConsent;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TelehealthConsentFactory extends Factory

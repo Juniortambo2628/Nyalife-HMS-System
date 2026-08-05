@@ -16,9 +16,16 @@ export default function Print({ prescription, clinic_settings = {} }) {
 
             <div className="d-flex justify-content-between align-items-center mb-5 border-bottom pb-4">
                 <div>
-                    <img src="/assets/logo/Logo2-transparent.png" alt="Nyalife" style={{ height: '70px' }} className="mb-2" />
+                    <img
+                        src="/assets/logo/Logo2-transparent.png"
+                        alt="Nyalife"
+                        style={{ height: '70px' }}
+                        className="mb-2"
+                    />
                     <div className="text-muted small">{clinic_settings.contact_address}</div>
-                    <div className="text-muted small">{clinic_settings.contact_email} | {clinic_settings.contact_phone}</div>
+                    <div className="text-muted small">
+                        {clinic_settings.contact_email} | {clinic_settings.contact_phone}
+                    </div>
                 </div>
                 <div className="text-end">
                     <h4 className="fw-bold text-uppercase mb-1">Prescription</h4>
@@ -30,8 +37,15 @@ export default function Print({ prescription, clinic_settings = {} }) {
             <div className="row mb-4">
                 <div className="col-6">
                     <h6 className="text-muted text-uppercase small fw-bold">Patient</h6>
-                    <p className="fw-bold mb-0">{patient?.first_name} {patient?.last_name}</p>
-                    <PatientIdLabel id={prescription.patient_id} variant="short" as="p" className="text-muted small mb-0" />
+                    <p className="fw-bold mb-0">
+                        {patient?.first_name} {patient?.last_name}
+                    </p>
+                    <PatientIdLabel
+                        id={prescription.patient_id}
+                        variant="short"
+                        as="p"
+                        className="text-muted small mb-0"
+                    />
                 </div>
                 <div className="col-6 text-end">
                     <h6 className="text-muted text-uppercase small fw-bold">Prescriber</h6>

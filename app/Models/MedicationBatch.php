@@ -20,7 +20,7 @@ class MedicationBatch extends Model
         'expiry_date',
         'manufacturing_date',
         'supplier_id',
-        'notes'
+        'notes',
     ];
 
     public function medication()

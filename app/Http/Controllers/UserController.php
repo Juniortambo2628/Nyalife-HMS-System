@@ -84,7 +84,7 @@ class UserController extends Controller
             ?? (isset($validated['role']) ? Role::where('role_name', $validated['role'])->first()?->role_id : null)
             ?? Role::where('role_name', 'patient')->first()?->role_id;
 
-        $password = !empty($validated['password'])
+        $password = ! empty($validated['password'])
             ? Hash::make($validated['password'])
             : Hash::make(Str::random(12));
 
@@ -131,6 +131,7 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::with('staff')->findOrFail($id);
+
         return Inertia::render('Users/Edit', [
             'user' => UserResource::make($user),
             'roles' => Role::all(),
@@ -196,6 +197,7 @@ class UserController extends Controller
         return [
             'activate' => function (array $ids, int $count) {
                 User::whereIn('user_id', $ids)->update(['is_active' => true]);
+
                 return redirect()->back()->with('success', "{$count} user(s) activated.");
             },
             'deactivate' => function (array $ids, int $count) {
@@ -204,6 +206,7 @@ class UserController extends Controller
                 if ($count > 0) {
                     User::whereIn('user_id', $ids)->update(['is_active' => false]);
                 }
+
                 return redirect()->back()->with('success', "{$count} user(s) deactivated.");
             },
             'delete' => function (array $ids, int $count) {
@@ -212,6 +215,7 @@ class UserController extends Controller
                 if ($count > 0) {
                     User::whereIn('user_id', $ids)->delete();
                 }
+
                 return redirect()->back()->with('success', "{$count} user(s) deleted.");
             },
         ];

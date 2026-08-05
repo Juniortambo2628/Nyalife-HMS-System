@@ -320,25 +320,28 @@ class LabController extends Controller
             'complete' => function (array $ids, int $count) {
                 $updated = $this->bulkProcessWithLog(
                     LabTestRequest::class, 'request_id', $ids,
-                    fn ($item) => !in_array($item->status, ['completed', 'cancelled']),
+                    fn ($item) => ! in_array($item->status, ['completed', 'cancelled']),
                     fn ($item) => ['status' => 'completed', 'completed_at' => now(), 'assigned_to' => Auth::id()],
                     'lab', 'Lab request',
                     fn ($item) => [$item->requested_by, $item->patient->user_id, 1]
                 );
+
                 return redirect()->back()->with('success', "{$updated} lab request(s) completed.");
             },
             'cancel' => function (array $ids, int $count) {
                 $updated = $this->bulkProcessWithLog(
                     LabTestRequest::class, 'request_id', $ids,
-                    fn ($item) => !in_array($item->status, ['completed', 'cancelled']),
+                    fn ($item) => ! in_array($item->status, ['completed', 'cancelled']),
                     fn ($item) => ['status' => 'cancelled'],
                     'lab', 'Lab request',
                     fn ($item) => [$item->requested_by, $item->patient->user_id, 1]
                 );
+
                 return redirect()->back()->with('success', "{$updated} lab request(s) cancelled.");
             },
             'delete' => function (array $ids, int $count) {
                 $deleted = $this->bulkDelete(LabTestRequest::class, 'request_id', $ids, 'status', 'completed');
+
                 return redirect()->back()->with('success', "{$deleted} lab request(s) deleted.");
             },
         ];

@@ -11,12 +11,7 @@ import { router } from '@inertiajs/react';
  * @param {Function} [options.onSuccess] Optional callback fired on success.
  * @returns {{ handleBulkAction: Function, processing: boolean }}
  */
-export default function useBulkAction({
-    routeName,
-    selectedIds = [],
-    clearSelection,
-    onSuccess,
-}) {
+export default function useBulkAction({ routeName, selectedIds = [], clearSelection, onSuccess }) {
     const [processing, setProcessing] = useState(false);
 
     const handleBulkAction = useCallback(
@@ -42,10 +37,10 @@ export default function useBulkAction({
                         if (onSuccess) onSuccess(action, selectedIds);
                     },
                     onFinish: () => setProcessing(false),
-                }
+                },
             );
         },
-        [routeName, selectedIds, clearSelection, onSuccess]
+        [routeName, selectedIds, clearSelection, onSuccess],
     );
 
     return { handleBulkAction, processing };

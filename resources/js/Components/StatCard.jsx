@@ -39,7 +39,9 @@ export default function StatCard({
             <div className="d-flex justify-content-between align-items-center">
                 <div className="min-w-0">
                     {trend && (
-                        <span className={`badge rounded-pill bg-${color}-subtle text-${color} px-3 py-1 fw-bold extra-small border border-${color}-subtle mb-2 d-inline-block`}>
+                        <span
+                            className={`badge rounded-pill bg-${color}-subtle text-${color} px-3 py-1 fw-bold extra-small border border-${color}-subtle mb-2 d-inline-block`}
+                        >
                             {trend}
                         </span>
                     )}

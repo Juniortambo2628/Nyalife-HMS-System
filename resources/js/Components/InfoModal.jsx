@@ -8,7 +8,7 @@ export default function InfoModal({ show, onClose, title, subtitle, icon, tabs =
     // Reset activeTab when tabs change or modal opens
     useEffect(() => {
         if (show && tabs.length > 0) {
-            if (!activeTab || !tabs.find(t => t.id === activeTab)) {
+            if (!activeTab || !tabs.find((t) => t.id === activeTab)) {
                 setActiveTab(initialTab || tabs[0].id);
             }
         }
@@ -53,7 +53,7 @@ export default function InfoModal({ show, onClose, title, subtitle, icon, tabs =
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 1050, 
+        zIndex: 1050,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -175,22 +175,11 @@ export default function InfoModal({ show, onClose, title, subtitle, icon, tabs =
     };
 
     const modalContent = (
-        <div 
-            style={overlayStyle}
-            onClick={handleBackdropClick}
-        >
-            <div 
-                ref={panelRef}
-                style={panelStyle}
-                onClick={(e) => e.stopPropagation()}
-            >
+        <div style={overlayStyle} onClick={handleBackdropClick}>
+            <div ref={panelRef} style={panelStyle} onClick={(e) => e.stopPropagation()}>
                 <div style={innerStyle}>
                     {/* Close Button */}
-                    <button
-                        type="button"
-                        style={closeButtonStyle}
-                        onClick={onClose}
-                    >
+                    <button type="button" style={closeButtonStyle} onClick={onClose}>
                         <i className="fas fa-times"></i>
                     </button>
 
@@ -209,18 +198,17 @@ export default function InfoModal({ show, onClose, title, subtitle, icon, tabs =
                                     onClick={() => setActiveTab(tab.id)}
                                     style={getTabStyle(activeTab === tab.id)}
                                 >
-                                    <i className={`fas ${tab.icon}`} style={{ color: activeTab === tab.id ? '#ec4899' : '#9ca3af' }}></i>
+                                    <i
+                                        className={`fas ${tab.icon}`}
+                                        style={{ color: activeTab === tab.id ? '#ec4899' : '#9ca3af' }}
+                                    ></i>
                                     {tab.label}
                                 </button>
                             ))}
                         </nav>
 
                         <div style={backContainerStyle}>
-                            <button 
-                                type="button"
-                                onClick={onClose}
-                                style={backButtonStyle}
-                            >
+                            <button type="button" onClick={onClose} style={backButtonStyle}>
                                 <i className="fas fa-chevron-left" style={{ fontSize: '0.75rem' }}></i>
                                 Back to List
                             </button>
@@ -229,7 +217,7 @@ export default function InfoModal({ show, onClose, title, subtitle, icon, tabs =
 
                     {/* Content area */}
                     <div className="nyl-info-modal-content flex-grow-1 overflow-y-auto bg-white">
-                        {tabs.find(t => t.id === activeTab)?.content}
+                        {tabs.find((t) => t.id === activeTab)?.content}
                     </div>
                 </div>
             </div>

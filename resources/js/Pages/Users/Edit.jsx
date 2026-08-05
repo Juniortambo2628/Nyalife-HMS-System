@@ -33,21 +33,21 @@ export default function Edit({ user, roles, departments }) {
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <label className="form-label font-bold text-gray-500">First Name</label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         className={`form-control border-0 bg-light rounded-xl ${errors.first_name ? 'is-invalid' : ''}`}
                                         value={data.first_name}
-                                        onChange={e => setData('first_name', e.target.value)}
+                                        onChange={(e) => setData('first_name', e.target.value)}
                                     />
                                     {errors.first_name && <div className="invalid-feedback">{errors.first_name}</div>}
                                 </div>
                                 <div className="col-md-6">
                                     <label className="form-label font-bold text-gray-500">Last Name</label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         className={`form-control border-0 bg-light rounded-xl ${errors.last_name ? 'is-invalid' : ''}`}
                                         value={data.last_name}
-                                        onChange={e => setData('last_name', e.target.value)}
+                                        onChange={(e) => setData('last_name', e.target.value)}
                                     />
                                     {errors.last_name && <div className="invalid-feedback">{errors.last_name}</div>}
                                 </div>
@@ -55,32 +55,35 @@ export default function Edit({ user, roles, departments }) {
 
                             <div className="mt-4">
                                 <label className="form-label font-bold text-gray-500">Email Address</label>
-                                <input 
-                                    type="email" 
+                                <input
+                                    type="email"
                                     className={`form-control border-0 bg-light rounded-xl ${errors.email ? 'is-invalid' : ''}`}
                                     value={data.email}
-                                    onChange={e => setData('email', e.target.value)}
+                                    onChange={(e) => setData('email', e.target.value)}
                                 />
                                 {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                             </div>
 
                             <div className="mt-4">
                                 <label className="form-label font-bold text-gray-500">Role</label>
-                                <select 
+                                <select
                                     className="form-select border-0 bg-light rounded-xl"
                                     value={data.role}
-                                    onChange={e => {
+                                    onChange={(e) => {
                                         const r = e.target.value;
-                                        setData(d => ({
+                                        setData((d) => ({
                                             ...d,
                                             role: r,
-                                            department_id: r === 'patient' ? '' : d.department_id
+                                            department_id: r === 'patient' ? '' : d.department_id,
                                         }));
                                     }}
                                 >
                                     <option value="">Select a role...</option>
-                                    {roles.map(r => (
-                                        <option key={r.role_id} value={r.role_name}>{r.role_name.replace('_', ' ').charAt(0).toUpperCase() + r.role_name.slice(1)}</option>
+                                    {roles.map((r) => (
+                                        <option key={r.role_id} value={r.role_name}>
+                                            {r.role_name.replace('_', ' ').charAt(0).toUpperCase() +
+                                                r.role_name.slice(1)}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -88,25 +91,36 @@ export default function Edit({ user, roles, departments }) {
                             {data.role && data.role !== 'patient' && (
                                 <div className="mt-4">
                                     <label className="form-label font-bold text-gray-500">Department</label>
-                                    <select 
+                                    <select
                                         className={`form-select border-0 bg-light rounded-xl ${errors.department_id ? 'is-invalid' : ''}`}
                                         value={data.department_id}
-                                        onChange={e => setData('department_id', e.target.value)}
+                                        onChange={(e) => setData('department_id', e.target.value)}
                                     >
                                         <option value="">Select a department...</option>
-                                        {departments.map(d => (
-                                            <option key={d.department_id} value={d.department_id}>{d.department_name}</option>
+                                        {departments.map((d) => (
+                                            <option key={d.department_id} value={d.department_id}>
+                                                {d.department_name}
+                                            </option>
                                         ))}
                                     </select>
-                                    {errors.department_id && <div className="invalid-feedback">{errors.department_id}</div>}
+                                    {errors.department_id && (
+                                        <div className="invalid-feedback">{errors.department_id}</div>
+                                    )}
                                 </div>
                             )}
 
                             <div className="mt-5 d-flex justify-content-end gap-2">
-                                <Link href={route('users.index')} className="btn btn-light rounded-pill px-4 py-2 font-bold">
+                                <Link
+                                    href={route('users.index')}
+                                    className="btn btn-light rounded-pill px-4 py-2 font-bold"
+                                >
                                     Cancel
                                 </Link>
-                                <button type="submit" className="btn btn-primary rounded-pill px-5 py-2 font-bold shadow-lg" disabled={processing}>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary rounded-pill px-5 py-2 font-bold shadow-lg"
+                                    disabled={processing}
+                                >
                                     {processing ? 'Saving...' : 'Update User'}
                                 </button>
                             </div>

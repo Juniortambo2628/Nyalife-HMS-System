@@ -8,7 +8,6 @@ use App\Http\Resources\ConsultationResource;
 use App\Http\Resources\FollowUpResource;
 use App\Models\Consultation;
 use App\Models\FollowUp;
-use App\Models\Patient;
 use App\Services\ActivityLogger;
 use App\Support\Permissions;
 use Carbon\Carbon;
@@ -106,7 +105,7 @@ class FollowUpController extends Controller
 
         ActivityLogger::log(
             'clinical',
-            'Follow-up scheduled for ' . ($followUp->patient->user->first_name ?? 'patient') . ' on ' . $followUp->follow_up_date->format('Y-m-d'),
+            'Follow-up scheduled for '.($followUp->patient->user->first_name ?? 'patient').' on '.$followUp->follow_up_date->format('Y-m-d'),
             ['follow_up_id' => $followUp->follow_up_id],
             Auth::user(),
             $followUp,
@@ -149,7 +148,7 @@ class FollowUpController extends Controller
 
         ActivityLogger::log(
             'clinical',
-            'Follow-up #' . $followUp->follow_up_id . ' updated',
+            'Follow-up #'.$followUp->follow_up_id.' updated',
             ['follow_up_id' => $followUp->follow_up_id, 'status' => $followUp->status],
             Auth::user(),
             $followUp
@@ -164,7 +163,7 @@ class FollowUpController extends Controller
         $this->authorizeStaff();
 
         $validated = $request->validate([
-            'status' => 'required|in:' . implode(',', array_keys(FollowUp::STATUSES)),
+            'status' => 'required|in:'.implode(',', array_keys(FollowUp::STATUSES)),
         ]);
 
         $followUp = FollowUp::findOrFail($id);
@@ -172,7 +171,7 @@ class FollowUpController extends Controller
 
         ActivityLogger::log(
             'clinical',
-            'Follow-up #' . $followUp->follow_up_id . ' marked as ' . $validated['status'],
+            'Follow-up #'.$followUp->follow_up_id.' marked as '.$validated['status'],
             ['follow_up_id' => $followUp->follow_up_id],
             Auth::user(),
             $followUp
@@ -193,7 +192,7 @@ class FollowUpController extends Controller
 
         ActivityLogger::log(
             'clinical',
-            'Follow-up #' . $followUp->follow_up_id . ' removed',
+            'Follow-up #'.$followUp->follow_up_id.' removed',
             ['follow_up_id' => $followUp->follow_up_id],
             Auth::user(),
             null

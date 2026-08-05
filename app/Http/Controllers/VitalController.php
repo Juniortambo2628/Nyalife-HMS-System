@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\VitalResource;
 use App\Http\Requests\StoreVitalRequest;
 use App\Http\Requests\VoidRequest;
-use App\Models\Vital;
+use App\Http\Resources\VitalResource;
+use App\Models\Appointment;
 use App\Models\Patient;
+use App\Models\Vital;
 use App\Support\PatientId;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,13 +17,13 @@ class VitalController extends Controller
 {
     public function index()
     {
-        $appointments = \App\Models\Appointment::with(['patient.user'])
+        $appointments = Appointment::with(['patient.user'])
             ->whereDate('appointment_date', today())
             ->orderBy('appointment_time')
             ->get();
 
         return Inertia::render('Vitals/Index', [
-            'appointments' => $appointments
+            'appointments' => $appointments,
         ]);
     }
 
@@ -47,10 +48,10 @@ class VitalController extends Controller
     {
         $validated = $request->validated();
         $priority = $request->input('priority', 'normal');
-        
+
         // Calculate BMI if both height (cm) and weight (kg) are provided
         $bmi = null;
-        if (!empty($validated['weight']) && !empty($validated['height'])) {
+        if (! empty($validated['weight']) && ! empty($validated['height'])) {
             $heightInMeters = $validated['height'] / 100;
             if ($heightInMeters > 0) {
                 $bmi = round($validated['weight'] / ($heightInMeters * $heightInMeters), 2);
@@ -65,8 +66,9 @@ class VitalController extends Controller
         ]));
 
         $role = Auth::user()->role;
+
         return redirect()->route('dashboard', ['role' => $role])
-                         ->with('success', 'Patient vitals recorded successfully. Patient is ready for doctor consultation.');
+            ->with('success', 'Patient vitals recorded successfully. Patient is ready for doctor consultation.');
     }
 
     public function edit(Vital $vital)
@@ -82,10 +84,10 @@ class VitalController extends Controller
     {
         $validated = $request->validated();
         $priority = $request->input('priority', 'normal');
-        
+
         // Calculate BMI if both height (cm) and weight (kg) are provided
         $bmi = null;
-        if (!empty($validated['weight']) && !empty($validated['height'])) {
+        if (! empty($validated['weight']) && ! empty($validated['height'])) {
             $heightInMeters = $validated['height'] / 100;
             if ($heightInMeters > 0) {
                 $bmi = round($validated['weight'] / ($heightInMeters * $heightInMeters), 2);
@@ -98,7 +100,7 @@ class VitalController extends Controller
         ]));
 
         return redirect()->route('patients.show', $vital->patient_id)
-                         ->with('success', 'Patient vitals updated successfully.');
+            ->with('success', 'Patient vitals updated successfully.');
     }
 
     public function destroy(VoidRequest $request, Vital $vital)

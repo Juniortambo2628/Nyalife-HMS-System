@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\MailTemplate;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class MailTemplateController extends Controller
@@ -11,22 +11,23 @@ class MailTemplateController extends Controller
     public function index()
     {
         return Inertia::render('Settings/MailTemplates/Index', [
-            'templates' => MailTemplate::all()
+            'templates' => MailTemplate::all(),
         ]);
     }
 
     public function edit($id)
     {
         $template = MailTemplate::findOrFail($id);
+
         return Inertia::render('Settings/MailTemplates/Edit', [
-            'template' => $template
+            'template' => $template,
         ]);
     }
 
     public function update(Request $request, $id)
     {
         $template = MailTemplate::findOrFail($id);
-        
+
         $validated = $request->validate([
             'subject' => 'required|string',
             'html_template' => 'required|string',

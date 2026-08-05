@@ -56,18 +56,18 @@ const MAX_INLINE_ACTIONS = 3;
  * Three-section layout: View Options | Filters | Page Actions
  * Selection mode: replaces center with bulk actions dropdown (count embedded in button).
  */
-const UnifiedToolbar = ({ 
-    actions, 
+const UnifiedToolbar = ({
+    actions,
     filters,
     filterGroups,
     viewOptions,
     viewMode,
     onViewModeChange,
-    bulkActions, 
+    bulkActions,
     selectionCount = 0,
     autosaveStatus,
     drafts = [],
-    children 
+    children,
 }) => {
     const [isMinimized, setIsMinimized] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
@@ -92,9 +92,23 @@ const UnifiedToolbar = ({
     const renderSingleAction = (action, fallbackVariant = 'primary') => {
         const variantClass = resolveToolbarButtonClass(action, fallbackVariant);
         const btnClass = `btn ${variantClass} rounded-pill px-3 px-md-4 fw-extrabold nyl-tb-text tracking-widest shadow-sm d-inline-flex align-items-center gap-2 nyl-tb-btn nyl-tb-action-btn`;
-        const inner = <>{action.icon && <i className={`fas ${action.icon}`}></i>}<span className="d-none d-md-inline">{action.label}</span></>;
-        if (action.href) return <a key={action.label} href={action.href} className={btnClass} onClick={action.onClick}>{inner}</a>;
-        return <button key={action.label} className={btnClass} onClick={action.onClick} type="button">{inner}</button>;
+        const inner = (
+            <>
+                {action.icon && <i className={`fas ${action.icon}`}></i>}
+                <span className="d-none d-md-inline">{action.label}</span>
+            </>
+        );
+        if (action.href)
+            return (
+                <a key={action.label} href={action.href} className={btnClass} onClick={action.onClick}>
+                    {inner}
+                </a>
+            );
+        return (
+            <button key={action.label} className={btnClass} onClick={action.onClick} type="button">
+                {inner}
+            </button>
+        );
     };
 
     const renderDropdownItem = (action, idx) => {
@@ -102,22 +116,33 @@ const UnifiedToolbar = ({
         const colors = resolveDropdownItemColors(action);
         const inner = (
             <>
-                {action.icon && <i className={`fas ${action.icon} ${colors.icon}`} style={{ width: 16, textAlign: 'center' }}></i>}
+                {action.icon && (
+                    <i className={`fas ${action.icon} ${colors.icon}`} style={{ width: 16, textAlign: 'center' }}></i>
+                )}
                 <span className={`fw-bold ${colors.text}`}>{action.label}</span>
             </>
         );
 
         return (
             <li key={idx}>
-                {action.href
-                    ? <a href={action.href} className={itemCls} onClick={action.onClick}>{inner}</a>
-                    : <button className={itemCls} onClick={action.onClick} type="button">{inner}</button>}
+                {action.href ? (
+                    <a href={action.href} className={itemCls} onClick={action.onClick}>
+                        {inner}
+                    </a>
+                ) : (
+                    <button className={itemCls} onClick={action.onClick} type="button">
+                        {inner}
+                    </button>
+                )}
             </li>
         );
     };
 
     // Render an array of actions as either inline buttons or a dropdown
-    const renderActionGroup = (items, { variant = 'primary', dropdownLabel, dropdownIcon = 'fa-layer-group', forceDropdown = false } = {}) => {
+    const renderActionGroup = (
+        items,
+        { variant = 'primary', dropdownLabel, dropdownIcon = 'fa-layer-group', forceDropdown = false } = {},
+    ) => {
         if (!items) return null;
         if (!Array.isArray(items)) return items;
         const valid = items.filter(Boolean);
@@ -137,14 +162,19 @@ const UnifiedToolbar = ({
 
         return (
             <div className="dropdown">
-                <button 
+                <button
                     className={`btn ${cls} rounded-pill px-3 px-md-4 fw-extrabold nyl-tb-text tracking-widest shadow-sm d-inline-flex align-items-center gap-2 dropdown-toggle nyl-tb-btn nyl-tb-action-btn`}
-                    type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
                 >
                     <i className={`fas ${dropdownIcon}`}></i>
                     <span className="d-none d-md-inline">{dropdownLabel}</span>
                 </button>
-                <ul className="dropdown-menu dropdown-menu-end shadow-2xl border-0 rounded-2xl py-2 mt-2 animate-in fade-in zoom-in-95" style={{ zIndex: 1100 }}>
+                <ul
+                    className="dropdown-menu dropdown-menu-end shadow-2xl border-0 rounded-2xl py-2 mt-2 animate-in fade-in zoom-in-95"
+                    style={{ zIndex: 1100 }}
+                >
                     {valid.map((action, idx) => renderDropdownItem(action, idx))}
                 </ul>
             </div>
@@ -152,20 +182,29 @@ const UnifiedToolbar = ({
     };
 
     return createPortal(
-        <div className={`fixed-bottom d-flex flex-column align-items-center pb-3 pb-md-4 transition-all duration-500 unified-toolbar-wrapper ${isMinimized ? 'opacity-50 hover-opacity-100' : 'opacity-100'}`}
+        <div
+            className={`fixed-bottom d-flex flex-column align-items-center pb-3 pb-md-4 transition-all duration-500 unified-toolbar-wrapper ${isMinimized ? 'opacity-50 hover-opacity-100' : 'opacity-100'}`}
             style={{ zIndex: 1050, pointerEvents: 'none' }}
         >
             {/* Autosave & Drafts floating badges */}
             {!isMinimized && (autosaveStatus || (drafts && drafts.length > 0)) && (
-                <div className="d-flex align-items-center gap-2 mb-2 animate-in fade-in slide-in-from-bottom-2" style={{ pointerEvents: 'auto' }}>
+                <div
+                    className="d-flex align-items-center gap-2 mb-2 animate-in fade-in slide-in-from-bottom-2"
+                    style={{ pointerEvents: 'auto' }}
+                >
                     {autosaveStatus && (
-                        <div className={`badge px-3 py-2 rounded-pill shadow-lg d-inline-flex align-items-center gap-2 fw-extrabold nyl-tb-text text-uppercase tracking-widest ${autosaveStatus.includes('saving') ? 'bg-info text-white' : 'bg-success text-white'}`}>
-                            <i className={`fas ${autosaveStatus.includes('saving') ? 'fa-sync fa-spin' : 'fa-check-circle'}`}></i>
+                        <div
+                            className={`badge px-3 py-2 rounded-pill shadow-lg d-inline-flex align-items-center gap-2 fw-extrabold nyl-tb-text text-uppercase tracking-widest ${autosaveStatus.includes('saving') ? 'bg-info text-white' : 'bg-success text-white'}`}
+                        >
+                            <i
+                                className={`fas ${autosaveStatus.includes('saving') ? 'fa-sync fa-spin' : 'fa-check-circle'}`}
+                            ></i>
                             {autosaveStatus}
                         </div>
                     )}
                     {drafts && drafts.length > 0 && (
-                        <div className="badge bg-white text-pink-500 px-3 py-2 rounded-pill shadow-lg border border-pink-100 d-inline-flex align-items-center gap-2 fw-extrabold nyl-tb-text text-uppercase tracking-widest cursor-pointer hover-scale"
+                        <div
+                            className="badge bg-white text-pink-500 px-3 py-2 rounded-pill shadow-lg border border-pink-100 d-inline-flex align-items-center gap-2 fw-extrabold nyl-tb-text text-uppercase tracking-widest cursor-pointer hover-scale"
                             onClick={() => window.dispatchEvent(new CustomEvent('show-draft-switcher'))}
                         >
                             <i className="fas fa-history"></i>
@@ -176,17 +215,19 @@ const UnifiedToolbar = ({
             )}
 
             {/* Main toolbar pill */}
-            <div 
+            <div
                 className={`nyl-toolbar-pill shadow-2xl rounded-pill border border-white-10 d-flex align-items-center gap-2 px-2 px-md-3 py-2 transition-all duration-500 ${hasSelection ? 'nyl-tb-selection-bg' : 'nyl-tb-default-bg'} ${isMinimized ? 'nyl-tb-minimized' : ''}`}
                 style={{ pointerEvents: 'auto', maxWidth: '95vw' }}
             >
                 {/* Visibility toggle (always visible) */}
-                <button 
+                <button
                     onClick={() => setIsMinimized(!isMinimized)}
                     className="btn btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center shadow-none border-0 flex-shrink-0 nyl-tb-toggle"
-                    title={isMinimized ? "Show Toolbar" : "Hide Toolbar"}
+                    title={isMinimized ? 'Show Toolbar' : 'Hide Toolbar'}
                 >
-                    <i className={`fas ${isMinimized ? 'fa-chevron-up' : 'fa-chevron-down'} text-white nyl-tb-text`}></i>
+                    <i
+                        className={`fas ${isMinimized ? 'fa-chevron-up' : 'fa-chevron-down'} text-white nyl-tb-text`}
+                    ></i>
                 </button>
 
                 {!isMinimized && (
@@ -195,7 +236,7 @@ const UnifiedToolbar = ({
                         {hasSelection ? (
                             <div className="d-flex align-items-center gap-2 flex-grow-1 justify-content-center animate-in fade-in zoom-in-95">
                                 {/* Clear selection */}
-                                <button 
+                                <button
                                     onClick={() => {
                                         // Dispatch a custom event so pages can clear selection
                                         window.dispatchEvent(new CustomEvent('toolbar-clear-selection'));
@@ -207,40 +248,61 @@ const UnifiedToolbar = ({
                                 </button>
 
                                 {/* Bulk actions dropdown with count embedded */}
-                                {bulkActions && Array.isArray(bulkActions) && bulkActions.filter(Boolean).length > 0 && (
-                                    <div className="dropdown">
-                                        <button 
-                                            className="btn btn-white rounded-pill px-3 px-md-4 fw-extrabold nyl-tb-text tracking-widest shadow-sm d-inline-flex align-items-center gap-2 dropdown-toggle nyl-tb-btn"
-                                            type="button" data-bs-toggle="dropdown" aria-expanded="false"
-                                        >
-                                            <i className="fas fa-check-square text-primary"></i>
-                                            <span className="badge rounded-pill bg-pink-500 text-white nyl-tb-count">{selectionCount}</span>
-                                            <span>BULK ACTIONS</span>
-                                        </button>
-                                        <ul className="dropdown-menu dropdown-menu-end shadow-2xl border-0 rounded-2xl py-2 mt-2 animate-in fade-in zoom-in-95" style={{ zIndex: 1100 }}>
-                                            {bulkActions.filter(Boolean).map((action, idx) => {
-                                                const colors = resolveDropdownItemColors(action);
-                                                return (
-                                                <li key={idx}>
-                                                    <button 
-                                                        className="dropdown-item py-2 px-3 d-flex align-items-center gap-2 cursor-pointer"
-                                                        onClick={action.onClick} type="button"
-                                                    >
-                                                        {action.icon && <i className={`fas ${action.icon} ${colors.icon}`} style={{ width: 16, textAlign: 'center' }}></i>}
-                                                        <span className={`fw-bold ${colors.text}`}>{action.label}</span>
-                                                    </button>
-                                                </li>
-                                                );
-                                            })}
-                                        </ul>
-                                    </div>
-                                )}
+                                {bulkActions &&
+                                    Array.isArray(bulkActions) &&
+                                    bulkActions.filter(Boolean).length > 0 && (
+                                        <div className="dropdown">
+                                            <button
+                                                className="btn btn-white rounded-pill px-3 px-md-4 fw-extrabold nyl-tb-text tracking-widest shadow-sm d-inline-flex align-items-center gap-2 dropdown-toggle nyl-tb-btn"
+                                                type="button"
+                                                data-bs-toggle="dropdown"
+                                                aria-expanded="false"
+                                            >
+                                                <i className="fas fa-check-square text-primary"></i>
+                                                <span className="badge rounded-pill bg-pink-500 text-white nyl-tb-count">
+                                                    {selectionCount}
+                                                </span>
+                                                <span>BULK ACTIONS</span>
+                                            </button>
+                                            <ul
+                                                className="dropdown-menu dropdown-menu-end shadow-2xl border-0 rounded-2xl py-2 mt-2 animate-in fade-in zoom-in-95"
+                                                style={{ zIndex: 1100 }}
+                                            >
+                                                {bulkActions.filter(Boolean).map((action, idx) => {
+                                                    const colors = resolveDropdownItemColors(action);
+                                                    return (
+                                                        <li key={idx}>
+                                                            <button
+                                                                className="dropdown-item py-2 px-3 d-flex align-items-center gap-2 cursor-pointer"
+                                                                onClick={action.onClick}
+                                                                type="button"
+                                                            >
+                                                                {action.icon && (
+                                                                    <i
+                                                                        className={`fas ${action.icon} ${colors.icon}`}
+                                                                        style={{ width: 16, textAlign: 'center' }}
+                                                                    ></i>
+                                                                )}
+                                                                <span className={`fw-bold ${colors.text}`}>
+                                                                    {action.label}
+                                                                </span>
+                                                            </button>
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        </div>
+                                    )}
 
                                 {/* Page actions stay visible even during selection */}
                                 {actions && (
                                     <>
                                         <div className="vr opacity-30 bg-white mx-1 nyl-tb-divider"></div>
-                                        {renderActionGroup(actions, { variant: 'primary', dropdownLabel: 'PAGE', dropdownIcon: 'fa-layer-group' })}
+                                        {renderActionGroup(actions, {
+                                            variant: 'primary',
+                                            dropdownLabel: 'PAGE',
+                                            dropdownIcon: 'fa-layer-group',
+                                        })}
                                     </>
                                 )}
                             </div>
@@ -259,7 +321,12 @@ const UnifiedToolbar = ({
                                 {!showViewToggle && viewOptions && (
                                     <>
                                         <div className="d-flex align-items-center gap-1">
-                                            {renderActionGroup(viewOptions, { variant: 'white', dropdownLabel: 'VIEW', dropdownIcon: 'fa-th-large', forceDropdown: true })}
+                                            {renderActionGroup(viewOptions, {
+                                                variant: 'white',
+                                                dropdownLabel: 'VIEW',
+                                                dropdownIcon: 'fa-th-large',
+                                                forceDropdown: true,
+                                            })}
                                         </div>
                                         <div className="vr opacity-30 bg-white mx-1 nyl-tb-divider"></div>
                                     </>
@@ -284,7 +351,11 @@ const UnifiedToolbar = ({
                                     <>
                                         <div className="vr opacity-30 bg-white mx-1 nyl-tb-divider"></div>
                                         <div className="d-flex align-items-center gap-2 nyl-toolbar-actions flex-shrink-0">
-                                            {renderActionGroup(actions, { variant: 'primary', dropdownLabel: 'ACTIONS', dropdownIcon: 'fa-layer-group' })}
+                                            {renderActionGroup(actions, {
+                                                variant: 'primary',
+                                                dropdownLabel: 'ACTIONS',
+                                                dropdownIcon: 'fa-layer-group',
+                                            })}
                                         </div>
                                     </>
                                 )}
@@ -297,10 +368,12 @@ const UnifiedToolbar = ({
 
                 {/* Minimized badge */}
                 {isMinimized && hasSelection && (
-                    <span className="badge rounded-pill bg-white text-pink-500 fw-extrabold nyl-tb-text px-2 ms-1">{selectionCount}</span>
+                    <span className="badge rounded-pill bg-white text-pink-500 fw-extrabold nyl-tb-text px-2 ms-1">
+                        {selectionCount}
+                    </span>
                 )}
             </div>
-            
+
             <style>{`
                 :root {
                     --nyl-tb-font-size: 0.7rem;
@@ -416,7 +489,7 @@ const UnifiedToolbar = ({
                 }
             `}</style>
         </div>,
-        document.body
+        document.body,
     );
 };
 

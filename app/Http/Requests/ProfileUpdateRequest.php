@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
-use App\Models\Department;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -19,7 +19,7 @@ class ProfileUpdateRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -38,7 +38,7 @@ class ProfileUpdateRequest extends FormRequest
             'gender' => ['nullable', 'string', 'in:male,female,other'],
             'date_of_birth' => ['nullable', 'date'],
             'address' => ['nullable', 'string', 'max:500'],
-            
+
             // Staff professional fields (optional, only updated if user is staff)
             'specialization' => ['nullable', 'string', 'max:255'],
             'department_id' => ['nullable', 'integer', 'exists:departments,department_id'],

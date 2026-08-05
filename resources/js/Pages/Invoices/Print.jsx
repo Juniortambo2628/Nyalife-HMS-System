@@ -21,26 +21,38 @@ export default function Print({ invoice, clinic_settings = {} }) {
             <Head title={`Invoice ${invoice.invoice_number}`} />
 
             <div className="header">
-                <img src="/assets/logo/Logo2-transparent.png" alt="Nyalife" style={{ maxWidth: '120px', marginBottom: '10px' }} />
+                <img
+                    src="/assets/logo/Logo2-transparent.png"
+                    alt="Nyalife"
+                    style={{ maxWidth: '120px', marginBottom: '10px' }}
+                />
                 <div className="hospital-name">Nyalife Women&apos;s Clinic</div>
                 <div className="hospital-info">{clinic_settings.contact_address}</div>
-                <div className="hospital-info">{clinic_settings.contact_phone} | {clinic_settings.contact_email}</div>
+                <div className="hospital-info">
+                    {clinic_settings.contact_phone} | {clinic_settings.contact_email}
+                </div>
             </div>
 
             <div className="invoice-header">
                 <div className="invoice-details">
                     <div className="invoice-number">{invoice.invoice_number}</div>
                     <div className="invoice-info">
-                        Date: {invoice.invoice_date}<br />
-                        Due: {invoice.due_date || '—'}<br />
+                        Date: {invoice.invoice_date}
+                        <br />
+                        Due: {invoice.due_date || '—'}
+                        <br />
                         Status: {invoice.status?.toUpperCase()}
                     </div>
                 </div>
                 <div className="patient-info">
-                    <div className="patient-name">{patient?.first_name} {patient?.last_name}</div>
+                    <div className="patient-name">
+                        {patient?.first_name} {patient?.last_name}
+                    </div>
                     <div className="patient-details">
-                        {formatPatientId(invoice.patient_id)}<br />
-                        {patient?.phone || ''}<br />
+                        {formatPatientId(invoice.patient_id)}
+                        <br />
+                        {patient?.phone || ''}
+                        <br />
                         {patient?.email || ''}
                     </div>
                 </div>
@@ -69,7 +81,11 @@ export default function Print({ invoice, clinic_settings = {} }) {
 
             <div className="total-section">
                 <div>Subtotal: {formatCurrency(subtotal)}</div>
-                {taxRate > 0 && <div>Tax ({taxRate}%): {formatCurrency(taxAmount)}</div>}
+                {taxRate > 0 && (
+                    <div>
+                        Tax ({taxRate}%): {formatCurrency(taxAmount)}
+                    </div>
+                )}
                 {Number(invoice.discount) > 0 && <div>Discount: -{formatCurrency(invoice.discount)}</div>}
                 <div className="total-row total-amount">Total: {formatCurrency(total)}</div>
                 {paid > 0 && <div>Paid: {formatCurrency(paid)}</div>}
@@ -82,9 +98,7 @@ export default function Print({ invoice, clinic_settings = {} }) {
                 </div>
             )}
 
-            <div className="mt-5 text-center small text-muted">
-                Thank you for choosing Nyalife Women&apos;s Clinic
-            </div>
+            <div className="mt-5 text-center small text-muted">Thank you for choosing Nyalife Women&apos;s Clinic</div>
 
             <style>{`
                 @media print { .no-print { display: none !important; } body { margin: 0; background: #fff; } }

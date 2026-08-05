@@ -12,31 +12,27 @@ export default function Index({ appointments }) {
         {
             header: 'Timestamp',
             accessorKey: 'appointment_time',
-            cell: info => (
-                <TableCellPrimary>{info.getValue() || 'Walk-in'}</TableCellPrimary>
-            )
+            cell: (info) => <TableCellPrimary>{info.getValue() || 'Walk-in'}</TableCellPrimary>,
         },
         {
             header: 'Subject Identity',
             id: 'subject_identity',
             cell: ({ row }) => {
                 const apt = row.original;
-                return (
-                    <PatientTableCell patient={apt.patient} patientId={apt.patient_id} />
-                );
-            }
+                return <PatientTableCell patient={apt.patient} patientId={apt.patient_id} />;
+            },
         },
         {
             header: 'Monitoring State',
             accessorKey: 'status',
-            cell: info => {
+            cell: (info) => {
                 const status = info.getValue();
                 return ['scheduled', 'arrived'].includes(status) ? (
                     <StatusBadge status="pending" className="bg-warning-subtle text-warning-emphasis" />
                 ) : (
                     <StatusBadge status="completed" />
                 );
-            }
+            },
         },
         {
             header: 'Action',
@@ -47,19 +43,21 @@ export default function Index({ appointments }) {
                     return null;
                 }
                 return (
-                    <TableActions actions={[
-                        {
-                            label: 'Record vitals',
-                            icon: 'fa-stethoscope',
-                            href: route('consultations.create', {
-                                appointment_id: apt.appointment_id,
-                                patient_id: apt.patient_id,
-                            }),
-                        },
-                    ]} />
+                    <TableActions
+                        actions={[
+                            {
+                                label: 'Record vitals',
+                                icon: 'fa-stethoscope',
+                                href: route('consultations.create', {
+                                    appointment_id: apt.appointment_id,
+                                    patient_id: apt.patient_id,
+                                }),
+                            },
+                        ]}
+                    />
                 );
-            }
-        }
+            },
+        },
     ];
 
     return (
@@ -72,13 +70,13 @@ export default function Index({ appointments }) {
         >
             <Head title="Vitals & Triage" />
 
-            <UnifiedToolbar 
+            <UnifiedToolbar
                 actions={[
-                    { 
-                        label: 'Ad hoc vitals', 
-                        icon: 'fa-plus', 
-                        href: route('vitals.create') 
-                    }
+                    {
+                        label: 'Ad hoc vitals',
+                        icon: 'fa-plus',
+                        href: route('vitals.create'),
+                    },
                 ]}
             />
 

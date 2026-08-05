@@ -6,7 +6,7 @@ import { formatDateTime } from '@/Utils/dateUtils';
 
 export default function Show({ consent, doctors, auth }) {
     const isDoctor = auth.user.role === 'doctor';
-    
+
     const { data, setData, post, processing, errors } = useForm({
         doctor_name: consent.doctor_name || `Dr. ${auth.user.last_name}`,
         doctor_signature: '',
@@ -35,12 +35,12 @@ export default function Show({ consent, doctors, auth }) {
         if (e.touches && e.touches.length > 0) {
             return {
                 x: e.touches[0].clientX - rect.left,
-                y: e.touches[0].clientY - rect.top
+                y: e.touches[0].clientY - rect.top,
             };
         }
         return {
             x: e.clientX - rect.left,
-            y: e.clientY - rect.top
+            y: e.clientY - rect.top,
         };
     };
 
@@ -85,12 +85,12 @@ export default function Show({ consent, doctors, auth }) {
         e.preventDefault();
         post(route('telehealth.admin.sign-doctor', consent.id), {
             onSuccess: () => {
-                toast.success("Consent successfully counter-signed / updated!");
+                toast.success('Consent successfully counter-signed / updated!');
                 clearCanvas();
             },
             onError: () => {
-                toast.error("Failed to save doctor signature.");
-            }
+                toast.error('Failed to save doctor signature.');
+            },
         });
     };
 
@@ -112,39 +112,58 @@ export default function Show({ consent, doctors, auth }) {
                             <div className="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
                                 <div>
                                     <h4 className="fw-extrabold text-gray-900 mb-1">Telehealth Consent Form</h4>
-                                    <p className="text-muted small mb-0">Form ID: THC-{consent.id} | Signed on {formatDateTime(consent.signed_at)}</p>
+                                    <p className="text-muted small mb-0">
+                                        Form ID: THC-{consent.id} | Signed on {formatDateTime(consent.signed_at)}
+                                    </p>
                                 </div>
-                                <span className={`badge rounded-pill px-3 py-2 fw-bold ${consent.doctor_signature_path ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}`}>
+                                <span
+                                    className={`badge rounded-pill px-3 py-2 fw-bold ${consent.doctor_signature_path ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}`}
+                                >
                                     {consent.doctor_signature_path ? 'Fully Executed' : 'Doctor Sign Off Pending'}
                                 </span>
                             </div>
 
                             <div className="row g-4 mb-4">
                                 <div className="col-md-4">
-                                    <div className="small text-muted fw-bold text-uppercase tracking-wider">Patient Name</div>
+                                    <div className="small text-muted fw-bold text-uppercase tracking-wider">
+                                        Patient Name
+                                    </div>
                                     <div className="fw-bold text-gray-900 fs-5 mt-1">{consent.patient_name}</div>
                                 </div>
                                 <div className="col-md-4">
-                                    <div className="small text-muted fw-bold text-uppercase tracking-wider">Email Address</div>
+                                    <div className="small text-muted fw-bold text-uppercase tracking-wider">
+                                        Email Address
+                                    </div>
                                     <div className="fw-bold text-gray-900 fs-5 mt-1">{consent.patient_email}</div>
                                 </div>
                                 <div className="col-md-4">
-                                    <div className="small text-muted fw-bold text-uppercase tracking-wider">Phone Number</div>
+                                    <div className="small text-muted fw-bold text-uppercase tracking-wider">
+                                        Phone Number
+                                    </div>
                                     <div className="fw-bold text-gray-900 fs-5 mt-1">{consent.patient_phone}</div>
                                 </div>
                             </div>
 
                             <div className="bg-light rounded-4 p-4 mb-4">
-                                <h6 className="fw-bold text-slate-800 mb-3 border-bottom pb-2">Accepted Consent Terms</h6>
+                                <h6 className="fw-bold text-slate-800 mb-3 border-bottom pb-2">
+                                    Accepted Consent Terms
+                                </h6>
                                 <div className="small text-muted">
-                                    All 10 legal telehealth consent clauses were read, verified, and accepted by the patient on submission of this document.
+                                    All 10 legal telehealth consent clauses were read, verified, and accepted by the
+                                    patient on submission of this document.
                                 </div>
                             </div>
 
                             <div className="border rounded-4 p-4 text-center bg-light" style={{ maxWidth: '300px' }}>
-                                <div className="small text-muted fw-bold text-uppercase tracking-wider mb-2">Patient Digital Signature</div>
+                                <div className="small text-muted fw-bold text-uppercase tracking-wider mb-2">
+                                    Patient Digital Signature
+                                </div>
                                 {consent.patient_signature_path ? (
-                                    <img src={consent.patient_signature_path} alt="Patient Signature" className="img-fluid border rounded bg-white p-2" />
+                                    <img
+                                        src={consent.patient_signature_path}
+                                        alt="Patient Signature"
+                                        className="img-fluid border rounded bg-white p-2"
+                                    />
                                 ) : (
                                     <div className="text-muted italic">No signature recorded</div>
                                 )}
@@ -155,7 +174,7 @@ export default function Show({ consent, doctors, auth }) {
                     <div className="col-lg-4">
                         <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
                             <h5 className="fw-bold mb-3">Staff / Doctor Verification</h5>
-                            
+
                             {consent.doctor_name && consent.doctor_signature_path ? (
                                 <div className="space-y-4">
                                     <div className="alert alert-success-subtle text-success border-0 rounded-3 p-3">
@@ -166,43 +185,60 @@ export default function Show({ consent, doctors, auth }) {
                                         <div className="fw-bold text-slate-800">{consent.doctor_name}</div>
                                     </div>
                                     <div className="border rounded bg-light p-2 mt-2" style={{ maxWidth: '250px' }}>
-                                        <img src={consent.doctor_signature_path} alt="Doctor Signature" className="img-fluid" />
+                                        <img
+                                            src={consent.doctor_signature_path}
+                                            alt="Doctor Signature"
+                                            className="img-fluid"
+                                        />
                                     </div>
                                 </div>
                             ) : isDoctor ? (
                                 <form onSubmit={handleSubmit}>
                                     <div className="mb-3">
                                         <label className="form-label small fw-bold text-muted">Clinician Name</label>
-                                        <input 
-                                            type="text" 
-                                            className="form-control rounded-pill" 
-                                            value={data.doctor_name} 
-                                            onChange={e => setData('doctor_name', e.target.value)} 
+                                        <input
+                                            type="text"
+                                            className="form-control rounded-pill"
+                                            value={data.doctor_name}
+                                            onChange={(e) => setData('doctor_name', e.target.value)}
                                             required
                                         />
                                     </div>
 
                                     <div className="form-check mb-4">
-                                        <input 
-                                            className="form-check-input" 
-                                            type="checkbox" 
+                                        <input
+                                            className="form-check-input"
+                                            type="checkbox"
                                             id="verbalConsent"
                                             checked={data.verbal_consent_obtained}
-                                            onChange={e => setData('verbal_consent_obtained', e.target.checked)}
+                                            onChange={(e) => setData('verbal_consent_obtained', e.target.checked)}
                                         />
-                                        <label className="form-check-label small fw-semibold text-slate-700" htmlFor="verbalConsent">
+                                        <label
+                                            className="form-check-label small fw-semibold text-slate-700"
+                                            htmlFor="verbalConsent"
+                                        >
                                             Verbal Consent Confirmed & Checked
                                         </label>
                                     </div>
 
                                     <div className="mb-4">
-                                        <label className="form-label small fw-bold text-muted mb-2">Draw Counter-Signature</label>
+                                        <label className="form-label small fw-bold text-muted mb-2">
+                                            Draw Counter-Signature
+                                        </label>
                                         <div className="border rounded bg-light p-2 position-relative">
-                                            <canvas 
+                                            <canvas
                                                 ref={canvasRef}
-                                                width="250" 
-                                                height="120" 
-                                                style={{ border: '1px dotted #cbd5e1', borderRadius: '8px', background: '#fff', cursor: 'crosshair', display: 'block', width: '100%', touchAction: 'none' }}
+                                                width="250"
+                                                height="120"
+                                                style={{
+                                                    border: '1px dotted #cbd5e1',
+                                                    borderRadius: '8px',
+                                                    background: '#fff',
+                                                    cursor: 'crosshair',
+                                                    display: 'block',
+                                                    width: '100%',
+                                                    touchAction: 'none',
+                                                }}
                                                 onMouseDown={startDrawing}
                                                 onMouseMove={draw}
                                                 onMouseUp={stopDrawing}
@@ -212,13 +248,19 @@ export default function Show({ consent, doctors, auth }) {
                                                 onTouchEnd={stopDrawing}
                                             />
                                             <div className="d-flex justify-content-end mt-2">
-                                                <button type="button" className="btn btn-2xs btn-outline-secondary rounded-pill px-2.5 py-1" onClick={clearCanvas}>Clear</button>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-2xs btn-outline-secondary rounded-pill px-2.5 py-1"
+                                                    onClick={clearCanvas}
+                                                >
+                                                    Clear
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <button 
-                                        type="submit" 
+                                    <button
+                                        type="submit"
                                         disabled={processing || !data.doctor_signature}
                                         className="btn btn-primary rounded-pill w-100 fw-bold shadow-sm"
                                     >

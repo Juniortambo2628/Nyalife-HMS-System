@@ -2,9 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Consultation;
 use App\Models\FollowUp;
 use App\Models\Patient;
-use App\Models\Consultation;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class FollowUpFactory extends Factory
@@ -21,7 +22,7 @@ class FollowUpFactory extends Factory
             'reason' => $this->faker->paragraph(),
             'status' => $this->faker->randomElement(['scheduled', 'completed', 'cancelled', 'no_show', 'rescheduled']),
             'notes' => $this->faker->optional()->paragraph(),
-            'created_by' => \App\Models\User::factory(),
+            'created_by' => User::factory(),
         ];
     }
 

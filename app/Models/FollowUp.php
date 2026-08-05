@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
 use App\Traits\HasStatusScope;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 class FollowUp extends Model
 {
     use HasFactory, HasStatusScope;
+
     protected $table = 'follow_ups';
 
     protected $primaryKey = 'follow_up_id';

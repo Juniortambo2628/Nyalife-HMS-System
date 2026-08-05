@@ -8,16 +8,25 @@ import UnifiedToolbar from '@/Components/UnifiedToolbar';
 export default function Admin({ auth, stats, recentActivity }) {
     const statItems = [
         { label: 'Total Users', value: stats.total_users || 0, icon: 'fa-users-cog', color: 'primary', trend: '+12%' },
-        { label: 'Active Patients', value: stats.active_patients || 0, icon: 'fa-user-injured', color: 'success', trend: '+5.4%' },
-        { label: "Today's Visits", value: stats.today_appointments || 0, icon: 'fa-calendar-day', color: 'info', trend: 'Steady' },
-        { label: 'System Alerts', value: 3, icon: 'fa-exclamation-triangle', color: 'warning', trend: 'Low' }
+        {
+            label: 'Active Patients',
+            value: stats.active_patients || 0,
+            icon: 'fa-user-injured',
+            color: 'success',
+            trend: '+5.4%',
+        },
+        {
+            label: "Today's Visits",
+            value: stats.today_appointments || 0,
+            icon: 'fa-calendar-day',
+            color: 'info',
+            trend: 'Steady',
+        },
+        { label: 'System Alerts', value: 3, icon: 'fa-exclamation-triangle', color: 'warning', trend: 'Low' },
     ];
 
     return (
-        <AuthenticatedLayout
-            headerTitle="System Overview"
-            breadcrumbs={[{ label: 'Dashboard', active: true }]}
-        >
+        <AuthenticatedLayout headerTitle="System Overview" breadcrumbs={[{ label: 'Dashboard', active: true }]}>
             <Head title="Admin Dashboard" />
 
             <UnifiedToolbar
@@ -52,7 +61,10 @@ export default function Admin({ auth, stats, recentActivity }) {
                             className="h-100"
                             bodyClassName="px-4 pt-0 pb-4"
                             actions={
-                                <button type="button" className="btn btn-light btn-sm rounded-pill px-3 fw-bold text-muted border">
+                                <button
+                                    type="button"
+                                    className="btn btn-light btn-sm rounded-pill px-3 fw-bold text-muted border"
+                                >
                                     View Logs
                                 </button>
                             }
@@ -60,8 +72,13 @@ export default function Admin({ auth, stats, recentActivity }) {
                             {recentActivity && recentActivity.length > 0 ? (
                                 <div className="d-grid gap-3">
                                     {recentActivity.map((act, index) => (
-                                        <div key={index} className="d-flex align-items-center gap-3 p-3 rounded-xl border border-light shadow-sm bg-white">
-                                            <div className={`avatar-md bg-${act.color || 'gray'}-subtle text-${act.color || 'gray'} rounded-lg d-flex align-items-center justify-content-center flex-shrink-0`}>
+                                        <div
+                                            key={index}
+                                            className="d-flex align-items-center gap-3 p-3 rounded-xl border border-light shadow-sm bg-white"
+                                        >
+                                            <div
+                                                className={`avatar-md bg-${act.color || 'gray'}-subtle text-${act.color || 'gray'} rounded-lg d-flex align-items-center justify-content-center flex-shrink-0`}
+                                            >
                                                 <i className={`fas ${act.icon || 'fa-info-circle'}`}></i>
                                             </div>
                                             <div className="flex-grow-1">
@@ -89,20 +106,28 @@ export default function Admin({ auth, stats, recentActivity }) {
                             bodyClassName="p-4 pt-0"
                         >
                             <div className="extra-small text-muted fw-bold">Weekly Appointment Volume</div>
-                            <div className="d-flex align-items-end justify-content-between pt-4" style={{ height: '200px' }}>
+                            <div
+                                className="d-flex align-items-end justify-content-between pt-4"
+                                style={{ height: '200px' }}
+                            >
                                 {stats.performance?.data?.map((val, idx) => {
                                     const max = Math.max(...stats.performance.data, 5);
                                     const height = (val / max) * 100;
                                     return (
-                                        <div key={idx} className="flex-grow-1 text-center d-flex flex-column align-items-center h-100">
+                                        <div
+                                            key={idx}
+                                            className="flex-grow-1 text-center d-flex flex-column align-items-center h-100"
+                                        >
                                             <div className="flex-grow-1 d-flex align-items-end w-100 px-2">
                                                 <div
                                                     className="w-100 bg-primary rounded-top transition-all"
-                                                    style={{ height: `${height}%`, opacity: 0.6 + (height / 250) }}
+                                                    style={{ height: `${height}%`, opacity: 0.6 + height / 250 }}
                                                     title={`${val} appointments`}
                                                 ></div>
                                             </div>
-                                            <div className="mt-3 extra-small fw-bold text-gray-400">{stats.performance.labels[idx]}</div>
+                                            <div className="mt-3 extra-small fw-bold text-gray-400">
+                                                {stats.performance.labels[idx]}
+                                            </div>
                                         </div>
                                     );
                                 })}

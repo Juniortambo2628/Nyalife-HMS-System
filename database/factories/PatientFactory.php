@@ -18,7 +18,7 @@ class PatientFactory extends Factory
 
         return [
             'user_id' => User::factory(),
-            'patient_number' => 'PAT-' . date('Ymd') . '-' . str_pad($this->faker->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
+            'patient_number' => 'PAT-'.date('Ymd').'-'.str_pad($this->faker->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
             'date_of_birth' => $this->faker->dateTimeBetween('-80 years', '-18 years')->format('Y-m-d'),
             'gender' => $this->faker->randomElement(['male', 'female', 'other']),
             'address' => $this->faker->address(),

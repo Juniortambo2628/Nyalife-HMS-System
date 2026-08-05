@@ -21,7 +21,7 @@ class StoreFollowUpRequest extends FormRequest
             'follow_up_date' => 'required|date',
             'follow_up_type' => 'nullable|string|max:50',
             'reason' => 'required|string|max:2000',
-            'status' => 'nullable|in:' . implode(',', array_keys(FollowUp::STATUSES)),
+            'status' => 'nullable|in:'.implode(',', array_keys(FollowUp::STATUSES)),
             'notes' => 'nullable|string|max:2000',
         ];
     }

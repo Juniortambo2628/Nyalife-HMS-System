@@ -18,7 +18,7 @@ class CheckGuestDataController extends Controller
             ->where('status', 'provisional')
             ->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'found' => false,
             ], 404);

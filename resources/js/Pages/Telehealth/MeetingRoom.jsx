@@ -9,7 +9,10 @@ export default function MeetingRoom({ meetingId, jitsiDomain, user }) {
         <div className="vh-100 d-flex flex-column bg-dark">
             <Head title={`Telehealth Meeting - ${meetingId}`} />
 
-            <nav className="navbar navbar-dark bg-dark border-bottom border-secondary px-3 py-1" style={{ minHeight: 48 }}>
+            <nav
+                className="navbar navbar-dark bg-dark border-bottom border-secondary px-3 py-1"
+                style={{ minHeight: 48 }}
+            >
                 <div className="container-fluid">
                     <Link className="navbar-brand d-flex align-items-center gap-2 py-0" href="/">
                         <img src="/assets/img/logo/Logo2-transparent.png" alt="Nyalife" height="30" />
@@ -17,7 +20,9 @@ export default function MeetingRoom({ meetingId, jitsiDomain, user }) {
                     </Link>
                     <div className="d-flex align-items-center gap-3">
                         {user && (
-                            <span className="text-light small">{user.first_name} {user.last_name}</span>
+                            <span className="text-light small">
+                                {user.first_name} {user.last_name}
+                            </span>
                         )}
                         <a
                             href={`https://${jitsiDomain}/${roomName}`}

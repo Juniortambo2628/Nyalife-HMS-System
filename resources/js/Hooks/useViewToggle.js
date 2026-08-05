@@ -9,11 +9,7 @@ import { useState, useCallback } from 'react';
  * @param {string[]} [options.allowedViews] Optional whitelist.
  * @returns {{ viewMode: string, setViewMode: Function, handleViewChange: Function }}
  */
-export default function useViewToggle({
-    storageKey,
-    defaultView = 'list',
-    allowedViews,
-} = {}) {
+export default function useViewToggle({ storageKey, defaultView = 'list', allowedViews } = {}) {
     const getInitialView = useCallback(() => {
         if (!storageKey) return defaultView;
         try {
@@ -42,7 +38,7 @@ export default function useViewToggle({
                 }
             }
         },
-        [storageKey, allowedViews]
+        [storageKey, allowedViews],
     );
 
     return { viewMode, setViewMode, handleViewChange };

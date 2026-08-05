@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\PharmacyPurchaseOrder;
 use App\Models\Medication;
+use App\Models\PharmacyPurchaseOrder;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PharmacyPurchaseOrderFactory extends Factory
@@ -13,9 +13,9 @@ class PharmacyPurchaseOrderFactory extends Factory
     public function definition(): array
     {
         return [
-            'order_number' => 'PO-' . date('Ymd') . '-' . str_pad($this->faker->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
+            'order_number' => 'PO-'.date('Ymd').'-'.str_pad($this->faker->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
             'medication_id' => Medication::factory(),
-            'medication_name' => $this->faker->word() . ' ' . $this->faker->randomElement(['Tablets', 'Capsules', 'Syrup', 'Injection']),
+            'medication_name' => $this->faker->word().' '.$this->faker->randomElement(['Tablets', 'Capsules', 'Syrup', 'Injection']),
             'quantity' => $this->faker->numberBetween(50, 500),
             'supplier_name' => $this->faker->randomElement([
                 'Global Pharma Distributors',

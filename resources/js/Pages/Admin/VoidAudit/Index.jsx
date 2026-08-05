@@ -18,148 +18,166 @@ const TABS = [
 export default function Index({ type, prescriptions, vitals, invoices, filters, counts, stats }) {
     const [search, setSearch] = useState(filters.search || '');
 
-    const statItems = useMemo(() => [
-        {
-            label: 'Voided Prescriptions',
-            value: stats?.prescriptions ?? 0,
-            icon: 'fa-prescription',
-            color: 'danger',
-        },
-        {
-            label: 'Voided Vitals',
-            value: stats?.vitals ?? 0,
-            icon: 'fa-heartbeat',
-            color: 'warning',
-        },
-        {
-            label: 'Voided Invoices',
-            value: stats?.invoices ?? 0,
-            icon: 'fa-file-invoice',
-            color: 'info',
-        },
-    ], [stats]);
+    const statItems = useMemo(
+        () => [
+            {
+                label: 'Voided Prescriptions',
+                value: stats?.prescriptions ?? 0,
+                icon: 'fa-prescription',
+                color: 'danger',
+            },
+            {
+                label: 'Voided Vitals',
+                value: stats?.vitals ?? 0,
+                icon: 'fa-heartbeat',
+                color: 'warning',
+            },
+            {
+                label: 'Voided Invoices',
+                value: stats?.invoices ?? 0,
+                icon: 'fa-file-invoice',
+                color: 'info',
+            },
+        ],
+        [stats],
+    );
 
     const applyFilters = (nextType = type, nextSearch = search) => {
-        router.get(route('admin.void-audit.index'), { type: nextType, search: nextSearch || undefined }, {
-            preserveState: true,
-            replace: true,
-        });
+        router.get(
+            route('admin.void-audit.index'),
+            { type: nextType, search: nextSearch || undefined },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
-    const prescriptionColumns = useMemo(() => [
-        {
-            header: 'Prescription',
-            accessorKey: 'prescription_id',
-            cell: ({ row }) => (
-                <RefBadge variant="info">
-                    {row.original.prescription_number || `RX-${row.original.prescription_id}`}
-                </RefBadge>
-            ),
-        },
-        {
-            header: 'Patient',
-            id: 'patient',
-            cell: ({ row }) => (
-                <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
-            ),
-        },
-        {
-            header: 'Void reason',
-            accessorKey: 'void_reason',
-            cell: ({ row }) => (
-                <TableCellPrimary className="text-truncate nyl-text-constrained">
-                    {row.original.void_reason || '—'}
-                </TableCellPrimary>
-            ),
-        },
-        {
-            header: 'Voided by',
-            id: 'voided_by',
-            cell: ({ row }) => {
-                const user = row.original.voided_by_user;
-                return (
-                    <TableCellPrimary>
-                        {user ? `${user.first_name} ${user.last_name}` : '—'}
-                    </TableCellPrimary>
-                );
+    const prescriptionColumns = useMemo(
+        () => [
+            {
+                header: 'Prescription',
+                accessorKey: 'prescription_id',
+                cell: ({ row }) => (
+                    <RefBadge variant="info">
+                        {row.original.prescription_number || `RX-${row.original.prescription_id}`}
+                    </RefBadge>
+                ),
             },
-        },
-        {
-            header: 'Voided at',
-            accessorKey: 'voided_at',
-            cell: ({ row }) => (
-                <TableCellPrimary>{formatDateTime(row.original.voided_at)}</TableCellPrimary>
-            ),
-        },
-    ], []);
+            {
+                header: 'Patient',
+                id: 'patient',
+                cell: ({ row }) => (
+                    <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
+                ),
+            },
+            {
+                header: 'Void reason',
+                accessorKey: 'void_reason',
+                cell: ({ row }) => (
+                    <TableCellPrimary className="text-truncate nyl-text-constrained">
+                        {row.original.void_reason || '—'}
+                    </TableCellPrimary>
+                ),
+            },
+            {
+                header: 'Voided by',
+                id: 'voided_by',
+                cell: ({ row }) => {
+                    const user = row.original.voided_by_user;
+                    return <TableCellPrimary>{user ? `${user.first_name} ${user.last_name}` : '—'}</TableCellPrimary>;
+                },
+            },
+            {
+                header: 'Voided at',
+                accessorKey: 'voided_at',
+                cell: ({ row }) => <TableCellPrimary>{formatDateTime(row.original.voided_at)}</TableCellPrimary>,
+            },
+        ],
+        [],
+    );
 
-    const vitalColumns = useMemo(() => [
-        {
-            header: 'Record',
-            accessorKey: 'vital_id',
-            cell: ({ row }) => <RefBadge variant="info">VIT-{row.original.vital_id}</RefBadge>,
-        },
-        {
-            header: 'Patient',
-            id: 'patient',
-            cell: ({ row }) => (
-                <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
-            ),
-        },
-        {
-            header: 'Reading',
-            id: 'reading',
-            cell: ({ row }) => (
-                <TableCellStack
-                    primary={[row.original.blood_pressure, row.original.heart_rate ? `${row.original.heart_rate} bpm` : null].filter(Boolean).join(' · ') || 'Vitals recorded'}
-                    secondary={row.original.temperature ? `${row.original.temperature}°C` : null}
-                />
-            ),
-        },
-        {
-            header: 'Void reason',
-            accessorKey: 'void_reason',
-            cell: ({ row }) => <TableCellPrimary>{row.original.void_reason || '—'}</TableCellPrimary>,
-        },
-        {
-            header: 'Voided at',
-            accessorKey: 'voided_at',
-            cell: ({ row }) => <TableCellPrimary>{formatDateTime(row.original.voided_at)}</TableCellPrimary>,
-        },
-    ], []);
+    const vitalColumns = useMemo(
+        () => [
+            {
+                header: 'Record',
+                accessorKey: 'vital_id',
+                cell: ({ row }) => <RefBadge variant="info">VIT-{row.original.vital_id}</RefBadge>,
+            },
+            {
+                header: 'Patient',
+                id: 'patient',
+                cell: ({ row }) => (
+                    <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
+                ),
+            },
+            {
+                header: 'Reading',
+                id: 'reading',
+                cell: ({ row }) => (
+                    <TableCellStack
+                        primary={
+                            [
+                                row.original.blood_pressure,
+                                row.original.heart_rate ? `${row.original.heart_rate} bpm` : null,
+                            ]
+                                .filter(Boolean)
+                                .join(' · ') || 'Vitals recorded'
+                        }
+                        secondary={row.original.temperature ? `${row.original.temperature}°C` : null}
+                    />
+                ),
+            },
+            {
+                header: 'Void reason',
+                accessorKey: 'void_reason',
+                cell: ({ row }) => <TableCellPrimary>{row.original.void_reason || '—'}</TableCellPrimary>,
+            },
+            {
+                header: 'Voided at',
+                accessorKey: 'voided_at',
+                cell: ({ row }) => <TableCellPrimary>{formatDateTime(row.original.voided_at)}</TableCellPrimary>,
+            },
+        ],
+        [],
+    );
 
-    const invoiceColumns = useMemo(() => [
-        {
-            header: 'Invoice',
-            accessorKey: 'invoice_number',
-            cell: ({ row }) => <RefBadge variant="info">{row.original.invoice_number}</RefBadge>,
-        },
-        {
-            header: 'Patient',
-            id: 'patient',
-            cell: ({ row }) => (
-                <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
-            ),
-        },
-        {
-            header: 'Amount',
-            accessorKey: 'total_amount',
-            cell: ({ row }) => <TableCellPrimary>{row.original.total_amount}</TableCellPrimary>,
-        },
-        {
-            header: 'Void reason',
-            accessorKey: 'void_reason',
-            cell: ({ row }) => <TableCellPrimary>{row.original.void_reason || '—'}</TableCellPrimary>,
-        },
-        {
-            header: 'Voided at',
-            accessorKey: 'voided_at',
-            cell: ({ row }) => <TableCellPrimary>{formatDateTime(row.original.voided_at)}</TableCellPrimary>,
-        },
-    ], []);
+    const invoiceColumns = useMemo(
+        () => [
+            {
+                header: 'Invoice',
+                accessorKey: 'invoice_number',
+                cell: ({ row }) => <RefBadge variant="info">{row.original.invoice_number}</RefBadge>,
+            },
+            {
+                header: 'Patient',
+                id: 'patient',
+                cell: ({ row }) => (
+                    <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
+                ),
+            },
+            {
+                header: 'Amount',
+                accessorKey: 'total_amount',
+                cell: ({ row }) => <TableCellPrimary>{row.original.total_amount}</TableCellPrimary>,
+            },
+            {
+                header: 'Void reason',
+                accessorKey: 'void_reason',
+                cell: ({ row }) => <TableCellPrimary>{row.original.void_reason || '—'}</TableCellPrimary>,
+            },
+            {
+                header: 'Voided at',
+                accessorKey: 'voided_at',
+                cell: ({ row }) => <TableCellPrimary>{formatDateTime(row.original.voided_at)}</TableCellPrimary>,
+            },
+        ],
+        [],
+    );
 
     const activeData = type === 'prescriptions' ? prescriptions : type === 'vitals' ? vitals : invoices;
-    const activeColumns = type === 'prescriptions' ? prescriptionColumns : type === 'vitals' ? vitalColumns : invoiceColumns;
+    const activeColumns =
+        type === 'prescriptions' ? prescriptionColumns : type === 'vitals' ? vitalColumns : invoiceColumns;
     const idField = type === 'prescriptions' ? 'prescription_id' : type === 'vitals' ? 'vital_id' : 'invoice_id';
 
     return (

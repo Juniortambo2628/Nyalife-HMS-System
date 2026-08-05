@@ -7,10 +7,15 @@ use Spatie\MailTemplates\TemplateMailable;
 class TelehealthInvitation extends TemplateMailable
 {
     public $patient_name;
+
     public $meeting_link;
+
     public $appointment_date;
+
     public $appointment_time;
+
     public $doctor_name;
+
     public $consent_form_url;
 
     public function __construct(array $data)

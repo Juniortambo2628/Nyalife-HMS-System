@@ -2,9 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Models\Vital;
-use App\Models\Patient;
 use App\Models\Consultation;
+use App\Models\Patient;
+use App\Models\User;
+use App\Models\Vital;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class VitalFactory extends Factory
@@ -34,7 +35,7 @@ class VitalFactory extends Factory
             'priority' => $this->faker->randomElement(['normal', 'urgent', 'emergency']),
             'notes' => $this->faker->optional()->sentence(),
             'measured_at' => $this->faker->dateTimeBetween('-30 days', 'now')->format('Y-m-d H:i:s'),
-            'recorded_by' => \App\Models\User::factory(),
+            'recorded_by' => User::factory(),
             'is_voided' => false,
             'void_reason' => null,
             'voided_by' => null,
@@ -69,7 +70,7 @@ class VitalFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'is_voided' => true,
             'void_reason' => $this->faker->sentence(),
-            'voided_by' => \App\Models\User::factory(),
+            'voided_by' => User::factory(),
             'voided_at' => now()->format('Y-m-d H:i:s'),
         ]);
     }

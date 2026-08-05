@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TelehealthConsent;
+use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\Staff;
-use App\Models\Appointment;
+use App\Models\TelehealthConsent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -35,14 +35,14 @@ class TelehealthController extends Controller
                 $q->where('patient_id', function ($subq) use ($user) {
                     $subq->select('patient_id')->from('patients')->where('user_id', $user->user_id);
                 })
-                ->orWhere('doctor_id', function ($subq) use ($user) {
-                    $subq->select('staff_id')->from('staff')->where('user_id', $user->user_id);
-                })
-                ->orWhere('created_by', $user->user_id);
+                    ->orWhere('doctor_id', function ($subq) use ($user) {
+                        $subq->select('staff_id')->from('staff')->where('user_id', $user->user_id);
+                    })
+                    ->orWhere('created_by', $user->user_id);
             })
             ->first();
 
-        if (!$appointment) {
+        if (! $appointment) {
             abort(403, 'You do not have access to this meeting room.');
         }
 
@@ -72,7 +72,7 @@ class TelehealthController extends Controller
         // Attempt to match patient by email or phone
         $patient = Patient::whereHas('user', function ($query) use ($validated) {
             $query->where('email', $validated['patient_email'])
-                  ->orWhere('phone', $validated['patient_phone']);
+                ->orWhere('phone', $validated['patient_phone']);
         })->first();
 
         TelehealthConsent::create([
@@ -113,13 +113,13 @@ class TelehealthController extends Controller
 
         return Inertia::render('Telehealth/Show', [
             'consent' => $consent,
-            'doctors' => Staff::whereHas('user.roleRelation', function($query) {
+            'doctors' => Staff::whereHas('user.roleRelation', function ($query) {
                 $query->where('role_name', 'doctor');
-            })->with('user')->get()->map(function($s) {
-                 return [
-                    'value' => 'Dr. ' . ($s->user->last_name ?? 'Unknown'),
-                    'label' => 'Dr. ' . ($s->user->first_name . ' ' . $s->user->last_name)
-                 ];
+            })->with('user')->get()->map(function ($s) {
+                return [
+                    'value' => 'Dr. '.($s->user->last_name ?? 'Unknown'),
+                    'label' => 'Dr. '.($s->user->first_name.' '.$s->user->last_name),
+                ];
             }),
         ]);
     }

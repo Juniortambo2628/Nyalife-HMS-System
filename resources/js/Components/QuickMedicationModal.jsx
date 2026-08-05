@@ -8,7 +8,7 @@ export default function QuickMedicationModal({ isOpen, onClose, onSuccess, initi
         unit: 'mg',
         price_per_unit: 0,
         description: '',
-        category: 'General'
+        category: 'General',
     });
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
@@ -25,11 +25,11 @@ export default function QuickMedicationModal({ isOpen, onClose, onSuccess, initi
             // Assuming the backend returns the new medication object or at least the ID
             // Since it's a redirect backed, we might need a JSON response for this modal
             // Let's check PharmacyController@storeMedicine
-            
+
             // For now, let's assume we can handle success
             onSuccess({
                 value: response.data.medication_id,
-                label: `${formData.medication_name} (${formData.strength} ${formData.unit})`
+                label: `${formData.medication_name} (${formData.strength} ${formData.unit})`,
             });
             onClose();
         } catch (err) {
@@ -58,33 +58,35 @@ export default function QuickMedicationModal({ isOpen, onClose, onSuccess, initi
                             <div className="row g-3">
                                 <div className="col-12">
                                     <label className="form-label small fw-bold">Medicine Name</label>
-                                    <input 
-                                        type="text" 
-                                        className={`form-control ${errors.medication_name ? 'is-invalid' : ''}`} 
-                                        required 
+                                    <input
+                                        type="text"
+                                        className={`form-control ${errors.medication_name ? 'is-invalid' : ''}`}
+                                        required
                                         value={formData.medication_name}
-                                        onChange={e => setFormData({...formData, medication_name: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, medication_name: e.target.value })}
                                     />
-                                    {errors.medication_name && <div className="invalid-feedback">{errors.medication_name[0]}</div>}
+                                    {errors.medication_name && (
+                                        <div className="invalid-feedback">{errors.medication_name[0]}</div>
+                                    )}
                                 </div>
                                 <div className="col-md-6">
                                     <label className="form-label small fw-bold">Strength</label>
-                                    <input 
-                                        type="text" 
-                                        className={`form-control ${errors.strength ? 'is-invalid' : ''}`} 
+                                    <input
+                                        type="text"
+                                        className={`form-control ${errors.strength ? 'is-invalid' : ''}`}
                                         placeholder="e.g. 500"
-                                        required 
+                                        required
                                         value={formData.strength}
-                                        onChange={e => setFormData({...formData, strength: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, strength: e.target.value })}
                                     />
                                     {errors.strength && <div className="invalid-feedback">{errors.strength[0]}</div>}
                                 </div>
                                 <div className="col-md-6">
                                     <label className="form-label small fw-bold">Unit</label>
-                                    <select 
+                                    <select
                                         className="form-select"
                                         value={formData.unit}
-                                        onChange={e => setFormData({...formData, unit: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                                     >
                                         <option value="mg">mg</option>
                                         <option value="ml">ml</option>
@@ -96,20 +98,33 @@ export default function QuickMedicationModal({ isOpen, onClose, onSuccess, initi
                                 </div>
                                 <div className="col-md-12">
                                     <label className="form-label small fw-bold">Price per Unit (KES)</label>
-                                    <input 
-                                        type="number" 
-                                        className={`form-control ${errors.price_per_unit ? 'is-invalid' : ''}`} 
-                                        required 
+                                    <input
+                                        type="number"
+                                        className={`form-control ${errors.price_per_unit ? 'is-invalid' : ''}`}
+                                        required
                                         value={formData.price_per_unit}
-                                        onChange={e => setFormData({...formData, price_per_unit: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, price_per_unit: e.target.value })}
                                     />
-                                    {errors.price_per_unit && <div className="invalid-feedback">{errors.price_per_unit[0]}</div>}
+                                    {errors.price_per_unit && (
+                                        <div className="invalid-feedback">{errors.price_per_unit[0]}</div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                         <div className="modal-footer p-3 bg-light rounded-bottom-4 border-0">
-                            <button type="button" className="btn btn-light rounded-pill px-4" onClick={onClose} disabled={loading}>Cancel</button>
-                            <button type="submit" className="btn btn-success rounded-pill px-4 fw-bold shadow-sm" disabled={loading}>
+                            <button
+                                type="button"
+                                className="btn btn-light rounded-pill px-4"
+                                onClick={onClose}
+                                disabled={loading}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="btn btn-success rounded-pill px-4 fw-bold shadow-sm"
+                                disabled={loading}
+                            >
                                 {loading ? 'Saving...' : 'Add to Catalog'}
                             </button>
                         </div>

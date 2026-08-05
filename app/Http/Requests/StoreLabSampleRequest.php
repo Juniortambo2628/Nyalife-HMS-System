@@ -23,7 +23,7 @@ class StoreLabSampleRequest extends FormRequest
             'lab_request_id' => 'nullable|exists:lab_test_requests,request_id',
             'patient_id' => 'required|exists:patients,patient_id',
             'test_type_id' => 'required|exists:lab_test_types,test_type_id',
-            'sample_type' => 'required|in:' . implode(',', array_keys(LabSample::SAMPLE_TYPES)),
+            'sample_type' => 'required|in:'.implode(',', array_keys(LabSample::SAMPLE_TYPES)),
             'collected_date' => 'required|date',
             'collected_at' => 'nullable|date',
             'notes' => 'nullable|string|max:1000',

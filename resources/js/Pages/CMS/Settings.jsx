@@ -22,16 +22,18 @@ import { resolvePublicImageUrl } from '@/Utils/imageUtils';
 
 export default function Settings({ settings, serviceTabs }) {
     const { data, setData, post, processing, errors } = useForm({
-        settings: Object.values(settings).flat().reduce((acc, s) => {
-            acc[s.key] = s.value;
-            return acc;
-        }, {})
+        settings: Object.values(settings)
+            .flat()
+            .reduce((acc, s) => {
+                acc[s.key] = s.value;
+                return acc;
+            }, {}),
     });
 
     const handleChange = (key, value) => {
         setData('settings', {
             ...data.settings,
-            [key]: value
+            [key]: value,
         });
     };
 
@@ -45,14 +47,17 @@ export default function Settings({ settings, serviceTabs }) {
         e.preventDefault();
         post(route('cms.update'), {
             onSuccess: () => toast.success('CMS Configuration updated successfully!'),
-            onError: () => toast.error('Failed to update CMS Configuration. Please check for errors.')
+            onError: () => toast.error('Failed to update CMS Configuration. Please check for errors.'),
         });
     };
 
     return (
         <AuthenticatedLayout
             headerTitle="Landing Page Configuration"
-            breadcrumbs={[{ label: 'Admin', url: '/dashboard' }, { label: 'CMS', active: true }]}
+            breadcrumbs={[
+                { label: 'Admin', url: '/dashboard' },
+                { label: 'CMS', active: true },
+            ]}
         >
             <Head title="CMS Settings" />
 
@@ -66,14 +71,12 @@ export default function Settings({ settings, serviceTabs }) {
                 ]}
             />
 
-
-
             <div className="py-0">
                 {/* Section Order Tool - Special Case */}
                 {data.settings.landing_page_order && (
                     <div className="mb-5">
-                        <SectionOrder 
-                            value={data.settings.landing_page_order} 
+                        <SectionOrder
+                            value={data.settings.landing_page_order}
                             onChange={(val) => handleChange('landing_page_order', val)}
                         />
                     </div>
@@ -84,15 +87,25 @@ export default function Settings({ settings, serviceTabs }) {
 
                 <form onSubmit={handleSubmit}>
                     {Object.entries(settings).map(([group, items]) => (
-                        <div key={`group-${group}`} className="card shadow-sm border-0 rounded-2xl overflow-hidden bg-white p-5 mb-5">
+                        <div
+                            key={`group-${group}`}
+                            className="card shadow-sm border-0 rounded-2xl overflow-hidden bg-white p-5 mb-5"
+                        >
                             <div className="d-flex align-items-center mb-4 border-bottom border-pink-100 pb-3">
                                 <div className="avatar-sm bg-pink-100 text-pink-500 rounded-circle d-flex align-items-center justify-content-center me-3">
-                                    <i className={`fas ${
-                                        group === 'hero' ? 'fa-star' : 
-                                        group === 'hero_cards' ? 'fa-th-large' :
-                                        group === 'about' ? 'fa-info-circle' : 
-                                        group === 'contact' ? 'fa-phone' : 'fa-cog'
-                                    }`}></i>
+                                    <i
+                                        className={`fas ${
+                                            group === 'hero'
+                                                ? 'fa-star'
+                                                : group === 'hero_cards'
+                                                  ? 'fa-th-large'
+                                                  : group === 'about'
+                                                    ? 'fa-info-circle'
+                                                    : group === 'contact'
+                                                      ? 'fa-phone'
+                                                      : 'fa-cog'
+                                        }`}
+                                    ></i>
                                 </div>
                                 <h5 className="fw-bold text-gray-900 mb-0 text-capitalize">
                                     {group.replace(/_/g, ' ')} Configuration
@@ -104,10 +117,17 @@ export default function Settings({ settings, serviceTabs }) {
                                     if (item.key === 'landing_page_order') return null;
 
                                     return (
-                                        <div key={`setting-${item.id || item.key || itemIdx}`} className="col-lg-6 text-dark h-auto">
+                                        <div
+                                            key={`setting-${item.id || item.key || itemIdx}`}
+                                            className="col-lg-6 text-dark h-auto"
+                                        >
                                             <div className="form-group mb-2">
-                                                <InputLabel htmlFor={item.key} value={item.label || item.key.replace(/_/g, ' ').toUpperCase()} className="fw-bold text-gray-700 mb-2" />
-                                                
+                                                <InputLabel
+                                                    htmlFor={item.key}
+                                                    value={item.label || item.key.replace(/_/g, ' ').toUpperCase()}
+                                                    className="fw-bold text-gray-700 mb-2"
+                                                />
+
                                                 {item.type === 'textarea' ? (
                                                     <textarea
                                                         id={item.key}
@@ -121,29 +141,43 @@ export default function Settings({ settings, serviceTabs }) {
                                                     <div className="cms-image-upload-container">
                                                         <div className="mb-3">
                                                             <FilePond
-                                                                onupdatefiles={(fileItems) => handleFileChange(item.key, fileItems)}
+                                                                onupdatefiles={(fileItems) =>
+                                                                    handleFileChange(item.key, fileItems)
+                                                                }
                                                                 allowMultiple={false}
                                                                 maxFiles={1}
                                                                 labelIdle='Drag & Drop your image or <span class="filepond--label-action">Browse</span>'
                                                                 acceptedFileTypes={['image/*']}
                                                             />
                                                         </div>
-                                                        {data.settings[item.key] && typeof data.settings[item.key] === 'string' && (
-                                                            <div className="mt-2 p-3 border rounded-2xl bg-light d-flex align-items-center gap-3 shadow-sm">
-                                                                <div className="flex-shrink-0">
-                                                                    <img 
-                                                                        src={resolvePublicImageUrl(data.settings[item.key], '/assets/img/slider/footer-bg1.jpg')} 
-                                                                        className="rounded-xl shadow-sm border-2 border-white" 
-                                                                        style={{ height: '80px', width: '80px', objectFit: 'cover' }} 
-                                                                        alt="Current" 
-                                                                    />
+                                                        {data.settings[item.key] &&
+                                                            typeof data.settings[item.key] === 'string' && (
+                                                                <div className="mt-2 p-3 border rounded-2xl bg-light d-flex align-items-center gap-3 shadow-sm">
+                                                                    <div className="flex-shrink-0">
+                                                                        <img
+                                                                            src={resolvePublicImageUrl(
+                                                                                data.settings[item.key],
+                                                                                '/assets/img/slider/footer-bg1.jpg',
+                                                                            )}
+                                                                            className="rounded-xl shadow-sm border-2 border-white"
+                                                                            style={{
+                                                                                height: '80px',
+                                                                                width: '80px',
+                                                                                objectFit: 'cover',
+                                                                            }}
+                                                                            alt="Current"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="overflow-hidden">
+                                                                        <small className="text-muted d-block fw-bold">
+                                                                            Live Preview:
+                                                                        </small>
+                                                                        <code className="extra-small text-pink-500 text-truncate d-block">
+                                                                            {data.settings[item.key]}
+                                                                        </code>
+                                                                    </div>
                                                                 </div>
-                                                                <div className="overflow-hidden">
-                                                                    <small className="text-muted d-block fw-bold">Live Preview:</small>
-                                                                    <code className="extra-small text-pink-500 text-truncate d-block">{data.settings[item.key]}</code>
-                                                                </div>
-                                                            </div>
-                                                        )}
+                                                            )}
                                                     </div>
                                                 ) : (
                                                     <TextInput
@@ -162,11 +196,8 @@ export default function Settings({ settings, serviceTabs }) {
                             </div>
                         </div>
                     ))}
-
                 </form>
-                
             </div>
         </AuthenticatedLayout>
     );
 }
-

@@ -31,7 +31,7 @@ class AdminUserSeeder extends Seeder
         // Check if user exists
         $exists = DB::table('users')->where('username', 'admin')->exists();
 
-        if (!$exists) {
+        if (! $exists) {
             DB::table('users')->insert([
                 'username' => 'admin',
                 'first_name' => 'System',

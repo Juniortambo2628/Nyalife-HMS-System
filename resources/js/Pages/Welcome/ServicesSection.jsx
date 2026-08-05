@@ -9,7 +9,9 @@ export default function ServicesSection({ serviceTabs = [] }) {
             <section className="section-rhythm-md bg-gray-50" id="services">
                 <div className="container">
                     <div className="text-center mb-16">
-                        <span className="badge bg-pink-100 text-pink-600 px-3 py-2 rounded-pill mb-3 font-bold text-uppercase tracking-wider">Specialties</span>
+                        <span className="badge bg-pink-100 text-pink-600 px-3 py-2 rounded-pill mb-3 font-bold text-uppercase tracking-wider">
+                            Specialties
+                        </span>
                         <h2 className="display-5 fw-bold text-gray-900 section-title-main">Our Specialized Services</h2>
                     </div>
                     <div className="py-10 text-center">
@@ -27,7 +29,9 @@ export default function ServicesSection({ serviceTabs = [] }) {
         <section className="section-rhythm-md bg-gray-50" id="services">
             <div className="container">
                 <div className="text-center mb-16">
-                    <span className="badge bg-pink-100 text-pink-600 px-3 py-2 rounded-pill mb-3 font-bold text-uppercase tracking-wider">Specialties</span>
+                    <span className="badge bg-pink-100 text-pink-600 px-3 py-2 rounded-pill mb-3 font-bold text-uppercase tracking-wider">
+                        Specialties
+                    </span>
                     <h2 className="display-5 fw-bold text-gray-900 section-title-main">Our Specialized Services</h2>
                 </div>
 
@@ -37,13 +41,15 @@ export default function ServicesSection({ serviceTabs = [] }) {
                             <ul className="nav nav-pills flex-column p-4 gap-2" id="v-pills-tab" role="tablist">
                                 {serviceTabs.map((tab) => (
                                     <li key={tab.id} className="nav-item">
-                                        <button 
+                                        <button
                                             className={`nav-link border-0 text-start w-100 py-3 px-4 rounded-2xl transition-all ${activeTab === tab.id ? 'active shadow-sm' : 'text-gray-600'}`}
                                             onClick={() => setActiveTab(tab.id)}
                                             type="button"
                                         >
                                             <i className={`fas ${tab.icon || 'fa-check-circle'} me-3`}></i>
-                                            <span className="fw-extrabold fs-5 text-uppercase tracking-wider">{tab.title}</span>
+                                            <span className="fw-extrabold fs-5 text-uppercase tracking-wider">
+                                                {tab.title}
+                                            </span>
                                         </button>
                                     </li>
                                 ))}
@@ -52,7 +58,7 @@ export default function ServicesSection({ serviceTabs = [] }) {
                         <div className="col-lg-8">
                             <div className="tab-content p-4 p-md-5" id="v-pills-tabContent">
                                 {serviceTabs.map((tab) => (
-                                    <div 
+                                    <div
                                         key={tab.id}
                                         className={`tab-pane fade ${activeTab === tab.id ? 'show active' : ''}`}
                                         role="tabpanel"
@@ -63,17 +69,24 @@ export default function ServicesSection({ serviceTabs = [] }) {
                                                 <p className="lead text-pink-500 fw-bold mb-6">{tab.content_lead}</p>
                                                 <div className="service-body text-gray-600 leading-relaxed mb-8">
                                                     {tab.content_body?.split('\n').map((line, i) => (
-                                                        <p key={i} className="mb-2">{line}</p>
+                                                        <p key={i} className="mb-2">
+                                                            {line}
+                                                        </p>
                                                     ))}
                                                 </div>
-                                                <a href="#appointment" className="btn btn-primary rounded-pill px-6">Enquire Now</a>
+                                                <a href="#appointment" className="btn btn-primary rounded-pill px-6">
+                                                    Enquire Now
+                                                </a>
                                             </div>
                                             <div className="col-md-5">
                                                 <div className="rounded-2xl overflow-hidden shadow-lg border-4 border-white">
-                                                    <img 
-                                                        src={resolvePublicImageUrl(tab.image_path, '/assets/img/service-tabs/doctor-1.jpg')} 
-                                                        className="img-fluid" 
-                                                        alt={tab.title} 
+                                                    <img
+                                                        src={resolvePublicImageUrl(
+                                                            tab.image_path,
+                                                            '/assets/img/service-tabs/doctor-1.jpg',
+                                                        )}
+                                                        className="img-fluid"
+                                                        alt={tab.title}
                                                     />
                                                 </div>
                                             </div>

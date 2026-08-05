@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class LabTestType extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'lab_test_types';
+
     protected $primaryKey = 'test_type_id';
 
     protected $fillable = [
@@ -20,22 +21,22 @@ class LabTestType extends Model
         'normal_range',
         'units',
         'is_active',
-        'template'
+        'template',
     ];
 
     protected $casts = [
         'template' => 'array',
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 
     const LAB_CATEGORIES = [
         'Hematology', 'Chemistry', 'Biochemistry', 'Microbiology',
-        'Parasitology', 'Pathology', 'Reproductive', 'Serology', 'Laboratory'
+        'Parasitology', 'Pathology', 'Reproductive', 'Serology', 'Laboratory',
     ];
 
     const SERVICE_CATEGORIES = [
         'Procedure', 'Imaging', 'General Services', 'Delivery',
-        'Consultation', 'Antenatal', 'Family Planning', 'Immunization'
+        'Consultation', 'Antenatal', 'Family Planning', 'Immunization',
     ];
 
     public function scopeLabTests($query)

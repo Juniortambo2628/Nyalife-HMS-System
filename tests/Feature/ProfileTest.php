@@ -25,7 +25,7 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $newEmail = 'updated.profile.' . $user->user_id . '@example.com';
+        $newEmail = 'updated.profile.'.$user->user_id.'@example.com';
 
         $response = $this
             ->actingAs($user)

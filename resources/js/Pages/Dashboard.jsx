@@ -19,30 +19,30 @@ export default function Dashboard({ auth }) {
         },
         ...(user.role !== 'receptionist'
             ? [
-                {
-                    label: 'Prescriptions',
-                    sub: 'Medications and therapeutic plans',
-                    icon: 'fa-file-prescription',
-                    color: 'primary',
-                    url: route('prescriptions.index'),
-                },
-                {
-                    label: 'Lab results',
-                    sub: 'Diagnostic tests and reports',
-                    icon: 'fa-flask',
-                    color: 'success',
-                    url: route('lab.results'),
-                },
-            ]
+                  {
+                      label: 'Prescriptions',
+                      sub: 'Medications and therapeutic plans',
+                      icon: 'fa-file-prescription',
+                      color: 'primary',
+                      url: route('prescriptions.index'),
+                  },
+                  {
+                      label: 'Lab results',
+                      sub: 'Diagnostic tests and reports',
+                      icon: 'fa-flask',
+                      color: 'success',
+                      url: route('lab.results'),
+                  },
+              ]
             : [
-                {
-                    label: 'Patient records',
-                    sub: 'Register and manage demographics',
-                    icon: 'fa-users',
-                    color: 'primary',
-                    url: route('patients.index'),
-                },
-            ]),
+                  {
+                      label: 'Patient records',
+                      sub: 'Register and manage demographics',
+                      icon: 'fa-users',
+                      color: 'primary',
+                      url: route('patients.index'),
+                  },
+              ]),
         {
             label: 'Patient registry',
             sub: 'Search and open patient records',

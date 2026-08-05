@@ -59,7 +59,8 @@ class PrescriptionController extends Controller
             ->searchByPatientName($request->search)
             ->status($request->status)
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         $stats = [
             'total' => Prescription::count(),

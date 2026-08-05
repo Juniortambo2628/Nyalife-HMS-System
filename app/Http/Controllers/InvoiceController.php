@@ -55,7 +55,8 @@ class InvoiceController extends Controller
             ->searchByPatientOrNumber($request->search)
             ->status($request->status)
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         $stats = [
             'total' => Invoice::count(),

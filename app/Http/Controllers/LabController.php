@@ -90,7 +90,7 @@ class LabController extends Controller
             ->status($request->status);
 
         return Inertia::render('Lab/Index', [
-            'requests' => LabTestRequestResource::collection($query->latest()->paginate(15)),
+            'requests' => LabTestRequestResource::collection($query->latest()->paginate(15)->withQueryString()),
             'filters' => (object) $request->only(['search', 'status', 'quick_filter']),
             'stats' => $this->labRequestStats($user),
         ]);

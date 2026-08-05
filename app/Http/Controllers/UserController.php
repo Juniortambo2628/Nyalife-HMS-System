@@ -40,7 +40,7 @@ class UserController extends Controller
             })
             ->orderBy($sort, $direction);
 
-        $users = $query->paginate(12)->withQueryString();
+        $users = $query->paginate(15)->withQueryString();
         $users->through(fn ($user) => (new UserResource($user))->resolve());
 
         $stats = [

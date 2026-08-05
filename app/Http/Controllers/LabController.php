@@ -247,7 +247,7 @@ class LabController extends Controller
         );
 
         return Inertia::render('Lab/Show', [
-            'request' => LabTestRequestResource::make($request)
+            'request' => LabTestRequestResource::make($request),
         ]);
     }
 
@@ -307,7 +307,7 @@ class LabController extends Controller
             'request' => LabTestRequestResource::make($request),
             'clinic_name' => 'Nyalife Women\'s Clinic',
             'clinic_address' => 'Nairobi, Kenya',
-            'clinic_phone' => '+254 700 000 000'
+            'clinic_phone' => '+254 700 000 000',
         ]);
     }
 
@@ -320,7 +320,7 @@ class LabController extends Controller
             'complete' => function (array $ids, int $count) {
                 $updated = $this->bulkProcessWithLog(
                     LabTestRequest::class, 'request_id', $ids,
-                    fn ($item) => ! in_array($item->status, ['completed', 'cancelled']),
+                    fn ($item) => !in_array($item->status, ['completed', 'cancelled']),
                     fn ($item) => ['status' => 'completed', 'completed_at' => now(), 'assigned_to' => Auth::id()],
                     'lab', 'Lab request',
                     fn ($item) => [$item->requested_by, $item->patient->user_id, 1]
@@ -330,7 +330,7 @@ class LabController extends Controller
             'cancel' => function (array $ids, int $count) {
                 $updated = $this->bulkProcessWithLog(
                     LabTestRequest::class, 'request_id', $ids,
-                    fn ($item) => ! in_array($item->status, ['completed', 'cancelled']),
+                    fn ($item) => !in_array($item->status, ['completed', 'cancelled']),
                     fn ($item) => ['status' => 'cancelled'],
                     'lab', 'Lab request',
                     fn ($item) => [$item->requested_by, $item->patient->user_id, 1]

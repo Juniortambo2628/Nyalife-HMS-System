@@ -5,16 +5,16 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
-use App\Models\User;
-use App\Models\Role;
 use App\Models\Department;
+use App\Models\Role;
 use App\Models\Staff;
+use App\Models\User;
+use App\Traits\HasBulkActions;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use App\Traits\HasBulkActions;
 use Spatie\Permission\Models\Role as SpatieRole;
 
 class UserController extends Controller
@@ -84,7 +84,7 @@ class UserController extends Controller
             ?? (isset($validated['role']) ? Role::where('role_name', $validated['role'])->first()?->role_id : null)
             ?? Role::where('role_name', 'patient')->first()?->role_id;
 
-        $password = ! empty($validated['password'])
+        $password = !empty($validated['password'])
             ? Hash::make($validated['password'])
             : Hash::make(Str::random(12));
 

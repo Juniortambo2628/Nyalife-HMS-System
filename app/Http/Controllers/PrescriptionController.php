@@ -88,7 +88,7 @@ class PrescriptionController extends Controller
         return Inertia::render('Prescriptions/Create', [
             'preselected_patient_id' => $patientId,
             'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
-            'consultation_id' => $consultationId
+            'consultation_id' => $consultationId,
         ]);
     }
 
@@ -113,7 +113,7 @@ class PrescriptionController extends Controller
         );
 
         return Inertia::render('Prescriptions/Show', [
-            'prescription' => PrescriptionResource::make($prescription)
+            'prescription' => PrescriptionResource::make($prescription),
         ]);
     }
 
@@ -225,7 +225,7 @@ class PrescriptionController extends Controller
             'dispense' => function (array $ids, int $count) {
                 $updated = $this->bulkProcessWithLog(
                     Prescription::class, 'prescription_id', $ids,
-                    fn ($item) => $item->status !== 'dispensed' && ! $item->is_voided,
+                    fn ($item) => $item->status !== 'dispensed' && !$item->is_voided,
                     fn ($item) => ['status' => 'dispensed', 'dispensed_by' => Auth::id(), 'dispensed_at' => now()],
                     'pharmacy', 'Prescription',
                     fn ($item) => [$item->patient->user_id, 1]
@@ -235,7 +235,7 @@ class PrescriptionController extends Controller
             'void' => function (array $ids, int $count) {
                 $updated = $this->bulkProcessWithLog(
                     Prescription::class, 'prescription_id', $ids,
-                    fn ($item) => ! $item->is_voided && $item->status !== 'dispensed',
+                    fn ($item) => !$item->is_voided && $item->status !== 'dispensed',
                     fn ($item) => ['is_voided' => true, 'void_reason' => 'Bulk voided via toolbar', 'voided_by' => Auth::id(), 'voided_at' => now()],
                     'pharmacy', 'Prescription',
                     fn ($item) => [$item->patient->user_id, 1]
@@ -248,5 +248,4 @@ class PrescriptionController extends Controller
             },
         ];
     }
-
 }

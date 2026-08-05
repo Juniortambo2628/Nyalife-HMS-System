@@ -23,7 +23,7 @@ return new class extends Migration
                 DB::table('prescriptions')
                     ->where('prescription_id', $id)
                     ->update([
-                        'prescription_number' => 'RX-' . str_pad((string) $id, 6, '0', STR_PAD_LEFT),
+                        'prescription_number' => 'RX-'.str_pad((string) $id, 6, '0', STR_PAD_LEFT),
                     ]);
             });
     }

@@ -67,7 +67,11 @@ export default function Create({ invoice, pendingInvoices, paymentMethods, prese
             <form onSubmit={submit}>
                 <div className="row g-4">
                     <div className="col-lg-8">
-                        <FormSection title="Payment Details" icon="fas fa-money-bill-wave" headerClassName="bg-success text-white p-3">
+                        <FormSection
+                            title="Payment Details"
+                            icon="fas fa-money-bill-wave"
+                            headerClassName="bg-success text-white p-3"
+                        >
                             <div className="row g-3">
                                 <FormField label="Invoice *" className="col-12" error={errors.invoice_id}>
                                     <DashboardSelect
@@ -108,7 +112,11 @@ export default function Create({ invoice, pendingInvoices, paymentMethods, prese
                                     />
                                 </FormField>
 
-                                <FormField label="Transaction Reference" className="col-md-6" error={errors.transaction_reference}>
+                                <FormField
+                                    label="Transaction Reference"
+                                    className="col-md-6"
+                                    error={errors.transaction_reference}
+                                >
                                     <input
                                         type="text"
                                         className="form-control"
@@ -146,17 +154,25 @@ export default function Create({ invoice, pendingInvoices, paymentMethods, prese
                         {selectedInvoice && (
                             <div className="card border-0 shadow-sm rounded-4 mb-4">
                                 <div className="card-body p-4">
-                                    <h6 className="fw-extrabold text-muted extra-small text-uppercase tracking-widest mb-3">Invoice Summary</h6>
+                                    <h6 className="fw-extrabold text-muted extra-small text-uppercase tracking-widest mb-3">
+                                        Invoice Summary
+                                    </h6>
                                     <div className="small text-muted mb-1">Reference</div>
                                     <div className="fw-bold mb-3">{selectedInvoice.invoice_number}</div>
                                     <div className="small text-muted mb-1">Total</div>
-                                    <div className="fw-extrabold mb-3">{formatCurrency(selectedInvoice.total_amount)}</div>
+                                    <div className="fw-extrabold mb-3">
+                                        {formatCurrency(selectedInvoice.total_amount)}
+                                    </div>
                                     {selectedInvoice.amount_paid != null && (
                                         <>
                                             <div className="small text-muted mb-1">Already Paid</div>
-                                            <div className="fw-bold text-success mb-3">{formatCurrency(selectedInvoice.amount_paid)}</div>
+                                            <div className="fw-bold text-success mb-3">
+                                                {formatCurrency(selectedInvoice.amount_paid)}
+                                            </div>
                                             <div className="small text-muted mb-1">Balance Due</div>
-                                            <div className="h4 fw-extrabold text-clinical-high">{formatCurrency(selectedInvoice.balance_due ?? 0)}</div>
+                                            <div className="h4 fw-extrabold text-clinical-high">
+                                                {formatCurrency(selectedInvoice.balance_due ?? 0)}
+                                            </div>
                                         </>
                                     )}
                                 </div>
@@ -167,7 +183,13 @@ export default function Create({ invoice, pendingInvoices, paymentMethods, prese
 
                 <UnifiedToolbar
                     actions={[
-                        { label: 'SAVE PAYMENT', icon: 'fa-check', onClick: () => post(route('payments.store')), color: 'success', disabled: processing },
+                        {
+                            label: 'SAVE PAYMENT',
+                            icon: 'fa-check',
+                            onClick: () => post(route('payments.store')),
+                            color: 'success',
+                            disabled: processing,
+                        },
                         { label: 'CANCEL', icon: 'fa-times', href: route('payments.index'), color: 'gray' },
                     ]}
                 />

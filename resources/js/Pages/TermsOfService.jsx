@@ -15,19 +15,35 @@ export default function TermsOfService() {
                     <div className="card-body p-4 p-md-5">
                         <section className="mb-5">
                             <h2 className="h4 fw-bold text-dark mb-3">1. Acceptance of Terms</h2>
-                            <p>By accessing and using Nyalife HMS, you accept and agree to be bound by the terms and provision of this agreement. In addition, when using this website's particular services, you shall be subject to any posted guidelines or rules applicable to such services.</p>
+                            <p>
+                                By accessing and using Nyalife HMS, you accept and agree to be bound by the terms and
+                                provision of this agreement. In addition, when using this website's particular services,
+                                you shall be subject to any posted guidelines or rules applicable to such services.
+                            </p>
                         </section>
 
                         <section className="mb-5">
                             <h2 className="h4 fw-bold text-dark mb-3">2. Description of Service</h2>
-                            <p>Nyalife HMS provides users with hospital management services, including appointment booking, patient records, and lab result tracking. Any new features that augment or enhance the current Service shall be subject to the Terms of Service.</p>
+                            <p>
+                                Nyalife HMS provides users with hospital management services, including appointment
+                                booking, patient records, and lab result tracking. Any new features that augment or
+                                enhance the current Service shall be subject to the Terms of Service.
+                            </p>
                         </section>
 
                         <section className="mb-5">
                             <h2 className="h4 fw-bold text-dark mb-3">3. User Conduct</h2>
-                            <p>You understand that all information, data, text, software, music, sound, photographs, graphics, video, messages or other materials, whether publicly posted or privately transmitted, are the sole responsibility of the person from which such content originated.</p>
+                            <p>
+                                You understand that all information, data, text, software, music, sound, photographs,
+                                graphics, video, messages or other materials, whether publicly posted or privately
+                                transmitted, are the sole responsibility of the person from which such content
+                                originated.
+                            </p>
                             <ul>
-                                <li>You agree not to use the Service to upload or otherwise transmit any content that is unlawful or harmful.</li>
+                                <li>
+                                    You agree not to use the Service to upload or otherwise transmit any content that is
+                                    unlawful or harmful.
+                                </li>
                                 <li>You agree not to impersonate any person or entity.</li>
                                 <li>You agree not to forge headers or otherwise manipulate identifiers.</li>
                             </ul>
@@ -35,7 +51,10 @@ export default function TermsOfService() {
 
                         <section className="mb-5">
                             <h2 className="h4 fw-bold text-dark mb-3">4. Termination</h2>
-                            <p>You agree that Nyalife HMS may, under certain circumstances and without prior notice, immediately terminate your account and access to the Service.</p>
+                            <p>
+                                You agree that Nyalife HMS may, under certain circumstances and without prior notice,
+                                immediately terminate your account and access to the Service.
+                            </p>
                         </section>
 
                         <div className="text-center mt-5">

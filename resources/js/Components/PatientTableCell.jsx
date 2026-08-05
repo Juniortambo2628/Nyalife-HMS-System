@@ -38,13 +38,7 @@ export function PatientReferenceLabel({
     );
 }
 
-export function PatientIdLabel({
-    id,
-    prefix = 'PAT',
-    variant = 'default',
-    className = '',
-    as: Component = 'div',
-}) {
+export function PatientIdLabel({ id, prefix = 'PAT', variant = 'default', className = '', as: Component = 'div' }) {
     if (id == null || id === '') return null;
 
     const formatted = formatPatientId(id, prefix);
@@ -74,19 +68,13 @@ export function PatientIdLabel({
 
     const config = variants[variant] ?? variants.default;
 
-    return (
-        <Component className={className || config.className}>
-            {config.children}
-        </Component>
-    );
+    return <Component className={className || config.className}>{config.children}</Component>;
 }
 
 export default function PatientTableCell({ patient, patientId, showId = true, idVariant = 'default' }) {
     const user = patient?.user;
     const id = patientId ?? patient?.patient_id;
-    const name = user
-        ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim()
-        : 'Unknown patient';
+    const name = user ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() : 'Unknown patient';
 
     return (
         <div>

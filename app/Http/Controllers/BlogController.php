@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBlogRequest;
 use App\Http\Requests\UpdateBlogRequest;
 use App\Models\Blog;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -14,7 +13,7 @@ class BlogController extends Controller
     public function manage()
     {
         return Inertia::render('Blog/Index', [
-            'blogs' => Blog::with('author')->latest()->get()
+            'blogs' => Blog::with('author')->latest()->get(),
         ]);
     }
 
@@ -26,8 +25,9 @@ class BlogController extends Controller
     public function edit($id)
     {
         $blog = Blog::findOrFail($id);
+
         return Inertia::render('Blog/Form', [
-            'blog' => $blog
+            'blog' => $blog,
         ]);
     }
 
@@ -38,7 +38,7 @@ class BlogController extends Controller
 
         Blog::create([
             'title' => $validated['title'],
-            'slug' => Str::slug($validated['title']) . '-' . rand(1000, 9999),
+            'slug' => Str::slug($validated['title']).'-'.rand(1000, 9999),
             'content' => $validated['content'],
             'excerpt' => $validated['excerpt'] ?? null,
             'tags' => $validated['tags'] ?? [],
@@ -55,11 +55,11 @@ class BlogController extends Controller
     {
         $blog = Blog::findOrFail($id);
         $validated = $request->validated();
-        
+
         if ($request->file('image')) {
             $validated['image_path'] = $request->file('image')->store('blogs', 'public');
         }
-        
+
         unset($validated['image']);
 
         $blog->update($validated);
@@ -70,6 +70,7 @@ class BlogController extends Controller
     public function destroy($id)
     {
         Blog::findOrFail($id)->delete();
+
         return back()->with('success', 'Blog post deleted.');
     }
 }

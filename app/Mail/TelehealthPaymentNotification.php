@@ -7,12 +7,19 @@ use Spatie\MailTemplates\TemplateMailable;
 class TelehealthPaymentNotification extends TemplateMailable
 {
     public $patient_name;
+
     public $appointment_date;
+
     public $appointment_time;
+
     public $doctor_name;
+
     public $payment_amount;
+
     public $till_number;
+
     public $consent_form_url;
+
     public $appointment_id;
 
     public function __construct(array $data)

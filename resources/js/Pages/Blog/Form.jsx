@@ -21,7 +21,7 @@ export default function Form({ blog = null }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isEditing) {
-            // Laravel requires POST with _method spoofing for file uploads on PUT/PATCH, 
+            // Laravel requires POST with _method spoofing for file uploads on PUT/PATCH,
             // but we named the route blog.update with POST in web.php for simplicity
             post(route('blog.update', blog.id));
         } else {
@@ -95,7 +95,11 @@ export default function Form({ blog = null }) {
                             {blog?.image_path && (
                                 <div className="mt-2 p-2 border rounded-xl bg-light">
                                     <small className="text-muted d-block mb-1">Current Image:</small>
-                                    <img src={resolvePublicImageUrl(blog.image_path)} className="rounded shadow-sm" style={{ maxHeight: '100px' }} />
+                                    <img
+                                        src={resolvePublicImageUrl(blog.image_path)}
+                                        className="rounded shadow-sm"
+                                        style={{ maxHeight: '100px' }}
+                                    />
                                 </div>
                             )}
                             <InputError message={errors.image} className="mt-2" />

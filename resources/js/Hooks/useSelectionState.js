@@ -15,22 +15,17 @@ export default function useSelectionState({ idField = 'id', listenForClear = tru
     const selectNone = clearSelection;
 
     const toggleSelection = useCallback((id) => {
-        setSelectedIds((prev) =>
-            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-        );
+        setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
     }, []);
 
-    const isSelected = useCallback(
-        (id) => selectedIds.includes(id),
-        [selectedIds]
-    );
+    const isSelected = useCallback((id) => selectedIds.includes(id), [selectedIds]);
 
     const selectAll = useCallback(
         (items) => {
             if (!Array.isArray(items)) return;
             setSelectedIds(items.map((item) => (item && typeof item === 'object' ? item[idField] : item)));
         },
-        [idField]
+        [idField],
     );
 
     useEffect(() => {

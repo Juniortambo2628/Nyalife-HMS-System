@@ -24,10 +24,14 @@ export default function RadiologyRequestsIndex({ requests, filters, auth }) {
     });
 
     const applyFilters = (searchValue, statusValue = status, quickFilterValue = quickFilter) => {
-        router.get(route('radiology.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {
-            preserveState: true,
-            replace: true,
-        });
+        router.get(
+            route('radiology.index'),
+            { search: searchValue, status: statusValue, quick_filter: quickFilterValue },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
     const handleStatusChange = (val) => {
@@ -42,112 +46,123 @@ export default function RadiologyRequestsIndex({ requests, filters, auth }) {
 
     const handleProcess = (id) => {
         if (confirm('Start processing this radiology request?')) {
-            router.post(route('radiology.update-status', id), {
-                status: 'processing'
-            }, {
-                preserveScroll: true
-            });
+            router.post(
+                route('radiology.update-status', id),
+                {
+                    status: 'processing',
+                },
+                {
+                    preserveScroll: true,
+                },
+            );
         }
     };
 
     const handleDelete = (id) => {
         if (confirm('Are you sure you want to remove this pending radiology request?')) {
             router.delete(route('radiology.destroy', id), {
-                preserveScroll: true
+                preserveScroll: true,
             });
         }
     };
 
-    const columns = useMemo(() => [
-        {
-            header: 'Order Ref',
-            accessorKey: 'request_number',
-            cell: ({ row }) => (
-                <RefBadge>{row.original.request_number}</RefBadge>
-            )
-        },
-        {
-            header: 'Patient',
-            accessorKey: 'patient',
-            cell: ({ row }) => (
-                <PatientTableCell
-                    patient={row.original.patient}
-                    patientId={row.original.patient_id}
-                    idVariant="patid"
-                />
-            )
-        },
-        {
-            header: 'Scan / Imaging Type',
-            accessorKey: 'scan_type',
-            cell: ({ row }) => (
-                <div>
-                    <TableCellPrimary>{row.original.scan_type}</TableCellPrimary>
-                    {row.original.clinical_indication && (
-                        <TableCellSub className="text-truncate nyl-text-constrained">
-                            {row.original.clinical_indication}
-                        </TableCellSub>
-                    )}
-                </div>
-            )
-        },
-        {
-            header: 'Priority',
-            accessorKey: 'priority',
-            cell: ({ row }) => <PriorityBadge priority={row.original.priority} />
-        },
-        {
-            header: 'Status',
-            accessorKey: 'status',
-            cell: ({ row }) => <StatusBadge status={row.original.status} />
-        },
-        {
-            header: 'Ordered By',
-            accessorKey: 'requestedBy',
-            cell: ({ row }) => (
-                <TableCellSub>
-                    Dr. {row.original.requestedBy?.last_name || 'System'}
-                </TableCellSub>
-            )
-        },
-        {
-            header: 'Actions',
-            id: 'actions',
-            cell: ({ row }) => (
-                <TableActions actions={[
-                    {
-                        label: 'View & process',
-                        icon: 'fa-eye',
-                        href: route('radiology.show', row.original.request_id),
-                    },
-                    (auth.user.role === 'lab_technician' || auth.user.role === 'admin') && row.original.status === 'pending' && {
-                        label: 'Start processing',
-                        icon: 'fa-play',
-                        onClick: () => handleProcess(row.original.request_id),
-                    },
-                    (auth.user.role === 'admin' || auth.user.role === 'doctor') && row.original.status === 'pending' && {
-                        label: 'Delete request',
-                        icon: 'fa-trash',
-                        onClick: () => handleDelete(row.original.request_id),
-                        color: 'danger',
-                    },
-                ].filter(Boolean)} />
-            )
-        }
-    ], [auth.user.role]);
+    const columns = useMemo(
+        () => [
+            {
+                header: 'Order Ref',
+                accessorKey: 'request_number',
+                cell: ({ row }) => <RefBadge>{row.original.request_number}</RefBadge>,
+            },
+            {
+                header: 'Patient',
+                accessorKey: 'patient',
+                cell: ({ row }) => (
+                    <PatientTableCell
+                        patient={row.original.patient}
+                        patientId={row.original.patient_id}
+                        idVariant="patid"
+                    />
+                ),
+            },
+            {
+                header: 'Scan / Imaging Type',
+                accessorKey: 'scan_type',
+                cell: ({ row }) => (
+                    <div>
+                        <TableCellPrimary>{row.original.scan_type}</TableCellPrimary>
+                        {row.original.clinical_indication && (
+                            <TableCellSub className="text-truncate nyl-text-constrained">
+                                {row.original.clinical_indication}
+                            </TableCellSub>
+                        )}
+                    </div>
+                ),
+            },
+            {
+                header: 'Priority',
+                accessorKey: 'priority',
+                cell: ({ row }) => <PriorityBadge priority={row.original.priority} />,
+            },
+            {
+                header: 'Status',
+                accessorKey: 'status',
+                cell: ({ row }) => <StatusBadge status={row.original.status} />,
+            },
+            {
+                header: 'Ordered By',
+                accessorKey: 'requestedBy',
+                cell: ({ row }) => <TableCellSub>Dr. {row.original.requestedBy?.last_name || 'System'}</TableCellSub>,
+            },
+            {
+                header: 'Actions',
+                id: 'actions',
+                cell: ({ row }) => (
+                    <TableActions
+                        actions={[
+                            {
+                                label: 'View & process',
+                                icon: 'fa-eye',
+                                href: route('radiology.show', row.original.request_id),
+                            },
+                            (auth.user.role === 'lab_technician' || auth.user.role === 'admin') &&
+                                row.original.status === 'pending' && {
+                                    label: 'Start processing',
+                                    icon: 'fa-play',
+                                    onClick: () => handleProcess(row.original.request_id),
+                                },
+                            (auth.user.role === 'admin' || auth.user.role === 'doctor') &&
+                                row.original.status === 'pending' && {
+                                    label: 'Delete request',
+                                    icon: 'fa-trash',
+                                    onClick: () => handleDelete(row.original.request_id),
+                                    color: 'danger',
+                                },
+                        ].filter(Boolean)}
+                    />
+                ),
+            },
+        ],
+        [auth.user.role],
+    );
 
     return (
-        <AuthenticatedLayout 
+        <AuthenticatedLayout
             headerTitle={auth.user.role === 'patient' ? 'My Radiology & Imaging' : 'Radiology & Imaging Registry'}
             breadcrumbs={
                 auth.user.role === 'patient'
-                    ? [{ label: 'Dashboard', url: route('dashboard') }, { label: 'My Scans', active: true }]
-                    : [{ label: 'Dashboard', url: route('dashboard') }, { label: 'Radiology Requests', active: true }]
+                    ? [
+                          { label: 'Dashboard', url: route('dashboard') },
+                          { label: 'My Scans', active: true },
+                      ]
+                    : [
+                          { label: 'Dashboard', url: route('dashboard') },
+                          { label: 'Radiology Requests', active: true },
+                      ]
             }
         >
             <Head title={auth.user.role === 'patient' ? 'My Radiology Scans' : 'Radiology & Imaging'} />
 
-            <UnifiedToolbar 
+            <UnifiedToolbar
                 filterGroups={[
                     {
                         id: 'status',
@@ -177,24 +192,34 @@ export default function RadiologyRequestsIndex({ requests, filters, auth }) {
                     },
                 ]}
                 actions={[
-                    (auth.user.role === 'doctor' || auth.user.role === 'admin') && { 
-                        label: 'ORDER SCAN', 
-                        icon: 'fa-plus-circle', 
+                    (auth.user.role === 'doctor' || auth.user.role === 'admin') && {
+                        label: 'ORDER SCAN',
+                        icon: 'fa-plus-circle',
                         href: route('radiology.create'),
-                        color: 'pink'
-                    }
+                        color: 'pink',
+                    },
                 ].filter(Boolean)}
                 bulkActions={[
                     { label: 'MARK COMPLETE', icon: 'fa-check-circle', onClick: () => handleBulkAction('complete') },
-                    { label: 'CANCEL SELECTED', icon: 'fa-times-circle', onClick: () => handleBulkAction('cancel'), color: 'danger' },
-                    { label: 'DELETE SELECTED', icon: 'fa-trash-alt', onClick: () => handleBulkAction('delete'), color: 'danger' }
+                    {
+                        label: 'CANCEL SELECTED',
+                        icon: 'fa-times-circle',
+                        onClick: () => handleBulkAction('cancel'),
+                        color: 'danger',
+                    },
+                    {
+                        label: 'DELETE SELECTED',
+                        icon: 'fa-trash-alt',
+                        onClick: () => handleBulkAction('delete'),
+                        color: 'danger',
+                    },
                 ]}
                 selectionCount={selectedIds.length}
             />
 
             <div className="px-0">
-                <DashboardSearch 
-                    placeholder="Search by patient name or request ID..." 
+                <DashboardSearch
+                    placeholder="Search by patient name or request ID..."
                     value={search}
                     onChange={setSearch}
                     onSubmit={(val) => applyFilters(val, status, quickFilter)}
@@ -219,7 +244,6 @@ export default function RadiologyRequestsIndex({ requests, filters, auth }) {
                     onSelectionChange={setSelectedIds}
                     idField="request_id"
                 />
-
             </div>
         </AuthenticatedLayout>
     );

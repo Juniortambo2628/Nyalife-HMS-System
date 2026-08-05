@@ -7,20 +7,22 @@ use App\Http\Resources\LabTestRequestResource;
 use App\Models\LabTestRequest;
 use App\Models\LabTestType;
 use App\Models\Patient;
+use App\Models\User;
+use App\Services\ActivityLogger;
 use App\Support\Permissions;
+use App\Traits\HasBulkActions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use App\Services\ActivityLogger;
-use App\Traits\HasBulkActions;
 
 class LabController extends Controller
 {
     use HasBulkActions;
+
     /**
      * Base query scoped to the authenticated user's lab access.
      */
-    private function scopedRequestsQuery(?\App\Models\User $user)
+    private function scopedRequestsQuery(?User $user)
     {
         $query = LabTestRequest::query();
 
@@ -36,7 +38,7 @@ class LabController extends Controller
         return $query;
     }
 
-    private function labRequestStats(?\App\Models\User $user): array
+    private function labRequestStats(?User $user): array
     {
         $base = $this->scopedRequestsQuery($user);
 
@@ -102,9 +104,9 @@ class LabController extends Controller
 
         // Search
         if ($request->has('search') && $request->search) {
-            $query->where(function($q) use ($request) {
-                $q->where('test_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('category', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('test_name', 'like', '%'.$request->search.'%')
+                    ->orWhere('category', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -112,7 +114,7 @@ class LabController extends Controller
         $sortColumn = $request->get('sort', 'test_name');
         $sortDirection = $request->get('direction', 'asc');
         $allowedSorts = ['test_name', 'category', 'price', 'is_active'];
-        
+
         if (in_array($sortColumn, $allowedSorts)) {
             $query->orderBy($sortColumn, $sortDirection);
         } else {
@@ -161,7 +163,7 @@ class LabController extends Controller
 
         $results = $query
             ->searchByPatientName($request->search)
-            ->when($request->request_number, fn ($q) => $q->where('request_number', 'like', '%' . $request->request_number . '%'))
+            ->when($request->request_number, fn ($q) => $q->where('request_number', 'like', '%'.$request->request_number.'%'))
             ->latest('completed_at')
             ->latest('request_id')
             ->paginate(15)
@@ -245,7 +247,7 @@ class LabController extends Controller
         );
 
         return Inertia::render('Lab/Show', [
-            'request' => LabTestRequestResource::make($request)
+            'request' => LabTestRequestResource::make($request),
         ]);
     }
 
@@ -254,7 +256,7 @@ class LabController extends Controller
         $validated = $request->validated();
 
         $labRequest = LabTestRequest::findOrFail($id);
-        
+
         $updateData = [
             'status' => $validated['status'],
             'results' => $validated['results'] ?? $labRequest->results,
@@ -286,14 +288,14 @@ class LabController extends Controller
 
         ActivityLogger::log(
             'lab',
-            "Lab request " . ($validated['status'] === 'verified' ? 'results verified' : ($validated['status'] === 'pending_verification' ? 'awaiting verification' : "updated to {$validated['status']}")),
+            'Lab request '.($validated['status'] === 'verified' ? 'results verified' : ($validated['status'] === 'pending_verification' ? 'awaiting verification' : "updated to {$validated['status']}")),
             ['request_id' => $labRequest->request_id, 'status' => $validated['status']],
             Auth::user(),
             $labRequest,
             [$labRequest->requested_by, $labRequest->patient->user_id, 1]
         );
 
-        return redirect()->back()->with('success', 'Lab request status updated to ' . $validated['status']);
+        return redirect()->back()->with('success', 'Lab request status updated to '.$validated['status']);
     }
 
     public function print($id)
@@ -305,7 +307,7 @@ class LabController extends Controller
             'request' => LabTestRequestResource::make($request),
             'clinic_name' => 'Nyalife Women\'s Clinic',
             'clinic_address' => 'Nairobi, Kenya',
-            'clinic_phone' => '+254 700 000 000'
+            'clinic_phone' => '+254 700 000 000',
         ]);
     }
 
@@ -323,6 +325,7 @@ class LabController extends Controller
                     'lab', 'Lab request',
                     fn ($item) => [$item->requested_by, $item->patient->user_id, 1]
                 );
+
                 return redirect()->back()->with('success', "{$updated} lab request(s) completed.");
             },
             'cancel' => function (array $ids, int $count) {
@@ -333,10 +336,12 @@ class LabController extends Controller
                     'lab', 'Lab request',
                     fn ($item) => [$item->requested_by, $item->patient->user_id, 1]
                 );
+
                 return redirect()->back()->with('success', "{$updated} lab request(s) cancelled.");
             },
             'delete' => function (array $ids, int $count) {
                 $deleted = $this->bulkDelete(LabTestRequest::class, 'request_id', $ids, 'status', 'completed');
+
                 return redirect()->back()->with('success', "{$deleted} lab request(s) deleted.");
             },
         ];

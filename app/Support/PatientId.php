@@ -12,7 +12,7 @@ class PatientId
             return '';
         }
 
-        return $prefix . '-' . $id;
+        return $prefix.'-'.$id;
     }
 
     public static function selectLabel(?string $name, int|string|null $id, string $prefix = 'PAT'): string
@@ -37,11 +37,11 @@ class PatientId
 
     public static function fromPatient(?Patient $patient): string
     {
-        if (!$patient) {
+        if (! $patient) {
             return '';
         }
 
-        $name = trim(($patient->user->first_name ?? '') . ' ' . ($patient->user->last_name ?? ''));
+        $name = trim(($patient->user->first_name ?? '').' '.($patient->user->last_name ?? ''));
 
         return self::selectLabel($name, $patient->patient_id);
     }

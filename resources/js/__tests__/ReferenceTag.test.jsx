@@ -30,9 +30,7 @@ describe('ReferenceTag', () => {
         it('renders an accessible remove button when onRemove is provided', () => {
             render(<ReferenceTag reference={patient} variant="input" onRemove={() => {}} />);
 
-            expect(
-                screen.getByRole('button', { name: 'Remove Jane Doe (P-001) reference' }),
-            ).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Remove Jane Doe (P-001) reference' })).toBeInTheDocument();
         });
 
         it('calls onRemove with the reference when the remove button is clicked', async () => {
@@ -56,9 +54,7 @@ describe('ReferenceTag', () => {
         });
 
         it('applies the is-own class when isOwnMessage is true', () => {
-            const { container } = render(
-                <ReferenceTag reference={patient} variant="message" isOwnMessage />,
-            );
+            const { container } = render(<ReferenceTag reference={patient} variant="message" isOwnMessage />);
 
             expect(container.querySelector('.nyl-ref-tag--message.is-own')).toBeInTheDocument();
         });

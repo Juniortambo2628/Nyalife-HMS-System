@@ -35,15 +35,23 @@ export default function Create() {
                         bodyClassName="p-5"
                     >
                         <div className="text-center mb-5">
-                            <div className="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style={{ width: 80, height: 80 }}>
+                            <div
+                                className="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+                                style={{ width: 80, height: 80 }}
+                            >
                                 <i className="fas fa-exclamation-triangle text-danger fa-2x"></i>
                             </div>
                             <h4 className="fw-extrabold text-gray-900 mb-2">Initiate Emergency Consultation</h4>
-                            <p className="text-muted small mb-0">Select a patient below to start an immediate emergency assessment. This will bypass the standard queue.</p>
+                            <p className="text-muted small mb-0">
+                                Select a patient below to start an immediate emergency assessment. This will bypass the
+                                standard queue.
+                            </p>
                         </div>
 
                         <div className="mb-4">
-                            <label className="form-label extra-small fw-bold text-muted text-uppercase tracking-widest mb-2">Search patient registry</label>
+                            <label className="form-label extra-small fw-bold text-muted text-uppercase tracking-widest mb-2">
+                                Search patient registry
+                            </label>
                             <DashboardSelect
                                 asyncUrl="/patients/search"
                                 placeholder="Start typing patient name or ID..."

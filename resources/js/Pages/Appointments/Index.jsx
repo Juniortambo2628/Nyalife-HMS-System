@@ -21,39 +21,44 @@ import StatCardGrid from '@/Components/StatCardGrid';
 export default function Index({ appointments, filters, auth, stats }) {
     const { viewMode, handleViewChange } = useViewToggle({ storageKey: 'appointments_view', defaultView: 'list' });
     const [search, setSearch] = useState(filters.search || '');
-    const { selectedIds, setSelectedIds, toggleSelection, isSelected } = useSelectionState({ idField: 'appointment_id' });
+    const { selectedIds, setSelectedIds, toggleSelection, isSelected } = useSelectionState({
+        idField: 'appointment_id',
+    });
     const { handleBulkAction } = useBulkAction({
         routeName: 'appointments.bulk-action',
         selectedIds,
         clearSelection: () => setSelectedIds([]),
     });
 
-    const statItems = useMemo(() => [
-        {
-            label: 'Total Appointments',
-            value: stats?.total ?? 0,
-            icon: 'fa-calendar-alt',
-            color: 'primary',
-        },
-        {
-            label: 'Pending',
-            value: stats?.pending ?? 0,
-            icon: 'fa-clock',
-            color: 'warning',
-        },
-        {
-            label: 'Scheduled',
-            value: stats?.scheduled ?? 0,
-            icon: 'fa-calendar-check',
-            color: 'info',
-        },
-        {
-            label: 'Completed',
-            value: stats?.completed ?? 0,
-            icon: 'fa-check-circle',
-            color: 'success',
-        },
-    ], [stats]);
+    const statItems = useMemo(
+        () => [
+            {
+                label: 'Total Appointments',
+                value: stats?.total ?? 0,
+                icon: 'fa-calendar-alt',
+                color: 'primary',
+            },
+            {
+                label: 'Pending',
+                value: stats?.pending ?? 0,
+                icon: 'fa-clock',
+                color: 'warning',
+            },
+            {
+                label: 'Scheduled',
+                value: stats?.scheduled ?? 0,
+                icon: 'fa-calendar-check',
+                color: 'info',
+            },
+            {
+                label: 'Completed',
+                value: stats?.completed ?? 0,
+                icon: 'fa-check-circle',
+                color: 'success',
+            },
+        ],
+        [stats],
+    );
 
     const [filterData, setFilterData] = useState({
         status: filters.status || '',
@@ -64,7 +69,6 @@ export default function Index({ appointments, filters, auth, stats }) {
     });
 
     const calculateAge = (dob) => calculateAgeUtil(dob);
-
 
     const [modalConfig, setModalConfig] = useState({
         show: false,
@@ -84,70 +88,84 @@ export default function Index({ appointments, filters, auth, stats }) {
     };
 
     const applyFilters = (searchValue, extraFilters = filterData) => {
-        router.get(route('appointments.index'), { search: searchValue, ...extraFilters }, {
-            preserveState: true,
-            replace: true,
-        });
+        router.get(
+            route('appointments.index'),
+            { search: searchValue, ...extraFilters },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
-    const columns = useMemo(() => [
-        {
-            header: 'Date & Time',
-            accessorKey: 'appointment_date',
-            cell: ({ row }) => (
-                <TableDateTimeCell
-                    date={row.original.appointment_date}
-                    time={row.original.appointment_time || 'N/A'}
-                />
-            )
-        },
-        {
-            header: 'Patient',
-            accessorKey: 'patient_id',
-            cell: ({ row }) => {
-                const dob = row.original.patient?.date_of_birth || row.original.patient?.user?.date_of_birth;
-                const age = calculateAge(dob);
-                return (
-                    <div>
-                        <div 
-                            onClick={() => openModal(row.original)}
-                            className="cursor-pointer fw-bold text-pink-500 hover:text-pink-700 transition-colors"
-                        >
-                            {row.original.patient?.user?.first_name || 'Unknown'} {row.original.patient?.user?.last_name || 'Patient'}
-                            {age !== null && <span className="text-muted fw-normal ms-1 small">({age}Y)</span>}
+    const columns = useMemo(
+        () => [
+            {
+                header: 'Date & Time',
+                accessorKey: 'appointment_date',
+                cell: ({ row }) => (
+                    <TableDateTimeCell
+                        date={row.original.appointment_date}
+                        time={row.original.appointment_time || 'N/A'}
+                    />
+                ),
+            },
+            {
+                header: 'Patient',
+                accessorKey: 'patient_id',
+                cell: ({ row }) => {
+                    const dob = row.original.patient?.date_of_birth || row.original.patient?.user?.date_of_birth;
+                    const age = calculateAge(dob);
+                    return (
+                        <div>
+                            <div
+                                onClick={() => openModal(row.original)}
+                                className="cursor-pointer fw-bold text-pink-500 hover:text-pink-700 transition-colors"
+                            >
+                                {row.original.patient?.user?.first_name || 'Unknown'}{' '}
+                                {row.original.patient?.user?.last_name || 'Patient'}
+                                {age !== null && <span className="text-muted fw-normal ms-1 small">({age}Y)</span>}
+                            </div>
+                            <PatientIdLabel id={row.original.patient_id} />
                         </div>
-                        <PatientIdLabel id={row.original.patient_id} />
-                    </div>
-                );
-            }
-        },
-        {
-            header: 'Doctor',
-            accessorKey: 'doctor_id',
-            cell: ({ row }) => (
-                <TableDoctorCell doctor={row.original.doctor} fallback="Doctor" />
-            )
-        },
-        {
-            header: 'Status',
-            accessorKey: 'status',
-            cell: ({ row }) => {
-                const apt = row.original;
-                const isPast = apt.status === 'scheduled' && new Date(`${apt.appointment_date}T${apt.appointment_time}`) < new Date();
-                return <StatusBadge status={isPast ? 'overdue' : apt.status} />;
-            }
-        },
-        {
-            header: 'Actions',
-            id: 'actions',
-            cell: ({ row }) => (
-                <TableActions actions={[
-                    { icon: 'fa-eye', label: 'Quick View', onClick: () => openModal(row.original) },
-                    { icon: 'fa-clipboard-list', label: 'Detailed View', href: route('appointments.show', row.original.appointment_id) },
-                ]} />
-            )
-        }
-    ], []);
+                    );
+                },
+            },
+            {
+                header: 'Doctor',
+                accessorKey: 'doctor_id',
+                cell: ({ row }) => <TableDoctorCell doctor={row.original.doctor} fallback="Doctor" />,
+            },
+            {
+                header: 'Status',
+                accessorKey: 'status',
+                cell: ({ row }) => {
+                    const apt = row.original;
+                    const isPast =
+                        apt.status === 'scheduled' &&
+                        new Date(`${apt.appointment_date}T${apt.appointment_time}`) < new Date();
+                    return <StatusBadge status={isPast ? 'overdue' : apt.status} />;
+                },
+            },
+            {
+                header: 'Actions',
+                id: 'actions',
+                cell: ({ row }) => (
+                    <TableActions
+                        actions={[
+                            { icon: 'fa-eye', label: 'Quick View', onClick: () => openModal(row.original) },
+                            {
+                                icon: 'fa-clipboard-list',
+                                label: 'Detailed View',
+                                href: route('appointments.show', row.original.appointment_id),
+                            },
+                        ]}
+                    />
+                ),
+            },
+        ],
+        [],
+    );
 
     const openModal = (apt) => {
         setModalConfig({
@@ -170,7 +188,7 @@ export default function Index({ appointments, filters, auth, stats }) {
 
     const getAppointmentTabs = (apt) => {
         if (!apt) return [];
-        
+
         const tabs = [
             {
                 id: 'details',
@@ -180,7 +198,9 @@ export default function Index({ appointments, filters, auth, stats }) {
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">Appointment Info</h4>
+                                <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">
+                                    Appointment Info
+                                </h4>
                                 <div className="space-y-3">
                                     <div className="flex justify-between border-b border-gray-100 pb-2">
                                         <span className="text-gray-500">Date</span>
@@ -197,42 +217,59 @@ export default function Index({ appointments, filters, auth, stats }) {
                                 </div>
                             </div>
                             <div className="space-y-4">
-                                <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">Medical Team</h4>
+                                <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest">
+                                    Medical Team
+                                </h4>
                                 <div className="space-y-3">
                                     <div className="flex justify-between border-b border-gray-100 pb-2">
                                         <span className="text-gray-500">Doctor</span>
-                                        <span className="font-semibold">Dr. {apt.doctor.user.first_name} {apt.doctor.user.last_name}</span>
+                                        <span className="font-semibold">
+                                            Dr. {apt.doctor.user.first_name} {apt.doctor.user.last_name}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between border-b border-gray-100 pb-2">
                                         <span className="text-gray-500">Department</span>
-                                        <span className="font-semibold">{apt.doctor.specialization || 'General Practice'}</span>
+                                        <span className="font-semibold">
+                                            {apt.doctor.specialization || 'General Practice'}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div className="nyl-content-box nyl-content-box--muted">
-                            <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3">Reason for Visit</h4>
+                            <h4 className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3">
+                                Reason for Visit
+                            </h4>
                             <p className="text-gray-800 font-medium mb-0">{apt.reason || 'Not specified'}</p>
                         </div>
                         <div className="flex gap-3">
                             {apt.status === 'scheduled' && (
-                                <button 
+                                <button
                                     onClick={() => {
-                                        router.post(route('appointments.check-in', apt.appointment_id), {}, {
-                                            preserveScroll: true,
-                                            onSuccess: () => closeModal()
-                                        });
+                                        router.post(
+                                            route('appointments.check-in', apt.appointment_id),
+                                            {},
+                                            {
+                                                preserveScroll: true,
+                                                onSuccess: () => closeModal(),
+                                            },
+                                        );
                                     }}
                                     className="btn btn-primary px-4 py-2 rounded-xl font-bold shadow-sm"
                                 >
                                     Confirm Arrival
                                 </button>
                             )}
-                            <Link href={route('appointments.show', apt.appointment_id)} className="btn btn-outline-secondary px-4 py-2 rounded-xl font-bold">View Full Records</Link>
+                            <Link
+                                href={route('appointments.show', apt.appointment_id)}
+                                className="btn btn-outline-secondary px-4 py-2 rounded-xl font-bold"
+                            >
+                                View Full Records
+                            </Link>
                         </div>
                     </div>
-                )
-            }
+                ),
+            },
         ];
 
         if (auth.user.role !== 'receptionist') {
@@ -246,17 +283,26 @@ export default function Index({ appointments, filters, auth, stats }) {
                         {apt.consultations?.length > 0 ? (
                             <div className="space-y-6">
                                 {apt.consultations.map((c, i) => (
-                                    <div key={i} className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm space-y-4">
+                                    <div
+                                        key={i}
+                                        className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm space-y-4"
+                                    >
                                         <div className="flex justify-between items-center bg-gray-50 -mx-6 -mt-6 p-4 rounded-t-2xl border-b border-gray-100">
                                             <span className="font-bold text-gray-900">Diagnosis: {c.diagnosis}</span>
-                                            <span className="text-xs text-gray-400 font-semibold">{c.consultation_date}</span>
+                                            <span className="text-xs text-gray-400 font-semibold">
+                                                {c.consultation_date}
+                                            </span>
                                         </div>
                                         <div>
-                                            <div className="text-xs font-bold text-gray-400 uppercase mb-1">Chief Complaint</div>
+                                            <div className="text-xs font-bold text-gray-400 uppercase mb-1">
+                                                Chief Complaint
+                                            </div>
                                             <p className="text-gray-700">{c.chief_complaint}</p>
                                         </div>
                                         <div>
-                                            <div className="text-xs font-bold text-gray-400 uppercase mb-1">Treatment Plan</div>
+                                            <div className="text-xs font-bold text-gray-400 uppercase mb-1">
+                                                Treatment Plan
+                                            </div>
                                             <p className="text-gray-700">{c.treatment_plan}</p>
                                         </div>
                                     </div>
@@ -267,14 +313,17 @@ export default function Index({ appointments, filters, auth, stats }) {
                                 <i className="fas fa-notes-medical text-gray-200 text-5xl mb-4"></i>
                                 <p className="text-gray-500 font-medium mb-4">No clinical notes recorded yet.</p>
                                 {auth.user.role === 'doctor' && (
-                                    <Link href={route('consultations.create', { appointment_id: apt.appointment_id })} className="btn btn-primary px-6 rounded-pill font-bold shadow-md">
+                                    <Link
+                                        href={route('consultations.create', { appointment_id: apt.appointment_id })}
+                                        className="btn btn-primary px-6 rounded-pill font-bold shadow-md"
+                                    >
                                         Start Consultation
                                     </Link>
                                 )}
                             </div>
                         )}
                     </div>
-                )
+                ),
             });
 
             tabs.push({
@@ -287,7 +336,10 @@ export default function Index({ appointments, filters, auth, stats }) {
                         {apt.prescriptions?.length > 0 ? (
                             <div className="space-y-4">
                                 {apt.prescriptions.map((p, i) => (
-                                    <div key={i} className="p-4 rounded-xl border border-gray-100 bg-white shadow-sm flex items-center justify-between">
+                                    <div
+                                        key={i}
+                                        className="p-4 rounded-xl border border-gray-100 bg-white shadow-sm flex items-center justify-between"
+                                    >
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
                                                 <i className="fas fa-file-prescription"></i>
@@ -314,7 +366,7 @@ export default function Index({ appointments, filters, auth, stats }) {
                             </div>
                         )}
                     </div>
-                )
+                ),
             });
         }
 
@@ -322,17 +374,12 @@ export default function Index({ appointments, filters, auth, stats }) {
     };
 
     return (
-        <AuthenticatedLayout
-            headerTitle="Appointments Ledger"
-            breadcrumbs={[{ label: 'Appointments', active: true }]}
-        >
+        <AuthenticatedLayout headerTitle="Appointments Ledger" breadcrumbs={[{ label: 'Appointments', active: true }]}>
             <Head title="Appointments" />
 
             <StatCardGrid items={statItems} cols={4} />
 
-
-
-            <UnifiedToolbar 
+            <UnifiedToolbar
                 viewMode={viewMode}
                 onViewModeChange={handleViewChange}
                 filterGroups={[
@@ -378,37 +425,37 @@ export default function Index({ appointments, filters, auth, stats }) {
                     },
                 ].filter(Boolean)}
                 bulkActions={[
-                    { 
-                        label: 'CONFIRM BATCH', 
-                        icon: 'fa-check-circle', 
-                        onClick: () => handleBulkAction('confirm') 
+                    {
+                        label: 'CONFIRM BATCH',
+                        icon: 'fa-check-circle',
+                        onClick: () => handleBulkAction('confirm'),
                     },
-                    { 
-                        label: 'CANCEL', 
-                        icon: 'fa-ban', 
-                        onClick: () => handleBulkAction('cancel') 
+                    {
+                        label: 'CANCEL',
+                        icon: 'fa-ban',
+                        onClick: () => handleBulkAction('cancel'),
                     },
-                    { 
-                        label: 'DELETE', 
-                        icon: 'fa-trash-alt', 
+                    {
+                        label: 'DELETE',
+                        icon: 'fa-trash-alt',
                         onClick: () => handleBulkAction('delete'),
-                        color: 'danger'
-                    }
+                        color: 'danger',
+                    },
                 ]}
                 selectionCount={selectedIds.length}
             />
 
             <div className="px-0">
-                <DashboardSearch 
-                    placeholder="Search ledger by name, doctor, or visit reason..." 
+                <DashboardSearch
+                    placeholder="Search ledger by name, doctor, or visit reason..."
                     value={search}
                     onChange={setSearch}
                     onSubmit={applyFilters}
                     onFilterChange={handleQuickFilterChange}
                     filters={[
-                        { label: 'Today\'s Visits', value: 'today' },
+                        { label: "Today's Visits", value: 'today' },
                         { label: 'Upcoming', value: 'upcoming' },
-                        { label: 'Past Due', value: 'overdue' }
+                        { label: 'Past Due', value: 'overdue' },
                     ]}
                 />
 
@@ -432,12 +479,14 @@ export default function Index({ appointments, filters, auth, stats }) {
                             <>
                                 {appointments.data.map((apt) => (
                                     <div key={apt.appointment_id} className="col-md-6 col-lg-4">
-                                        <div className={`card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-shadow-lg transition-all duration-300 bg-white ${isSelected(apt.appointment_id) ? 'ring-2 ring-primary ring-opacity-50' : ''}`}>
+                                        <div
+                                            className={`card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-shadow-lg transition-all duration-300 bg-white ${isSelected(apt.appointment_id) ? 'ring-2 ring-primary ring-opacity-50' : ''}`}
+                                        >
                                             <div className="card-body p-4 position-relative">
                                                 <div className="form-check position-absolute top-0 end-0 m-4 d-flex justify-content-center align-items-center p-0">
-                                                    <input 
-                                                        type="checkbox" 
-                                                        className="form-check-input shadow-none cursor-pointer nyl-checkbox m-0" 
+                                                    <input
+                                                        type="checkbox"
+                                                        className="form-check-input shadow-none cursor-pointer nyl-checkbox m-0"
                                                         checked={isSelected(apt.appointment_id)}
                                                         onChange={() => toggleSelection(apt.appointment_id)}
                                                     />
@@ -448,10 +497,24 @@ export default function Index({ appointments, filters, auth, stats }) {
                                                             <i className="fas fa-calendar-check fa-lg"></i>
                                                         </div>
                                                         <div>
-                                                            <h5 className="fw-extrabold text-gray-900 mb-0 text-truncate" style={{ maxWidth: '140px' }}>
-                                                                {apt.patient?.user?.first_name} {apt.patient?.user?.last_name}
-                                                                {calculateAge(apt.patient?.date_of_birth || apt.patient?.user?.date_of_birth) !== null && (
-                                                                    <span className="text-muted fw-normal ms-1 fs-6">({calculateAge(apt.patient?.date_of_birth || apt.patient?.user?.date_of_birth)}Y)</span>
+                                                            <h5
+                                                                className="fw-extrabold text-gray-900 mb-0 text-truncate"
+                                                                style={{ maxWidth: '140px' }}
+                                                            >
+                                                                {apt.patient?.user?.first_name}{' '}
+                                                                {apt.patient?.user?.last_name}
+                                                                {calculateAge(
+                                                                    apt.patient?.date_of_birth ||
+                                                                        apt.patient?.user?.date_of_birth,
+                                                                ) !== null && (
+                                                                    <span className="text-muted fw-normal ms-1 fs-6">
+                                                                        (
+                                                                        {calculateAge(
+                                                                            apt.patient?.date_of_birth ||
+                                                                                apt.patient?.user?.date_of_birth,
+                                                                        )}
+                                                                        Y)
+                                                                    </span>
                                                                 )}
                                                             </h5>
                                                             <PatientIdLabel
@@ -462,7 +525,11 @@ export default function Index({ appointments, filters, auth, stats }) {
                                                         </div>
                                                     </div>
                                                     {(() => {
-                                                        const isPast = apt.status === 'scheduled' && new Date(`${apt.appointment_date}T${apt.appointment_time}`) < new Date();
+                                                        const isPast =
+                                                            apt.status === 'scheduled' &&
+                                                            new Date(
+                                                                `${apt.appointment_date}T${apt.appointment_time}`,
+                                                            ) < new Date();
                                                         return <StatusBadge status={isPast ? 'overdue' : apt.status} />;
                                                     })()}
                                                 </div>
@@ -470,29 +537,48 @@ export default function Index({ appointments, filters, auth, stats }) {
                                                 <div className="space-y-3 mb-4">
                                                     <div className="flex items-center gap-3 text-gray-600">
                                                         <i className="fas fa-clock text-muted w-5"></i>
-                                                        <span className="font-bold extra-small text-uppercase tracking-tight">{apt.appointment_date} @ {apt.appointment_time || 'N/A'}</span>
+                                                        <span className="font-bold extra-small text-uppercase tracking-tight">
+                                                            {apt.appointment_date} @ {apt.appointment_time || 'N/A'}
+                                                        </span>
                                                     </div>
                                                     <div className="flex items-center gap-3 text-gray-600">
                                                         <i className="fas fa-user-md text-muted w-5"></i>
-                                                        <span className="font-bold extra-small text-uppercase tracking-tight text-primary">Dr. {apt.doctor?.user?.first_name} {apt.doctor?.user?.last_name}</span>
+                                                        <span className="font-bold extra-small text-uppercase tracking-tight text-primary">
+                                                            Dr. {apt.doctor?.user?.first_name}{' '}
+                                                            {apt.doctor?.user?.last_name}
+                                                        </span>
                                                     </div>
                                                     {apt.reason && (
                                                         <div className="bg-gray-50 p-3 rounded-xl border border-light">
-                                                            <div className="extra-small text-muted font-bold text-uppercase mb-1 tracking-widest">Reason</div>
-                                                            <p className="extra-small text-gray-800 fw-bold mb-0 line-clamp-2">{apt.reason}</p>
+                                                            <div className="extra-small text-muted font-bold text-uppercase mb-1 tracking-widest">
+                                                                Reason
+                                                            </div>
+                                                            <p className="extra-small text-gray-800 fw-bold mb-0 line-clamp-2">
+                                                                {apt.reason}
+                                                            </p>
                                                         </div>
                                                     )}
                                                 </div>
 
-                                                <GridCardActions actions={[
-                                                    { icon: 'fa-eye', label: 'Quick view', onClick: () => openModal(apt) },
-                                                    { icon: 'fa-external-link-alt', label: 'View full record', href: route('appointments.show', apt.appointment_id) },
-                                                ]} />
+                                                <GridCardActions
+                                                    actions={[
+                                                        {
+                                                            icon: 'fa-eye',
+                                                            label: 'Quick view',
+                                                            onClick: () => openModal(apt),
+                                                        },
+                                                        {
+                                                            icon: 'fa-external-link-alt',
+                                                            label: 'View full record',
+                                                            href: route('appointments.show', apt.appointment_id),
+                                                        },
+                                                    ]}
+                                                />
                                             </div>
                                         </div>
                                     </div>
                                 ))}
-                                
+
                                 {/* Unified Pagination for Grid View */}
                                 <div className="col-12 mt-4">
                                     <PaginationFooter pagination={appointments} />
@@ -513,11 +599,15 @@ export default function Index({ appointments, filters, auth, stats }) {
             <InfoModal
                 show={modalConfig.show}
                 onClose={closeModal}
-                title={modalConfig.appointment ? `Visit: ${modalConfig.appointment.patient?.user?.first_name || 'Patient'}` : ''}
+                title={
+                    modalConfig.appointment
+                        ? `Visit: ${modalConfig.appointment.patient?.user?.first_name || 'Patient'}`
+                        : ''
+                }
                 subtitle="Appointment Info"
                 tabs={getAppointmentTabs(modalConfig.appointment)}
             />
-            
+
             <style>{`
     .fw-extrabold { font-weight: 800; }
                 .tracking-tight { letter-spacing: -0.025em; }

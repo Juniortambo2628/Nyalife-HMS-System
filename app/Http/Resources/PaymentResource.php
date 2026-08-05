@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,7 +15,7 @@ class PaymentResource extends JsonResource
             'invoice_id' => $this->invoice_id,
             'amount' => $this->amount,
             'payment_method' => $this->payment_method,
-            'payment_method_label' => \App\Models\Payment::METHODS[$this->payment_method] ?? $this->payment_method,
+            'payment_method_label' => Payment::METHODS[$this->payment_method] ?? $this->payment_method,
             'payment_date' => $this->payment_date instanceof \DateTimeInterface
                 ? $this->payment_date->format('Y-m-d H:i')
                 : $this->payment_date,

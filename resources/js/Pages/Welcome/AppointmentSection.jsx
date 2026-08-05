@@ -10,16 +10,21 @@ export default function AppointmentSection({ data, setData, handleSubmit, proces
                         <span className="badge bg-pink-100 text-pink-600 px-3 py-2 rounded-pill fw-medium d-inline-block shadow-sm mb-4">
                             Booking Registry
                         </span>
-                        <h2 className="display-5 fw-bold text-gray-900 mb-4 section-title-main">Begin Your Healthcare Journey</h2>
+                        <h2 className="display-5 fw-bold text-gray-900 mb-4 section-title-main">
+                            Begin Your Healthcare Journey
+                        </h2>
                         <p className="lead text-gray-600 max-w-2xl mx-auto fw-medium">
-                            Our clinical coordinators are ready to assist you. Secure your consultation slot within minutes.
+                            Our clinical coordinators are ready to assist you. Secure your consultation slot within
+                            minutes.
                         </p>
                     </div>
 
                     <div className="bg-white rounded-3xl shadow-2xl p-4 p-md-5 border border-pink-100 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150">
                         <form onSubmit={handleSubmit} className="row g-4">
                             <div className="col-12">
-                                <label className="form-label fw-semibold text-gray-700 mb-2 ps-1">Full Legal Name</label>
+                                <label className="form-label fw-semibold text-gray-700 mb-2 ps-1">
+                                    Full Legal Name
+                                </label>
                                 <input
                                     type="text"
                                     value={data.name}
@@ -28,7 +33,9 @@ export default function AppointmentSection({ data, setData, handleSubmit, proces
                                     required
                                     placeholder="e.g. Jane Doe"
                                 />
-                                {errors.name && <div className="text-danger extra-small fw-bold mt-2 ps-3">{errors.name}</div>}
+                                {errors.name && (
+                                    <div className="text-danger extra-small fw-bold mt-2 ps-3">{errors.name}</div>
+                                )}
                             </div>
 
                             <div className="col-md-6">
@@ -77,7 +84,9 @@ export default function AppointmentSection({ data, setData, handleSubmit, proces
                             </div>
 
                             <div className="col-12">
-                                <label className="form-label fw-semibold text-gray-700 mb-2 ps-1">Appointment Type</label>
+                                <label className="form-label fw-semibold text-gray-700 mb-2 ps-1">
+                                    Appointment Type
+                                </label>
                                 <select
                                     value={data.type || 'in_person'}
                                     onChange={(e) => setData('type', e.target.value)}
@@ -88,12 +97,17 @@ export default function AppointmentSection({ data, setData, handleSubmit, proces
                                 </select>
                                 {data.type === 'telehealth' && (
                                     <div className="mt-2 ps-2">
-                                        <small className="text-info"><i className="fas fa-video me-1"></i> A secure Jitsi video link will be provided for your online consultation.</small>
+                                        <small className="text-info">
+                                            <i className="fas fa-video me-1"></i> A secure Jitsi video link will be
+                                            provided for your online consultation.
+                                        </small>
                                     </div>
                                 )}
                             </div>
                             <div className="col-12">
-                                <label className="form-label fw-semibold text-gray-700 mb-2 ps-1">Nature of Visit</label>
+                                <label className="form-label fw-semibold text-gray-700 mb-2 ps-1">
+                                    Nature of Visit
+                                </label>
                                 <textarea
                                     value={data.reason}
                                     onChange={(e) => setData('reason', e.target.value)}
@@ -113,7 +127,13 @@ export default function AppointmentSection({ data, setData, handleSubmit, proces
                                 </button>
                                 <div className="mt-5 border-top border-gray-50 pt-4">
                                     <p className="text-muted fw-medium text-sm mb-0">
-                                        Existing Patient? <Link href={route('login.patient')} className="text-primary hover-opacity-100 transition-all text-decoration-none fw-bold">Access Portal Here</Link>
+                                        Existing Patient?{' '}
+                                        <Link
+                                            href={route('login.patient')}
+                                            className="text-primary hover-opacity-100 transition-all text-decoration-none fw-bold"
+                                        >
+                                            Access Portal Here
+                                        </Link>
                                     </p>
                                 </div>
                             </div>

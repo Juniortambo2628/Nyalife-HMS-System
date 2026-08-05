@@ -2,6 +2,9 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Role;
+use Database\Seeders\RolePermissionsSeeder;
+use Database\Seeders\SyncSpatieRolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,11 +22,11 @@ class RegistrationTest extends TestCase
     public function test_new_users_can_register(): void
     {
         // Create legacy patient role
-        \App\Models\Role::firstOrCreate(['role_name' => 'patient']);
-        
+        Role::firstOrCreate(['role_name' => 'patient']);
+
         // Seed Spatie roles and permissions
-        $this->seed(\Database\Seeders\SyncSpatieRolesSeeder::class);
-        $this->seed(\Database\Seeders\RolePermissionsSeeder::class);
+        $this->seed(SyncSpatieRolesSeeder::class);
+        $this->seed(RolePermissionsSeeder::class);
 
         $response = $this->post('/register', [
             'first_name' => 'Test',

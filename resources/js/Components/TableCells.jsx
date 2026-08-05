@@ -10,11 +10,7 @@ const REF_VARIANTS = {
 
 export function RefBadge({ children, variant = 'pink' }) {
     if (children == null || children === '') return null;
-    return (
-        <span className={REF_VARIANTS[variant] || REF_VARIANTS.pink}>
-            {children}
-        </span>
-    );
+    return <span className={REF_VARIANTS[variant] || REF_VARIANTS.pink}>{children}</span>;
 }
 
 export function TableCellPrimary({ children, className = '' }) {
@@ -29,31 +25,17 @@ export function TableCellStack({ primary, secondary, className = '' }) {
     return (
         <div className={className}>
             <TableCellPrimary>{primary}</TableCellPrimary>
-            {secondary != null && secondary !== '' && (
-                <TableCellSub>{secondary}</TableCellSub>
-            )}
+            {secondary != null && secondary !== '' && <TableCellSub>{secondary}</TableCellSub>}
         </div>
     );
 }
 
 export function TableDateTimeCell({ date, time }) {
-    return (
-        <TableCellStack
-            primary={date || '—'}
-            secondary={time || null}
-        />
-    );
+    return <TableCellStack primary={date || '—'} secondary={time || null} />;
 }
 
 export function TableDoctorCell({ doctor, fallback = 'Staff' }) {
     const user = doctor?.user;
-    const name = user
-        ? `Dr. ${user.last_name || user.first_name || fallback}`
-        : `Dr. ${fallback}`;
-    return (
-        <TableCellStack
-            primary={name}
-            secondary={doctor?.specialization || null}
-        />
-    );
+    const name = user ? `Dr. ${user.last_name || user.first_name || fallback}` : `Dr. ${fallback}`;
+    return <TableCellStack primary={name} secondary={doctor?.specialization || null} />;
 }

@@ -15,91 +15,88 @@ export default function Index({ results, filters, stats }) {
     const { auth } = usePage().props;
     const [search, setSearch] = useState(filters.search || '');
 
-    const statItems = useMemo(() => [
-        {
-            label: 'Total Results',
-            value: stats?.total ?? 0,
-            icon: 'fa-file-medical-alt',
-            color: 'primary',
-        },
-        {
-            label: 'Completed Today',
-            value: stats?.today ?? 0,
-            icon: 'fa-calendar-day',
-            color: 'success',
-        },
-        {
-            label: 'Completed This Week',
-            value: stats?.this_week ?? 0,
-            icon: 'fa-calendar-week',
-            color: 'info',
-        },
-    ], [stats]);
+    const statItems = useMemo(
+        () => [
+            {
+                label: 'Total Results',
+                value: stats?.total ?? 0,
+                icon: 'fa-file-medical-alt',
+                color: 'primary',
+            },
+            {
+                label: 'Completed Today',
+                value: stats?.today ?? 0,
+                icon: 'fa-calendar-day',
+                color: 'success',
+            },
+            {
+                label: 'Completed This Week',
+                value: stats?.this_week ?? 0,
+                icon: 'fa-calendar-week',
+                color: 'info',
+            },
+        ],
+        [stats],
+    );
 
     const applyFilters = (searchValue) => {
         router.get(route('lab.results'), { search: searchValue }, { preserveState: true, replace: true });
     };
 
-    const columns = useMemo(() => [
-        {
-            header: 'Request #',
-            accessorKey: 'request_number',
-            cell: info => (
-                <RefBadge>
-                    {info.getValue() || `LAB-${info.row.original.request_id}`}
-                </RefBadge>
-            ),
-        },
-        {
-            header: 'Test',
-            id: 'test',
-            cell: info => info.row.original.test_type?.test_name || '—',
-        },
-        {
-            header: 'Patient',
-            id: 'patient',
-            cell: info => (
-                <PatientTableCell
-                    patient={info.row.original.patient}
-                    patientId={info.row.original.patient_id}
-                />
-            ),
-        },
-        {
-            header: 'Completed',
-            accessorKey: 'completed_at',
-            cell: info => info.getValue()
-                ? formatDateOnly(info.getValue())
-                : '—',
-        },
-        {
-            header: 'Status',
-            accessorKey: 'status',
-            cell: info => <StatusBadge status={info.getValue()} />,
-        },
-        {
-            header: 'Actions',
-            id: 'actions',
-            cell: info => (
-                <TableActions
-                    actions={[
-                        {
-                            label: 'View results',
-                            icon: 'fa-eye',
-                            href: route('lab.results.show', info.row.original.request_id),
-                        },
-                        {
-                            label: 'Print / download',
-                            icon: 'fa-print',
-                            href: route('lab.results.download', info.row.original.request_id),
-                            as: 'a',
-                            target: '_blank',
-                        },
-                    ]}
-                />
-            ),
-        },
-    ], []);
+    const columns = useMemo(
+        () => [
+            {
+                header: 'Request #',
+                accessorKey: 'request_number',
+                cell: (info) => <RefBadge>{info.getValue() || `LAB-${info.row.original.request_id}`}</RefBadge>,
+            },
+            {
+                header: 'Test',
+                id: 'test',
+                cell: (info) => info.row.original.test_type?.test_name || '—',
+            },
+            {
+                header: 'Patient',
+                id: 'patient',
+                cell: (info) => (
+                    <PatientTableCell patient={info.row.original.patient} patientId={info.row.original.patient_id} />
+                ),
+            },
+            {
+                header: 'Completed',
+                accessorKey: 'completed_at',
+                cell: (info) => (info.getValue() ? formatDateOnly(info.getValue()) : '—'),
+            },
+            {
+                header: 'Status',
+                accessorKey: 'status',
+                cell: (info) => <StatusBadge status={info.getValue()} />,
+            },
+            {
+                header: 'Actions',
+                id: 'actions',
+                cell: (info) => (
+                    <TableActions
+                        actions={[
+                            {
+                                label: 'View results',
+                                icon: 'fa-eye',
+                                href: route('lab.results.show', info.row.original.request_id),
+                            },
+                            {
+                                label: 'Print / download',
+                                icon: 'fa-print',
+                                href: route('lab.results.download', info.row.original.request_id),
+                                as: 'a',
+                                target: '_blank',
+                            },
+                        ]}
+                    />
+                ),
+            },
+        ],
+        [],
+    );
 
     const isPatient = auth?.user?.role === 'patient';
 
@@ -117,12 +114,13 @@ export default function Index({ results, filters, stats }) {
 
             <UnifiedToolbar
                 actions={[
-                    !isPatient && ['admin', 'lab_technician', 'nurse'].includes(auth.user.role) && {
-                        label: 'Register sample',
-                        icon: 'fa-vial',
-                        href: route('lab.samples.register'),
-                        color: 'success',
-                    },
+                    !isPatient &&
+                        ['admin', 'lab_technician', 'nurse'].includes(auth.user.role) && {
+                            label: 'Register sample',
+                            icon: 'fa-vial',
+                            href: route('lab.samples.register'),
+                            color: 'success',
+                        },
                     !isPatient && {
                         label: 'Lab requests',
                         icon: 'fa-flask',
@@ -144,9 +142,7 @@ export default function Index({ results, filters, stats }) {
                 data={results.data}
                 columns={columns}
                 pagination={results}
-                emptyMessage={isPatient
-                    ? 'No completed lab results available yet.'
-                    : 'No verified lab results found.'}
+                emptyMessage={isPatient ? 'No completed lab results available yet.' : 'No verified lab results found.'}
                 idField="request_id"
             />
         </AuthenticatedLayout>

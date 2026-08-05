@@ -14,7 +14,7 @@ class SettingFactory extends Factory
         $types = ['text', 'textarea', 'number', 'email', 'url', 'boolean', 'json'];
         $groups = ['general', 'contact', 'social', 'seo', 'appearance', 'billing', 'notifications', 'system'];
 
-        $key = $this->faker->unique()->word() . '_' . $this->faker->word();
+        $key = $this->faker->unique()->word().'_'.$this->faker->word();
 
         return [
             'key' => $key,
@@ -25,7 +25,7 @@ class SettingFactory extends Factory
         ];
     }
 
-    public function text(string $key, string $value = null, string $group = 'general'): static
+    public function text(string $key, ?string $value = null, string $group = 'general'): static
     {
         return $this->state(fn (array $attributes) => [
             'key' => $key,
@@ -45,7 +45,7 @@ class SettingFactory extends Factory
         ]);
     }
 
-    public function json(string $key, array $value = null, string $group = 'general'): static
+    public function json(string $key, ?array $value = null, string $group = 'general'): static
     {
         return $this->state(fn (array $attributes) => [
             'key' => $key,

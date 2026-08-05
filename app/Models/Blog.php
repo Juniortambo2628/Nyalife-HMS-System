@@ -15,13 +15,13 @@ class Blog extends Model
         'author_id',
         'tags',
         'is_published',
-        'published_at'
+        'published_at',
     ];
 
     protected $casts = [
         'tags' => 'array',
         'published_at' => 'datetime',
-        'is_published' => 'boolean'
+        'is_published' => 'boolean',
     ];
 
     public function author()
@@ -34,6 +34,7 @@ class Blog extends Model
         if (empty($search)) {
             return $query;
         }
+
         return $query->where(function ($q) use ($search) {
             $q->where('title', 'like', "%{$search}%")
                 ->orWhere('content', 'like', "%{$search}%");

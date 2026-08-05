@@ -2,10 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -29,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
         JsonResource::withoutWrapping();
 
         Gate::before(function ($user, $ability) {
-            if ($user instanceof \App\Models\User && $user->role === 'admin') {
+            if ($user instanceof User && $user->role === 'admin') {
                 return true;
             }
 

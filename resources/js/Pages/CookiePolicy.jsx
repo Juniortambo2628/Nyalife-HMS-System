@@ -15,26 +15,69 @@ export default function CookiePolicy() {
                     <div className="card-body p-4 p-md-5">
                         <section className="mb-5">
                             <h2 className="h4 fw-bold text-info mb-3">1. What Are Cookies?</h2>
-                            <p>Cookies are small text files that are placed on your computer or mobile device when you browse websites. They are widely used to make websites work, or work more efficiently, as well as to provide information to the owners of the site.</p>
+                            <p>
+                                Cookies are small text files that are placed on your computer or mobile device when you
+                                browse websites. They are widely used to make websites work, or work more efficiently,
+                                as well as to provide information to the owners of the site.
+                            </p>
                         </section>
 
                         <section className="mb-5">
                             <h2 className="h4 fw-bold text-info mb-3">2. How We Use Cookies</h2>
                             <p>Our website uses cookies to:</p>
                             <ul>
-                                <li><strong>Essential Cookies:</strong> These are necessary for the website to function. They include, for example, cookies that enable you to log into secure areas of our website.</li>
-                                <li><strong>Analytical/Performance Cookies:</strong> They allow us to recognize and count the number of visitors and to see how visitors move around our website when they are using it.</li>
-                                <li><strong>Functionality Cookies:</strong> These are used to recognize you when you return to our website. This enables us to personalize our content for you.</li>
+                                <li>
+                                    <strong>Essential Cookies:</strong> These are necessary for the website to function.
+                                    They include, for example, cookies that enable you to log into secure areas of our
+                                    website.
+                                </li>
+                                <li>
+                                    <strong>Analytical/Performance Cookies:</strong> They allow us to recognize and
+                                    count the number of visitors and to see how visitors move around our website when
+                                    they are using it.
+                                </li>
+                                <li>
+                                    <strong>Functionality Cookies:</strong> These are used to recognize you when you
+                                    return to our website. This enables us to personalize our content for you.
+                                </li>
                             </ul>
                         </section>
 
                         <section className="mb-5">
                             <h2 className="h4 fw-bold text-info mb-3">3. Managing Cookies</h2>
-                            <p>Most browsers allow you to refuse to accept cookies and to delete cookies. The methods for doing so vary from browser to browser, and from version to version. You can however obtain up-to-date information about blocking and deleting cookies via these links:</p>
+                            <p>
+                                Most browsers allow you to refuse to accept cookies and to delete cookies. The methods
+                                for doing so vary from browser to browser, and from version to version. You can however
+                                obtain up-to-date information about blocking and deleting cookies via these links:
+                            </p>
                             <ul>
-                                <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Chrome</a></li>
-                                <li><a href="https://support.mozilla.org/en-US/kb/enable-and-disable-cookies-website-preferences" target="_blank" rel="noopener">Firefox</a></li>
-                                <li><a href="https://support.microsoft.com/en-gb/help/17442/windows-internet-explorer-delete-manage-cookies" target="_blank" rel="noopener">Internet Explorer</a></li>
+                                <li>
+                                    <a
+                                        href="https://support.google.com/chrome/answer/95647"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >
+                                        Chrome
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="https://support.mozilla.org/en-US/kb/enable-and-disable-cookies-website-preferences"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >
+                                        Firefox
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="https://support.microsoft.com/en-gb/help/17442/windows-internet-explorer-delete-manage-cookies"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >
+                                        Internet Explorer
+                                    </a>
+                                </li>
                             </ul>
                         </section>
 

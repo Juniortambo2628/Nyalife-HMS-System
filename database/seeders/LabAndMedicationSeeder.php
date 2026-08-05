@@ -24,10 +24,11 @@ class LabAndMedicationSeeder extends Seeder
     {
         $filePath = base_path('Documents-from-clinic/Nyalife Medicine and Service Price List and Expiry Dates.xlsx');
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             $this->command->error("Excel file not found at: {$filePath}");
-            $this->command->info("Falling back to hardcoded lab templates only...");
+            $this->command->info('Falling back to hardcoded lab templates only...');
             $this->seedLabTemplates();
+
             return;
         }
 
@@ -45,8 +46,8 @@ class LabAndMedicationSeeder extends Seeder
 
         $this->command->info('');
         $this->command->info('✅  Seeding complete!');
-        $this->command->info('   Medications:    ' . Medication::count());
-        $this->command->info('   Lab Test Types: ' . LabTestType::count());
+        $this->command->info('   Medications:    '.Medication::count());
+        $this->command->info('   Lab Test Types: '.LabTestType::count());
     }
 
     // ─── MEDICINES SHEET ────────────────────────────────────────────
@@ -56,23 +57,28 @@ class LabAndMedicationSeeder extends Seeder
         $sheetIndex = $spreadsheet->getIndex($spreadsheet->getSheetByName('Medicines Price List'));
         if ($sheetIndex === null) {
             $this->command->warn('Sheet "Medicines Price List" not found, skipping.');
+
             return;
         }
 
         $sheet = $spreadsheet->getSheet($sheetIndex);
-        $rows  = $sheet->toArray(null, true, true, true);
+        $rows = $sheet->toArray(null, true, true, true);
         $count = 0;
 
         // Data starts at row 5 (row 4 is header row)
         foreach ($rows as $rowIndex => $row) {
-            if ($rowIndex < 5) continue;
+            if ($rowIndex < 5) {
+                continue;
+            }
 
             $name = trim($row['B'] ?? '');
-            if (empty($name)) continue;
+            if (empty($name)) {
+                continue;
+            }
 
-            $type        = trim($row['C'] ?? '');
+            $type = trim($row['C'] ?? '');
             $description = trim($row['D'] ?? '');
-            $priceRaw    = trim($row['E'] ?? '0');
+            $priceRaw = trim($row['E'] ?? '0');
 
             // Parse price: "$100 per pack" -> 100, "Ksh 500" -> 500
             $price = $this->parsePrice($priceRaw);
@@ -87,11 +93,11 @@ class LabAndMedicationSeeder extends Seeder
                 ['medication_name' => $name],
                 [
                     'medication_type' => $description ?: 'General',
-                    'description'     => $type,
-                    'strength'        => $strength,
-                    'unit'            => 'pack',
-                    'price_per_unit'  => $price,
-                    'stock_quantity'  => 0,
+                    'description' => $type,
+                    'strength' => $strength,
+                    'unit' => 'pack',
+                    'price_per_unit' => $price,
+                    'stock_quantity' => 0,
                 ]
             );
             $count++;
@@ -111,11 +117,12 @@ class LabAndMedicationSeeder extends Seeder
         }
         if ($sheetIndex === null) {
             $this->command->warn('Sheet "Service Price list" not found, skipping.');
+
             return;
         }
 
         $sheet = $spreadsheet->getSheet($sheetIndex);
-        $rows  = $sheet->toArray(null, true, true, true);
+        $rows = $sheet->toArray(null, true, true, true);
         $count = 0;
 
         // Lab/investigation keywords to classify as LabTestType
@@ -131,26 +138,34 @@ class LabAndMedicationSeeder extends Seeder
 
         // Data starts at row 4 (row 3 is header row)
         foreach ($rows as $rowIndex => $row) {
-            if ($rowIndex < 4) continue;
+            if ($rowIndex < 4) {
+                continue;
+            }
 
-            $serviceCode   = trim($row['A'] ?? '');
-            $serviceName   = trim($row['B'] ?? '');
-            $description   = trim($row['C'] ?? '');
-            $insuranceRaw  = trim($row['D'] ?? '0');
-            $cashRaw       = trim($row['E'] ?? '0');
+            $serviceCode = trim($row['A'] ?? '');
+            $serviceName = trim($row['B'] ?? '');
+            $description = trim($row['C'] ?? '');
+            $insuranceRaw = trim($row['D'] ?? '0');
+            $cashRaw = trim($row['E'] ?? '0');
 
-            if (empty($serviceName)) continue;
+            if (empty($serviceName)) {
+                continue;
+            }
 
             // Skip disclaimer/note rows (not real services)
-            if (strlen($serviceName) > 120) continue;
-            if (preg_match('/^(NOTE|DISCLAIMER|N\/B|NB:)/i', $serviceName)) continue;
+            if (strlen($serviceName) > 120) {
+                continue;
+            }
+            if (preg_match('/^(NOTE|DISCLAIMER|N\/B|NB:)/i', $serviceName)) {
+                continue;
+            }
 
             $insurancePrice = $this->parsePrice($insuranceRaw);
-            $cashPrice      = $this->parsePrice($cashRaw);
-            $price          = $cashPrice > 0 ? $cashPrice : $insurancePrice;
+            $cashPrice = $this->parsePrice($cashRaw);
+            $price = $cashPrice > 0 ? $cashPrice : $insurancePrice;
 
             // Build a full label for matching
-            $fullLabel = strtolower($serviceName . ' ' . $description);
+            $fullLabel = strtolower($serviceName.' '.$description);
 
             // Determine if this is a lab/investigation or a general service
             $isLab = false;
@@ -170,10 +185,10 @@ class LabAndMedicationSeeder extends Seeder
                 LabTestType::updateOrCreate(
                     ['test_name' => $displayName],
                     [
-                        'category'    => $category,
-                        'price'       => $price,
-                        'is_active'   => true,
-                        'description' => "Code: {$serviceCode}. Insurance: Ksh " . number_format($insurancePrice) . ", Cash: Ksh " . number_format($cashPrice),
+                        'category' => $category,
+                        'price' => $price,
+                        'is_active' => true,
+                        'description' => "Code: {$serviceCode}. Insurance: Ksh ".number_format($insurancePrice).', Cash: Ksh '.number_format($cashPrice),
                     ]
                 );
             } else {
@@ -183,10 +198,10 @@ class LabAndMedicationSeeder extends Seeder
                 LabTestType::updateOrCreate(
                     ['test_name' => $displayName],
                     [
-                        'category'    => $category,
-                        'price'       => $price,
-                        'is_active'   => true,
-                        'description' => "Code: {$serviceCode}. Insurance: Ksh " . number_format($insurancePrice) . ", Cash: Ksh " . number_format($cashPrice),
+                        'category' => $category,
+                        'price' => $price,
+                        'is_active' => true,
+                        'description' => "Code: {$serviceCode}. Insurance: Ksh ".number_format($insurancePrice).', Cash: Ksh '.number_format($cashPrice),
                     ]
                 );
             }
@@ -378,10 +393,10 @@ class LabAndMedicationSeeder extends Seeder
             LabTestType::firstOrCreate(
                 ['test_name' => $testName],
                 [
-                    'category'    => 'Laboratory',
-                    'price'       => 0,
-                    'is_active'   => true,
-                    'template'    => $template,
+                    'category' => 'Laboratory',
+                    'price' => 0,
+                    'is_active' => true,
+                    'template' => $template,
                     'description' => '',
                 ]
             );
@@ -398,9 +413,12 @@ class LabAndMedicationSeeder extends Seeder
      */
     private function parsePrice(string $raw): float
     {
-        if (empty($raw)) return 0;
+        if (empty($raw)) {
+            return 0;
+        }
         // Remove currency symbols, "Ksh", "$", "per pack", commas
         $clean = preg_replace('/[^0-9.]/', '', $raw);
+
         return (float) $clean;
     }
 
@@ -411,16 +429,36 @@ class LabAndMedicationSeeder extends Seeder
     {
         $fullText = strtolower("{$name} {$desc}");
 
-        if (str_contains($fullText, 'consult'))  return 'Consultation';
-        if (str_contains($fullText, 'scan') || str_contains($fullText, 'ultrasound')) return 'Imaging';
-        if (str_contains($fullText, 'x-ray') || str_contains($fullText, 'xray'))      return 'Imaging';
-        if (str_contains($fullText, 'procedure') || str_contains($fullText, 'surgical')) return 'Procedure';
-        if (str_contains($fullText, 'lab') || str_contains($fullText, 'test'))          return 'Laboratory';
-        if (str_contains($fullText, 'screen') || str_contains($fullText, 'hiv'))        return 'Screening';
-        if (str_contains($fullText, 'immuniz') || str_contains($fullText, 'vaccine'))   return 'Immunization';
-        if (str_contains($fullText, 'antenatal') || str_contains($fullText, 'anc'))     return 'Antenatal';
-        if (str_contains($fullText, 'delivery') || str_contains($fullText, 'birth'))    return 'Delivery';
-        if (str_contains($fullText, 'family planning') || str_contains($fullText, 'contracepti')) return 'Family Planning';
+        if (str_contains($fullText, 'consult')) {
+            return 'Consultation';
+        }
+        if (str_contains($fullText, 'scan') || str_contains($fullText, 'ultrasound')) {
+            return 'Imaging';
+        }
+        if (str_contains($fullText, 'x-ray') || str_contains($fullText, 'xray')) {
+            return 'Imaging';
+        }
+        if (str_contains($fullText, 'procedure') || str_contains($fullText, 'surgical')) {
+            return 'Procedure';
+        }
+        if (str_contains($fullText, 'lab') || str_contains($fullText, 'test')) {
+            return 'Laboratory';
+        }
+        if (str_contains($fullText, 'screen') || str_contains($fullText, 'hiv')) {
+            return 'Screening';
+        }
+        if (str_contains($fullText, 'immuniz') || str_contains($fullText, 'vaccine')) {
+            return 'Immunization';
+        }
+        if (str_contains($fullText, 'antenatal') || str_contains($fullText, 'anc')) {
+            return 'Antenatal';
+        }
+        if (str_contains($fullText, 'delivery') || str_contains($fullText, 'birth')) {
+            return 'Delivery';
+        }
+        if (str_contains($fullText, 'family planning') || str_contains($fullText, 'contracepti')) {
+            return 'Family Planning';
+        }
 
         return 'General Services';
     }

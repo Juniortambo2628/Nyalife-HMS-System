@@ -3,12 +3,18 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeEmail;
+use App\Models\Patient;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,7 +31,7 @@ class RegisteredUserController extends Controller
     /**
      * Handle an incoming registration request.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
@@ -47,7 +53,7 @@ class RegisteredUserController extends Controller
             if ($user->status !== 'provisional') {
                 return redirect()->back()->withErrors(['email' => 'The email has already been taken.']);
             }
-            
+
             // Update provisional user
             $user->update([
                 'first_name' => $input['first_name'],
@@ -80,7 +86,7 @@ class RegisteredUserController extends Controller
                 'gender' => $input['gender'] ?? null,
                 'date_of_birth' => $input['date_of_birth'] ?? null,
                 'password' => $input['password'],
-                'role_id' => \App\Models\Role::idFromName('patient'),
+                'role_id' => Role::idFromName('patient'),
                 'status' => 'active',
                 'is_active' => true,
             ]);
@@ -89,9 +95,9 @@ class RegisteredUserController extends Controller
             $user->assignRole('patient');
 
             // Create Patient record if missing
-            \App\Models\Patient::firstOrCreate(
+            Patient::firstOrCreate(
                 ['user_id' => $user->user_id],
-                ['patient_number' => \App\Models\Patient::generateNumber($user->user_id)]
+                ['patient_number' => Patient::generateNumber($user->user_id)]
             );
         }
 
@@ -99,12 +105,12 @@ class RegisteredUserController extends Controller
 
         // Send welcome email
         try {
-            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\WelcomeEmail([
-                'user_name' => $user->first_name . ' ' . $user->last_name,
+            Mail::to($user->email)->send(new WelcomeEmail([
+                'user_name' => $user->first_name.' '.$user->last_name,
                 'clinic_name' => config('app.name', "Nyalife Women's Clinic"),
             ]));
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning('Welcome email failed: ' . $e->getMessage());
+            Log::warning('Welcome email failed: '.$e->getMessage());
         }
 
         Auth::login($user);

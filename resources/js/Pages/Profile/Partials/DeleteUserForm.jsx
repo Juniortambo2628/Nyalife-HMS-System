@@ -56,17 +56,14 @@ export default function DeleteUserForm({ className = '' }) {
                     <div>
                         <div className="fw-bold text-danger mb-2">Permanent action</div>
                         <p className="small mb-0">
-                            Deleting your account removes your profile, files, and associated data permanently.
-                            This cannot be undone.
+                            Deleting your account removes your profile, files, and associated data permanently. This
+                            cannot be undone.
                         </p>
                     </div>
                 </div>
             </div>
 
-            <DangerButton
-                onClick={() => setConfirmingUserDeletion(true)}
-                className="rounded-pill px-4 fw-bold"
-            >
+            <DangerButton onClick={() => setConfirmingUserDeletion(true)} className="rounded-pill px-4 fw-bold">
                 <i className="fas fa-trash-alt me-2" />
                 Delete my account
             </DangerButton>
@@ -84,7 +81,11 @@ export default function DeleteUserForm({ className = '' }) {
                         Enter your password to permanently delete your Nyalife HMS account and all associated data.
                     </p>
 
-                    <InputLabel htmlFor="password" value="Password" className="small text-muted text-uppercase fw-bold" />
+                    <InputLabel
+                        htmlFor="password"
+                        value="Password"
+                        className="small text-muted text-uppercase fw-bold"
+                    />
                     <TextInput
                         id="password"
                         type="password"

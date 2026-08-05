@@ -19,10 +19,10 @@ class TelehealthNotificationService
                 'patient_name' => $patientName,
                 'email' => $email,
                 'password' => $password,
-                'login_url' => rtrim(config('app.url'), '/') . '/login',
+                'login_url' => rtrim(config('app.url'), '/').'/login',
             ]));
         } catch (\Exception $e) {
-            Log::warning('Guest credentials email failed: ' . $e->getMessage());
+            Log::warning('Guest credentials email failed: '.$e->getMessage());
         }
     }
 
@@ -35,27 +35,27 @@ class TelehealthNotificationService
             }
 
             Mail::to($patientEmail)->send(new TelehealthPaymentNotification([
-                'patient_name' => trim(($appointment->patient->user->first_name ?? '') . ' ' . ($appointment->patient->user->last_name ?? '')),
+                'patient_name' => trim(($appointment->patient->user->first_name ?? '').' '.($appointment->patient->user->last_name ?? '')),
                 'appointment_date' => $appointment->appointment_date,
                 'appointment_time' => $appointment->appointment_time,
                 'doctor_name' => $doctorName,
                 'payment_amount' => '4,000',
                 'till_number' => '9344367',
-                'consent_form_url' => rtrim(config('app.url'), '/') . '/telehealth',
+                'consent_form_url' => rtrim(config('app.url'), '/').'/telehealth',
                 'appointment_id' => $appointment->appointment_id,
             ]));
         } catch (\Exception $e) {
-            Log::warning('Telehealth payment notification email failed: ' . $e->getMessage());
+            Log::warning('Telehealth payment notification email failed: '.$e->getMessage());
         }
     }
 
     public static function confirmPaymentAndSendInvite(Appointment $appointment): string
     {
-        $meetingId = 'nyalife-' . strtolower(Str::random(12));
+        $meetingId = 'nyalife-'.strtolower(Str::random(12));
         $appUrl = rtrim(config('app.url'), '/');
         $link = "{$appUrl}/telehealth/meeting/{$meetingId}";
 
-        $appointment->notes = ($appointment->notes ?? '') . "\nMeeting Link: {$link}";
+        $appointment->notes = ($appointment->notes ?? '')."\nMeeting Link: {$link}";
         $appointment->status = 'confirmed';
         $appointment->save();
 
@@ -68,15 +68,15 @@ class TelehealthNotificationService
                 }
 
                 Mail::to($patientEmail)->send(new TelehealthInvitation([
-                    'patient_name' => trim(($appointment->patient->user->first_name ?? '') . ' ' . ($appointment->patient->user->last_name ?? '')),
+                    'patient_name' => trim(($appointment->patient->user->first_name ?? '').' '.($appointment->patient->user->last_name ?? '')),
                     'meeting_link' => $link,
                     'appointment_date' => $appointment->appointment_date,
                     'appointment_time' => $appointment->appointment_time,
                     'doctor_name' => $doctorName,
-                    'consent_form_url' => rtrim(config('app.url'), '/') . '/telehealth',
+                    'consent_form_url' => rtrim(config('app.url'), '/').'/telehealth',
                 ]));
             } catch (\Exception $e) {
-                Log::warning('Telehealth confirmation email failed: ' . $e->getMessage());
+                Log::warning('Telehealth confirmation email failed: '.$e->getMessage());
             }
         }
 

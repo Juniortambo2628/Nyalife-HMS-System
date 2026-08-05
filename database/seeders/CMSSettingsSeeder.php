@@ -19,44 +19,43 @@ class CMSSettingsSeeder extends Seeder
                 'value' => 'Nyalife Hospital Management System',
                 'type' => 'text',
                 'group' => 'hero',
-                'label' => 'Hero Main Title'
+                'label' => 'Hero Main Title',
             ],
             [
                 'key' => 'hero_subtitle',
                 'value' => 'Specialized Obstetrics & Gynecology Care',
                 'type' => 'text',
                 'group' => 'hero',
-                'label' => 'Hero Subtitle'
+                'label' => 'Hero Subtitle',
             ],
             [
                 'key' => 'hero_slide_1',
                 'value' => '/assets/img/slider/slider-1.jpg',
                 'type' => 'image',
                 'group' => 'hero',
-                'label' => 'Hero Slide 1 (Background)'
+                'label' => 'Hero Slide 1 (Background)',
             ],
             [
                 'key' => 'hero_slide_2',
                 'value' => '/assets/img/slider/slider-2.jpg',
                 'type' => 'image',
                 'group' => 'hero',
-                'label' => 'Hero Slide 2 (Background)'
+                'label' => 'Hero Slide 2 (Background)',
             ],
             [
                 'key' => 'hero_slide_3',
                 'value' => '/assets/img/slider/slider-3.jpg',
                 'type' => 'image',
                 'group' => 'hero',
-                'label' => 'Hero Slide 3 (Background)'
+                'label' => 'Hero Slide 3 (Background)',
             ],
             [
                 'key' => 'hero_slide_4',
                 'value' => '/assets/img/slider/slider-4.jpg',
                 'type' => 'image',
                 'group' => 'hero',
-                'label' => 'Hero Slide 4 (Background)'
+                'label' => 'Hero Slide 4 (Background)',
             ],
-
 
             // About Section
             [
@@ -64,21 +63,21 @@ class CMSSettingsSeeder extends Seeder
                 'value' => 'About Nyalife Women\'s Clinic',
                 'type' => 'text',
                 'group' => 'about',
-                'label' => 'About Section Title'
+                'label' => 'About Section Title',
             ],
             [
                 'key' => 'about_description',
                 'value' => 'Nyalife Women\'s Clinic is a specialized healthcare facility dedicated to providing comprehensive obstetrics and gynecology services to women at every stage of life.',
                 'type' => 'textarea',
                 'group' => 'about',
-                'label' => 'Detailed About Description'
+                'label' => 'Detailed About Description',
             ],
             [
                 'key' => 'about_image',
                 'value' => '/assets/img/service-tabs/nyalife-1.JPG',
                 'type' => 'image',
                 'group' => 'about',
-                'label' => 'About Featured Image'
+                'label' => 'About Featured Image',
             ],
 
             // Contact Info
@@ -87,77 +86,77 @@ class CMSSettingsSeeder extends Seeder
                 'value' => '+254746516514',
                 'type' => 'text',
                 'group' => 'contact',
-                'label' => 'Contact Phone Number'
+                'label' => 'Contact Phone Number',
             ],
             [
                 'key' => 'contact_email',
                 'value' => 'info@nyalifewomensclinic.com',
                 'type' => 'text',
                 'group' => 'contact',
-                'label' => 'Contact Email Address'
+                'label' => 'Contact Email Address',
             ],
             [
                 'key' => 'contact_address',
                 'value' => 'JemPark Complex building suite A5 in Sabaki, About 500meters from Mlolongo in Athi River, Machakos',
                 'type' => 'textarea',
                 'group' => 'contact',
-                'label' => 'Clinic Physical Address'
+                'label' => 'Clinic Physical Address',
             ],
             [
                 'key' => 'contact_hours',
                 'value' => 'Mon – Sat: 8:00 AM – 6:00 PM',
                 'type' => 'text',
                 'group' => 'contact',
-                'label' => 'Clinic Hours'
+                'label' => 'Clinic Hours',
             ],
             [
                 'key' => 'contact_maps_url',
                 'value' => 'https://maps.google.com/?q=Nyalife+Women%27s+Clinic+Athi+River',
                 'type' => 'text',
                 'group' => 'contact',
-                'label' => 'Google Maps Directions URL'
+                'label' => 'Google Maps Directions URL',
             ],
             [
                 'key' => 'instagram_url',
                 'value' => 'https://www.instagram.com/nyalife_womenshealth',
                 'type' => 'text',
                 'group' => 'contact',
-                'label' => 'Instagram Profile URL'
+                'label' => 'Instagram Profile URL',
             ],
             [
                 'key' => 'linkedin_url',
                 'value' => 'https://www.linkedin.com/company/nyalife-women-s-health/',
                 'type' => 'text',
                 'group' => 'contact',
-                'label' => 'LinkedIn Profile URL'
+                'label' => 'LinkedIn Profile URL',
             ],
             [
                 'key' => 'contact_bg_image',
                 'value' => '/assets/img/slider/footer-bg1.jpg',
                 'type' => 'image',
                 'group' => 'contact',
-                'label' => 'Contact Section Background'
+                'label' => 'Contact Section Background',
             ],
             [
                 'key' => 'contact_overlay_opacity',
                 'value' => '0.85',
                 'type' => 'text',
                 'group' => 'contact',
-                'label' => 'Contact Overlay Opacity (0.0 to 1.0)'
+                'label' => 'Contact Overlay Opacity (0.0 to 1.0)',
             ],
             [
                 'key' => 'landing_page_order',
                 'value' => 'hero,appointment,about,services,blog,contact',
                 'type' => 'text',
                 'group' => 'general',
-                'label' => 'Landing Page Section Order'
+                'label' => 'Landing Page Section Order',
             ],
             [
                 'key' => 'tax_rate',
                 'value' => '16',
                 'type' => 'text',
                 'group' => 'general',
-                'label' => 'Standard Tax Rate (%)'
+                'label' => 'Standard Tax Rate (%)',
             ],
         ];
 

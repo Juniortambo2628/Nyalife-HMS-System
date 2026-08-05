@@ -7,8 +7,11 @@ use Spatie\MailTemplates\TemplateMailable;
 class AppointmentReminder extends TemplateMailable
 {
     public $patient_name;
+
     public $appointment_date;
+
     public $appointment_time;
+
     public $doctor_name;
 
     public function __construct(array $data)

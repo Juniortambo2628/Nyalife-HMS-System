@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function FormSelect({ options = [], className = "form-select", ...props }) {
+export default function FormSelect({ options = [], className = 'form-select', ...props }) {
     return (
         <select className={className} {...props}>
             <option value="">Select Option</option>

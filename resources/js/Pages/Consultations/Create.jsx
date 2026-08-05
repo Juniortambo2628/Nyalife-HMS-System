@@ -15,14 +15,33 @@ import { toLocalISO } from '@/Utils/dateUtils';
 const AUTOSAVE_KEY = 'nyalife_consultation_draft';
 const AUTOSAVE_INTERVAL = 15000; // 15 seconds
 
-    export default function Create({ patients, doctors, medical_procedures = [], lab_test_types = [], procedure_services = [], appointment_id, preselected_patient_id, preselected_patient_label, preselected_patient_gender, preselected_doctor_id, preselected_doctor_label, latest_height, priority = 'normal', auth, latest_vitals, history_prefill = null, patient_clinical = null, ...props }) {
+export default function Create({
+    patients,
+    doctors,
+    medical_procedures = [],
+    lab_test_types = [],
+    procedure_services = [],
+    appointment_id,
+    preselected_patient_id,
+    preselected_patient_label,
+    preselected_patient_gender,
+    preselected_doctor_id,
+    preselected_doctor_label,
+    latest_height,
+    priority = 'normal',
+    auth,
+    latest_vitals,
+    history_prefill = null,
+    patient_clinical = null,
+    ...props
+}) {
     const consultationDrafts = props.drafts || { data: [] };
-    console.log('Consultation Create Props:', { 
-        appointment_id, 
-        preselected_patient_id, 
-        preselected_patient_label, 
+    console.log('Consultation Create Props:', {
+        appointment_id,
+        preselected_patient_id,
+        preselected_patient_label,
         preselected_doctor_id,
-        latest_vitals
+        latest_vitals,
     });
 
     // Try to restore draft from localStorage
@@ -34,17 +53,19 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                 const isSameAppointment = appointment_id && draftData.appointment_id == appointment_id;
                 const isSamePatient = preselected_patient_id && draftData.patient_id == preselected_patient_id;
                 const isGeneralWalkInMatch = !appointment_id && !preselected_patient_id && !draftData.appointment_id;
-                
+
                 if (isSameAppointment || isSamePatient || isGeneralWalkInMatch) {
                     return draftData;
                 }
             }
-        } catch (e) { /* ignore corrupt data */ }
+        } catch (e) {
+            /* ignore corrupt data */
+        }
         return null;
     }, [appointment_id, preselected_patient_id]);
 
     const initialDraft = useRef(loadDraft());
-    const prefill = initialDraft.current ? {} : (history_prefill || {});
+    const prefill = initialDraft.current ? {} : history_prefill || {};
 
     const defaultMenstrualHistory = prefill.menstrual_history || {
         last_period_date: '',
@@ -54,8 +75,12 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
     };
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [quickPatientLabel, setQuickPatientLabel] = useState(initialDraft.current?.patient_label || preselected_patient_label || "");
-    const [quickDoctorLabel, setQuickDoctorLabel] = useState(initialDraft.current?.doctor_label || preselected_doctor_label || "");
+    const [quickPatientLabel, setQuickPatientLabel] = useState(
+        initialDraft.current?.patient_label || preselected_patient_label || '',
+    );
+    const [quickDoctorLabel, setQuickDoctorLabel] = useState(
+        initialDraft.current?.doctor_label || preselected_doctor_label || '',
+    );
     const [showLabConfirmModal, setShowLabConfirmModal] = useState(false);
     const [toast, setToast] = useState(null);
     const [patientGender, setPatientGender] = useState(preselected_patient_gender || 'unknown');
@@ -63,7 +88,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
     const [skipRepro, setSkipRepro] = useState(false);
     const [autosaveStatus, setAutosaveStatus] = useState('');
     const autosaveTimerRef = useRef(null);
-    
+
     const [showDraftAlert, setShowDraftAlert] = useState(false);
     const isDiscardingRef = useRef(false);
 
@@ -83,7 +108,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
         priority: initialDraft.current?.priority || priority || 'normal',
         is_walk_in: !appointment_id,
         status: 'pending',
-        
+
         // Vitals
         vital_signs: initialDraft.current?.vital_signs || {
             blood_pressure: latest_vitals?.blood_pressure || '',
@@ -99,32 +124,32 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
         // Chief Complaint
         chief_complaint: initialDraft.current?.chief_complaint || '',
         history_present_illness: initialDraft.current?.history_present_illness || '',
-        
+
         // Gynaecological History
         menstrual_history: initialDraft.current?.menstrual_history || defaultMenstrualHistory,
         cervical_screening: initialDraft.current?.cervical_screening || prefill.cervical_screening || '',
         contraceptive_history: initialDraft.current?.contraceptive_history || prefill.contraceptive_history || '',
         sexual_history: initialDraft.current?.sexual_history || prefill.sexual_history || '',
-        
+
         // Obstetric History
         parity: initialDraft.current?.parity || prefill.parity || '',
         current_pregnancy: initialDraft.current?.current_pregnancy || prefill.current_pregnancy || '',
         past_obstetric: initialDraft.current?.past_obstetric || prefill.past_obstetric || [],
         obstetric_history: initialDraft.current?.obstetric_history || prefill.obstetric_history || '',
-        
+
         // Medical & Surgical
         past_medical_history: initialDraft.current?.past_medical_history || prefill.past_medical_history || '',
         surgical_history: initialDraft.current?.surgical_history || prefill.surgical_history || '',
-        
+
         // Family & Social
         family_history: initialDraft.current?.family_history || prefill.family_history || '',
         social_history: initialDraft.current?.social_history || prefill.social_history || '',
-        
+
         // System Review & Examination
         review_of_systems: initialDraft.current?.review_of_systems || '',
         general_examination: initialDraft.current?.general_examination || '',
         systems_examination: initialDraft.current?.systems_examination || '',
-        
+
         // Assessment & Plan
         diagnosis: initialDraft.current?.diagnosis || '',
         treatment_plan: initialDraft.current?.treatment_plan || '',
@@ -145,7 +170,9 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
             setAutosaveStatus('Draft saved');
             window.dispatchEvent(new CustomEvent('autosave', { detail: { status: 'saved' } }));
             setTimeout(() => setAutosaveStatus(''), 3000);
-        } catch (e) { /* storage full */ }
+        } catch (e) {
+            /* storage full */
+        }
     }, [data]);
 
     useEffect(() => {
@@ -161,7 +188,10 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
     }, [saveDraft]);
 
     const clearDraft = (force = false) => {
-        if (force || confirm('Are you sure you want to discard this draft? All unsaved progress for this session will be lost.')) {
+        if (
+            force ||
+            confirm('Are you sure you want to discard this draft? All unsaved progress for this session will be lost.')
+        ) {
             isDiscardingRef.current = true;
             localStorage.removeItem(AUTOSAVE_KEY);
             setShowDraftAlert(false);
@@ -174,7 +204,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
     const setNestedData = (parent, key, value) => {
         setData(parent, {
             ...data[parent],
-            [key]: value
+            [key]: value,
         });
     };
 
@@ -182,7 +212,16 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
     const addObstetricRecord = () => {
         setData('past_obstetric', [
             ...data.past_obstetric,
-            { year: '', place_of_birth: '', duration: '', mode_of_delivery: '', outcome: '', sex: '', weight: '', complications: '' }
+            {
+                year: '',
+                place_of_birth: '',
+                duration: '',
+                mode_of_delivery: '',
+                outcome: '',
+                sex: '',
+                weight: '',
+                complications: '',
+            },
         ]);
     };
 
@@ -201,40 +240,58 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
     // ====== PROCEDURES (MedicalProcedure model) ======
     const addProcedure = (procId) => {
         if (!procId) return;
-        const proc = medical_procedures.find(p => p.procedure_id == procId);
-        if (proc && !data.requested_procedures.find(p => p.procedure_id == procId)) {
-            setData('requested_procedures', [...data.requested_procedures, { procedure_id: proc.procedure_id, name: proc.name, category: proc.category }]);
+        const proc = medical_procedures.find((p) => p.procedure_id == procId);
+        if (proc && !data.requested_procedures.find((p) => p.procedure_id == procId)) {
+            setData('requested_procedures', [
+                ...data.requested_procedures,
+                { procedure_id: proc.procedure_id, name: proc.name, category: proc.category },
+            ]);
         }
     };
 
     const removeProcedure = (procId) => {
-        setData('requested_procedures', data.requested_procedures.filter(p => p.procedure_id != procId));
+        setData(
+            'requested_procedures',
+            data.requested_procedures.filter((p) => p.procedure_id != procId),
+        );
     };
 
     // ====== LAB TESTS (LabTestType model - lab categories only) ======
     const addLab = (labId) => {
         if (!labId) return;
-        const lab = lab_test_types.find(l => l.test_type_id == labId);
-        if (lab && !data.requested_labs.find(l => l.test_type_id == labId)) {
-            setData('requested_labs', [...data.requested_labs, { test_type_id: lab.test_type_id, test_name: lab.test_name, category: lab.category }]);
+        const lab = lab_test_types.find((l) => l.test_type_id == labId);
+        if (lab && !data.requested_labs.find((l) => l.test_type_id == labId)) {
+            setData('requested_labs', [
+                ...data.requested_labs,
+                { test_type_id: lab.test_type_id, test_name: lab.test_name, category: lab.category },
+            ]);
         }
     };
 
     const removeLab = (labId) => {
-        setData('requested_labs', data.requested_labs.filter(l => l.test_type_id != labId));
+        setData(
+            'requested_labs',
+            data.requested_labs.filter((l) => l.test_type_id != labId),
+        );
     };
 
     // ====== SERVICE ITEMS (LabTestType model - procedure/service categories) ======
     const addServiceItem = (svcId) => {
         if (!svcId) return;
-        const svc = procedure_services.find(s => s.test_type_id == svcId);
-        if (svc && !data.requested_service_items.find(s => s.test_type_id == svcId)) {
-            setData('requested_service_items', [...data.requested_service_items, { test_type_id: svc.test_type_id, test_name: svc.test_name, category: svc.category }]);
+        const svc = procedure_services.find((s) => s.test_type_id == svcId);
+        if (svc && !data.requested_service_items.find((s) => s.test_type_id == svcId)) {
+            setData('requested_service_items', [
+                ...data.requested_service_items,
+                { test_type_id: svc.test_type_id, test_name: svc.test_name, category: svc.category },
+            ]);
         }
     };
 
     const removeServiceItem = (svcId) => {
-        setData('requested_service_items', data.requested_service_items.filter(s => s.test_type_id != svcId));
+        setData(
+            'requested_service_items',
+            data.requested_service_items.filter((s) => s.test_type_id != svcId),
+        );
     };
 
     // ====== SUBMIT ======
@@ -242,29 +299,35 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
         if (e) e.preventDefault();
 
         // 1. If requesting labs and there are items in "Services" that might be labs
-        if (targetStatus === 'in_progress' && data.requested_service_items.length > 0 && !showLabConfirmModal && !moveLabs) {
+        if (
+            targetStatus === 'in_progress' &&
+            data.requested_service_items.length > 0 &&
+            !showLabConfirmModal &&
+            !moveLabs
+        ) {
             setShowLabConfirmModal(true);
             return;
         }
-        
+
         // Use transform to prepare data for submission without mutating current state
         transform((data) => ({
             ...data,
             status: targetStatus,
-            requested_labs: moveLabs 
-                ? [...data.requested_labs, ...data.requested_service_items] 
-                : data.requested_labs,
-            requested_service_items: moveLabs ? [] : data.requested_service_items
+            requested_labs: moveLabs ? [...data.requested_labs, ...data.requested_service_items] : data.requested_labs,
+            requested_service_items: moveLabs ? [] : data.requested_service_items,
         }));
 
         post(route('consultations.store'), {
             onSuccess: () => {
                 clearDraft(true);
                 setToast({
-                    message: targetStatus === 'completed' ? 'Consultation concluded successfully!' : 'Progress saved and labs requested.',
-                    type: 'success'
+                    message:
+                        targetStatus === 'completed'
+                            ? 'Consultation concluded successfully!'
+                            : 'Progress saved and labs requested.',
+                    type: 'success',
                 });
-                
+
                 // Redirect logic based on action
                 if (moveLabs) {
                     setTimeout(() => router.visit(route('lab.index')), 1500);
@@ -276,7 +339,7 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                 const errorMsg = Object.values(errs).flat().join(' | ');
                 setToast({
                     message: `Save failed: ${errorMsg || 'Please check the form for errors.'}`,
-                    type: 'danger'
+                    type: 'danger',
                 });
             },
             preserveScroll: true,
@@ -320,30 +383,32 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
         >
             <Head title="New Consultation" />
 
-            <UnifiedToolbar 
+            <UnifiedToolbar
                 autosaveStatus={autosaveStatus}
                 drafts={consultationDrafts.data}
                 actions={[
-                    auth?.user?.role === 'nurse' ? { 
-                        label: 'SAVE VITALS', 
-                        icon: 'fa-heartbeat', 
-                        onClick: (e) => submit(e, 'in_progress') 
-                    } : { 
-                        label: 'CONCLUDE & CLOSE', 
-                        icon: 'fa-check-double', 
-                        onClick: (e) => submit(e, 'completed') 
+                    auth?.user?.role === 'nurse'
+                        ? {
+                              label: 'SAVE VITALS',
+                              icon: 'fa-heartbeat',
+                              onClick: (e) => submit(e, 'in_progress'),
+                          }
+                        : {
+                              label: 'CONCLUDE & CLOSE',
+                              icon: 'fa-check-double',
+                              onClick: (e) => submit(e, 'completed'),
+                          },
+                    auth?.user?.role !== 'nurse' && {
+                        label: 'SAVE & REQUEST LABS',
+                        icon: 'fa-vials',
+                        onClick: (e) => submit(e, 'in_progress'),
                     },
-                    auth?.user?.role !== 'nurse' && { 
-                        label: 'SAVE & REQUEST LABS', 
-                        icon: 'fa-vials', 
-                        onClick: (e) => submit(e, 'in_progress') 
-                    },
-                    { 
-                        label: 'DISCARD DRAFT', 
-                        icon: 'fa-trash-alt', 
+                    {
+                        label: 'DISCARD DRAFT',
+                        icon: 'fa-trash-alt',
                         onClick: () => clearDraft(false),
-                        color: 'danger'
-                    }
+                        color: 'danger',
+                    },
                 ].filter(Boolean)}
             />
 
@@ -358,14 +423,19 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                     <button type="button" className="btn btn-sm btn-outline-info ms-3" onClick={clearDraft}>
                         <i className="fas fa-trash me-1"></i>Discard Draft
                     </button>
-                    <button type="button" className="btn-close ms-2" onClick={() => setShowDraftAlert(false)} aria-label="Close"></button>
+                    <button
+                        type="button"
+                        className="btn-close ms-2"
+                        onClick={() => setShowDraftAlert(false)}
+                        aria-label="Close"
+                    ></button>
                 </div>
             )}
 
-            <form onSubmit={e => submit(e, 'completed')} className="row g-4 pb-5">
+            <form onSubmit={(e) => submit(e, 'completed')} className="row g-4 pb-5">
                 {/* 1. Patient Biodata & Vitals */}
-                <FormSection 
-                    title="Patient Biodata & Vitals" 
+                <FormSection
+                    title="Patient Biodata & Vitals"
                     icon="fas fa-user-injured"
                     headerClassName="bg-pink-500 text-white p-4"
                     className="overflow-visible"
@@ -373,14 +443,14 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                 >
                     <div className="row g-3 mb-4">
                         <FormField label="Patient" required error={errors.patient_id} className="col-md-4">
-                            <DashboardSelect 
+                            <DashboardSelect
                                 asyncUrl="/patients/search"
                                 value={data.patient_id}
                                 onChange={(val, opt) => {
-                                    setData(d => ({
+                                    setData((d) => ({
                                         ...d,
                                         patient_id: val,
-                                        patient_label: opt ? opt.label : ''
+                                        patient_label: opt ? opt.label : '',
                                     }));
                                     if (opt) {
                                         setQuickPatientLabel(opt.label);
@@ -396,26 +466,26 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                         </FormField>
 
                         <FormField label="Attending Doctor" required error={errors.doctor_id} className="col-md-4">
-                            <FormSelect 
+                            <FormSelect
                                 className={`form-select form-select-lg bg-light border-0 ${errors.doctor_id ? 'is-invalid' : ''}`}
                                 value={data.doctor_id}
-                                onChange={e => setData('doctor_id', e.target.value)}
+                                onChange={(e) => setData('doctor_id', e.target.value)}
                                 options={doctors}
                             />
                         </FormField>
 
                         <FormField label="Date & Time" required className="col-md-4">
                             <div className="input-group">
-                                <input 
-                                    type="datetime-local" 
+                                <input
+                                    type="datetime-local"
                                     className="form-control form-control-lg bg-light border-0 shadow-none"
                                     value={data.consultation_date}
-                                    onChange={e => setData('consultation_date', e.target.value)}
+                                    onChange={(e) => setData('consultation_date', e.target.value)}
                                     required
                                 />
-                                <button 
-                                    type="button" 
-                                    className="btn btn-outline-primary border-0 bg-light-subtle px-3" 
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-primary border-0 bg-light-subtle px-3"
                                     title="Set to Current Time"
                                     onClick={() => setData('consultation_date', toLocalISO())}
                                 >
@@ -428,15 +498,15 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                     <div className="row g-3 mb-4">
                         <FormField label="Priority Level" className="col-md-4">
                             <div className="d-flex gap-2">
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     className={`btn rounded-pill px-4 flex-fill fw-bold transition-all ${data.priority === 'normal' ? 'btn-primary shadow' : 'btn-light border text-muted'}`}
                                     onClick={() => setData('priority', 'normal')}
                                 >
                                     Normal
                                 </button>
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     className={`btn rounded-pill px-4 flex-fill fw-bold transition-all ${data.priority === 'emergency' ? 'btn-danger shadow' : 'btn-light border text-muted'}`}
                                     onClick={() => setData('priority', 'emergency')}
                                 >
@@ -445,26 +515,66 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                             </div>
                         </FormField>
                     </div>
-                    
-                    <h6 className="text-pink-500 fw-extrabold extra-small text-uppercase tracking-widest mb-3 border-bottom border-gray-100 pb-2">Vital Signs</h6>
+
+                    <h6 className="text-pink-500 fw-extrabold extra-small text-uppercase tracking-widest mb-3 border-bottom border-gray-100 pb-2">
+                        Vital Signs
+                    </h6>
                     <div className="row g-3">
                         <FormField label="BP (mmHg)" className="col-md-3">
-                            <input type="text" className="form-control" placeholder="120/80" value={data.vital_signs.blood_pressure} onChange={e => setNestedData('vital_signs', 'blood_pressure', e.target.value)} />
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="120/80"
+                                value={data.vital_signs.blood_pressure}
+                                onChange={(e) => setNestedData('vital_signs', 'blood_pressure', e.target.value)}
+                            />
                         </FormField>
                         <FormField label="Heart Rate (bpm)" className="col-md-3">
-                            <input type="number" className="form-control" placeholder="72" value={data.vital_signs.heart_rate} onChange={e => setNestedData('vital_signs', 'heart_rate', e.target.value)} />
+                            <input
+                                type="number"
+                                className="form-control"
+                                placeholder="72"
+                                value={data.vital_signs.heart_rate}
+                                onChange={(e) => setNestedData('vital_signs', 'heart_rate', e.target.value)}
+                            />
                         </FormField>
                         <FormField label="Temp (°C)" className="col-md-3">
-                            <input type="number" step="0.1" className="form-control" placeholder="36.5" value={data.vital_signs.temperature} onChange={e => setNestedData('vital_signs', 'temperature', e.target.value)} />
+                            <input
+                                type="number"
+                                step="0.1"
+                                className="form-control"
+                                placeholder="36.5"
+                                value={data.vital_signs.temperature}
+                                onChange={(e) => setNestedData('vital_signs', 'temperature', e.target.value)}
+                            />
                         </FormField>
                         <FormField label="SpO2 (%)" className="col-md-3">
-                            <input type="number" className="form-control" placeholder="98" value={data.vital_signs.oxygen_saturation} onChange={e => setNestedData('vital_signs', 'oxygen_saturation', e.target.value)} />
+                            <input
+                                type="number"
+                                className="form-control"
+                                placeholder="98"
+                                value={data.vital_signs.oxygen_saturation}
+                                onChange={(e) => setNestedData('vital_signs', 'oxygen_saturation', e.target.value)}
+                            />
                         </FormField>
                         <FormField label="Weight (kg)" className="col-md-3">
-                            <input type="number" step="0.1" className="form-control" placeholder="60.0" value={data.vital_signs.weight} onChange={e => setNestedData('vital_signs', 'weight', e.target.value)} />
+                            <input
+                                type="number"
+                                step="0.1"
+                                className="form-control"
+                                placeholder="60.0"
+                                value={data.vital_signs.weight}
+                                onChange={(e) => setNestedData('vital_signs', 'weight', e.target.value)}
+                            />
                         </FormField>
                         <FormField label="Height (cm)" className="col-md-3">
-                            <input type="number" className="form-control" placeholder="165" value={data.vital_signs.height} onChange={e => setNestedData('vital_signs', 'height', e.target.value)} />
+                            <input
+                                type="number"
+                                className="form-control"
+                                placeholder="165"
+                                value={data.vital_signs.height}
+                                onChange={(e) => setNestedData('vital_signs', 'height', e.target.value)}
+                            />
                         </FormField>
                     </div>
                 </FormSection>
@@ -472,399 +582,732 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                 {auth?.user?.role !== 'nurse' && (
                     <>
                         {/* 2. Complaints & History of Present Illness */}
-                <div className="col-lg-6">
-                    <FormSection title="Chief Complaints & HPI" className="h-100" headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
-                        <FormField label="Chief Complaints" error={errors.chief_complaint} className="mb-3">
-                            <textarea 
-                                className={`form-control bg-light border-0 ${errors.chief_complaint ? 'is-invalid' : ''}`}
-                                rows="3" 
-                                value={data.chief_complaint}
-                                onChange={e => setData('chief_complaint', e.target.value)}
-                                placeholder="Key symptoms reported by patient..."
-                            />
-                        </FormField>
-                        <FormField label="History of Present Illness" className="mb-0">
-                            <textarea 
-                                className="form-control bg-light border-0" 
-                                rows="5" 
-                                value={data.history_present_illness}
-                                onChange={e => setData('history_present_illness', e.target.value)}
-                                placeholder="Detailed narrative of the illness..."
-                            />
-                        </FormField>
-                    </FormSection>
-                </div>
-
-                {/* 3. Medical & Surgical History */}
-                <div className="col-lg-6">
-                    <FormSection title="Medical & Surgical History" className="h-100" headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
-                        {(patient_clinical?.allergies || patient_clinical?.chronic_diseases) && (
-                            <div className="alert alert-warning border-0 rounded-3 mb-3 py-3">
-                                <div className="extra-small fw-extrabold text-uppercase tracking-widest mb-2">
-                                    <i className="fas fa-exclamation-triangle me-1"></i> Patient Profile Alerts
-                                </div>
-                                {patient_clinical.allergies && (
-                                    <div className="small mb-1"><span className="fw-bold">Allergies:</span> {patient_clinical.allergies}</div>
-                                )}
-                                {patient_clinical.chronic_diseases && (
-                                    <div className="small mb-0"><span className="fw-bold">Chronic conditions:</span> {patient_clinical.chronic_diseases}</div>
-                                )}
-                            </div>
-                        )}
-                        {history_prefill?.source_consultation_date && !initialDraft.current && (
-                            <div className="alert alert-info border-0 rounded-3 mb-3 py-2 extra-small">
-                                <i className="fas fa-history me-1"></i>
-                                History prefilled from visit on {history_prefill.source_consultation_date}.
-                                {history_prefill.source_consultation_id && (
-                                    <Link href={route('consultations.show', history_prefill.source_consultation_id)} className="ms-1 fw-bold">View source</Link>
-                                )}
-                            </div>
-                        )}
-                        <FormField label="Past Medical History" className="mb-3">
-                            <textarea className="form-control" rows="2" value={data.past_medical_history} onChange={e => setData('past_medical_history', e.target.value)} placeholder="Chronic conditions, allergies, past illnesses..." />
-                        </FormField>
-                        <FormField label="Surgical History" className="mb-3">
-                            <textarea className="form-control" rows="2" value={data.surgical_history} onChange={e => setData('surgical_history', e.target.value)} placeholder="Past surgeries and procedures..." />
-                        </FormField>
-                        <div className="row">
-                            <FormField label="Family History" className="col-md-6">
-                                <textarea className="form-control" rows="2" value={data.family_history} onChange={e => setData('family_history', e.target.value)} />
-                            </FormField>
-                            <FormField label="Social History" className="col-md-6">
-                                <textarea className="form-control" rows="2" value={data.social_history} onChange={e => setData('social_history', e.target.value)} />
-                            </FormField>
-                        </div>
-                    </FormSection>
-                </div>
-
-                {/* 4. Gynaecological History */}
-                {((patientGender === 'female' || isPartnerContext) && !skipRepro) && (
-                <div className="col-12 animate-fade-in">
-                    <FormSection 
-                        title="Gynaecological History" 
-                        icon="fas fa-venus" 
-                        headerClassName="bg-pink-50 text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest"
-                        actions={
-                            <div className="d-flex gap-3 align-items-center me-2">
-                                <div className="form-check form-switch mb-0">
-                                    <input className="form-check-input" type="checkbox" id="skipRepro" checked={skipRepro} onChange={e => setSkipRepro(e.target.checked)} />
-                                    <label className="form-check-label text-xs fw-bold uppercase" htmlFor="skipRepro">Does Not Apply</label>
-                                </div>
-                            </div>
-                        }
-                    >
-                        <div className="row g-4 mb-4">
-                            <div className="col-lg-6 border-end">
-                                <h6 className="text-secondary small fw-bold text-uppercase mb-3">Menstrual History</h6>
-                                <div className="row g-3">
-                                    <FormField label="LMP Date" className="col-md-6">
-                                        <input type="date" className="form-control shadow-none border-light bg-light" value={data.menstrual_history.last_period_date} onChange={e => setNestedData('menstrual_history', 'last_period_date', e.target.value)} />
-                                    </FormField>
-                                    <FormField label="Regularity" className="col-md-6">
-                                        <FormSelect 
-                                            value={data.menstrual_history.regularity} 
-                                            onChange={e => setNestedData('menstrual_history', 'regularity', e.target.value)}
-                                            options={[
-                                                { value: 'regular', label: 'Regular' },
-                                                { value: 'irregular', label: 'Irregular' }
-                                            ]}
-                                        />
-                                    </FormField>
-                                    <FormField label="Duration (Days)" className="col-md-6">
-                                        <input type="number" className="form-control" placeholder="e.g. 5" value={data.menstrual_history.flow_duration} onChange={e => setNestedData('menstrual_history', 'flow_duration', e.target.value)} />
-                                    </FormField>
-                                    <FormField label="Dysmenorrhea" className="col-md-6">
-                                        <FormSelect 
-                                            value={data.menstrual_history.dysmenorrhea} 
-                                            onChange={e => setNestedData('menstrual_history', 'dysmenorrhea', e.target.value)}
-                                            options={[
-                                                { value: 'none', label: 'None' },
-                                                { value: 'mild', label: 'Mild' },
-                                                { value: 'moderate', label: 'Moderate' },
-                                                { value: 'severe', label: 'Severe' }
-                                            ]}
-                                        />
-                                    </FormField>
-                                </div>
-                            </div>
-                            <div className="col-lg-6">
-                                <FormField label="Cervical Cancer Screening / Pap Smear" className="mb-3">
-                                    <textarea className="form-control" rows="2" placeholder="Date of last test, results..." value={data.cervical_screening} onChange={e => setData('cervical_screening', e.target.value)} />
+                        <div className="col-lg-6">
+                            <FormSection
+                                title="Chief Complaints & HPI"
+                                className="h-100"
+                                headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest"
+                            >
+                                <FormField label="Chief Complaints" error={errors.chief_complaint} className="mb-3">
+                                    <textarea
+                                        className={`form-control bg-light border-0 ${errors.chief_complaint ? 'is-invalid' : ''}`}
+                                        rows="3"
+                                        value={data.chief_complaint}
+                                        onChange={(e) => setData('chief_complaint', e.target.value)}
+                                        placeholder="Key symptoms reported by patient..."
+                                    />
                                 </FormField>
-                                <div className="row g-2">
-                                    <FormField label="Contraceptive Method" className="col-md-7 mb-3">
-                                        <FormSelect 
-                                            value={data.contraceptive_history} 
-                                            onChange={e => setData('contraceptive_history', e.target.value)}
-                                            options={[
-                                                { value: '', label: 'Select Method...' },
-                                                { value: 'none', label: 'None / Barrier' },
-                                                { value: 'pill', label: 'Oral Combined Pill' },
-                                                { value: 'injection', label: 'Depo Injection' },
-                                                { value: 'implant', label: 'Hormonal Implant' },
-                                                { value: 'iud', label: 'IUD (Coil)' },
-                                                { value: 'tubal', label: 'Tubal Ligation' },
-                                                { value: 'vasectomy', label: 'Vasectomy' },
-                                                { value: 'natural', label: 'Natural / Calendar' },
-                                                { value: 'emergency', label: 'Emergency Pill' }
-                                            ]}
+                                <FormField label="History of Present Illness" className="mb-0">
+                                    <textarea
+                                        className="form-control bg-light border-0"
+                                        rows="5"
+                                        value={data.history_present_illness}
+                                        onChange={(e) => setData('history_present_illness', e.target.value)}
+                                        placeholder="Detailed narrative of the illness..."
+                                    />
+                                </FormField>
+                            </FormSection>
+                        </div>
+
+                        {/* 3. Medical & Surgical History */}
+                        <div className="col-lg-6">
+                            <FormSection
+                                title="Medical & Surgical History"
+                                className="h-100"
+                                headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest"
+                            >
+                                {(patient_clinical?.allergies || patient_clinical?.chronic_diseases) && (
+                                    <div className="alert alert-warning border-0 rounded-3 mb-3 py-3">
+                                        <div className="extra-small fw-extrabold text-uppercase tracking-widest mb-2">
+                                            <i className="fas fa-exclamation-triangle me-1"></i> Patient Profile Alerts
+                                        </div>
+                                        {patient_clinical.allergies && (
+                                            <div className="small mb-1">
+                                                <span className="fw-bold">Allergies:</span> {patient_clinical.allergies}
+                                            </div>
+                                        )}
+                                        {patient_clinical.chronic_diseases && (
+                                            <div className="small mb-0">
+                                                <span className="fw-bold">Chronic conditions:</span>{' '}
+                                                {patient_clinical.chronic_diseases}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                {history_prefill?.source_consultation_date && !initialDraft.current && (
+                                    <div className="alert alert-info border-0 rounded-3 mb-3 py-2 extra-small">
+                                        <i className="fas fa-history me-1"></i>
+                                        History prefilled from visit on {history_prefill.source_consultation_date}.
+                                        {history_prefill.source_consultation_id && (
+                                            <Link
+                                                href={route(
+                                                    'consultations.show',
+                                                    history_prefill.source_consultation_id,
+                                                )}
+                                                className="ms-1 fw-bold"
+                                            >
+                                                View source
+                                            </Link>
+                                        )}
+                                    </div>
+                                )}
+                                <FormField label="Past Medical History" className="mb-3">
+                                    <textarea
+                                        className="form-control"
+                                        rows="2"
+                                        value={data.past_medical_history}
+                                        onChange={(e) => setData('past_medical_history', e.target.value)}
+                                        placeholder="Chronic conditions, allergies, past illnesses..."
+                                    />
+                                </FormField>
+                                <FormField label="Surgical History" className="mb-3">
+                                    <textarea
+                                        className="form-control"
+                                        rows="2"
+                                        value={data.surgical_history}
+                                        onChange={(e) => setData('surgical_history', e.target.value)}
+                                        placeholder="Past surgeries and procedures..."
+                                    />
+                                </FormField>
+                                <div className="row">
+                                    <FormField label="Family History" className="col-md-6">
+                                        <textarea
+                                            className="form-control"
+                                            rows="2"
+                                            value={data.family_history}
+                                            onChange={(e) => setData('family_history', e.target.value)}
                                         />
                                     </FormField>
-                                    <FormField label="Sexual Health Notes" className="col-md-5 mb-3">
-                                        <input type="text" className="form-control" value={data.sexual_history} onChange={e => setData('sexual_history', e.target.value)} />
+                                    <FormField label="Social History" className="col-md-6">
+                                        <textarea
+                                            className="form-control"
+                                            rows="2"
+                                            value={data.social_history}
+                                            onChange={(e) => setData('social_history', e.target.value)}
+                                        />
                                     </FormField>
                                 </div>
+                            </FormSection>
+                        </div>
+
+                        {/* 4. Gynaecological History */}
+                        {(patientGender === 'female' || isPartnerContext) && !skipRepro && (
+                            <div className="col-12 animate-fade-in">
+                                <FormSection
+                                    title="Gynaecological History"
+                                    icon="fas fa-venus"
+                                    headerClassName="bg-pink-50 text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest"
+                                    actions={
+                                        <div className="d-flex gap-3 align-items-center me-2">
+                                            <div className="form-check form-switch mb-0">
+                                                <input
+                                                    className="form-check-input"
+                                                    type="checkbox"
+                                                    id="skipRepro"
+                                                    checked={skipRepro}
+                                                    onChange={(e) => setSkipRepro(e.target.checked)}
+                                                />
+                                                <label
+                                                    className="form-check-label text-xs fw-bold uppercase"
+                                                    htmlFor="skipRepro"
+                                                >
+                                                    Does Not Apply
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                >
+                                    <div className="row g-4 mb-4">
+                                        <div className="col-lg-6 border-end">
+                                            <h6 className="text-secondary small fw-bold text-uppercase mb-3">
+                                                Menstrual History
+                                            </h6>
+                                            <div className="row g-3">
+                                                <FormField label="LMP Date" className="col-md-6">
+                                                    <input
+                                                        type="date"
+                                                        className="form-control shadow-none border-light bg-light"
+                                                        value={data.menstrual_history.last_period_date}
+                                                        onChange={(e) =>
+                                                            setNestedData(
+                                                                'menstrual_history',
+                                                                'last_period_date',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                    />
+                                                </FormField>
+                                                <FormField label="Regularity" className="col-md-6">
+                                                    <FormSelect
+                                                        value={data.menstrual_history.regularity}
+                                                        onChange={(e) =>
+                                                            setNestedData(
+                                                                'menstrual_history',
+                                                                'regularity',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        options={[
+                                                            { value: 'regular', label: 'Regular' },
+                                                            { value: 'irregular', label: 'Irregular' },
+                                                        ]}
+                                                    />
+                                                </FormField>
+                                                <FormField label="Duration (Days)" className="col-md-6">
+                                                    <input
+                                                        type="number"
+                                                        className="form-control"
+                                                        placeholder="e.g. 5"
+                                                        value={data.menstrual_history.flow_duration}
+                                                        onChange={(e) =>
+                                                            setNestedData(
+                                                                'menstrual_history',
+                                                                'flow_duration',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                    />
+                                                </FormField>
+                                                <FormField label="Dysmenorrhea" className="col-md-6">
+                                                    <FormSelect
+                                                        value={data.menstrual_history.dysmenorrhea}
+                                                        onChange={(e) =>
+                                                            setNestedData(
+                                                                'menstrual_history',
+                                                                'dysmenorrhea',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        options={[
+                                                            { value: 'none', label: 'None' },
+                                                            { value: 'mild', label: 'Mild' },
+                                                            { value: 'moderate', label: 'Moderate' },
+                                                            { value: 'severe', label: 'Severe' },
+                                                        ]}
+                                                    />
+                                                </FormField>
+                                            </div>
+                                        </div>
+                                        <div className="col-lg-6">
+                                            <FormField label="Cervical Cancer Screening / Pap Smear" className="mb-3">
+                                                <textarea
+                                                    className="form-control"
+                                                    rows="2"
+                                                    placeholder="Date of last test, results..."
+                                                    value={data.cervical_screening}
+                                                    onChange={(e) => setData('cervical_screening', e.target.value)}
+                                                />
+                                            </FormField>
+                                            <div className="row g-2">
+                                                <FormField label="Contraceptive Method" className="col-md-7 mb-3">
+                                                    <FormSelect
+                                                        value={data.contraceptive_history}
+                                                        onChange={(e) =>
+                                                            setData('contraceptive_history', e.target.value)
+                                                        }
+                                                        options={[
+                                                            { value: '', label: 'Select Method...' },
+                                                            { value: 'none', label: 'None / Barrier' },
+                                                            { value: 'pill', label: 'Oral Combined Pill' },
+                                                            { value: 'injection', label: 'Depo Injection' },
+                                                            { value: 'implant', label: 'Hormonal Implant' },
+                                                            { value: 'iud', label: 'IUD (Coil)' },
+                                                            { value: 'tubal', label: 'Tubal Ligation' },
+                                                            { value: 'vasectomy', label: 'Vasectomy' },
+                                                            { value: 'natural', label: 'Natural / Calendar' },
+                                                            { value: 'emergency', label: 'Emergency Pill' },
+                                                        ]}
+                                                    />
+                                                </FormField>
+                                                <FormField label="Sexual Health Notes" className="col-md-5 mb-3">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        value={data.sexual_history}
+                                                        onChange={(e) => setData('sexual_history', e.target.value)}
+                                                    />
+                                                </FormField>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </FormSection>
                             </div>
-                        </div>
-                    </FormSection>
-                </div>
-                )}
-
-                {/* 5. Obstetric History */}
-                {((patientGender === 'female' || isPartnerContext) && !skipRepro) && (
-                <div className="col-12 animate-fade-in">
-                    <FormSection title="Obstetric History" icon="fas fa-baby-carriage" headerClassName="bg-purple-50 text-purple-700 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
-                        <div className="row g-3 mb-4">
-                            <FormField label="Parity (Para X+Y)" className="col-md-4">
-                                <input type="text" className="form-control" placeholder="e.g. 2+0" value={data.parity} onChange={e => setData('parity', e.target.value)} />
-                            </FormField>
-                            <FormField label="Current Pregnancy Notes" className="col-md-8">
-                                <input type="text" className="form-control" placeholder="Any details on current pregnancy..." value={data.current_pregnancy} onChange={e => setData('current_pregnancy', e.target.value)} />
-                            </FormField>
-                        </div>
-
-                        <div className="mb-4">
-                            <FormField label="Obstetric History Notes">
-                                <textarea className="form-control" rows="2" placeholder="Additional obstetric history notes..." value={data.obstetric_history} onChange={e => setData('obstetric_history', e.target.value)} />
-                            </FormField>
-                        </div>
-                        
-                        <h6 className="text-secondary small fw-bold text-uppercase border-bottom pb-2 mb-3">
-                            Past Pregnancies 
-                            <button type="button" onClick={addObstetricRecord} className="btn btn-sm btn-outline-primary ms-3 rounded-pill">
-                                <i className="fas fa-plus me-1"></i> Add Record
-                            </button>
-                        </h6>
-                        
-                        {data.past_obstetric.length === 0 && (
-                            <p className="text-muted small italic">No past pregnancy records added.</p>
                         )}
 
-                        {data.past_obstetric.map((rec, idx) => (
-                            <div key={idx} className="bg-light p-3 rounded mb-3 position-relative border">
-                                <button type="button" onClick={() => removeObstetricRecord(idx)} className="btn btn-sm btn-light text-danger position-absolute top-0 end-0 m-2 rounded-circle" title="Remove">
-                                    <i className="fas fa-times"></i>
-                                </button>
-                                <div className="row g-2">
-                                    <div className="col-md-2">
-                                        <input type="text" className="form-control form-control-sm" placeholder="Year" value={rec.year} onChange={e => updateObstetricRecord(idx, 'year', e.target.value)} />
-                                    </div>
-                                    <div className="col-md-3">
-                                        <input type="text" className="form-control form-control-sm" placeholder="Place of Birth" value={rec.place_of_birth} onChange={e => updateObstetricRecord(idx, 'place_of_birth', e.target.value)} />
-                                    </div>
-                                    <div className="col-md-2">
-                                        <input type="text" className="form-control form-control-sm" placeholder="Duration" value={rec.duration} onChange={e => updateObstetricRecord(idx, 'duration', e.target.value)} />
-                                    </div>
-                                    <div className="col-md-3">
-                                        <input type="text" className="form-control form-control-sm" placeholder="Mode of Delivery" value={rec.mode_of_delivery} onChange={e => updateObstetricRecord(idx, 'mode_of_delivery', e.target.value)} />
-                                    </div>
-                                    <div className="col-md-2">
-                                        <input type="text" className="form-control form-control-sm" placeholder="Outcome" value={rec.outcome} onChange={e => updateObstetricRecord(idx, 'outcome', e.target.value)} />
-                                    </div>
-                                    <div className="col-md-2">
-                                        <input type="text" className="form-control form-control-sm" placeholder="Sex" value={rec.sex} onChange={e => updateObstetricRecord(idx, 'sex', e.target.value)} />
-                                    </div>
-                                    <div className="col-md-2">
-                                        <input type="text" className="form-control form-control-sm" placeholder="Weight" value={rec.weight} onChange={e => updateObstetricRecord(idx, 'weight', e.target.value)} />
-                                    </div>
-                                    <div className="col-md-8">
-                                        <input type="text" className="form-control form-control-sm" placeholder="Complications" value={rec.complications} onChange={e => updateObstetricRecord(idx, 'complications', e.target.value)} />
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </FormSection>
-                </div>
-                )}
-
-                {/* Male/Non-Female Context Trigger */}
-                {(patientGender !== 'female' && !isPartnerContext) && (
-                    <div className="col-12">
-                        <div className="card border-0 bg-light p-4 rounded-2xl text-center shadow-sm">
-                            <p className="text-muted mb-3 italic small">Reproductive & Obstetric sections are hidden for {patientGender} patients.</p>
-                            <div className="d-flex justify-content-center">
-                                <div className="form-check form-check-inline">
-                                    <input className="form-check-input" type="checkbox" id="partnerContext" checked={isPartnerContext} onChange={e => setIsPartnerContext(e.target.checked)} />
-                                    <label className="form-check-label fw-bold text-primary" htmlFor="partnerContext">
-                                        Enable Partner/Reproductive Context
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                
-                {/* 6. Review of Systems */}
-                <div className="col-12">
-                    <FormSection title="Review of Systems" headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
-                        <div className="row g-4">
-                            <FormField label="Review of Systems" className="col-12">
-                                <textarea className="form-control" rows="3" placeholder="Systematic review of systems..." value={data.review_of_systems} onChange={e => setData('review_of_systems', e.target.value)} />
-                            </FormField>
-                        </div>
-                    </FormSection>
-                </div>
-
-                {/* 7. Physical Examination */}
-                <div className="col-12">
-                    <FormSection title="Physical Examination" headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest">
-                        <div className="row g-4">
-                            <FormField label="General Examination" className="col-md-6">
-                                <textarea className="form-control" rows="3" placeholder="General appearance..." value={data.general_examination} onChange={e => setData('general_examination', e.target.value)} />
-                            </FormField>
-                            <FormField label="Specific Systems Examination" className="col-md-6">
-                                <textarea className="form-control" rows="3" placeholder="Detailed findings..." value={data.systems_examination} onChange={e => setData('systems_examination', e.target.value)} />
-                            </FormField>
-                        </div>
-                    </FormSection>
-                </div>
-
-                {/* 7. Services, Procedures & Diagnostics — NO PRICING */}
-                <div className="col-12">
-                    <FormSection 
-                        title="Services, Procedures & Diagnostics" 
-                        icon="fas fa-microscope" 
-                        headerClassName="bg-blue-50 text-blue-700 p-3 fw-extrabold extra-small text-uppercase tracking-widest"
-                        className="overflow-visible"
-                        bodyClassName="overflow-visible"
-                    >
-                        <div className="row g-4 overflow-visible">
-                            {/* Lab Tests Column */}
-                            <div className="col-lg-4 border-end">
-                                <h6 className="fw-bold mb-3 text-secondary small text-uppercase">Laboratory Tests</h6>
-                                <DashboardSelect 
-                                    options={lab_test_types.map(l => ({ value: l.test_type_id, label: l.test_name, sublabel: l.category }))}
-                                    placeholder="Search lab tests..."
-                                    value=""
-                                    onChange={(val) => {
-                                        if (val) addLab(val);
-                                    }}
-                                />
-                                <ul className="list-group list-group-flush mb-0">
-                                    {data.requested_labs.map(l => (
-                                        <li key={l.test_type_id} className="list-group-item d-flex justify-content-between align-items-center bg-light mb-2 rounded border-0 py-2">
-                                            <div>
-                                                <span className="fw-bold text-gray-800 d-block small">{l.test_name}</span>
-                                                <span className="text-secondary" style={{ fontSize: '.7rem' }}>{l.category}</span>
-                                            </div>
-                                            <button type="button" onClick={() => removeLab(l.test_type_id)} className="btn btn-sm btn-light text-danger"><i className="fas fa-times"></i></button>
-                                        </li>
-                                    ))}
-                                    {data.requested_labs.length === 0 && <li className="list-group-item border-0 bg-transparent text-muted small italic px-0">No lab tests selected.</li>}
-                                </ul>
-                            </div>
-
-                            {/* Services/Procedures Column */}
-                            <div className="col-lg-4 border-end">
-                                <h6 className="fw-bold mb-3 text-secondary small text-uppercase">Services & Procedures</h6>
-                                <select 
-                                    className="form-select bg-light border-0 mb-3"
-                                    onChange={(e) => { addServiceItem(e.target.value); e.target.value = ""; }}
-                                    defaultValue=""
+                        {/* 5. Obstetric History */}
+                        {(patientGender === 'female' || isPartnerContext) && !skipRepro && (
+                            <div className="col-12 animate-fade-in">
+                                <FormSection
+                                    title="Obstetric History"
+                                    icon="fas fa-baby-carriage"
+                                    headerClassName="bg-purple-50 text-purple-700 p-3 fw-extrabold extra-small text-uppercase tracking-widest"
                                 >
-                                    <option value="" disabled>Add a Service/Procedure...</option>
-                                    {Object.entries(servicesByCategory).map(([cat, svcs]) => (
-                                        <optgroup key={cat} label={cat}>
-                                            {svcs.map(s => (
-                                                <option key={s.test_type_id} value={s.test_type_id}>{s.test_name}</option>
+                                    <div className="row g-3 mb-4">
+                                        <FormField label="Parity (Para X+Y)" className="col-md-4">
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="e.g. 2+0"
+                                                value={data.parity}
+                                                onChange={(e) => setData('parity', e.target.value)}
+                                            />
+                                        </FormField>
+                                        <FormField label="Current Pregnancy Notes" className="col-md-8">
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="Any details on current pregnancy..."
+                                                value={data.current_pregnancy}
+                                                onChange={(e) => setData('current_pregnancy', e.target.value)}
+                                            />
+                                        </FormField>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <FormField label="Obstetric History Notes">
+                                            <textarea
+                                                className="form-control"
+                                                rows="2"
+                                                placeholder="Additional obstetric history notes..."
+                                                value={data.obstetric_history}
+                                                onChange={(e) => setData('obstetric_history', e.target.value)}
+                                            />
+                                        </FormField>
+                                    </div>
+
+                                    <h6 className="text-secondary small fw-bold text-uppercase border-bottom pb-2 mb-3">
+                                        Past Pregnancies
+                                        <button
+                                            type="button"
+                                            onClick={addObstetricRecord}
+                                            className="btn btn-sm btn-outline-primary ms-3 rounded-pill"
+                                        >
+                                            <i className="fas fa-plus me-1"></i> Add Record
+                                        </button>
+                                    </h6>
+
+                                    {data.past_obstetric.length === 0 && (
+                                        <p className="text-muted small italic">No past pregnancy records added.</p>
+                                    )}
+
+                                    {data.past_obstetric.map((rec, idx) => (
+                                        <div key={idx} className="bg-light p-3 rounded mb-3 position-relative border">
+                                            <button
+                                                type="button"
+                                                onClick={() => removeObstetricRecord(idx)}
+                                                className="btn btn-sm btn-light text-danger position-absolute top-0 end-0 m-2 rounded-circle"
+                                                title="Remove"
+                                            >
+                                                <i className="fas fa-times"></i>
+                                            </button>
+                                            <div className="row g-2">
+                                                <div className="col-md-2">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control form-control-sm"
+                                                        placeholder="Year"
+                                                        value={rec.year}
+                                                        onChange={(e) =>
+                                                            updateObstetricRecord(idx, 'year', e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control form-control-sm"
+                                                        placeholder="Place of Birth"
+                                                        value={rec.place_of_birth}
+                                                        onChange={(e) =>
+                                                            updateObstetricRecord(idx, 'place_of_birth', e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="col-md-2">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control form-control-sm"
+                                                        placeholder="Duration"
+                                                        value={rec.duration}
+                                                        onChange={(e) =>
+                                                            updateObstetricRecord(idx, 'duration', e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control form-control-sm"
+                                                        placeholder="Mode of Delivery"
+                                                        value={rec.mode_of_delivery}
+                                                        onChange={(e) =>
+                                                            updateObstetricRecord(
+                                                                idx,
+                                                                'mode_of_delivery',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="col-md-2">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control form-control-sm"
+                                                        placeholder="Outcome"
+                                                        value={rec.outcome}
+                                                        onChange={(e) =>
+                                                            updateObstetricRecord(idx, 'outcome', e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="col-md-2">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control form-control-sm"
+                                                        placeholder="Sex"
+                                                        value={rec.sex}
+                                                        onChange={(e) =>
+                                                            updateObstetricRecord(idx, 'sex', e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="col-md-2">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control form-control-sm"
+                                                        placeholder="Weight"
+                                                        value={rec.weight}
+                                                        onChange={(e) =>
+                                                            updateObstetricRecord(idx, 'weight', e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="col-md-8">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control form-control-sm"
+                                                        placeholder="Complications"
+                                                        value={rec.complications}
+                                                        onChange={(e) =>
+                                                            updateObstetricRecord(idx, 'complications', e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </FormSection>
+                            </div>
+                        )}
+
+                        {/* Male/Non-Female Context Trigger */}
+                        {patientGender !== 'female' && !isPartnerContext && (
+                            <div className="col-12">
+                                <div className="card border-0 bg-light p-4 rounded-2xl text-center shadow-sm">
+                                    <p className="text-muted mb-3 italic small">
+                                        Reproductive & Obstetric sections are hidden for {patientGender} patients.
+                                    </p>
+                                    <div className="d-flex justify-content-center">
+                                        <div className="form-check form-check-inline">
+                                            <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                id="partnerContext"
+                                                checked={isPartnerContext}
+                                                onChange={(e) => setIsPartnerContext(e.target.checked)}
+                                            />
+                                            <label
+                                                className="form-check-label fw-bold text-primary"
+                                                htmlFor="partnerContext"
+                                            >
+                                                Enable Partner/Reproductive Context
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 6. Review of Systems */}
+                        <div className="col-12">
+                            <FormSection
+                                title="Review of Systems"
+                                headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest"
+                            >
+                                <div className="row g-4">
+                                    <FormField label="Review of Systems" className="col-12">
+                                        <textarea
+                                            className="form-control"
+                                            rows="3"
+                                            placeholder="Systematic review of systems..."
+                                            value={data.review_of_systems}
+                                            onChange={(e) => setData('review_of_systems', e.target.value)}
+                                        />
+                                    </FormField>
+                                </div>
+                            </FormSection>
+                        </div>
+
+                        {/* 7. Physical Examination */}
+                        <div className="col-12">
+                            <FormSection
+                                title="Physical Examination"
+                                headerClassName="bg-white border-bottom text-pink-500 p-3 fw-extrabold extra-small text-uppercase tracking-widest"
+                            >
+                                <div className="row g-4">
+                                    <FormField label="General Examination" className="col-md-6">
+                                        <textarea
+                                            className="form-control"
+                                            rows="3"
+                                            placeholder="General appearance..."
+                                            value={data.general_examination}
+                                            onChange={(e) => setData('general_examination', e.target.value)}
+                                        />
+                                    </FormField>
+                                    <FormField label="Specific Systems Examination" className="col-md-6">
+                                        <textarea
+                                            className="form-control"
+                                            rows="3"
+                                            placeholder="Detailed findings..."
+                                            value={data.systems_examination}
+                                            onChange={(e) => setData('systems_examination', e.target.value)}
+                                        />
+                                    </FormField>
+                                </div>
+                            </FormSection>
+                        </div>
+
+                        {/* 7. Services, Procedures & Diagnostics — NO PRICING */}
+                        <div className="col-12">
+                            <FormSection
+                                title="Services, Procedures & Diagnostics"
+                                icon="fas fa-microscope"
+                                headerClassName="bg-blue-50 text-blue-700 p-3 fw-extrabold extra-small text-uppercase tracking-widest"
+                                className="overflow-visible"
+                                bodyClassName="overflow-visible"
+                            >
+                                <div className="row g-4 overflow-visible">
+                                    {/* Lab Tests Column */}
+                                    <div className="col-lg-4 border-end">
+                                        <h6 className="fw-bold mb-3 text-secondary small text-uppercase">
+                                            Laboratory Tests
+                                        </h6>
+                                        <DashboardSelect
+                                            options={lab_test_types.map((l) => ({
+                                                value: l.test_type_id,
+                                                label: l.test_name,
+                                                sublabel: l.category,
+                                            }))}
+                                            placeholder="Search lab tests..."
+                                            value=""
+                                            onChange={(val) => {
+                                                if (val) addLab(val);
+                                            }}
+                                        />
+                                        <ul className="list-group list-group-flush mb-0">
+                                            {data.requested_labs.map((l) => (
+                                                <li
+                                                    key={l.test_type_id}
+                                                    className="list-group-item d-flex justify-content-between align-items-center bg-light mb-2 rounded border-0 py-2"
+                                                >
+                                                    <div>
+                                                        <span className="fw-bold text-gray-800 d-block small">
+                                                            {l.test_name}
+                                                        </span>
+                                                        <span className="text-secondary" style={{ fontSize: '.7rem' }}>
+                                                            {l.category}
+                                                        </span>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeLab(l.test_type_id)}
+                                                        className="btn btn-sm btn-light text-danger"
+                                                    >
+                                                        <i className="fas fa-times"></i>
+                                                    </button>
+                                                </li>
                                             ))}
-                                        </optgroup>
-                                    ))}
-                                </select>
-                                <ul className="list-group list-group-flush mb-0">
-                                    {data.requested_service_items.map(s => (
-                                        <li key={s.test_type_id} className="list-group-item d-flex justify-content-between align-items-center bg-light mb-2 rounded border-0 py-2">
-                                            <div>
-                                                <span className="fw-bold text-gray-800 d-block small">{s.test_name}</span>
-                                                <span className="text-secondary" style={{ fontSize: '.7rem' }}>{s.category}</span>
-                                            </div>
-                                            <button type="button" onClick={() => removeServiceItem(s.test_type_id)} className="btn btn-sm btn-light text-danger"><i className="fas fa-times"></i></button>
-                                        </li>
-                                    ))}
-                                    {data.requested_service_items.length === 0 && <li className="list-group-item border-0 bg-transparent text-muted small italic px-0">No services selected.</li>}
-                                </ul>
-                            </div>
-                            
-                            {/* Medical Procedures Column (from MedicalProcedure model) */}
-                            <div className="col-lg-4">
-                                <h6 className="fw-bold mb-3 text-secondary small text-uppercase">Surgeries</h6>
-                                <select 
-                                    className="form-select bg-light border-0 mb-3"
-                                    onChange={(e) => { addProcedure(e.target.value); e.target.value = ""; }}
-                                    defaultValue=""
-                                >
-                                    <option value="" disabled>Add a Surgery...</option>
-                                    {medical_procedures.map(p => (
-                                        <option key={p.procedure_id} value={p.procedure_id}>{p.name}</option>
-                                    ))}
-                                </select>
-                                <ul className="list-group list-group-flush mb-0">
-                                    {data.requested_procedures.map(p => (
-                                        <li key={p.procedure_id} className="list-group-item d-flex justify-content-between align-items-center bg-light mb-2 rounded border-0 py-2">
-                                            <div>
-                                                <span className="fw-bold text-gray-800 d-block small">{p.name}</span>
-                                                <span className="text-secondary" style={{ fontSize: '.7rem' }}>{p.category}</span>
-                                            </div>
-                                            <button type="button" onClick={() => removeProcedure(p.procedure_id)} className="btn btn-sm btn-light text-danger"><i className="fas fa-times"></i></button>
-                                        </li>
-                                    ))}
-                                    {data.requested_procedures.length === 0 && <li className="list-group-item border-0 bg-transparent text-muted small italic px-0">No surgeries selected.</li>}
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <div className="mt-4 pt-3 border-top text-muted small">
-                            <i className="fas fa-info-circle me-1"></i>
-                            Selected items will be automatically billed on the patient invoice upon consultation completion.
-                        </div>
-                    </FormSection>
-                </div>
+                                            {data.requested_labs.length === 0 && (
+                                                <li className="list-group-item border-0 bg-transparent text-muted small italic px-0">
+                                                    No lab tests selected.
+                                                </li>
+                                            )}
+                                        </ul>
+                                    </div>
 
-                {/* 8. Impression & Plan */}
-                <div className="col-12">
-                    <FormSection 
-                        title="Impression & Management Plan" 
-                        icon="fas fa-clipboard-check" 
-                        className="border-start border-5 border-success"
-                        headerClassName="bg-success-subtle text-success-emphasis p-3"
-                    >
-                        <FormField label="Impression / Diagnosis" error={errors.diagnosis} className="mb-3">
-                            <textarea className="form-control form-control-lg bg-light" rows="2" value={data.diagnosis} onChange={e => setData('diagnosis', e.target.value)} />
-                        </FormField>
-                        <FormField label="Treatment Plan" className="mb-3">
-                            <textarea className="form-control" rows="4" placeholder="Medications, general advice..." value={data.treatment_plan} onChange={e => setData('treatment_plan', e.target.value)} />
-                        </FormField>
-                        <div className="row">
-                            <FormField label="Follow-up Instructions" className="col-md-6">
-                                <input type="text" className="form-control" value={data.follow_up_instructions} onChange={e => setData('follow_up_instructions', e.target.value)} />
-                            </FormField>
-                            <FormField label="Internal Notes" className="col-md-6">
-                                <input type="text" className="form-control" value={data.notes} onChange={e => setData('notes', e.target.value)} />
-                            </FormField>
+                                    {/* Services/Procedures Column */}
+                                    <div className="col-lg-4 border-end">
+                                        <h6 className="fw-bold mb-3 text-secondary small text-uppercase">
+                                            Services & Procedures
+                                        </h6>
+                                        <select
+                                            className="form-select bg-light border-0 mb-3"
+                                            onChange={(e) => {
+                                                addServiceItem(e.target.value);
+                                                e.target.value = '';
+                                            }}
+                                            defaultValue=""
+                                        >
+                                            <option value="" disabled>
+                                                Add a Service/Procedure...
+                                            </option>
+                                            {Object.entries(servicesByCategory).map(([cat, svcs]) => (
+                                                <optgroup key={cat} label={cat}>
+                                                    {svcs.map((s) => (
+                                                        <option key={s.test_type_id} value={s.test_type_id}>
+                                                            {s.test_name}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            ))}
+                                        </select>
+                                        <ul className="list-group list-group-flush mb-0">
+                                            {data.requested_service_items.map((s) => (
+                                                <li
+                                                    key={s.test_type_id}
+                                                    className="list-group-item d-flex justify-content-between align-items-center bg-light mb-2 rounded border-0 py-2"
+                                                >
+                                                    <div>
+                                                        <span className="fw-bold text-gray-800 d-block small">
+                                                            {s.test_name}
+                                                        </span>
+                                                        <span className="text-secondary" style={{ fontSize: '.7rem' }}>
+                                                            {s.category}
+                                                        </span>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeServiceItem(s.test_type_id)}
+                                                        className="btn btn-sm btn-light text-danger"
+                                                    >
+                                                        <i className="fas fa-times"></i>
+                                                    </button>
+                                                </li>
+                                            ))}
+                                            {data.requested_service_items.length === 0 && (
+                                                <li className="list-group-item border-0 bg-transparent text-muted small italic px-0">
+                                                    No services selected.
+                                                </li>
+                                            )}
+                                        </ul>
+                                    </div>
+
+                                    {/* Medical Procedures Column (from MedicalProcedure model) */}
+                                    <div className="col-lg-4">
+                                        <h6 className="fw-bold mb-3 text-secondary small text-uppercase">Surgeries</h6>
+                                        <select
+                                            className="form-select bg-light border-0 mb-3"
+                                            onChange={(e) => {
+                                                addProcedure(e.target.value);
+                                                e.target.value = '';
+                                            }}
+                                            defaultValue=""
+                                        >
+                                            <option value="" disabled>
+                                                Add a Surgery...
+                                            </option>
+                                            {medical_procedures.map((p) => (
+                                                <option key={p.procedure_id} value={p.procedure_id}>
+                                                    {p.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <ul className="list-group list-group-flush mb-0">
+                                            {data.requested_procedures.map((p) => (
+                                                <li
+                                                    key={p.procedure_id}
+                                                    className="list-group-item d-flex justify-content-between align-items-center bg-light mb-2 rounded border-0 py-2"
+                                                >
+                                                    <div>
+                                                        <span className="fw-bold text-gray-800 d-block small">
+                                                            {p.name}
+                                                        </span>
+                                                        <span className="text-secondary" style={{ fontSize: '.7rem' }}>
+                                                            {p.category}
+                                                        </span>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeProcedure(p.procedure_id)}
+                                                        className="btn btn-sm btn-light text-danger"
+                                                    >
+                                                        <i className="fas fa-times"></i>
+                                                    </button>
+                                                </li>
+                                            ))}
+                                            {data.requested_procedures.length === 0 && (
+                                                <li className="list-group-item border-0 bg-transparent text-muted small italic px-0">
+                                                    No surgeries selected.
+                                                </li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 pt-3 border-top text-muted small">
+                                    <i className="fas fa-info-circle me-1"></i>
+                                    Selected items will be automatically billed on the patient invoice upon consultation
+                                    completion.
+                                </div>
+                            </FormSection>
                         </div>
-                    </FormSection>
-                </div>
-                </>
+
+                        {/* 8. Impression & Plan */}
+                        <div className="col-12">
+                            <FormSection
+                                title="Impression & Management Plan"
+                                icon="fas fa-clipboard-check"
+                                className="border-start border-5 border-success"
+                                headerClassName="bg-success-subtle text-success-emphasis p-3"
+                            >
+                                <FormField label="Impression / Diagnosis" error={errors.diagnosis} className="mb-3">
+                                    <textarea
+                                        className="form-control form-control-lg bg-light"
+                                        rows="2"
+                                        value={data.diagnosis}
+                                        onChange={(e) => setData('diagnosis', e.target.value)}
+                                    />
+                                </FormField>
+                                <FormField label="Treatment Plan" className="mb-3">
+                                    <textarea
+                                        className="form-control"
+                                        rows="4"
+                                        placeholder="Medications, general advice..."
+                                        value={data.treatment_plan}
+                                        onChange={(e) => setData('treatment_plan', e.target.value)}
+                                    />
+                                </FormField>
+                                <div className="row">
+                                    <FormField label="Follow-up Instructions" className="col-md-6">
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            value={data.follow_up_instructions}
+                                            onChange={(e) => setData('follow_up_instructions', e.target.value)}
+                                        />
+                                    </FormField>
+                                    <FormField label="Internal Notes" className="col-md-6">
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            value={data.notes}
+                                            onChange={(e) => setData('notes', e.target.value)}
+                                        />
+                                    </FormField>
+                                </div>
+                            </FormSection>
+                        </div>
+                    </>
                 )}
 
                 {/* Actions */}
             </form>
 
-            <QuickPatientModal 
-                show={isModalOpen} 
+            <QuickPatientModal
+                show={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={(patient) => {
-                    setData(d => ({
+                    setData((d) => ({
                         ...d,
                         patient_id: patient.value,
                         patient_label: patient.label,
@@ -884,14 +1327,32 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
                     </div>
                     <div className="p-8 text-center bg-white">
                         <p className="mb-4 text-lg text-gray-700">
-                            You have <strong className="text-pink-600 px-2 py-1 bg-pink-50 rounded-lg">{data.requested_service_items.length} item(s)</strong> selected in the 
+                            You have{' '}
+                            <strong className="text-pink-600 px-2 py-1 bg-pink-50 rounded-lg">
+                                {data.requested_service_items.length} item(s)
+                            </strong>{' '}
+                            selected in the
                             <em className="text-pink-500 font-medium"> Services, Procedures & Diagnostics</em> section.
                         </p>
-                        <p className="text-gray-500 leading-relaxed">Would you like to register these as <strong className="text-gray-900">official Lab Requests</strong> so they appear on the laboratory dashboard?</p>
+                        <p className="text-gray-500 leading-relaxed">
+                            Would you like to register these as{' '}
+                            <strong className="text-gray-900">official Lab Requests</strong> so they appear on the
+                            laboratory dashboard?
+                        </p>
                     </div>
                     <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-center gap-4">
-                        <button type="button" className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all" onClick={skipMoveToLabs}>Keep as Services only</button>
-                        <button type="button" className="px-8 py-3 rounded-2xl font-bold text-white bg-pink-600 hover:bg-pink-700 shadow-lg shadow-pink-100 transition-all flex items-center gap-2" onClick={confirmMoveToLabs}>
+                        <button
+                            type="button"
+                            className="px-6 py-3 rounded-2xl font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-all"
+                            onClick={skipMoveToLabs}
+                        >
+                            Keep as Services only
+                        </button>
+                        <button
+                            type="button"
+                            className="px-8 py-3 rounded-2xl font-bold text-white bg-pink-600 hover:bg-pink-700 shadow-lg shadow-pink-100 transition-all flex items-center gap-2"
+                            onClick={confirmMoveToLabs}
+                        >
                             <i className="fas fa-check-circle"></i>
                             Yes, Move to Labs & Save
                         </button>
@@ -901,9 +1362,16 @@ const AUTOSAVE_INTERVAL = 15000; // 15 seconds
 
             {/* Simple Toast Notification */}
             {toast && (
-                <div className="position-fixed top-0 start-50 translate-middle-x mt-4 z-3 animate__animated animate__fadeInDown" style={{ zIndex: 9999 }}>
-                    <div className={`alert alert-${toast.type} shadow-lg rounded-pill px-5 py-3 border-0 d-flex align-items-center gap-3`}>
-                        <i className={`fas fa-${toast.type === 'success' ? 'check-circle' : 'exclamation-circle'} fs-4 text-${toast.type}`}></i>
+                <div
+                    className="position-fixed top-0 start-50 translate-middle-x mt-4 z-3 animate__animated animate__fadeInDown"
+                    style={{ zIndex: 9999 }}
+                >
+                    <div
+                        className={`alert alert-${toast.type} shadow-lg rounded-pill px-5 py-3 border-0 d-flex align-items-center gap-3`}
+                    >
+                        <i
+                            className={`fas fa-${toast.type === 'success' ? 'check-circle' : 'exclamation-circle'} fs-4 text-${toast.type}`}
+                        ></i>
                         <span className="fw-bold">{toast.message}</span>
                     </div>
                 </div>

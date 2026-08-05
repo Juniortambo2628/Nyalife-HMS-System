@@ -20,7 +20,7 @@ class MessageFactory extends Factory
                 null,
                 json_encode(['type' => 'text', 'priority' => 'normal']),
                 json_encode(['type' => 'system', 'action' => 'notification']),
-                json_encode(['type' => 'file', 'filename' => $this->faker->word() . '.pdf']),
+                json_encode(['type' => 'file', 'filename' => $this->faker->word().'.pdf']),
             ]),
             'read_at' => $this->faker->optional()->dateTimeBetween('-5 days', 'now')->format('Y-m-d H:i:s'),
             'sender_archived_at' => $this->faker->optional()->dateTimeBetween('-10 days', 'now')->format('Y-m-d H:i:s'),

@@ -20,32 +20,35 @@ export default function Index({ invoices, filters, auth, stats }) {
     const [quickFilter, setQuickFilter] = useState(filters.quick_filter || '');
     const { selectedIds, setSelectedIds } = useSelectionState({ idField: 'invoice_id' });
 
-    const statItems = useMemo(() => [
-        {
-            label: 'Total Invoices',
-            value: stats?.total ?? 0,
-            icon: 'fa-file-invoice-dollar',
-            color: 'primary',
-        },
-        {
-            label: 'Unpaid Invoices',
-            value: stats?.unpaid ?? 0,
-            icon: 'fa-exclamation-circle',
-            color: 'warning',
-        },
-        {
-            label: 'Paid Invoices',
-            value: stats?.paid ?? 0,
-            icon: 'fa-check-circle',
-            color: 'success',
-        },
-        {
-            label: 'Total Invoiced',
-            value: formatCurrency(stats?.total_amount ?? 0),
-            icon: 'fa-money-bill-wave',
-            color: 'info',
-        },
-    ], [stats]);
+    const statItems = useMemo(
+        () => [
+            {
+                label: 'Total Invoices',
+                value: stats?.total ?? 0,
+                icon: 'fa-file-invoice-dollar',
+                color: 'primary',
+            },
+            {
+                label: 'Unpaid Invoices',
+                value: stats?.unpaid ?? 0,
+                icon: 'fa-exclamation-circle',
+                color: 'warning',
+            },
+            {
+                label: 'Paid Invoices',
+                value: stats?.paid ?? 0,
+                icon: 'fa-check-circle',
+                color: 'success',
+            },
+            {
+                label: 'Total Invoiced',
+                value: formatCurrency(stats?.total_amount ?? 0),
+                icon: 'fa-money-bill-wave',
+                color: 'info',
+            },
+        ],
+        [stats],
+    );
 
     const { handleBulkAction } = useBulkAction({
         routeName: 'invoices.bulk-action',
@@ -54,10 +57,14 @@ export default function Index({ invoices, filters, auth, stats }) {
     });
 
     const applyFilters = (searchValue, statusValue = status, quickFilterValue = quickFilter) => {
-        router.get(route('invoices.index'), { search: searchValue, status: statusValue, quick_filter: quickFilterValue }, {
-            preserveState: true,
-            replace: true,
-        });
+        router.get(
+            route('invoices.index'),
+            { search: searchValue, status: statusValue, quick_filter: quickFilterValue },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
     const handleStatusChange = (val) => {
@@ -70,75 +77,79 @@ export default function Index({ invoices, filters, auth, stats }) {
         applyFilters(search, status, val);
     };
 
-    const columns = useMemo(() => [
-        {
-            header: 'Invoice #',
-            accessorKey: 'invoice_number',
-            cell: info => (
-                <RefBadge>{info.getValue()}</RefBadge>
-            )
-        },
-        {
-            header: 'Patient',
-            accessorKey: 'patient.user.first_name',
-            cell: info => (
-                <PatientTableCell patient={info.row.original.patient} patientId={info.row.original.patient_id} />
-            )
-        },
-        {
-            header: 'Amount',
-            accessorKey: 'total_amount',
-            cell: info => (
-                <TableCellPrimary>
-                    <span className="text-muted nyl-table-cell-sub d-inline me-1">KES</span>
-                    {formatNumber(info.getValue())}
-                </TableCellPrimary>
-            )
-        },
-        {
-            header: 'Status',
-            accessorKey: 'status',
-            cell: info => <StatusBadge status={info.getValue()} />,
-            enableSorting: false
-        },
-        {
-            header: 'Date',
-            accessorKey: 'invoice_date',
-            cell: info => (
-                <TableCellSub>{info.getValue()}</TableCellSub>
-            )
-        },
-        {
-            header: 'Actions',
-            id: 'actions',
-            cell: info => (
-                <TableActions actions={[
-                    {
-                        label: 'View document',
-                        icon: 'fa-eye',
-                        href: route('invoices.show', info.row.original.invoice_id),
-                    },
-                    ['pending', 'partially_paid', 'overdue'].includes(info.row.original.status) && {
-                        label: 'Collect payment',
-                        icon: 'fa-money-bill-wave',
-                        href: route('payments.create', { invoice_id: info.row.original.invoice_id }),
-                        color: 'success',
-                    },
-                ].filter(Boolean)} />
-            )
-        }
-    ], []);
+    const columns = useMemo(
+        () => [
+            {
+                header: 'Invoice #',
+                accessorKey: 'invoice_number',
+                cell: (info) => <RefBadge>{info.getValue()}</RefBadge>,
+            },
+            {
+                header: 'Patient',
+                accessorKey: 'patient.user.first_name',
+                cell: (info) => (
+                    <PatientTableCell patient={info.row.original.patient} patientId={info.row.original.patient_id} />
+                ),
+            },
+            {
+                header: 'Amount',
+                accessorKey: 'total_amount',
+                cell: (info) => (
+                    <TableCellPrimary>
+                        <span className="text-muted nyl-table-cell-sub d-inline me-1">KES</span>
+                        {formatNumber(info.getValue())}
+                    </TableCellPrimary>
+                ),
+            },
+            {
+                header: 'Status',
+                accessorKey: 'status',
+                cell: (info) => <StatusBadge status={info.getValue()} />,
+                enableSorting: false,
+            },
+            {
+                header: 'Date',
+                accessorKey: 'invoice_date',
+                cell: (info) => <TableCellSub>{info.getValue()}</TableCellSub>,
+            },
+            {
+                header: 'Actions',
+                id: 'actions',
+                cell: (info) => (
+                    <TableActions
+                        actions={[
+                            {
+                                label: 'View document',
+                                icon: 'fa-eye',
+                                href: route('invoices.show', info.row.original.invoice_id),
+                            },
+                            ['pending', 'partially_paid', 'overdue'].includes(info.row.original.status) && {
+                                label: 'Collect payment',
+                                icon: 'fa-money-bill-wave',
+                                href: route('payments.create', { invoice_id: info.row.original.invoice_id }),
+                                color: 'success',
+                            },
+                        ].filter(Boolean)}
+                    />
+                ),
+            },
+        ],
+        [],
+    );
 
     return (
-        <AuthenticatedLayout 
+        <AuthenticatedLayout
             headerTitle="Financial Registry"
-            breadcrumbs={[{ label: 'Billing', url: route('invoices.index') }, { label: 'Revenue Registry', active: true }]}
+            breadcrumbs={[
+                { label: 'Billing', url: route('invoices.index') },
+                { label: 'Revenue Registry', active: true },
+            ]}
         >
             <Head title="Billing" />
 
             <StatCardGrid items={statItems} cols={4} />
 
-            <UnifiedToolbar 
+            <UnifiedToolbar
                 filterGroups={[
                     {
                         id: 'status',
@@ -166,10 +177,10 @@ export default function Index({ invoices, filters, auth, stats }) {
                     },
                 ]}
                 actions={[
-                    (auth.user.role === 'admin' || auth.user.role === 'receptionist') && { 
-                        label: 'NEW INVOICE', 
-                        icon: 'fa-file-medical', 
-                        href: route('invoices.create') 
+                    (auth.user.role === 'admin' || auth.user.role === 'receptionist') && {
+                        label: 'NEW INVOICE',
+                        icon: 'fa-file-medical',
+                        href: route('invoices.create'),
                     },
                     (auth.user.role === 'admin' || auth.user.role === 'receptionist') && {
                         label: 'EXPORT CSV',
@@ -178,15 +189,25 @@ export default function Index({ invoices, filters, auth, stats }) {
                     },
                 ]}
                 bulkActions={[
-                    { label: 'VOID SELECTED', icon: 'fa-ban', onClick: () => handleBulkAction('void'), color: 'danger' },
-                    { label: 'DELETE SELECTED', icon: 'fa-trash-alt', onClick: () => handleBulkAction('delete'), color: 'danger' }
+                    {
+                        label: 'VOID SELECTED',
+                        icon: 'fa-ban',
+                        onClick: () => handleBulkAction('void'),
+                        color: 'danger',
+                    },
+                    {
+                        label: 'DELETE SELECTED',
+                        icon: 'fa-trash-alt',
+                        onClick: () => handleBulkAction('delete'),
+                        color: 'danger',
+                    },
                 ]}
                 selectionCount={selectedIds.length}
             />
 
             <div className="px-0">
-                <DashboardSearch 
-                    placeholder="Search by INV-XXXX or patient name..." 
+                <DashboardSearch
+                    placeholder="Search by INV-XXXX or patient name..."
                     value={search}
                     onChange={setSearch}
                     onSubmit={(val) => applyFilters(val, status, quickFilter)}
@@ -210,7 +231,6 @@ export default function Index({ invoices, filters, auth, stats }) {
                     onSelectionChange={setSelectedIds}
                     idField="invoice_id"
                 />
-
             </div>
         </AuthenticatedLayout>
     );

@@ -6,26 +6,44 @@ final class Permissions
 {
     // Phase 9 — new modules
     public const MANAGE_PAYMENTS = 'manage-payments';
+
     public const MANAGE_FOLLOW_UPS = 'manage-follow-ups';
+
     public const MANAGE_DEPARTMENTS = 'manage-departments';
+
     public const VIEW_DEPARTMENTS = 'view-departments';
+
     public const VIEW_REPORTS = 'view-reports';
+
     public const MANAGE_SETTINGS = 'manage-settings';
 
     // Hardening — core HMS modules
     public const MANAGE_PATIENTS = 'manage-patients';
+
     public const VIEW_OWN_RECORDS = 'view-own-records';
+
     public const MANAGE_APPOINTMENTS = 'manage-appointments';
+
     public const MANAGE_CONSULTATIONS = 'manage-consultations';
+
     public const MANAGE_PRESCRIPTIONS = 'manage-prescriptions';
+
     public const MANAGE_INVOICES = 'manage-invoices';
+
     public const MANAGE_LAB = 'manage-lab';
+
     public const MANAGE_LAB_CATALOG = 'manage-lab-catalog';
+
     public const MANAGE_PHARMACY = 'manage-pharmacy';
+
     public const MANAGE_VITALS = 'manage-vitals';
+
     public const MANAGE_USERS = 'manage-users';
+
     public const MANAGE_SYSTEM = 'manage-system';
+
     public const MANAGE_INSURANCE = 'manage-insurance';
+
     public const SEND_MESSAGES = 'send-messages';
 
     public static function all(): array
@@ -57,7 +75,7 @@ final class Permissions
     /** Middleware string: staff permission OR patient portal access. */
     public static function staffOrPatient(string $staffPermission): string
     {
-        return $staffPermission . '|' . self::VIEW_OWN_RECORDS;
+        return $staffPermission.'|'.self::VIEW_OWN_RECORDS;
     }
 
     /**

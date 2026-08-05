@@ -3,14 +3,15 @@ import { Link } from '@inertiajs/react';
 
 export default function FooterSection({ cms = {}, serviceTabs = [], newsletterForm, onNewsletterSubmit }) {
     const year = new Date().getFullYear();
-    const serviceLinks = serviceTabs.length > 0
-        ? serviceTabs.slice(0, 5).map((tab) => ({ label: tab.title, href: '#services' }))
-        : [
-            { label: 'Obstetrics Care', href: '#services' },
-            { label: 'Gynecology', href: '#services' },
-            { label: 'Laboratory', href: '#services' },
-            { label: 'Pharmacy', href: '#services' },
-        ];
+    const serviceLinks =
+        serviceTabs.length > 0
+            ? serviceTabs.slice(0, 5).map((tab) => ({ label: tab.title, href: '#services' }))
+            : [
+                  { label: 'Obstetrics Care', href: '#services' },
+                  { label: 'Gynecology', href: '#services' },
+                  { label: 'Laboratory', href: '#services' },
+                  { label: 'Pharmacy', href: '#services' },
+              ];
 
     const portalLinks = [
         { label: 'Patient portal', href: route('login.patient'), inertia: true },
@@ -133,13 +134,19 @@ export default function FooterSection({ cms = {}, serviceTabs = [], newsletterFo
                         <div className="landing-footer-contact-grid">
                             <div>
                                 <div className="landing-footer-contact-label">Phone</div>
-                                <a href={`tel:${(cms.contact_phone || '+254746516514').replace(/\s/g, '')}`} className="landing-footer-contact-value">
+                                <a
+                                    href={`tel:${(cms.contact_phone || '+254746516514').replace(/\s/g, '')}`}
+                                    className="landing-footer-contact-value"
+                                >
                                     {cms.contact_phone || '+254 746 516 514'}
                                 </a>
                             </div>
                             <div>
                                 <div className="landing-footer-contact-label">Email</div>
-                                <a href={`mailto:${cms.contact_email || 'info@nyalifewomensclinic.com'}`} className="landing-footer-contact-value">
+                                <a
+                                    href={`mailto:${cms.contact_email || 'info@nyalifewomensclinic.com'}`}
+                                    className="landing-footer-contact-value"
+                                >
                                     {cms.contact_email || 'info@nyalifewomensclinic.com'}
                                 </a>
                             </div>
@@ -160,11 +167,7 @@ export default function FooterSection({ cms = {}, serviceTabs = [], newsletterFo
                         <div className="col-md-6">
                             <div className="d-flex flex-wrap align-items-center justify-content-md-end gap-3">
                                 {portalLinks.slice(2).map((link) => (
-                                    <Link
-                                        key={link.label}
-                                        href={link.href}
-                                        className="landing-footer-legal-link"
-                                    >
+                                    <Link key={link.label} href={link.href} className="landing-footer-legal-link">
                                         {link.label}
                                     </Link>
                                 ))}
@@ -174,7 +177,9 @@ export default function FooterSection({ cms = {}, serviceTabs = [], newsletterFo
                                     rel="noopener noreferrer"
                                     className="d-flex align-items-center gap-2 text-white text-decoration-none opacity-50 landing-footer-engineered"
                                 >
-                                    <span className="extra-small fw-bold text-uppercase tracking-widest">Engineered by</span>
+                                    <span className="extra-small fw-bold text-uppercase tracking-widest">
+                                        Engineered by
+                                    </span>
                                     <img
                                         src="/assets/img/OKJTechLogo-White_Transparent.png"
                                         alt="OKJTech"

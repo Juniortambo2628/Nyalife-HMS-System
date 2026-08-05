@@ -4,11 +4,11 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class MigrateProductionData extends Command
 {
     protected $signature = 'production:migrate-data {--fresh : Drop and recreate tables first}';
+
     protected $description = 'Migrate production data from legacy DB (nyalifew_legacy) to new schema';
 
     private $legacy;
@@ -16,8 +16,10 @@ class MigrateProductionData extends Command
     public function handle()
     {
         if ($this->option('fresh')) {
-            $this->warn("This will drop all tables and re-migrate!");
-            if (!$this->confirm('Continue?')) return 1;
+            $this->warn('This will drop all tables and re-migrate!');
+            if (! $this->confirm('Continue?')) {
+                return 1;
+            }
             $this->call('migrate:fresh', ['--force' => true]);
         }
 
@@ -36,10 +38,11 @@ class MigrateProductionData extends Command
         try {
             $this->legacy = DB::connection('legacy');
             $this->legacy->getPdo();
-            $this->info("Connected to legacy database (nyalifew_legacy)");
+            $this->info('Connected to legacy database (nyalifew_legacy)');
         } catch (\Exception $e) {
-            $this->error("Cannot connect to legacy database: " . $e->getMessage());
+            $this->error('Cannot connect to legacy database: '.$e->getMessage());
             $this->error("Create 'nyalifew_legacy' database and import production_database_15_7_26.sql first");
+
             return 1;
         }
 
@@ -48,11 +51,12 @@ class MigrateProductionData extends Command
         $this->info("Found {$userCount} users in legacy database");
 
         if ($userCount === 0) {
-            $this->error("Legacy database appears empty. Import data first.");
+            $this->error('Legacy database appears empty. Import data first.');
+
             return 1;
         }
 
-        $this->info("Starting data migration...");
+        $this->info('Starting data migration...');
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         DB::statement('SET UNIQUE_CHECKS=0');
@@ -106,13 +110,15 @@ class MigrateProductionData extends Command
                 $legacyExists = $this->legacy->getSchemaBuilder()->hasTable($table);
                 $localExists = DB::getSchemaBuilder()->hasTable($table);
 
-                if (!$legacyExists) {
+                if (! $legacyExists) {
                     $this->line("  SKIP {$table} - not in legacy DB");
+
                     continue;
                 }
 
-                if (!$localExists) {
+                if (! $localExists) {
                     $this->line("  SKIP {$table} - not in local DB");
+
                     continue;
                 }
 
@@ -125,6 +131,7 @@ class MigrateProductionData extends Command
 
                 if (empty($commonColumns)) {
                     $this->line("  SKIP {$table} - no common columns");
+
                     continue;
                 }
 
@@ -133,11 +140,12 @@ class MigrateProductionData extends Command
 
                 if ($count === 0) {
                     $this->line("  SKIP {$table} - 0 rows");
+
                     continue;
                 }
 
                 // Transfer in batches
-                $columns = implode(', ', array_map(fn($c) => "`{$c}`", $commonColumns));
+                $columns = implode(', ', array_map(fn ($c) => "`{$c}`", $commonColumns));
                 $batchSize = 500;
                 $offset = 0;
                 $inserted = 0;
@@ -147,7 +155,9 @@ class MigrateProductionData extends Command
                 while (true) {
                     $rows = $this->legacy->select("SELECT {$columns} FROM `{$table}` ORDER BY 1 LIMIT {$batchSize} OFFSET {$offset}");
 
-                    if (empty($rows)) break;
+                    if (empty($rows)) {
+                        break;
+                    }
 
                     // Build bulk insert
                     $values = [];
@@ -160,24 +170,26 @@ class MigrateProductionData extends Command
                             $rowValues[] = '?';
                             $bindings[] = $rowArray[$col] ?? null;
                         }
-                        $values[] = '(' . implode(', ', $rowValues) . ')';
+                        $values[] = '('.implode(', ', $rowValues).')';
                     }
 
-                    if (!empty($values)) {
-                        DB::statement("INSERT IGNORE INTO `{$table}` ({$columns}) VALUES " . implode(', ', $values), $bindings);
+                    if (! empty($values)) {
+                        DB::statement("INSERT IGNORE INTO `{$table}` ({$columns}) VALUES ".implode(', ', $values), $bindings);
                         $inserted += count($rows);
                     }
 
                     $offset += $batchSize;
 
-                    if (count($rows) < $batchSize) break;
+                    if (count($rows) < $batchSize) {
+                        break;
+                    }
                 }
 
                 $totalInserted += $inserted;
                 $this->line("  OK {$table}: {$inserted} rows");
 
             } catch (\Exception $e) {
-                $this->error("  ERROR {$table}: " . $e->getMessage());
+                $this->error("  ERROR {$table}: ".$e->getMessage());
             }
         }
 
@@ -207,6 +219,7 @@ class MigrateProductionData extends Command
                 $results[] = [$table, 'error'];
             }
         }
+
         return $results;
     }
 }

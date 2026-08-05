@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\PaymentService;
-use App\Models\Invoice;
 use App\Support\Permissions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -21,10 +21,10 @@ class StorePaymentRequest extends FormRequest
         return [
             'invoice_id' => 'required|exists:invoices,invoice_id',
             'amount' => 'required|numeric|min:0.01',
-            'payment_method' => 'required|in:' . implode(',', array_keys(Payment::METHODS)),
+            'payment_method' => 'required|in:'.implode(',', array_keys(Payment::METHODS)),
             'payment_date' => 'required|date',
             'transaction_reference' => 'nullable|string|max:100',
-            'payment_status' => 'nullable|in:' . implode(',', array_keys(Payment::STATUSES)),
+            'payment_status' => 'nullable|in:'.implode(',', array_keys(Payment::STATUSES)),
             'notes' => 'nullable|string|max:1000',
         ];
     }
@@ -51,7 +51,7 @@ class StorePaymentRequest extends FormRequest
                 if ((float) $this->input('amount') > $remaining) {
                     $validator->errors()->add(
                         'amount',
-                        "Payment amount exceeds remaining balance (Ksh " . number_format($remaining, 2) . ').'
+                        'Payment amount exceeds remaining balance (Ksh '.number_format($remaining, 2).').'
                     );
                 }
             }

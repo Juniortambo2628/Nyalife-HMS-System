@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\MailTemplate;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
@@ -13,7 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('mail_templates')) {
+        if (! Schema::hasTable('mail_templates')) {
             return;
         }
 
@@ -46,7 +47,7 @@ return new class extends Migration
         ];
 
         foreach ($templates as $mailable => $template) {
-            \App\Models\MailTemplate::firstOrCreate(
+            MailTemplate::firstOrCreate(
                 ['mailable' => $mailable],
                 [
                     'subject' => $template['subject'],

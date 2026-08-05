@@ -7,16 +7,16 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
 export default function Calendar({ appointments, auth }) {
-    const calendarEvents = appointments.map(apt => ({
+    const calendarEvents = appointments.map((apt) => ({
         id: apt.id,
         title: apt.title,
         start: apt.start,
-        backgroundColor: apt.status === 'cancelled' ? '#dc3545' : (apt.status === 'completed' ? '#198754' : '#0d6efd'),
+        backgroundColor: apt.status === 'cancelled' ? '#dc3545' : apt.status === 'completed' ? '#198754' : '#0d6efd',
         borderColor: 'transparent',
         textColor: '#fff',
         extendedProps: {
-            status: apt.status
-        }
+            status: apt.status,
+        },
     }));
 
     const handleEventClick = (info) => {
@@ -29,7 +29,7 @@ export default function Calendar({ appointments, auth }) {
             headerTitle="Schedules & Appointments"
             breadcrumbs={[
                 { label: 'Appointments', url: route('appointments.index') },
-                { label: 'Calendar View', active: true }
+                { label: 'Calendar View', active: true },
             ]}
         >
             <Head title="Appointments Calendar" />
@@ -59,14 +59,14 @@ export default function Calendar({ appointments, auth }) {
                             headerToolbar={{
                                 left: 'prev,next today',
                                 center: 'title',
-                                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                                right: 'dayGridMonth,timeGridWeek,timeGridDay',
                             }}
                             events={calendarEvents}
                             eventClick={handleEventClick}
                             eventTimeFormat={{
                                 hour: 'numeric',
                                 minute: '2-digit',
-                                meridiem: 'short'
+                                meridiem: 'short',
                             }}
                             height="auto"
                         />

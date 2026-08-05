@@ -33,34 +33,72 @@ export default function Edit({ followUp, followUpTypes }) {
         >
             <Head title="Edit Follow-up" />
 
-            <form onSubmit={(e) => { e.preventDefault(); put(route('follow-ups.update', followUp.follow_up_id)); }}>
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    put(route('follow-ups.update', followUp.follow_up_id));
+                }}
+            >
                 <FormSection title="Update Follow-up" icon="fas fa-edit" headerClassName="bg-primary text-white p-3">
                     <div className="row g-3">
                         <FormField label="Follow-up Date *" className="col-md-6" error={errors.follow_up_date}>
-                            <input type="date" className="form-control" value={data.follow_up_date}
-                                onChange={(e) => setData('follow_up_date', e.target.value)} required />
+                            <input
+                                type="date"
+                                className="form-control"
+                                value={data.follow_up_date}
+                                onChange={(e) => setData('follow_up_date', e.target.value)}
+                                required
+                            />
                         </FormField>
                         <FormField label="Status *" className="col-md-6" error={errors.status}>
-                            <DashboardSelect options={statusOptions} value={data.status} onChange={(val) => setData('status', val)} />
+                            <DashboardSelect
+                                options={statusOptions}
+                                value={data.status}
+                                onChange={(val) => setData('status', val)}
+                            />
                         </FormField>
                         <FormField label="Type" className="col-md-6" error={errors.follow_up_type}>
-                            <DashboardSelect options={typeOptions} value={data.follow_up_type} onChange={(val) => setData('follow_up_type', val)} />
+                            <DashboardSelect
+                                options={typeOptions}
+                                value={data.follow_up_type}
+                                onChange={(val) => setData('follow_up_type', val)}
+                            />
                         </FormField>
                         <FormField label="Reason *" className="col-12" error={errors.reason}>
-                            <textarea className="form-control" rows="3" value={data.reason}
-                                onChange={(e) => setData('reason', e.target.value)} required />
+                            <textarea
+                                className="form-control"
+                                rows="3"
+                                value={data.reason}
+                                onChange={(e) => setData('reason', e.target.value)}
+                                required
+                            />
                         </FormField>
                         <FormField label="Notes" className="col-12" error={errors.notes}>
-                            <textarea className="form-control" rows="2" value={data.notes}
-                                onChange={(e) => setData('notes', e.target.value)} />
+                            <textarea
+                                className="form-control"
+                                rows="2"
+                                value={data.notes}
+                                onChange={(e) => setData('notes', e.target.value)}
+                            />
                         </FormField>
                     </div>
                 </FormSection>
 
                 <UnifiedToolbar
                     actions={[
-                        { label: 'SAVE CHANGES', icon: 'fa-save', onClick: () => put(route('follow-ups.update', followUp.follow_up_id)), color: 'success', disabled: processing },
-                        { label: 'CANCEL', icon: 'fa-times', href: route('follow-ups.show', followUp.follow_up_id), color: 'gray' },
+                        {
+                            label: 'SAVE CHANGES',
+                            icon: 'fa-save',
+                            onClick: () => put(route('follow-ups.update', followUp.follow_up_id)),
+                            color: 'success',
+                            disabled: processing,
+                        },
+                        {
+                            label: 'CANCEL',
+                            icon: 'fa-times',
+                            href: route('follow-ups.show', followUp.follow_up_id),
+                            color: 'gray',
+                        },
                     ]}
                 />
             </form>

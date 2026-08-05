@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Patient;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Illuminate\Http\Request;
+use Laravel\Socialite\Facades\Socialite;
 
 class GoogleController extends Controller
 {
@@ -19,34 +21,35 @@ class GoogleController extends Controller
             if ($request->role) {
                 session(['auth_role' => $request->role]);
             }
-            
+
             // Re-calculate the callback URL.
             // If the server's APP_URL is null, route() might fail to produce the correct domain/protocol.
             $redirectUrl = route('auth.google.callback');
-            
+
             // Safety: If we are on production but the generated URL is not https, force it.
-            if (app()->environment('production') && !str_starts_with($redirectUrl, 'https')) {
+            if (app()->environment('production') && ! str_starts_with($redirectUrl, 'https')) {
                 $redirectUrl = str_replace('http://', 'https://', $redirectUrl);
             }
 
             Log::info('Google Auth Initializing', [
                 'redirect_url' => $redirectUrl,
                 'role' => $request->role,
-                'app_env' => app()->environment()
+                'app_env' => app()->environment(),
             ]);
-            
+
             return Socialite::driver('google')
                 ->stateless()
                 ->redirectUrl($redirectUrl)
                 ->redirect();
         } catch (\Exception $e) {
-            Log::error('Google Auth Redirect Error: ' . $e->getMessage(), [
+            Log::error('Google Auth Redirect Error: '.$e->getMessage(), [
                 'exception' => $e,
                 'role' => $request->role,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $route = $request->role === 'staff' ? 'login.staff' : 'login.patient';
+
             return redirect()->route($route)->with('error', 'Could not initialize Google authentication. Please try again later.');
         }
     }
@@ -59,13 +62,13 @@ class GoogleController extends Controller
                 ->stateless()
                 ->redirectUrl(route('auth.google.callback'))
                 ->user();
-            
+
             session()->forget('auth_role');
-            
+
             $user = User::where('google_id', $googleUser->id)
-                        ->orWhere('email', $googleUser->email)
-                        ->first();
- 
+                ->orWhere('email', $googleUser->email)
+                ->first();
+
             if ($user) {
                 // If logging in through staff portal, ensure they ARE staff
                 if ($authRole === 'staff' && $user->role === 'patient') {
@@ -86,7 +89,7 @@ class GoogleController extends Controller
                 // Staff accounts MUST be pre-created by admin
                 if ($authRole === 'staff') {
                     return redirect()->route('login.staff')->with([
-                        'error' => 'Staff accounts must be created by an administrator. Please contact IT support if you believe this is an error.'
+                        'error' => 'Staff accounts must be created by an administrator. Please contact IT support if you believe this is an error.',
                     ]);
                 }
 
@@ -103,30 +106,31 @@ class GoogleController extends Controller
                 return redirect()->route('auth.google.complete-profile');
             }
         } catch (\Exception $e) {
-            Log::error('Google Auth Callback Error: ' . $e->getMessage(), [
+            Log::error('Google Auth Callback Error: '.$e->getMessage(), [
                 'exception' => $e,
-                'role' => $authRole
+                'role' => $authRole,
             ]);
             $route = $authRole === 'staff' ? 'login.staff' : 'login.patient';
+
             return redirect()->route($route)->with('error', 'Google authentication failed. Please try again later.');
         }
     }
 
     public function completeProfileView()
     {
-        if (!session('google_user')) {
+        if (! session('google_user')) {
             return redirect()->route('login');
         }
 
         return Inertia::render('Auth/CompleteProfile', [
-            'google_user' => session('google_user')
+            'google_user' => session('google_user'),
         ]);
     }
 
     public function storeProfile(Request $request)
     {
         $googleData = session('google_user');
-        if (!$googleData) {
+        if (! $googleData) {
             return redirect()->route('login');
         }
 
@@ -146,22 +150,22 @@ class GoogleController extends Controller
             'google_token' => $googleData['token'],
             'google_refresh_token' => $googleData['refresh_token'],
             'password' => bcrypt(Str::random(16)),
-            'role_id' => \App\Models\Role::idFromName('patient'),
+            'role_id' => Role::idFromName('patient'),
             'gender' => $request->gender,
             'date_of_birth' => $request->date_of_birth,
             'phone' => $request->phone,
             'is_active' => true,
             'status' => 'active',
-            'username' => strtolower($request->first_name . '.' . $request->last_name . Str::random(4)),
+            'username' => strtolower($request->first_name.'.'.$request->last_name.Str::random(4)),
         ]);
 
         // Assign Spatie patient role
         $user->assignRole('patient');
 
         // Create Patient record
-        \App\Models\Patient::firstOrCreate(
+        Patient::firstOrCreate(
             ['user_id' => $user->user_id],
-            ['patient_number' => \App\Models\Patient::generateNumber($user->user_id)]
+            ['patient_number' => Patient::generateNumber($user->user_id)]
         );
 
         Auth::login($user);

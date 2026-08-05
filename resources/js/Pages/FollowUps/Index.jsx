@@ -17,88 +17,98 @@ export default function Index({ followUps, filters, stats, followUpTypes, auth }
     const isUpcoming = filters.view === 'upcoming';
 
     const applyFilters = (searchValue, statusValue = status, typeValue = type, view = filters.view) => {
-        router.get(route(isUpcoming ? 'follow-ups.upcoming' : 'follow-ups.index'), {
-            search: searchValue,
-            status: statusValue,
-            type: typeValue,
-            view,
-        }, { preserveState: true, replace: true });
+        router.get(
+            route(isUpcoming ? 'follow-ups.upcoming' : 'follow-ups.index'),
+            {
+                search: searchValue,
+                status: statusValue,
+                type: typeValue,
+                view,
+            },
+            { preserveState: true, replace: true },
+        );
     };
 
-    const typeOptions = useMemo(() =>
-        Object.entries(followUpTypes || {}).map(([value, label]) => ({ label, value })),
-    [followUpTypes]);
+    const typeOptions = useMemo(
+        () => Object.entries(followUpTypes || {}).map(([value, label]) => ({ label, value })),
+        [followUpTypes],
+    );
 
-    const columns = useMemo(() => [
-        {
-            header: 'Date',
-            accessorKey: 'follow_up_date',
-            cell: info => <TableCellPrimary>{info.getValue()}</TableCellPrimary>,
-        },
-        {
-            header: 'Patient',
-            id: 'patient',
-            cell: info => (
-                <PatientTableCell
-                    patient={info.row.original.patient}
-                    patientId={info.row.original.patient_id}
-                />
-            ),
-        },
-        {
-            header: 'Type',
-            accessorKey: 'follow_up_type_label',
-            cell: info => <TableCellPrimary className="text-uppercase">{info.getValue()}</TableCellPrimary>,
-        },
-        {
-            header: 'Reason',
-            accessorKey: 'reason',
-            cell: info => (
-                <TableCellPrimary className="text-muted text-truncate" style={{ maxWidth: '220px' }}>
-                    {info.getValue()}
-                </TableCellPrimary>
-            ),
-        },
-        {
-            header: 'Status',
-            accessorKey: 'status',
-            cell: info => <StatusBadge status={info.getValue()} />,
-        },
-        {
-            header: 'Actions',
-            id: 'actions',
-            cell: info => (
-                <TableActions actions={[
-                    {
-                        icon: 'fa-eye',
-                        label: 'View follow-up',
-                        href: route('follow-ups.show', info.row.original.follow_up_id),
-                    },
-                ]} />
-            ),
-        },
-    ], []);
+    const columns = useMemo(
+        () => [
+            {
+                header: 'Date',
+                accessorKey: 'follow_up_date',
+                cell: (info) => <TableCellPrimary>{info.getValue()}</TableCellPrimary>,
+            },
+            {
+                header: 'Patient',
+                id: 'patient',
+                cell: (info) => (
+                    <PatientTableCell patient={info.row.original.patient} patientId={info.row.original.patient_id} />
+                ),
+            },
+            {
+                header: 'Type',
+                accessorKey: 'follow_up_type_label',
+                cell: (info) => <TableCellPrimary className="text-uppercase">{info.getValue()}</TableCellPrimary>,
+            },
+            {
+                header: 'Reason',
+                accessorKey: 'reason',
+                cell: (info) => (
+                    <TableCellPrimary className="text-muted text-truncate" style={{ maxWidth: '220px' }}>
+                        {info.getValue()}
+                    </TableCellPrimary>
+                ),
+            },
+            {
+                header: 'Status',
+                accessorKey: 'status',
+                cell: (info) => <StatusBadge status={info.getValue()} />,
+            },
+            {
+                header: 'Actions',
+                id: 'actions',
+                cell: (info) => (
+                    <TableActions
+                        actions={[
+                            {
+                                icon: 'fa-eye',
+                                label: 'View follow-up',
+                                href: route('follow-ups.show', info.row.original.follow_up_id),
+                            },
+                        ]}
+                    />
+                ),
+            },
+        ],
+        [],
+    );
 
-    const statItems = useMemo(() => [
-        {
-            label: 'Scheduled this month',
-            value: stats?.scheduled_month ?? 0,
-            icon: 'fa-calendar-check',
-            color: 'primary',
-        },
-        {
-            label: 'Completed this month',
-            value: stats?.completed_month ?? 0,
-            icon: 'fa-check-circle',
-            color: 'success',
-        },
-        {
-            label: 'Due within 7 days',
-            value: stats?.upcoming_week ?? 0,
-            icon: 'fa-calendar-day',
-            color: 'warning',
-        },
-    ], [stats]);
+    const statItems = useMemo(
+        () => [
+            {
+                label: 'Scheduled this month',
+                value: stats?.scheduled_month ?? 0,
+                icon: 'fa-calendar-check',
+                color: 'primary',
+            },
+            {
+                label: 'Completed this month',
+                value: stats?.completed_month ?? 0,
+                icon: 'fa-check-circle',
+                color: 'success',
+            },
+            {
+                label: 'Due within 7 days',
+                value: stats?.upcoming_week ?? 0,
+                icon: 'fa-calendar-day',
+                color: 'warning',
+            },
+        ],
+        [stats],
+    );
 
     return (
         <AuthenticatedLayout
@@ -116,7 +126,10 @@ export default function Index({ followUps, filters, stats, followUpTypes, auth }
                         label: 'Status',
                         emptyLabel: 'All statuses',
                         value: status,
-                        onChange: (val) => { setStatus(val || ''); applyFilters(search, val || '', type); },
+                        onChange: (val) => {
+                            setStatus(val || '');
+                            applyFilters(search, val || '', type);
+                        },
                         options: [
                             { label: 'Scheduled', value: 'scheduled' },
                             { label: 'Completed', value: 'completed' },
@@ -129,7 +142,10 @@ export default function Index({ followUps, filters, stats, followUpTypes, auth }
                         label: 'Type',
                         emptyLabel: 'All types',
                         value: type,
-                        onChange: (val) => { setType(val || ''); applyFilters(search, status, val || ''); },
+                        onChange: (val) => {
+                            setType(val || '');
+                            applyFilters(search, status, val || '');
+                        },
                         options: typeOptions.filter((o) => o.value !== ''),
                     },
                 ]}

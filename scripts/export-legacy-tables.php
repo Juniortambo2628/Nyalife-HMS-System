@@ -8,10 +8,11 @@
  *   php scripts/export-legacy-tables.php audit_logs medication_categories
  */
 
-require __DIR__ . '/../vendor/autoload.php';
-$app = require __DIR__ . '/../bootstrap/app.php';
-$app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+require __DIR__.'/../vendor/autoload.php';
+$app = require __DIR__.'/../bootstrap/app.php';
+$app->make(Kernel::class)->bootstrap();
 
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -32,7 +33,7 @@ $tables = $argv[1] ?? null
     ? array_slice($argv, 1)
     : $defaultTables;
 
-$exportDir = storage_path('legacy-exports/' . date('Y-m-d_His'));
+$exportDir = storage_path('legacy-exports/'.date('Y-m-d_His'));
 
 if (! is_dir($exportDir) && ! mkdir($exportDir, 0755, true) && ! is_dir($exportDir)) {
     fwrite(STDERR, "Failed to create export directory: {$exportDir}\n");
@@ -44,6 +45,7 @@ echo "Exporting to {$exportDir}\n\n";
 foreach ($tables as $table) {
     if (! Schema::hasTable($table)) {
         echo "{$table}: SKIP (table not found)\n";
+
         continue;
     }
 
@@ -54,12 +56,14 @@ foreach ($tables as $table) {
     $handle = fopen($path, 'w');
     if ($handle === false) {
         echo "{$table}: ERR (cannot write {$path})\n";
+
         continue;
     }
 
     if ($count === 0) {
         fclose($handle);
         echo "{$table}: 0 rows (empty CSV created)\n";
+
         continue;
     }
 

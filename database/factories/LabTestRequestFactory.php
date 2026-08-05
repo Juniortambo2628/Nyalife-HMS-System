@@ -2,10 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\Appointment;
+use App\Models\Consultation;
 use App\Models\LabTestRequest;
+use App\Models\LabTestType;
 use App\Models\Patient;
 use App\Models\Staff;
-use App\Models\LabTestType;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class LabTestRequestFactory extends Factory
@@ -23,22 +26,22 @@ class LabTestRequestFactory extends Factory
             : null;
 
         return [
-            'request_number' => 'LAB-' . strtoupper(uniqid()),
+            'request_number' => 'LAB-'.strtoupper(uniqid()),
             'patient_id' => Patient::factory(),
             'doctor_id' => Staff::factory(),
             'test_type_id' => LabTestType::factory(),
             'priority' => $this->faker->randomElement(['normal', 'urgent', 'stat']),
-            'requested_by' => \App\Models\User::factory(),
+            'requested_by' => User::factory(),
             'status' => $this->faker->randomElement(['pending', 'sample_collected', 'processing', 'pending_verification', 'verified', 'completed', 'cancelled']),
             'request_date' => $this->faker->dateTimeBetween('-30 days', 'now')->format('Y-m-d H:i:s'),
             'completed_at' => $completedAt,
-            'assigned_to' => \App\Models\User::factory(),
-            'sample_collected_by' => \App\Models\User::factory(),
-            'verified_by' => \App\Models\User::factory(),
+            'assigned_to' => User::factory(),
+            'sample_collected_by' => User::factory(),
+            'verified_by' => User::factory(),
             'verified_at' => $verifiedAt,
             'notes' => $this->faker->optional(0.5)->sentence(),
-            'consultation_id' => \App\Models\Consultation::factory(),
-            'appointment_id' => \App\Models\Appointment::factory(),
+            'consultation_id' => Consultation::factory(),
+            'appointment_id' => Appointment::factory(),
         ];
     }
 

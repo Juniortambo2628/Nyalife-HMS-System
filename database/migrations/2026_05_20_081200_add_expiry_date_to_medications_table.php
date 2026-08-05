@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('medications', function (Blueprint $table) {
-            if (!Schema::hasColumn('medications', 'expiry_date')) {
+            if (! Schema::hasColumn('medications', 'expiry_date')) {
                 $table->date('expiry_date')->nullable()->after('stock_quantity');
             }
         });

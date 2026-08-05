@@ -14,7 +14,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
     const { flash } = usePage().props;
     const sectionOrder = (cms.landing_page_order || 'hero,appointment,about,services,blog,contact').split(',');
     const displayBlogs = blogs.slice(0, 3);
-    
+
     useEffect(() => {
         document.body.classList.add('landing');
         return () => document.body.classList.remove('landing');
@@ -23,7 +23,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
     useEffect(() => {
         if (flash?.success) toast.success(flash.success);
     }, [flash?.success]);
-    
+
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -54,9 +54,9 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
 
     return (
         <div className="landing-wrapper">
-            <Toaster 
-                position="top-right" 
-                reverseOrder={false} 
+            <Toaster
+                position="top-right"
+                reverseOrder={false}
                 toastOptions={{
                     className: 'premium-toast',
                     style: {
@@ -80,7 +80,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
                 }}
             />
             <Head title="Nyalife Women's Clinic - Specialized OBGYN Care" />
-            
+
             {/* Elegant Navbar */}
             <nav className="navbar navbar-expand-lg sticky-top landing-navbar">
                 <div className="container d-flex align-items-center justify-content-between">
@@ -88,33 +88,54 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
                         <div className="bg-white rounded-xl p-1 shadow-sm me-3 border border-pink-100">
                             <img src="/assets/img/logo/Logo2-transparent.png" alt="Nyalife" height="42" />
                         </div>
-                        <span className="fw-extrabold fs-3 text-white tracking-tightest">NYALIFE <span className="fw-light opacity-75">HMS</span></span>
+                        <span className="fw-extrabold fs-3 text-white tracking-tightest">
+                            NYALIFE <span className="fw-light opacity-75">HMS</span>
+                        </span>
                     </Link>
-                    
-                    <button className="navbar-toggler border-0 shadow-none text-white ms-auto me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+
+                    <button
+                        className="navbar-toggler border-0 shadow-none text-white ms-auto me-2"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav"
+                    >
                         <i className="fas fa-bars"></i>
                     </button>
-                    
+
                     <div className="collapse navbar-collapse justify-content-center" id="navbarNav">
                         <ul className="navbar-nav mx-auto mb-2 mb-lg-0 align-items-center gap-3">
                             {['Home', 'About', 'Services', 'Journal', 'Contact'].map((item) => (
                                 <li className="nav-item" key={item}>
-                                    <a className="nav-link px-3 text-white fw-medium header-nav-link" href={item === 'Home' ? '/' : `#${item.toLowerCase()}`}>{item}</a>
+                                    <a
+                                        className="nav-link px-3 text-white fw-medium header-nav-link"
+                                        href={item === 'Home' ? '/' : `#${item.toLowerCase()}`}
+                                    >
+                                        {item}
+                                    </a>
                                 </li>
                             ))}
-                            
+
                             <li className="nav-item d-lg-none mt-4 border-top border-white border-opacity-10 pt-4 w-100">
                                 <div className="d-flex flex-column gap-3 px-2 pb-3">
                                     {auth.user ? (
-                                        <Link href={route('dashboard')} className="btn btn-outline-light rounded-pill px-4 py-3 fw-medium w-100 shadow-sm">
+                                        <Link
+                                            href={route('dashboard')}
+                                            className="btn btn-outline-light rounded-pill px-4 py-3 fw-medium w-100 shadow-sm"
+                                        >
                                             <i className="fas fa-tachometer-alt me-2"></i>Dashboard
                                         </Link>
                                     ) : (
                                         <>
-                                            <Link href={route('login.patient')} className="btn btn-outline-light rounded-pill px-4 py-3 fw-medium w-100 shadow-sm">
+                                            <Link
+                                                href={route('login.patient')}
+                                                className="btn btn-outline-light rounded-pill px-4 py-3 fw-medium w-100 shadow-sm"
+                                            >
                                                 <i className="fas fa-sign-in-alt me-2"></i>Patient Login
                                             </Link>
-                                            <Link href={route('login.staff')} className="btn btn-outline-light rounded-pill px-4 py-3 fw-medium w-100 shadow-sm">
+                                            <Link
+                                                href={route('login.staff')}
+                                                className="btn btn-outline-light rounded-pill px-4 py-3 fw-medium w-100 shadow-sm"
+                                            >
                                                 <i className="fas fa-user-md me-2"></i>Staff Portal
                                             </Link>
                                         </>
@@ -126,15 +147,24 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
 
                     <div className="d-none d-lg-flex gap-3 align-items-center">
                         {auth.user ? (
-                            <Link href={route('dashboard')} className="btn btn-outline-light rounded-pill px-4 py-2.5 fw-medium shadow-sm hover-lift">
+                            <Link
+                                href={route('dashboard')}
+                                className="btn btn-outline-light rounded-pill px-4 py-2.5 fw-medium shadow-sm hover-lift"
+                            >
                                 Dashboard
                             </Link>
                         ) : (
                             <>
-                                <Link href={route('login.patient')} className="btn btn-outline-light rounded-pill px-4 py-2.5 fw-medium shadow-sm hover-lift">
+                                <Link
+                                    href={route('login.patient')}
+                                    className="btn btn-outline-light rounded-pill px-4 py-2.5 fw-medium shadow-sm hover-lift"
+                                >
                                     Patient Login
                                 </Link>
-                                <Link href={route('login.staff')} className="btn btn-outline-light rounded-pill px-4 py-2.5 fw-medium shadow-sm hover-lift">
+                                <Link
+                                    href={route('login.staff')}
+                                    className="btn btn-outline-light rounded-pill px-4 py-2.5 fw-medium shadow-sm hover-lift"
+                                >
                                     Staff Portal
                                 </Link>
                             </>
@@ -147,7 +177,17 @@ export default function Welcome({ auth, laravelVersion, phpVersion, blogs = [], 
                 {sectionOrder.map((sectionName) => {
                     const name = sectionName.trim();
                     if (name === 'hero') return <HeroSection key="hero" cms={cms} isLoggedIn={!!auth.user} />;
-                    if (name === 'appointment' && !auth.user) return <AppointmentSection key="appointment" data={data} setData={setData} handleSubmit={handleSubmit} processing={processing} errors={errors} />;
+                    if (name === 'appointment' && !auth.user)
+                        return (
+                            <AppointmentSection
+                                key="appointment"
+                                data={data}
+                                setData={setData}
+                                handleSubmit={handleSubmit}
+                                processing={processing}
+                                errors={errors}
+                            />
+                        );
                     if (name === 'about') return <AboutSection key="about" cms={cms} />;
                     if (name === 'services') return <ServicesSection key="services" serviceTabs={serviceTabs} />;
                     if (name === 'blog') return <BlogSection key="blog" blogs={displayBlogs} />;

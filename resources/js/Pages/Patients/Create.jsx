@@ -50,50 +50,60 @@ export default function Create({ auth }) {
                     <div className="col-lg-10 col-xl-9">
                         <form onSubmit={submit}>
                             {/* Section 1: Core Bio-data */}
-                            <FormSection 
-                                title="Personal Profile & Bio-data" 
+                            <FormSection
+                                title="Personal Profile & Bio-data"
                                 icon="fas fa-user-plus"
                                 headerClassName="bg-gradient-primary-to-secondary text-white p-4"
                             >
                                 <div className="row g-4">
                                     <FormField label="Legal First Name" required error={errors.first_name}>
-                                        <input 
+                                        <input
                                             type="text"
                                             className="form-control form-control-lg bg-light border-0 fw-bold px-4"
                                             placeholder="e.g. Jane"
                                             value={data.first_name}
-                                            onChange={e => setData('first_name', e.target.value)}
+                                            onChange={(e) => setData('first_name', e.target.value)}
                                             required
                                         />
                                     </FormField>
 
                                     <FormField label="Legal Last Name" required error={errors.last_name}>
-                                        <input 
+                                        <input
                                             type="text"
                                             className="form-control form-control-lg bg-light border-0 fw-bold px-4"
                                             placeholder="e.g. Smith"
                                             value={data.last_name}
-                                            onChange={e => setData('last_name', e.target.value)}
+                                            onChange={(e) => setData('last_name', e.target.value)}
                                             required
                                         />
                                     </FormField>
 
-                                    <FormField label="Date of Birth" required error={errors.date_of_birth} className="col-md-4">
-                                        <input 
+                                    <FormField
+                                        label="Date of Birth"
+                                        required
+                                        error={errors.date_of_birth}
+                                        className="col-md-4"
+                                    >
+                                        <input
                                             type="date"
                                             className="form-control form-control-lg bg-light border-0 fw-bold px-4"
                                             value={data.date_of_birth}
-                                            onChange={e => setData('date_of_birth', e.target.value)}
+                                            onChange={(e) => setData('date_of_birth', e.target.value)}
                                             required
                                         />
                                     </FormField>
 
-                                    <FormField label="Biological Gender" required error={errors.gender} className="col-md-4">
+                                    <FormField
+                                        label="Biological Gender"
+                                        required
+                                        error={errors.gender}
+                                        className="col-md-4"
+                                    >
                                         <div className="d-flex gap-2 mt-1">
-                                            {['male', 'female', 'other'].map(g => (
-                                                <button 
+                                            {['male', 'female', 'other'].map((g) => (
+                                                <button
                                                     key={g}
-                                                    type="button" 
+                                                    type="button"
                                                     className={`btn rounded-pill px-4 py-2.5 flex-fill fw-extrabold extra-small text-uppercase tracking-widest transition-all ${data.gender === g ? 'btn-primary shadow-sm' : 'btn-light border text-muted'}`}
                                                     onClick={() => setData('gender', g)}
                                                 >
@@ -104,14 +114,16 @@ export default function Create({ auth }) {
                                     </FormField>
 
                                     <FormField label="Blood Group" error={errors.blood_group} className="col-md-4">
-                                        <select 
+                                        <select
                                             className="form-select form-select-lg bg-light border-0 fw-bold px-4"
                                             value={data.blood_group}
-                                            onChange={e => setData('blood_group', e.target.value)}
+                                            onChange={(e) => setData('blood_group', e.target.value)}
                                         >
                                             <option value="">Unknown</option>
-                                            {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => (
-                                                <option key={bg} value={bg}>{bg}</option>
+                                            {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((bg) => (
+                                                <option key={bg} value={bg}>
+                                                    {bg}
+                                                </option>
                                             ))}
                                         </select>
                                     </FormField>
@@ -119,21 +131,23 @@ export default function Create({ auth }) {
                             </FormSection>
 
                             {/* Section 2: Contact Matrix */}
-                            <FormSection 
-                                title="Communication & Contact Matrix" 
+                            <FormSection
+                                title="Communication & Contact Matrix"
                                 icon="fas fa-address-book"
                                 headerClassName="bg-white border-bottom text-primary p-4"
                             >
                                 <div className="row g-4">
                                     <FormField label="Direct Email" required error={errors.email}>
                                         <div className="input-group">
-                                            <span className="input-group-text bg-light border-0 px-4 text-muted"><i className="fas fa-envelope"></i></span>
-                                            <input 
+                                            <span className="input-group-text bg-light border-0 px-4 text-muted">
+                                                <i className="fas fa-envelope"></i>
+                                            </span>
+                                            <input
                                                 type="email"
                                                 className="form-control form-control-lg bg-light border-0 fw-bold px-4"
                                                 placeholder="patient@example.com"
                                                 value={data.email}
-                                                onChange={e => setData('email', e.target.value)}
+                                                onChange={(e) => setData('email', e.target.value)}
                                                 required
                                             />
                                         </div>
@@ -141,24 +155,26 @@ export default function Create({ auth }) {
 
                                     <FormField label="Primary Phone" required error={errors.phone}>
                                         <div className="input-group">
-                                            <span className="input-group-text bg-light border-0 px-4 text-muted"><i className="fas fa-phone-alt"></i></span>
-                                            <input 
+                                            <span className="input-group-text bg-light border-0 px-4 text-muted">
+                                                <i className="fas fa-phone-alt"></i>
+                                            </span>
+                                            <input
                                                 type="text"
                                                 className="form-control form-control-lg bg-light border-0 fw-bold px-4"
                                                 placeholder="+254 700 000 000"
                                                 value={data.phone}
-                                                onChange={e => setData('phone', e.target.value)}
+                                                onChange={(e) => setData('phone', e.target.value)}
                                                 required
                                             />
                                         </div>
                                     </FormField>
 
                                     <FormField label="Residential Address" error={errors.address} className="col-12">
-                                        <textarea 
+                                        <textarea
                                             className="form-control bg-light border-0 rounded-2xl p-4 fw-medium"
                                             placeholder="Physical location details..."
                                             value={data.address}
-                                            onChange={e => setData('address', e.target.value)}
+                                            onChange={(e) => setData('address', e.target.value)}
                                             rows="3"
                                         />
                                     </FormField>
@@ -166,28 +182,28 @@ export default function Create({ auth }) {
                             </FormSection>
 
                             {/* Section 3: Next of Kin */}
-                            <FormSection 
-                                title="Next of Kin (Emergency Support)" 
+                            <FormSection
+                                title="Next of Kin (Emergency Support)"
                                 icon="fas fa-user-shield"
                                 headerClassName="bg-light text-dark p-4 border-bottom"
                             >
                                 <div className="row g-4">
                                     <FormField label="Full Name of Guardian/Kin" error={errors.emergency_name}>
-                                        <input 
+                                        <input
                                             type="text"
                                             className="form-control form-control-lg bg-light border-0 fw-bold px-4"
                                             placeholder="Contact Name"
                                             value={data.emergency_name}
-                                            onChange={e => setData('emergency_name', e.target.value)}
+                                            onChange={(e) => setData('emergency_name', e.target.value)}
                                         />
                                     </FormField>
                                     <FormField label="Emergency Phone Line" error={errors.emergency_contact}>
-                                        <input 
+                                        <input
                                             type="text"
                                             className="form-control form-control-lg bg-light border-0 fw-bold px-4"
                                             placeholder="Contact Phone"
                                             value={data.emergency_contact}
-                                            onChange={e => setData('emergency_contact', e.target.value)}
+                                            onChange={(e) => setData('emergency_contact', e.target.value)}
                                         />
                                     </FormField>
                                 </div>
@@ -206,7 +222,7 @@ export default function Create({ auth }) {
                                             step="0.1"
                                             className="form-control form-control-lg bg-light border-0 fw-bold px-4"
                                             value={data.height}
-                                            onChange={e => setData('height', e.target.value)}
+                                            onChange={(e) => setData('height', e.target.value)}
                                         />
                                     </FormField>
                                     <FormField label="Weight (kg)" error={errors.weight} className="col-md-3">
@@ -215,18 +231,24 @@ export default function Create({ auth }) {
                                             step="0.1"
                                             className="form-control form-control-lg bg-light border-0 fw-bold px-4"
                                             value={data.weight}
-                                            onChange={e => setData('weight', e.target.value)}
+                                            onChange={(e) => setData('weight', e.target.value)}
                                         />
                                     </FormField>
-                                    <FormField label="Marital status" error={errors.marital_status} className="col-md-3">
+                                    <FormField
+                                        label="Marital status"
+                                        error={errors.marital_status}
+                                        className="col-md-3"
+                                    >
                                         <select
                                             className="form-select form-select-lg bg-light border-0 fw-bold px-4"
                                             value={data.marital_status}
-                                            onChange={e => setData('marital_status', e.target.value)}
+                                            onChange={(e) => setData('marital_status', e.target.value)}
                                         >
                                             <option value="">Not specified</option>
                                             {['single', 'married', 'divorced', 'widowed', 'other'].map((s) => (
-                                                <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                                                <option key={s} value={s}>
+                                                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                                                </option>
                                             ))}
                                         </select>
                                     </FormField>
@@ -235,7 +257,7 @@ export default function Create({ auth }) {
                                             type="text"
                                             className="form-control form-control-lg bg-light border-0 fw-bold px-4"
                                             value={data.occupation}
-                                            onChange={e => setData('occupation', e.target.value)}
+                                            onChange={(e) => setData('occupation', e.target.value)}
                                         />
                                     </FormField>
                                     <FormField label="Known allergies" error={errors.allergies} className="col-md-6">
@@ -243,31 +265,43 @@ export default function Create({ auth }) {
                                             className="form-control bg-light border-0 rounded-2xl p-4 fw-medium"
                                             rows="2"
                                             value={data.allergies}
-                                            onChange={e => setData('allergies', e.target.value)}
+                                            onChange={(e) => setData('allergies', e.target.value)}
                                         />
                                     </FormField>
-                                    <FormField label="Chronic conditions" error={errors.chronic_diseases} className="col-md-6">
+                                    <FormField
+                                        label="Chronic conditions"
+                                        error={errors.chronic_diseases}
+                                        className="col-md-6"
+                                    >
                                         <textarea
                                             className="form-control bg-light border-0 rounded-2xl p-4 fw-medium"
                                             rows="2"
                                             value={data.chronic_diseases}
-                                            onChange={e => setData('chronic_diseases', e.target.value)}
+                                            onChange={(e) => setData('chronic_diseases', e.target.value)}
                                         />
                                     </FormField>
-                                    <FormField label="Insurance provider" error={errors.insurance_provider} className="col-md-6">
+                                    <FormField
+                                        label="Insurance provider"
+                                        error={errors.insurance_provider}
+                                        className="col-md-6"
+                                    >
                                         <input
                                             type="text"
                                             className="form-control form-control-lg bg-light border-0 fw-bold px-4"
                                             value={data.insurance_provider}
-                                            onChange={e => setData('insurance_provider', e.target.value)}
+                                            onChange={(e) => setData('insurance_provider', e.target.value)}
                                         />
                                     </FormField>
-                                    <FormField label="Insurance member ID" error={errors.insurance_id} className="col-md-6">
+                                    <FormField
+                                        label="Insurance member ID"
+                                        error={errors.insurance_id}
+                                        className="col-md-6"
+                                    >
                                         <input
                                             type="text"
                                             className="form-control form-control-lg bg-light border-0 fw-bold px-4"
                                             value={data.insurance_id}
-                                            onChange={e => setData('insurance_id', e.target.value)}
+                                            onChange={(e) => setData('insurance_id', e.target.value)}
                                         />
                                     </FormField>
                                 </div>
@@ -275,27 +309,53 @@ export default function Create({ auth }) {
 
                             {/* Info Card */}
                             <div className="alert alert-info border-0 shadow-sm rounded-2xl p-4 d-flex align-items-center mb-5 bg-opacity-10 bg-info">
-                                <div className="bg-info bg-opacity-20 text-info rounded-circle p-3 me-4 d-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
+                                <div
+                                    className="bg-info bg-opacity-20 text-info rounded-circle p-3 me-4 d-flex align-items-center justify-content-center"
+                                    style={{ width: '60px', height: '60px' }}
+                                >
                                     <i className="fas fa-user-lock fs-4"></i>
                                 </div>
                                 <div>
                                     <h6 className="fw-extrabold mb-1">Automatic Secure Access</h6>
-                                    <p className="mb-0 small text-muted font-medium">A patient portal account will be initialized with the temporary password <code>password123</code>. The patient will be prompted to reset this credential upon first successful authentication.</p>
+                                    <p className="mb-0 small text-muted font-medium">
+                                        A patient portal account will be initialized with the temporary password{' '}
+                                        <code>password123</code>. The patient will be prompted to reset this credential
+                                        upon first successful authentication.
+                                    </p>
                                 </div>
                             </div>
 
                             {/* Actions */}
                             <div className="d-flex justify-content-between align-items-center">
-                                <button type="button" onClick={() => router.visit(route('patients.index'))} className="btn btn-link text-muted fw-bold text-decoration-none">
+                                <button
+                                    type="button"
+                                    onClick={() => router.visit(route('patients.index'))}
+                                    className="btn btn-link text-muted fw-bold text-decoration-none"
+                                >
                                     <i className="fas fa-times me-2"></i> Abandon Registration
                                 </button>
                                 <div className="d-flex gap-3">
-                                    <button type="button" onClick={() => reset()} className="btn btn-light rounded-pill px-4 fw-bold border">Reset</button>
-                                    <button type="submit" disabled={processing} className="btn btn-primary rounded-pill px-5 py-3 fw-extrabold shadow-lg transition-all hover-lift">
+                                    <button
+                                        type="button"
+                                        onClick={() => reset()}
+                                        className="btn btn-light rounded-pill px-4 fw-bold border"
+                                    >
+                                        Reset
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="btn btn-primary rounded-pill px-5 py-3 fw-extrabold shadow-lg transition-all hover-lift"
+                                    >
                                         {processing ? (
-                                            <><span className="spinner-border spinner-border-sm me-2"></span> Finalizing...</>
+                                            <>
+                                                <span className="spinner-border spinner-border-sm me-2"></span>{' '}
+                                                Finalizing...
+                                            </>
                                         ) : (
-                                            <><i className="fas fa-check-circle me-2"></i> COMPLETE REGISTRATION</>
+                                            <>
+                                                <i className="fas fa-check-circle me-2"></i> COMPLETE REGISTRATION
+                                            </>
                                         )}
                                     </button>
                                 </div>
@@ -304,7 +364,7 @@ export default function Create({ auth }) {
                     </div>
                 </div>
             </div>
-            
+
             <style>{`
     .fw-extrabold { font-weight: 800; }
                 .tracking-widest { letter-spacing: 0.1em; }

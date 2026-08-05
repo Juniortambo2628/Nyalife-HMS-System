@@ -5,9 +5,7 @@ import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { formatDateOnly } from '@/Utils/dateUtils';
 
 export default function Show({ request }) {
-    const results = typeof request.results === 'string'
-        ? JSON.parse(request.results || '{}')
-        : (request.results || {});
+    const results = typeof request.results === 'string' ? JSON.parse(request.results || '{}') : request.results || {};
 
     const handlePrint = () => window.open(route('lab.print', request.request_id), '_blank');
 
@@ -32,7 +30,9 @@ export default function Show({ request }) {
                                 <td className="fw-bold">{row.label || row.name}</td>
                                 <td className="fw-extrabold text-primary">{row.value}</td>
                                 <td className="text-muted small">{row.unit || '—'}</td>
-                                <td className="text-muted small font-mono">{row.normalRange || row.reference || '—'}</td>
+                                <td className="text-muted small font-mono">
+                                    {row.normalRange || row.reference || '—'}
+                                </td>
                             </tr>
                         ))}
                     </tbody>

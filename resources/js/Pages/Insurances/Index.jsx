@@ -10,15 +10,19 @@ export default function Index({ auth, insurances }) {
     const userRole = auth?.user?.role || 'patient';
 
     const toggleStatus = useCallback((id) => {
-        router.post(route('insurances.toggle', id), {}, {
-            preserveScroll: true
-        });
+        router.post(
+            route('insurances.toggle', id),
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     }, []);
 
     const handleDelete = useCallback((id) => {
         if (confirm('Are you sure you want to remove this insurance provider?')) {
             router.delete(route('insurances.destroy', id), {
-                preserveScroll: true
+                preserveScroll: true,
             });
         }
     }, []);
@@ -52,7 +56,9 @@ export default function Index({ auth, insurances }) {
                             <i className="fas fa-id-card-alt text-light display-1"></i>
                         </div>
                         <h4 className="fw-bold text-dark">No Insurance Partners</h4>
-                        <p className="text-muted mb-4 text-dark">You haven't added any insurance providers yet. Start by adding your first partner.</p>
+                        <p className="text-muted mb-4 text-dark">
+                            You haven't added any insurance providers yet. Start by adding your first partner.
+                        </p>
                         <Link href={route('insurances.create')} className="btn btn-primary rounded-pill px-5 fw-bold">
                             Add Provider Now
                         </Link>
@@ -74,29 +80,38 @@ export default function Index({ auth, insurances }) {
                                         <GridCardActions
                                             className="border-0 pt-0 mt-0"
                                             actions={[
-                                                { icon: 'fa-edit', label: 'Edit details', href: route('insurances.edit', insurance.insurance_id) },
-                                                { icon: 'fa-trash', label: 'Delete provider', color: 'danger', onClick: () => handleDelete(insurance.insurance_id) },
+                                                {
+                                                    icon: 'fa-edit',
+                                                    label: 'Edit details',
+                                                    href: route('insurances.edit', insurance.insurance_id),
+                                                },
+                                                {
+                                                    icon: 'fa-trash',
+                                                    label: 'Delete provider',
+                                                    color: 'danger',
+                                                    onClick: () => handleDelete(insurance.insurance_id),
+                                                },
                                             ]}
                                         />
                                     </div>
-                                    
+
                                     {/* Card Content */}
                                     <div className="card-body p-4 text-center d-flex flex-column h-100">
                                         <div className="logo-wrapper mb-4 mx-auto bg-white rounded-3 shadow-sm d-flex align-items-center justify-content-center p-2 border">
-                                            <img 
-                                                src={insurance.logo_url} 
-                                                alt={insurance.name} 
+                                            <img
+                                                src={insurance.logo_url}
+                                                alt={insurance.name}
                                                 className="img-fluid rounded-2"
                                                 style={{ maxHeight: '80px', objectFit: 'contain' }}
                                             />
                                         </div>
                                         <h5 className="fw-extrabold text-gray-900 mb-2">{insurance.name}</h5>
-                                        
+
                                         {insurance.link && (
-                                            <a 
-                                                href={insurance.link} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer" 
+                                            <a
+                                                href={insurance.link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
                                                 className="text-pink-500 small font-bold text-decoration-none hover:text-pink-700 mt-auto pt-3"
                                             >
                                                 <i className="fas fa-external-link-alt me-1"></i>Visit Website
@@ -116,7 +131,6 @@ export default function Index({ auth, insurances }) {
                         ))}
                     </div>
                 )}
-
             </div>
 
             <style>{`

@@ -2,19 +2,18 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
-use App\Models\Patient;
-use App\Models\Staff;
 use App\Models\Appointment;
 use App\Models\Consultation;
-use App\Models\LabTestRequest;
 use App\Models\LabTestType;
 use App\Models\Medication;
 use App\Models\MedicationBatch;
 use App\Models\Message;
-use Illuminate\Support\Facades\Hash;
+use App\Models\Patient;
+use App\Models\Staff;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class HospitalSeeder extends Seeder
@@ -23,7 +22,7 @@ class HospitalSeeder extends Seeder
     {
         // 0. Ensure an admin/creator user exists (ID 1)
         $admin = User::find(1);
-        if (!$admin) {
+        if (! $admin) {
             $admin = User::create([
                 'user_id' => 1,
                 'first_name' => 'Admin',
@@ -46,7 +45,7 @@ class HospitalSeeder extends Seeder
         $patients = [];
         foreach ($patientsData as $data) {
             $user = User::updateOrCreate(
-                ['username' => strtolower($data['first_name'] . '.' . $data['last_name'])],
+                ['username' => strtolower($data['first_name'].'.'.$data['last_name'])],
                 [
                     'first_name' => $data['first_name'],
                     'last_name' => $data['last_name'],
@@ -63,7 +62,7 @@ class HospitalSeeder extends Seeder
             $patients[] = Patient::updateOrCreate(
                 ['user_id' => $user->user_id],
                 [
-                    'patient_number' => 'PAT-' . date('Ymd') . '-' . str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
+                    'patient_number' => 'PAT-'.date('Ymd').'-'.str_pad($user->user_id, 4, '0', STR_PAD_LEFT),
                 ]
             );
         }
@@ -80,18 +79,18 @@ class HospitalSeeder extends Seeder
                     'role_id' => 2, // Doctor
                     'is_active' => true,
                     'gender' => 'male',
-                    'date_of_birth' => '1980-01-01'
+                    'date_of_birth' => '1980-01-01',
                 ]
             );
             Staff::updateOrCreate(
                 ['user_id' => $docUser->user_id],
                 [
                     'specialization' => 'General Physician',
-                    'department' => 'OPD'
+                    'department' => 'OPD',
                 ]
             );
         }
-        
+
         $doctors = Staff::all();
 
         // 3. Lab Test Types
@@ -134,7 +133,7 @@ class HospitalSeeder extends Seeder
         // 5. Appointments & Consultations
         foreach ($patients as $index => $patient) {
             $doctor = $doctors->random();
-            
+
             $apt = Appointment::firstOrCreate(
                 ['patient_id' => $patient->patient_id, 'appointment_date' => now()->subDays($index + 1)->toDateString()],
                 [
@@ -144,7 +143,7 @@ class HospitalSeeder extends Seeder
                     'status' => 'completed',
                     'reason' => 'Routine Checkup',
                     'appointment_type' => 'routine_checkup',
-                    'created_by' => $admin->user_id
+                    'created_by' => $admin->user_id,
                 ]
             );
 
@@ -153,12 +152,12 @@ class HospitalSeeder extends Seeder
                 [
                     'patient_id' => $patient->patient_id,
                     'doctor_id' => $doctor->staff_id,
-                    'consultation_date' => $apt->appointment_date . ' 10:30:00',
+                    'consultation_date' => $apt->appointment_date.' 10:30:00',
                     'consultation_status' => 'closed', // Fixed: closed instead of completed
                     'chief_complaint' => 'Patient complaining of persistent cough.',
                     'diagnosis' => 'Upper Respiratory Track Infection',
                     'treatment_plan' => 'Prescribed Amoxicillin and Cough Syrup.',
-                    'created_by' => $admin->user_id
+                    'created_by' => $admin->user_id,
                 ]
             );
         }
@@ -173,9 +172,9 @@ class HospitalSeeder extends Seeder
                     'notifiable_type' => 'App\Models\User',
                     'notifiable_id' => $currentUser->user_id,
                     'data' => json_encode([
-                        'title' => 'System Update #' . $i . ' (' . Str::random(3) . ')',
+                        'title' => 'System Update #'.$i.' ('.Str::random(3).')',
                         'message' => 'The hospital management system has been updated to v2.3.',
-                        'icon' => 'fa-info-circle'
+                        'icon' => 'fa-info-circle',
                     ]),
                     'read_at' => null,
                     'created_at' => now()->subHours($i),
@@ -191,7 +190,7 @@ class HospitalSeeder extends Seeder
                 Message::create([
                     'sender_id' => $otherUser->user_id,
                     'receiver_id' => $currentUser->user_id,
-                    'content' => "Test message #$i (" . Str::random(3) . ") regarding patient follow-up.",
+                    'content' => "Test message #$i (".Str::random(3).') regarding patient follow-up.',
                     'read_at' => null,
                 ]);
             }

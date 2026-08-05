@@ -7,16 +7,24 @@ import DashboardSelect from '@/Components/DashboardSelect';
 import { useEffect, useMemo, useState } from 'react';
 import { formatDateOnly } from '@/Utils/dateUtils';
 
-export default function Create({ consultation, recentConsultations, followUpTypes, preselected_consultation_id, default_reason }) {
+export default function Create({
+    consultation,
+    recentConsultations,
+    followUpTypes,
+    preselected_consultation_id,
+    default_reason,
+}) {
     const consultations = recentConsultations?.data || recentConsultations || [];
 
-    const consultationOptions = useMemo(() =>
-        consultations.map((c) => ({
-            value: String(c.consultation_id),
-            label: `#${c.consultation_id} — ${c.patient?.user?.first_name || ''} ${c.patient?.user?.last_name || ''} (${formatDateOnly(c.consultation_date)})`,
-            patient_id: c.patient_id,
-        })),
-    [consultations]);
+    const consultationOptions = useMemo(
+        () =>
+            consultations.map((c) => ({
+                value: String(c.consultation_id),
+                label: `#${c.consultation_id} — ${c.patient?.user?.first_name || ''} ${c.patient?.user?.last_name || ''} (${formatDateOnly(c.consultation_date)})`,
+                patient_id: c.patient_id,
+            })),
+        [consultations],
+    );
 
     const typeOptions = Object.entries(followUpTypes || {}).map(([value, label]) => ({ label, value }));
 
@@ -60,10 +68,19 @@ export default function Create({ consultation, recentConsultations, followUpType
         >
             <Head title="Schedule Follow-up" />
 
-            <form onSubmit={(e) => { e.preventDefault(); post(route('follow-ups.store')); }}>
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    post(route('follow-ups.store'));
+                }}
+            >
                 <div className="row g-4">
                     <div className="col-lg-8">
-                        <FormSection title="Follow-up Details" icon="fas fa-calendar-check" headerClassName="bg-primary text-white p-3">
+                        <FormSection
+                            title="Follow-up Details"
+                            icon="fas fa-calendar-check"
+                            headerClassName="bg-primary text-white p-3"
+                        >
                             <div className="row g-3">
                                 <FormField label="Consultation *" className="col-12" error={errors.consultation_id}>
                                     <DashboardSelect
@@ -75,8 +92,13 @@ export default function Create({ consultation, recentConsultations, followUpType
                                 </FormField>
 
                                 <FormField label="Follow-up Date *" className="col-md-6" error={errors.follow_up_date}>
-                                    <input type="date" className="form-control" value={data.follow_up_date}
-                                        onChange={(e) => setData('follow_up_date', e.target.value)} required />
+                                    <input
+                                        type="date"
+                                        className="form-control"
+                                        value={data.follow_up_date}
+                                        onChange={(e) => setData('follow_up_date', e.target.value)}
+                                        required
+                                    />
                                 </FormField>
 
                                 <FormField label="Type" className="col-md-6" error={errors.follow_up_type}>
@@ -88,14 +110,23 @@ export default function Create({ consultation, recentConsultations, followUpType
                                 </FormField>
 
                                 <FormField label="Reason *" className="col-12" error={errors.reason}>
-                                    <textarea className="form-control" rows="3" value={data.reason}
-                                        onChange={(e) => setData('reason', e.target.value)} required
-                                        placeholder="Clinical reason for follow-up visit..." />
+                                    <textarea
+                                        className="form-control"
+                                        rows="3"
+                                        value={data.reason}
+                                        onChange={(e) => setData('reason', e.target.value)}
+                                        required
+                                        placeholder="Clinical reason for follow-up visit..."
+                                    />
                                 </FormField>
 
                                 <FormField label="Notes" className="col-12" error={errors.notes}>
-                                    <textarea className="form-control" rows="2" value={data.notes}
-                                        onChange={(e) => setData('notes', e.target.value)} />
+                                    <textarea
+                                        className="form-control"
+                                        rows="2"
+                                        value={data.notes}
+                                        onChange={(e) => setData('notes', e.target.value)}
+                                    />
                                 </FormField>
                             </div>
                         </FormSection>
@@ -105,13 +136,19 @@ export default function Create({ consultation, recentConsultations, followUpType
                         <div className="col-lg-4">
                             <div className="card border-0 shadow-sm rounded-4">
                                 <div className="card-body p-4">
-                                    <h6 className="fw-extrabold text-muted extra-small text-uppercase tracking-widest mb-3">Consultation</h6>
+                                    <h6 className="fw-extrabold text-muted extra-small text-uppercase tracking-widest mb-3">
+                                        Consultation
+                                    </h6>
                                     <div className="fw-bold mb-1">
-                                        {selectedConsultation.patient?.user?.first_name} {selectedConsultation.patient?.user?.last_name}
+                                        {selectedConsultation.patient?.user?.first_name}{' '}
+                                        {selectedConsultation.patient?.user?.last_name}
                                     </div>
                                     <div className="small text-muted mb-2">#{selectedConsultation.consultation_id}</div>
                                     {selectedConsultation.diagnosis && (
-                                        <div className="small"><span className="text-muted">Diagnosis:</span> {selectedConsultation.diagnosis}</div>
+                                        <div className="small">
+                                            <span className="text-muted">Diagnosis:</span>{' '}
+                                            {selectedConsultation.diagnosis}
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -121,7 +158,13 @@ export default function Create({ consultation, recentConsultations, followUpType
 
                 <UnifiedToolbar
                     actions={[
-                        { label: 'SCHEDULE', icon: 'fa-check', onClick: () => post(route('follow-ups.store')), color: 'success', disabled: processing },
+                        {
+                            label: 'SCHEDULE',
+                            icon: 'fa-check',
+                            onClick: () => post(route('follow-ups.store')),
+                            color: 'success',
+                            disabled: processing,
+                        },
                         { label: 'CANCEL', icon: 'fa-times', href: route('follow-ups.index'), color: 'gray' },
                     ]}
                 />

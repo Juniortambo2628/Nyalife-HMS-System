@@ -15,13 +15,13 @@ return new class extends Migration
         if (Schema::hasTable('users')) {
             Schema::table('users', function (Blueprint $table) {
                 // Add columns required by Laravel Auth if they don't exist
-                if (!Schema::hasColumn('users', 'email_verified_at')) {
+                if (! Schema::hasColumn('users', 'email_verified_at')) {
                     $table->timestamp('email_verified_at')->nullable();
                 }
-                if (!Schema::hasColumn('users', 'remember_token')) {
+                if (! Schema::hasColumn('users', 'remember_token')) {
                     $table->rememberToken();
                 }
-                if (!Schema::hasColumn('users', 'created_at')) {
+                if (! Schema::hasColumn('users', 'created_at')) {
                     $table->timestamps();
                 }
             });
@@ -46,7 +46,7 @@ return new class extends Migration
         }
 
         // 2. Password Reset Tokens
-        if (!Schema::hasTable('password_reset_tokens')) {
+        if (! Schema::hasTable('password_reset_tokens')) {
             Schema::create('password_reset_tokens', function (Blueprint $table) {
                 $table->string('email')->primary();
                 $table->string('token');
@@ -55,7 +55,7 @@ return new class extends Migration
         }
 
         // 3. Sessions
-        if (!Schema::hasTable('sessions')) {
+        if (! Schema::hasTable('sessions')) {
             Schema::create('sessions', function (Blueprint $table) {
                 $table->string('id')->primary();
                 $table->foreignId('user_id')->nullable()->index(); // This maps to user_id (integer) usually, check compatibility?
@@ -75,6 +75,6 @@ return new class extends Migration
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('password_reset_tokens');
         // Do not drop users table to be safe? Or stick to default behavior.
-        // Schema::dropIfExists('users'); 
+        // Schema::dropIfExists('users');
     }
 };

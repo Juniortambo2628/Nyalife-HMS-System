@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
@@ -18,7 +19,7 @@ return new class extends Migration
         }
 
         // Get legacy patient role_id from the custom roles table
-        $legacyPatientRoleId = DB::table((new \App\Models\Role)->getTable())
+        $legacyPatientRoleId = DB::table((new Role)->getTable())
             ->where('role_name', 'patient')
             ->value('role_id');
 

@@ -6,7 +6,6 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Medication;
 use App\Models\Prescription;
-use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +21,7 @@ class PrescriptionService
                 'prescription_date' => $data['prescription_date'],
                 'status' => 'pending',
                 'notes' => $data['notes'] ?? null,
-                'prescription_number' => 'RX-' . strtoupper(uniqid()),
+                'prescription_number' => 'RX-'.strtoupper(uniqid()),
             ]);
 
             $invoiceItems = [];
@@ -35,7 +34,7 @@ class PrescriptionService
                     'duration' => $item['duration'],
                 ]);
 
-                if (!empty($item['medication_id'])) {
+                if (! empty($item['medication_id'])) {
                     $medication = Medication::find($item['medication_id']);
                     if ($medication) {
                         $freqNum = self::parseFrequencyToDaily($item['frequency'] ?? '');
@@ -65,7 +64,7 @@ class PrescriptionService
                 $invoice = Invoice::create([
                     'patient_id' => $data['patient_id'],
                     'consultation_id' => $data['consultation_id'] ?? null,
-                    'invoice_number' => 'INV-' . strtoupper(uniqid()),
+                    'invoice_number' => 'INV-'.strtoupper(uniqid()),
                     'invoice_date' => now()->toDateString(),
                     'due_date' => now()->addDays(30)->toDateString(),
                     'total_amount' => $totalAmount,
@@ -83,7 +82,7 @@ class PrescriptionService
 
             ActivityLogger::log(
                 'pharmacy',
-                "New prescription created for " . ($prescription->patient->user->full_name ?? 'Patient'),
+                'New prescription created for '.($prescription->patient->user->full_name ?? 'Patient'),
                 ['prescription_id' => $prescription->prescription_id],
                 Auth::user(),
                 $prescription,
@@ -135,7 +134,7 @@ class PrescriptionService
         ]);
 
         $rxLabel = $prescription->prescription_number
-            ?? ('RX-' . str_pad((string) $prescription->prescription_id, 6, '0', STR_PAD_LEFT));
+            ?? ('RX-'.str_pad((string) $prescription->prescription_id, 6, '0', STR_PAD_LEFT));
 
         ActivityLogger::log(
             'pharmacy',
@@ -172,6 +171,7 @@ class PrescriptionService
 
         if (preg_match('/every\s+(\d+)\s*hours?/i', $frequency, $m)) {
             $hours = (int) $m[1];
+
             return $hours > 0 ? (int) ceil(24 / $hours) : 1;
         }
 

@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\LabTestRequest;
 use App\Models\LabTestType;
 use App\Models\Patient;
+use App\Services\ActivityLogger;
+use App\Support\PatientId;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use App\Services\ActivityLogger;
-use App\Support\PatientId;
 
 class LabTestRequestController extends Controller
 {
@@ -17,14 +17,14 @@ class LabTestRequestController extends Controller
     {
         $patientId = $request->query('patient_id');
         $consultationId = $request->query('consultation_id');
-        
+
         $patient = $patientId ? Patient::with('user')->find($patientId) : null;
 
         return Inertia::render('Lab/Create', [
             'testTypes' => LabTestType::labTests()->active()->get(),
             'preselected_patient_id' => $patientId,
             'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
-            'consultation_id' => $consultationId
+            'consultation_id' => $consultationId,
         ]);
     }
 
@@ -46,12 +46,12 @@ class LabTestRequestController extends Controller
             'request_date' => now(),
             'status' => 'pending',
             'priority' => $validated['priority'],
-            'notes' => $validated['notes']
+            'notes' => $validated['notes'],
         ]);
 
         ActivityLogger::log(
             'lab',
-            "New lab test requested: " . ($labRequest->testType->test_name ?? 'Test'),
+            'New lab test requested: '.($labRequest->testType->test_name ?? 'Test'),
             ['request_id' => $labRequest->request_id],
             Auth::user(),
             $labRequest,
@@ -64,7 +64,7 @@ class LabTestRequestController extends Controller
     public function destroy($id)
     {
         $labRequest = LabTestRequest::findOrFail($id);
-        
+
         if ($labRequest->status !== 'pending') {
             return back()->with('error', 'Only pending lab requests can be removed.');
         }
@@ -73,7 +73,7 @@ class LabTestRequestController extends Controller
 
         ActivityLogger::log(
             'lab',
-            "Lab test request removed: " . ($labRequest->testType->test_name ?? 'Test'),
+            'Lab test request removed: '.($labRequest->testType->test_name ?? 'Test'),
             ['request_id' => $labRequest->request_id],
             Auth::user(),
             null,

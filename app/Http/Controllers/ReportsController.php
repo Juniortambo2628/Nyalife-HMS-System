@@ -273,7 +273,7 @@ class ReportsController extends Controller
                         foreach ($invoices as $inv) {
                             fputcsv($handle, [
                                 $inv->invoice_number,
-                                ($inv->patient->user->first_name ?? '') . ' ' . ($inv->patient->user->last_name ?? ''),
+                                ($inv->patient->user->first_name ?? '').' '.($inv->patient->user->last_name ?? ''),
                                 $inv->invoice_date,
                                 $inv->total_amount,
                                 $inv->status,
@@ -288,8 +288,8 @@ class ReportsController extends Controller
                     ->chunk(200, function ($patients) use ($handle) {
                         foreach ($patients as $p) {
                             fputcsv($handle, [
-                                'PAT-' . $p->patient_id,
-                                ($p->user->first_name ?? '') . ' ' . ($p->user->last_name ?? ''),
+                                'PAT-'.$p->patient_id,
+                                ($p->user->first_name ?? '').' '.($p->user->last_name ?? ''),
                                 $p->gender ?? 'N/A',
                                 $p->date_of_birth ? $p->date_of_birth->format('Y-m-d') : 'N/A',
                                 $p->user->phone ?? 'N/A',
@@ -308,8 +308,8 @@ class ReportsController extends Controller
                         foreach ($appointments as $a) {
                             fputcsv($handle, [
                                 $a->appointment_id,
-                                ($a->patient->user->first_name ?? '') . ' ' . ($a->patient->user->last_name ?? ''),
-                                ($a->doctor->user->first_name ?? '') . ' ' . ($a->doctor->user->last_name ?? ''),
+                                ($a->patient->user->first_name ?? '').' '.($a->patient->user->last_name ?? ''),
+                                ($a->doctor->user->first_name ?? '').' '.($a->doctor->user->last_name ?? ''),
                                 $a->appointment_date,
                                 $a->appointment_time,
                                 $a->appointment_type ?? 'N/A',
@@ -326,8 +326,8 @@ class ReportsController extends Controller
                         foreach ($consults as $c) {
                             fputcsv($handle, [
                                 $c->consultation_id,
-                                ($c->patient->user->first_name ?? '') . ' ' . ($c->patient->user->last_name ?? ''),
-                                ($c->doctor->user->first_name ?? '') . ' ' . ($c->doctor->user->last_name ?? ''),
+                                ($c->patient->user->first_name ?? '').' '.($c->patient->user->last_name ?? ''),
+                                ($c->doctor->user->first_name ?? '').' '.($c->doctor->user->last_name ?? ''),
                                 $c->consultation_date?->format('Y-m-d'),
                                 $c->diagnosis ?? 'Pending',
                                 $c->consultation_status ?? 'N/A',
@@ -343,7 +343,7 @@ class ReportsController extends Controller
                         foreach ($rows as $r) {
                             fputcsv($handle, [
                                 $r->request_id,
-                                ($r->patient->user->first_name ?? '') . ' ' . ($r->patient->user->last_name ?? ''),
+                                ($r->patient->user->first_name ?? '').' '.($r->patient->user->last_name ?? ''),
                                 $r->testType->test_name ?? 'N/A',
                                 $r->request_date ?? $r->created_at?->format('Y-m-d'),
                                 $r->status,
@@ -360,7 +360,7 @@ class ReportsController extends Controller
                         foreach ($rows as $p) {
                             fputcsv($handle, [
                                 $p->prescription_id,
-                                ($p->patient->user->first_name ?? '') . ' ' . ($p->patient->user->last_name ?? ''),
+                                ($p->patient->user->first_name ?? '').' '.($p->patient->user->last_name ?? ''),
                                 $p->prescription_date,
                                 $p->status,
                                 $p->items->pluck('medicine_name')->join('; '),

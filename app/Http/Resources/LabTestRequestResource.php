@@ -17,7 +17,7 @@ class LabTestRequestResource extends JsonResource
         $user = $request->user();
         $showResults = true;
         if ($user && $user->role === 'patient') {
-            if (!in_array($this->status, ['verified', 'completed'])) {
+            if (! in_array($this->status, ['verified', 'completed'])) {
                 $showResults = false;
             }
         }

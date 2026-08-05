@@ -76,7 +76,11 @@ export default function ApiTokens({ tokens }) {
                                 <div className="alert alert-warning mt-4 mb-0 rounded-3xl">
                                     <div className="fw-bold mb-2">Copy your new token now</div>
                                     <code className="d-block text-break small mb-2">{revealedToken}</code>
-                                    <button type="button" onClick={copyToken} className="btn btn-sm btn-dark rounded-pill">
+                                    <button
+                                        type="button"
+                                        onClick={copyToken}
+                                        className="btn btn-sm btn-dark rounded-pill"
+                                    >
                                         <i className="fas fa-copy me-1"></i> Copy
                                     </button>
                                 </div>
@@ -110,7 +114,9 @@ export default function ApiTokens({ tokens }) {
                                                         {token.created_at ? formatDateOnly(token.created_at) : '—'}
                                                     </td>
                                                     <td className="small text-muted">
-                                                        {token.last_used_at ? formatDateTime(token.last_used_at) : 'Never'}
+                                                        {token.last_used_at
+                                                            ? formatDateTime(token.last_used_at)
+                                                            : 'Never'}
                                                     </td>
                                                     <td className="text-end">
                                                         <button

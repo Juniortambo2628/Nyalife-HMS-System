@@ -34,7 +34,10 @@ export default function Show({ request, auth }) {
     const [files, setFiles] = useState([]);
     const [viewingAttachment, setViewingAttachment] = useState(null);
 
-    const hasTemplate = request.test_type?.template && Array.isArray(request.test_type.template) && request.test_type.template.length > 0;
+    const hasTemplate =
+        request.test_type?.template &&
+        Array.isArray(request.test_type.template) &&
+        request.test_type.template.length > 0;
     const patientUser = request.patient?.user;
     const requestRef = request.request_number || `LAB-${request.request_id}`;
 
@@ -86,10 +89,13 @@ export default function Show({ request, auth }) {
 
             const timeoutId = setTimeout(() => {
                 try {
-                    localStorage.setItem(storageKey, JSON.stringify({
-                        results: data.results,
-                        timestamp: new Date().getTime(),
-                    }));
+                    localStorage.setItem(
+                        storageKey,
+                        JSON.stringify({
+                            results: data.results,
+                            timestamp: new Date().getTime(),
+                        }),
+                    );
                     window.dispatchEvent(new CustomEvent('autosave', { detail: { status: 'saved' } }));
                 } catch (e) {
                     console.warn('Autosave failed: Storage access blocked', e);
@@ -154,13 +160,17 @@ export default function Show({ request, auth }) {
 
         const targetStatus = statusOverride || data.status;
 
-        router.post(route('lab.update-status', request.request_id), {
-            ...data,
-            status: targetStatus,
-            results: finalResults,
-        }, {
-            onSuccess: () => localStorage.removeItem(storageKey),
-        });
+        router.post(
+            route('lab.update-status', request.request_id),
+            {
+                ...data,
+                status: targetStatus,
+                results: finalResults,
+            },
+            {
+                onSuccess: () => localStorage.removeItem(storageKey),
+            },
+        );
     };
 
     const handlePrint = () => window.open(route('lab.print', request.request_id), '_blank');
@@ -178,80 +188,90 @@ export default function Show({ request, auth }) {
 
     const handleFieldChange = (field, value) => setData('results', { ...data.results, [field]: value });
 
-    const statItems = useMemo(() => [
-        {
-            label: 'Status',
-            value: formatLabel(request.status),
-            icon: 'fa-flask',
-            color: ['verified', 'completed'].includes(request.status) ? 'success' : 'info',
-        },
-        {
-            label: 'Priority',
-            value: formatLabel(request.priority || 'normal'),
-            icon: 'fa-bolt',
-            color: request.priority === 'urgent' ? 'danger' : 'primary',
-        },
-        {
-            label: 'Requested',
-            value: formatDateOnly(request.request_date || request.created_at),
-            icon: 'fa-calendar-day',
-            color: 'pink',
-            sub: request.created_at ? formatDateTime(request.created_at) : undefined,
-        },
-        {
-            label: 'Category',
-            value: request.test_type?.category || 'Laboratory',
-            icon: 'fa-vials',
-            color: 'teal',
-        },
-    ], [request]);
+    const statItems = useMemo(
+        () => [
+            {
+                label: 'Status',
+                value: formatLabel(request.status),
+                icon: 'fa-flask',
+                color: ['verified', 'completed'].includes(request.status) ? 'success' : 'info',
+            },
+            {
+                label: 'Priority',
+                value: formatLabel(request.priority || 'normal'),
+                icon: 'fa-bolt',
+                color: request.priority === 'urgent' ? 'danger' : 'primary',
+            },
+            {
+                label: 'Requested',
+                value: formatDateOnly(request.request_date || request.created_at),
+                icon: 'fa-calendar-day',
+                color: 'pink',
+                sub: request.created_at ? formatDateTime(request.created_at) : undefined,
+            },
+            {
+                label: 'Category',
+                value: request.test_type?.category || 'Laboratory',
+                icon: 'fa-vials',
+                color: 'teal',
+            },
+        ],
+        [request],
+    );
 
-    const parameterStats = useMemo(() => [
-        {
-            label: 'Ref. range',
-            value: request.test_type?.normal_range || '—',
-            icon: 'fa-ruler-horizontal',
-            color: 'info',
-        },
-        {
-            label: 'Units',
-            value: request.test_type?.units || '—',
-            icon: 'fa-balance-scale',
-            color: 'secondary',
-        },
-        {
-            label: 'Parameters',
-            value: hasTemplate ? request.test_type.template.length : '1',
-            icon: 'fa-list-ol',
-            color: 'teal',
-        },
-    ], [request, hasTemplate]);
+    const parameterStats = useMemo(
+        () => [
+            {
+                label: 'Ref. range',
+                value: request.test_type?.normal_range || '—',
+                icon: 'fa-ruler-horizontal',
+                color: 'info',
+            },
+            {
+                label: 'Units',
+                value: request.test_type?.units || '—',
+                icon: 'fa-balance-scale',
+                color: 'secondary',
+            },
+            {
+                label: 'Parameters',
+                value: hasTemplate ? request.test_type.template.length : '1',
+                icon: 'fa-list-ol',
+                color: 'teal',
+            },
+        ],
+        [request, hasTemplate],
+    );
 
     const toolbarActions = [
-        ['admin', 'lab_technician', 'nurse'].includes(auth.user.role)
-            && ['pending', 'processing'].includes(request.status) && {
-            label: 'Register sample',
-            icon: 'fa-vial',
-            href: route('lab.samples.register', { lab_request_id: request.request_id }),
-            color: 'success',
-        },
+        ['admin', 'lab_technician', 'nurse'].includes(auth.user.role) &&
+            ['pending', 'processing'].includes(request.status) && {
+                label: 'Register sample',
+                icon: 'fa-vial',
+                href: route('lab.samples.register', { lab_request_id: request.request_id }),
+                color: 'success',
+            },
         ['verified', 'completed'].includes(request.status) && {
             label: 'Print report',
             icon: 'fa-print',
             onClick: handlePrint,
         },
-        !processing && isDoctorOrAdmin && request.status === 'pending_verification' && {
-            label: 'Verify & release results',
-            icon: 'fa-check-double',
-            onClick: (e) => submit(e, 'verified'),
-            color: 'success',
-        },
-        !processing && isLabTech && !['verified', 'completed', 'pending_verification'].includes(request.status) && {
-            label: 'Release results',
-            icon: 'fa-paper-plane',
-            onClick: (e) => submit(e, 'pending_verification'),
-            color: 'warning',
-        },
+        !processing &&
+            isDoctorOrAdmin &&
+            request.status === 'pending_verification' && {
+                label: 'Verify & release results',
+                icon: 'fa-check-double',
+                onClick: (e) => submit(e, 'verified'),
+                color: 'success',
+            },
+        !processing &&
+            isLabTech &&
+            !['verified', 'completed', 'pending_verification'].includes(request.status) && {
+                label: 'Release results',
+                icon: 'fa-paper-plane',
+                onClick: (e) => submit(e, 'pending_verification'),
+                color: 'warning',
+            },
         {
             label: 'Back to registry',
             icon: 'fa-arrow-left',
@@ -321,7 +341,9 @@ export default function Show({ request, auth }) {
                                         </div>
                                         <div className="nyl-meta-item">
                                             <div className="nyl-meta-item__label">Email</div>
-                                            <div className="nyl-meta-item__value text-truncate">{patientUser.email || '—'}</div>
+                                            <div className="nyl-meta-item__value text-truncate">
+                                                {patientUser.email || '—'}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -374,7 +396,9 @@ export default function Show({ request, auth }) {
                                 {request.completed_at && (
                                     <div className="nyl-meta-item">
                                         <div className="nyl-meta-item__label">Completed</div>
-                                        <div className="nyl-meta-item__value">{formatDateTime(request.completed_at)}</div>
+                                        <div className="nyl-meta-item__value">
+                                            {formatDateTime(request.completed_at)}
+                                        </div>
                                     </div>
                                 )}
                                 {request.verified_at && (
@@ -384,7 +408,9 @@ export default function Show({ request, auth }) {
                                             {formatDateTime(request.verified_at)}
                                             {request.verifiedByUser && (
                                                 <span className="d-block extra-small text-muted mt-1">
-                                                    by Dr. {request.verifiedByUser.last_name || userName(request.verifiedByUser)}
+                                                    by Dr.{' '}
+                                                    {request.verifiedByUser.last_name ||
+                                                        userName(request.verifiedByUser)}
                                                 </span>
                                             )}
                                         </div>
@@ -473,7 +499,9 @@ export default function Show({ request, auth }) {
                                                 <div className="bg-warning-subtle text-warning p-4 rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm border border-warning-subtle nyl-icon-circle-lg">
                                                     <i className="fas fa-history fa-2x" />
                                                 </div>
-                                                <h4 className="fw-extrabold text-warning tracking-tighter">Awaiting verification</h4>
+                                                <h4 className="fw-extrabold text-warning tracking-tighter">
+                                                    Awaiting verification
+                                                </h4>
                                                 <p className="extra-small fw-bold text-muted text-uppercase tracking-widest opacity-50">
                                                     Results compiled, awaiting physician verification
                                                 </p>
@@ -483,9 +511,14 @@ export default function Show({ request, auth }) {
                                                 <div className="bg-success-subtle text-success p-4 rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm border border-success-subtle nyl-icon-circle-lg">
                                                     <i className="fas fa-check-double fa-2x" />
                                                 </div>
-                                                <h4 className="fw-extrabold text-success tracking-tighter">Results certified</h4>
+                                                <h4 className="fw-extrabold text-success tracking-tighter">
+                                                    Results certified
+                                                </h4>
                                                 <p className="extra-small fw-bold text-muted text-uppercase tracking-widest opacity-50">
-                                                    Analysis verified by {request.verified_by ? `Dr. ${request.verifiedByUser?.last_name || 'attending physician'}` : 'laboratory department'}
+                                                    Analysis verified by{' '}
+                                                    {request.verified_by
+                                                        ? `Dr. ${request.verifiedByUser?.last_name || 'attending physician'}`
+                                                        : 'laboratory department'}
                                                 </p>
                                             </>
                                         )}
@@ -501,20 +534,32 @@ export default function Show({ request, auth }) {
                                                     <table className="table table-hover align-middle mb-0">
                                                         <thead className="bg-gray-50">
                                                             <tr>
-                                                                <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0">Parameter</th>
-                                                                <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0">Result</th>
-                                                                <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0 text-center">Ref. range</th>
+                                                                <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0">
+                                                                    Parameter
+                                                                </th>
+                                                                <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0">
+                                                                    Result
+                                                                </th>
+                                                                <th className="px-4 py-3 extra-small fw-extrabold text-muted border-0 text-center">
+                                                                    Ref. range
+                                                                </th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="border-0">
                                                             {request.test_type.template.map((item, idx) => (
                                                                 <tr key={idx} className="border-bottom border-gray-50">
-                                                                    <td className="px-4 py-3 fw-bold text-gray-800">{item.label}</td>
+                                                                    <td className="px-4 py-3 fw-bold text-gray-800">
+                                                                        {item.label}
+                                                                    </td>
                                                                     <td className="px-4 py-3 fw-extrabold text-primary">
                                                                         {data.results.lab_results[item.label] || '—'}
-                                                                        <small className="text-muted fw-normal ms-1">{item.unit}</small>
+                                                                        <small className="text-muted fw-normal ms-1">
+                                                                            {item.unit}
+                                                                        </small>
                                                                     </td>
-                                                                    <td className="px-4 py-3 text-center small text-muted font-mono">{item.normalRange || '—'}</td>
+                                                                    <td className="px-4 py-3 text-center small text-muted font-mono">
+                                                                        {item.normalRange || '—'}
+                                                                    </td>
                                                                 </tr>
                                                             ))}
                                                         </tbody>
@@ -560,10 +605,16 @@ export default function Show({ request, auth }) {
                                                             >
                                                                 <div className="position-relative nyl-attachment-preview">
                                                                     {file.type?.startsWith('image/') ? (
-                                                                        <img src={file.data} alt={file.name} className="w-100 h-100 object-fit-cover" />
+                                                                        <img
+                                                                            src={file.data}
+                                                                            alt={file.name}
+                                                                            className="w-100 h-100 object-fit-cover"
+                                                                        />
                                                                     ) : (
                                                                         <div className="w-100 h-100 d-flex align-items-center justify-content-center bg-gray-200">
-                                                                            <i className={`fas ${file.type?.includes('pdf') ? 'fa-file-pdf text-danger' : 'fa-file-medical text-primary'} fa-4x opacity-20`} />
+                                                                            <i
+                                                                                className={`fas ${file.type?.includes('pdf') ? 'fa-file-pdf text-danger' : 'fa-file-medical text-primary'} fa-4x opacity-20`}
+                                                                            />
                                                                         </div>
                                                                     )}
                                                                     <div className="position-absolute bottom-0 start-0 w-100 p-3 bg-dark bg-opacity-70 text-white extra-small fw-bold text-truncate backdrop-blur">
@@ -579,18 +630,27 @@ export default function Show({ request, auth }) {
                                     </div>
 
                                     <div className="text-center mt-8">
-                                        <button type="button" onClick={handlePrint} className="btn btn-primary rounded-pill px-5 py-3.5 fw-extrabold shadow-lg transition-all hover-translate-up tracking-widest">
+                                        <button
+                                            type="button"
+                                            onClick={handlePrint}
+                                            className="btn btn-primary rounded-pill px-5 py-3.5 fw-extrabold shadow-lg transition-all hover-translate-up tracking-widest"
+                                        >
                                             <i className="fas fa-print me-2" />
                                             Generate official report
                                         </button>
                                     </div>
                                 </div>
                             ) : isLabTech ? (
-                                <form onSubmit={submit} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <form
+                                    onSubmit={submit}
+                                    className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+                                >
                                     <div className="space-y-6">
                                         <div>
                                             <h6 className="extra-small fw-extrabold text-uppercase text-pink-500 tracking-widest mb-4 d-flex align-items-center gap-3">
-                                                <span className="avatar-sm bg-pink-500 text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">1</span>
+                                                <span className="avatar-sm bg-pink-500 text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">
+                                                    1
+                                                </span>
                                                 Data entry
                                             </h6>
 
@@ -609,11 +669,18 @@ export default function Show({ request, auth }) {
                                                                     type="text"
                                                                     className="form-control form-control-lg bg-light border-0 rounded-xl fw-bold"
                                                                     value={data.results.lab_results[item.label] || ''}
-                                                                    onChange={(e) => handleLabResultChange(item.label, e.target.value)}
+                                                                    onChange={(e) =>
+                                                                        handleLabResultChange(
+                                                                            item.label,
+                                                                            e.target.value,
+                                                                        )
+                                                                    }
                                                                     placeholder="Enter value"
                                                                 />
                                                                 {item.unit && (
-                                                                    <span className="input-group-text bg-gray-100 border-0 text-muted extra-small fw-bold">{item.unit}</span>
+                                                                    <span className="input-group-text bg-gray-100 border-0 text-muted extra-small fw-bold">
+                                                                        {item.unit}
+                                                                    </span>
                                                                 )}
                                                             </div>
                                                         </div>
@@ -633,7 +700,9 @@ export default function Show({ request, auth }) {
                                         <div className="row g-4">
                                             <div className="col-md-6">
                                                 <h6 className="extra-small fw-extrabold text-uppercase text-pink-500 tracking-widest mb-4 d-flex align-items-center gap-3">
-                                                    <span className="avatar-sm bg-pink-500 text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">2</span>
+                                                    <span className="avatar-sm bg-pink-500 text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">
+                                                        2
+                                                    </span>
                                                     Observations
                                                 </h6>
                                                 <textarea
@@ -646,7 +715,9 @@ export default function Show({ request, auth }) {
                                             </div>
                                             <div className="col-md-6">
                                                 <h6 className="extra-small fw-extrabold text-uppercase text-pink-500 tracking-widest mb-4 d-flex align-items-center gap-3">
-                                                    <span className="avatar-sm bg-pink-500 text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">3</span>
+                                                    <span className="avatar-sm bg-pink-500 text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">
+                                                        3
+                                                    </span>
                                                     Conclusion
                                                 </h6>
                                                 <textarea
@@ -661,7 +732,9 @@ export default function Show({ request, auth }) {
 
                                         <div>
                                             <h6 className="extra-small fw-extrabold text-uppercase text-pink-500 tracking-widest mb-4 d-flex align-items-center gap-3">
-                                                <span className="avatar-sm bg-pink-500 text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">4</span>
+                                                <span className="avatar-sm bg-pink-500 text-white rounded-lg d-flex align-items-center justify-content-center fw-bold">
+                                                    4
+                                                </span>
                                                 Evidence upload
                                             </h6>
                                             <div className="border-2 border-dashed border-gray-200 rounded-3xl p-4 bg-gray-50 shadow-inner">
@@ -678,8 +751,16 @@ export default function Show({ request, auth }) {
                                         </div>
 
                                         <div className="d-grid mt-6">
-                                            <button type="submit" disabled={processing} className="btn btn-success btn-lg rounded-pill shadow-lg py-3.5 fw-extrabold transition-all hover-translate-up tracking-widest">
-                                                {processing ? <span className="spinner-border spinner-border-sm me-2" /> : <i className="fas fa-check-circle me-2" />}
+                                            <button
+                                                type="submit"
+                                                disabled={processing}
+                                                className="btn btn-success btn-lg rounded-pill shadow-lg py-3.5 fw-extrabold transition-all hover-translate-up tracking-widest"
+                                            >
+                                                {processing ? (
+                                                    <span className="spinner-border spinner-border-sm me-2" />
+                                                ) : (
+                                                    <i className="fas fa-check-circle me-2" />
+                                                )}
                                                 Release results
                                             </button>
                                         </div>
@@ -690,7 +771,9 @@ export default function Show({ request, auth }) {
                                     <div className="bg-gray-100 p-5 rounded-circle d-inline-flex mb-4 shadow-inner border border-gray-50">
                                         <i className="fas fa-microscope text-gray-400 fa-4x opacity-20" />
                                     </div>
-                                    <h5 className="fw-extrabold text-gray-600 tracking-tighter">Investigation in progress</h5>
+                                    <h5 className="fw-extrabold text-gray-600 tracking-tighter">
+                                        Investigation in progress
+                                    </h5>
                                     <p className="text-muted extra-small fw-bold text-uppercase tracking-widest px-5 mx-auto nyl-text-constrained">
                                         Results are currently being processed by the laboratory team.
                                     </p>
@@ -708,25 +791,45 @@ export default function Show({ request, auth }) {
                     <div className="d-flex justify-content-between align-items-center p-5 text-white">
                         <h4 className="mb-0 fw-extrabold tracking-tighter">{viewingAttachment.name}</h4>
                         <div className="d-flex gap-3">
-                            <a href={viewingAttachment.data} download={viewingAttachment.name} className="btn btn-outline-light rounded-pill px-4 btn-sm fw-bold">
+                            <a
+                                href={viewingAttachment.data}
+                                download={viewingAttachment.name}
+                                className="btn btn-outline-light rounded-pill px-4 btn-sm fw-bold"
+                            >
                                 <i className="fas fa-download me-2" />
                                 Download
                             </a>
-                            <button onClick={() => setViewingAttachment(null)} type="button" className="btn btn-white rounded-circle d-flex align-items-center justify-content-center nyl-modal-close-btn">
+                            <button
+                                onClick={() => setViewingAttachment(null)}
+                                type="button"
+                                className="btn btn-white rounded-circle d-flex align-items-center justify-content-center nyl-modal-close-btn"
+                            >
                                 <i className="fas fa-times fa-lg" />
                             </button>
                         </div>
                     </div>
                     <div className="flex-grow-1 d-flex align-items-center justify-content-center p-6 overflow-auto">
                         {viewingAttachment.type?.startsWith('image/') ? (
-                            <img src={viewingAttachment.data} alt={viewingAttachment.name} className="img-fluid rounded-2xl shadow-2xl nyl-modal-media-img" />
+                            <img
+                                src={viewingAttachment.data}
+                                alt={viewingAttachment.name}
+                                className="img-fluid rounded-2xl shadow-2xl nyl-modal-media-img"
+                            />
                         ) : viewingAttachment.type?.includes('pdf') ? (
-                            <iframe src={viewingAttachment.data} className="w-100 h-100 rounded-2xl shadow-2xl bg-white nyl-modal-media-frame" title={viewingAttachment.name} />
+                            <iframe
+                                src={viewingAttachment.data}
+                                className="w-100 h-100 rounded-2xl shadow-2xl bg-white nyl-modal-media-frame"
+                                title={viewingAttachment.name}
+                            />
                         ) : (
                             <div className="text-center text-white p-10 bg-white bg-opacity-10 rounded-3xl border border-white border-opacity-10">
                                 <i className="fas fa-file-medical fa-5x mb-4 opacity-20" />
                                 <h4 className="fw-bold">Preview unavailable</h4>
-                                <a href={viewingAttachment.data} download={viewingAttachment.name} className="btn btn-primary mt-4 rounded-pill px-5 py-3 fw-bold tracking-widest">
+                                <a
+                                    href={viewingAttachment.data}
+                                    download={viewingAttachment.name}
+                                    className="btn btn-primary mt-4 rounded-pill px-5 py-3 fw-bold tracking-widest"
+                                >
                                     Download to view
                                 </a>
                             </div>

@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Blog;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class BlogFactory extends Factory
 {
@@ -16,7 +17,7 @@ class BlogFactory extends Factory
 
         return [
             'title' => $title,
-            'slug' => \Illuminate\Support\Str::slug($title) . '-' . uniqid(),
+            'slug' => Str::slug($title).'-'.uniqid(),
             'excerpt' => $this->faker->paragraph(),
             'content' => $this->faker->paragraphs(5, true),
             'image_path' => $this->faker->optional()->imageUrl(800, 400),

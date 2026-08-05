@@ -17,7 +17,7 @@ class PrescriptionResource extends JsonResource
         return [
             'prescription_id' => $this->prescription_id,
             'prescription_number' => $this->prescription_number
-                ?? ('RX-' . str_pad((string) $this->prescription_id, 6, '0', STR_PAD_LEFT)),
+                ?? ('RX-'.str_pad((string) $this->prescription_id, 6, '0', STR_PAD_LEFT)),
             'patient_id' => $this->patient_id,
             'prescribed_by' => $this->prescribed_by,
             'appointment_id' => $this->appointment_id,

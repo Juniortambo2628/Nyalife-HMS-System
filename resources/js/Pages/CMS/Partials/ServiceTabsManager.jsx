@@ -39,7 +39,7 @@ export default function ServiceTabsManager({ tabs: initialTabs }) {
         post(route('cms.service-tabs.update'), {
             preserveScroll: true,
             onSuccess: () => toast.success('Service tabs updated successfully!'),
-            onError: () => toast.error('Failed to update service tabs.')
+            onError: () => toast.error('Failed to update service tabs.'),
         });
     };
 
@@ -59,18 +59,25 @@ export default function ServiceTabsManager({ tabs: initialTabs }) {
 
             <div className="space-y-4">
                 {tabs.map((tab, index) => (
-                    <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-md" key={index}>
+                    <div
+                        className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-md"
+                        key={index}
+                    >
                         <div
                             className={`p-4 flex items-center justify-between cursor-pointer transition-colors ${activeIndex === index ? 'bg-pink-50' : 'bg-gray-50 hover:bg-gray-100'}`}
                             onClick={() => toggleAccordion(index)}
                         >
                             <div className="flex items-center gap-3">
                                 <i className={`fas ${tab.icon || 'fa-star'} text-pink-500`}></i>
-                                <span className={`font-bold ${activeIndex === index ? 'text-pink-600' : 'text-gray-700'}`}>
+                                <span
+                                    className={`font-bold ${activeIndex === index ? 'text-pink-600' : 'text-gray-700'}`}
+                                >
                                     {tab.title || `Tab ${index + 1}`}
                                 </span>
                             </div>
-                            <i className={`fas fa-chevron-down transition-transform duration-300 ${activeIndex === index ? 'rotate-180 text-pink-500' : 'text-gray-400'}`}></i>
+                            <i
+                                className={`fas fa-chevron-down transition-transform duration-300 ${activeIndex === index ? 'rotate-180 text-pink-500' : 'text-gray-400'}`}
+                            ></i>
                         </div>
 
                         {activeIndex === index && (
@@ -118,7 +125,11 @@ export default function ServiceTabsManager({ tabs: initialTabs }) {
                                         ></textarea>
                                     </div>
                                     <div className="md:col-span-2 text-end">
-                                        <button onClick={() => removeTab(index)} type="button" className="btn btn-sm btn-outline-danger rounded-pill">
+                                        <button
+                                            onClick={() => removeTab(index)}
+                                            type="button"
+                                            className="btn btn-sm btn-outline-danger rounded-pill"
+                                        >
                                             <i className="fas fa-trash me-1"></i> Remove This Tab
                                         </button>
                                     </div>
@@ -131,7 +142,12 @@ export default function ServiceTabsManager({ tabs: initialTabs }) {
 
             {tabs.length > 0 && (
                 <div className="text-end mt-4">
-                    <button onClick={saveTabs} disabled={processing} type="button" className="btn btn-secondary rounded-pill px-5">
+                    <button
+                        onClick={saveTabs}
+                        disabled={processing}
+                        type="button"
+                        className="btn btn-secondary rounded-pill px-5"
+                    >
                         {processing ? 'Saving...' : 'Save All Tabs'}
                     </button>
                 </div>

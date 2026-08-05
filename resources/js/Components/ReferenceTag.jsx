@@ -15,12 +15,7 @@ import { formatReferenceType, getReferenceIcon } from '@/Components/EntityRefere
  * @param {(reference) => void} [props.onRemove]
  * @param {boolean} [props.isOwnMessage=false]  (message variant only)
  */
-export default function ReferenceTag({
-    reference,
-    variant = 'input',
-    onRemove,
-    isOwnMessage = false,
-}) {
+export default function ReferenceTag({ reference, variant = 'input', onRemove, isOwnMessage = false }) {
     if (!reference) return null;
 
     const icon = getReferenceIcon(reference.type);
@@ -28,9 +23,7 @@ export default function ReferenceTag({
     if (variant === 'message') {
         return (
             <span
-                className={`nyl-ref-tag nyl-ref-tag--message ${
-                    isOwnMessage ? 'is-own' : 'is-peer'
-                }`}
+                className={`nyl-ref-tag nyl-ref-tag--message ${isOwnMessage ? 'is-own' : 'is-peer'}`}
                 title={formatReferenceType(reference.type)}
             >
                 <i className={`fas ${icon}`} aria-hidden="true"></i>

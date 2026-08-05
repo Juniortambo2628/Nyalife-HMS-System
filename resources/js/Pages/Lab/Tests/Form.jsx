@@ -64,10 +64,20 @@ export default function Form({ test = null }) {
                             >
                                 <option value="">Select Category</option>
                                 {[
-                                    'Hematology', 'Chemistry', 'Reproductive', 'Serology', 
-                                    'Microbiology', 'Pathology', 'Parasitology', 'Biochemistry', 'Toxicology', 'General'
-                                ].map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
+                                    'Hematology',
+                                    'Chemistry',
+                                    'Reproductive',
+                                    'Serology',
+                                    'Microbiology',
+                                    'Pathology',
+                                    'Parasitology',
+                                    'Biochemistry',
+                                    'Toxicology',
+                                    'General',
+                                ].map((cat) => (
+                                    <option key={cat} value={cat}>
+                                        {cat}
+                                    </option>
                                 ))}
                             </select>
                             <InputError message={errors.category} className="mt-2" />
@@ -124,7 +134,10 @@ export default function Form({ test = null }) {
                             <Link href={route('lab.tests')} className="btn btn-outline-secondary rounded-pill px-4">
                                 Cancel
                             </Link>
-                            <button className="btn btn-primary rounded-pill px-5 py-2 font-bold shadow" disabled={processing}>
+                            <button
+                                className="btn btn-primary rounded-pill px-5 py-2 font-bold shadow"
+                                disabled={processing}
+                            >
                                 {isEditing ? 'Save Changes' : 'Create Test Type'}
                             </button>
                         </div>

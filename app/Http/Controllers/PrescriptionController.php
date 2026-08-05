@@ -5,36 +5,34 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePrescriptionRequest;
 use App\Http\Requests\VoidRequest;
 use App\Http\Resources\PrescriptionResource;
-use App\Models\Prescription;
 use App\Models\Patient;
-use App\Models\Consultation;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\Medication;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
+use App\Models\Prescription;
+use App\Models\Setting;
 use App\Services\ActivityLogger;
+use App\Services\PrescriptionService;
 use App\Support\PatientId;
 use App\Support\Permissions;
 use App\Traits\HasBulkActions;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class PrescriptionController extends Controller
 {
     use HasBulkActions;
+
     public function index(Request $request)
     {
         $user = Auth::user();
         $query = Prescription::with(['patient.user', 'doctor', 'items.medication']);
-        
+
         if ($user && $user->role === 'patient') {
             $patient = Patient::where('user_id', $user->user_id)->first();
             if ($patient) {
                 $query->where('patient_id', $patient->patient_id);
             }
         } elseif ($user && $user->role === 'doctor') {
-             $query->where('prescribed_by', $user->user_id);
+            $query->where('prescribed_by', $user->user_id);
         }
 
         if ($request->has('consultation_id')) {
@@ -84,17 +82,18 @@ class PrescriptionController extends Controller
         return Inertia::render('Prescriptions/Create', [
             'preselected_patient_id' => $patientId,
             'preselected_patient_label' => PatientId::fromPatient($patient) ?: null,
-            'consultation_id' => $consultationId
+            'consultation_id' => $consultationId,
         ]);
     }
 
     public function store(StorePrescriptionRequest $request)
     {
         try {
-            \App\Services\PrescriptionService::create($request->validated());
+            PrescriptionService::create($request->validated());
+
             return redirect()->route('prescriptions.index')->with('success', 'Prescription created successfully. Invoice auto-generated.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to process prescription: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to process prescription: '.$e->getMessage()]);
         }
     }
 
@@ -109,7 +108,7 @@ class PrescriptionController extends Controller
         );
 
         return Inertia::render('Prescriptions/Show', [
-            'prescription' => PrescriptionResource::make($prescription)
+            'prescription' => PrescriptionResource::make($prescription),
         ]);
     }
 
@@ -123,7 +122,7 @@ class PrescriptionController extends Controller
             Permissions::MANAGE_PHARMACY
         );
 
-        $settings = \App\Models\Setting::clinicContactSettings();
+        $settings = Setting::clinicContactSettings();
 
         return Inertia::render('Prescriptions/Print', [
             'prescription' => PrescriptionResource::make($prescription),
@@ -134,12 +133,12 @@ class PrescriptionController extends Controller
     public function dispense(Request $request, $id)
     {
         $prescription = Prescription::findOrFail($id);
-        
+
         if ($prescription->status !== 'pending') {
             return back()->withErrors(['error' => 'Prescription is already dispensed or cancelled.']);
         }
 
-        \App\Services\PrescriptionService::dispense($prescription);
+        PrescriptionService::dispense($prescription);
 
         return back()->with('success', 'Prescription marked as dispensed.');
     }
@@ -178,13 +177,13 @@ class PrescriptionController extends Controller
         ]);
 
         try {
-            \App\Services\PrescriptionService::update($prescription, $validated);
+            PrescriptionService::update($prescription, $validated);
 
             return redirect()->route('prescriptions.show', $prescription->prescription_id)
                 ->with('success', 'Prescription updated successfully.');
 
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to update prescription: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Failed to update prescription: '.$e->getMessage()]);
         }
     }
 
@@ -227,6 +226,7 @@ class PrescriptionController extends Controller
                     'pharmacy', 'Prescription',
                     fn ($item) => [$item->patient->user_id, 1]
                 );
+
                 return redirect()->back()->with('success', "{$updated} prescription(s) dispensed.");
             },
             'void' => function (array $ids, int $count) {
@@ -237,13 +237,14 @@ class PrescriptionController extends Controller
                     'pharmacy', 'Prescription',
                     fn ($item) => [$item->patient->user_id, 1]
                 );
+
                 return redirect()->back()->with('success', "{$updated} prescription(s) voided.");
             },
             'delete' => function (array $ids, int $count) {
                 $deleted = $this->bulkDelete(Prescription::class, 'prescription_id', $ids, 'status', 'dispensed');
+
                 return redirect()->back()->with('success', "{$deleted} prescription(s) deleted.");
             },
         ];
     }
-
 }

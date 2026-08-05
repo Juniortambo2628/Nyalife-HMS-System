@@ -2,40 +2,36 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Appointment;
+use App\Models\Consultation;
+use App\Models\FollowUp;
+use App\Models\Invoice;
+use App\Models\LabTestRequest;
+use App\Models\Patient;
+use App\Models\Payment;
+use App\Models\Prescription;
+use App\Models\RadiologyRequest;
+use App\Models\Role;
+use App\Models\Staff;
+use App\Models\User;
+use App\Models\Vital;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Models\Patient;
-use App\Models\Appointment;
-use App\Models\Consultation;
-use App\Models\Prescription;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use App\Models\Payment;
-use App\Models\LabTestRequest;
-use App\Models\LabTestType;
-use App\Models\LabSample;
-use App\Models\Vital;
-use App\Models\FollowUp;
-use App\Models\RadiologyRequest;
-use App\Models\Staff;
-use App\Models\Department;
-use App\Models\Role;
-use App\Models\MedicalProcedure;
-use Carbon\Carbon;
 
 class ImportLegacyData extends Command
 {
     protected $signature = 'legacy:import {--dry-run : Show what would be imported without saving}';
+
     protected $description = 'Import legacy data from old database into new schema';
 
     public function handle()
     {
         $dryRun = $this->option('dry-run');
-        
+
         if ($dryRun) {
-            $this->info("🔍 DRY RUN MODE - No data will be saved");
+            $this->info('🔍 DRY RUN MODE - No data will be saved');
         }
 
         // Connect to legacy database
@@ -55,14 +51,15 @@ class ImportLegacyData extends Command
 
         try {
             $legacyDb = DB::connection('legacy');
-            $this->info("✅ Connected to legacy database");
+            $this->info('✅ Connected to legacy database');
         } catch (\Exception $e) {
-            $this->error("❌ Cannot connect to legacy database: " . $e->getMessage());
+            $this->error('❌ Cannot connect to legacy database: '.$e->getMessage());
             $this->error("Make sure 'nyalife_legacy' database exists and is accessible");
+
             return 1;
         }
 
-        $this->info("� Importing data from legacy database...");
+        $this->info('� Importing data from legacy database...');
 
         $stats = [
             'users' => 0,
@@ -92,30 +89,32 @@ class ImportLegacyData extends Command
         $this->importFollowUps($legacyDb, $dryRun, $stats);
 
         $this->newLine();
-        $this->info("📊 Import Summary:");
-        $this->table(['Entity', 'Imported'], collect($stats)->map(fn($v, $k) => [$k, $v])->toArray());
-        
+        $this->info('📊 Import Summary:');
+        $this->table(['Entity', 'Imported'], collect($stats)->map(fn ($v, $k) => [$k, $v])->toArray());
+
         if ($dryRun) {
-            $this->warn("⚠️ Dry run complete - no data was saved. Run without --dry-run to execute.");
+            $this->warn('⚠️ Dry run complete - no data was saved. Run without --dry-run to execute.');
         } else {
-            $this->info("✅ Import complete!");
+            $this->info('✅ Import complete!');
         }
-        
+
         return 0;
     }
 
     private function importUsers($legacyDb, $dryRun, &$stats)
     {
-        $this->info("👤 Importing users...");
-        
+        $this->info('👤 Importing users...');
+
         $legacyUsers = $legacyDb->table('users')->where('role_id', '!=', 7)->get(); // Skip patients (role_id=7)
-        
+
         foreach ($legacyUsers as $user) {
-            if (User::where('user_id', $user->user_id)->exists()) continue;
-            
+            if (User::where('user_id', $user->user_id)->exists()) {
+                continue;
+            }
+
             $data = [
                 'user_id' => $user->user_id,
-                'username' => $user->username ?? strtolower($user->first_name . '.' . $user->last_name),
+                'username' => $user->username ?? strtolower($user->first_name.'.'.$user->last_name),
                 'email' => $user->email,
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
@@ -133,7 +132,7 @@ class ImportLegacyData extends Command
                 'remember_token' => $user->remember_token,
             ];
 
-            if (!$dryRun) {
+            if (! $dryRun) {
                 User::create($data);
             }
             $stats['users']++;
@@ -143,19 +142,21 @@ class ImportLegacyData extends Command
 
     private function importPatients($legacyDb, $dryRun, &$stats)
     {
-        $this->info("🏥 Importing patients...");
-        
+        $this->info('🏥 Importing patients...');
+
         $legacyPatients = $legacyDb->table('patients')->get();
-        
+
         foreach ($legacyPatients as $patient) {
-            if (Patient::where('patient_id', $patient->patient_id)->exists()) continue;
+            if (Patient::where('patient_id', $patient->patient_id)->exists()) {
+                continue;
+            }
 
             // Find or create user
             $user = User::where('user_id', $patient->user_id)->first();
-            if (!$user) {
+            if (! $user) {
                 $user = User::create([
                     'user_id' => $patient->user_id,
-                    'username' => strtolower(str_replace(' ', '', $patient->first_name ?? 'patient') . '.' . $patient->last_name ?? 'patient' . $patient->patient_id),
+                    'username' => strtolower(str_replace(' ', '', $patient->first_name ?? 'patient').'.'.$patient->last_name ?? 'patient'.$patient->patient_id),
                     'email' => $patient->email ?? "patient{$patient->patient_id}@example.com",
                     'first_name' => $patient->first_name,
                     'last_name' => $patient->last_name,
@@ -170,7 +171,7 @@ class ImportLegacyData extends Command
             Patient::create([
                 'patient_id' => $patient->patient_id,
                 'user_id' => $user->user_id,
-                'patient_number' => 'PAT-' . date('Ymd') . '-' . str_pad($patient->patient_id, 4, '0', STR_PAD_LEFT),
+                'patient_number' => 'PAT-'.date('Ymd').'-'.str_pad($patient->patient_id, 4, '0', STR_PAD_LEFT),
                 'date_of_birth' => $this->parseDate($patient->date_of_birth),
                 'gender' => $this->normalizeGender($patient->gender),
                 'address' => $patient->address,
@@ -196,10 +197,12 @@ class ImportLegacyData extends Command
     private function importAppointments($legacyDb, $dryRun, &$stats)
     {
         $legacyAppts = $legacyDb->table('appointments')->get();
-        
+
         foreach ($legacyAppts as $appt) {
-            if (Appointment::where('appointment_id', $appt->appointment_id)->exists()) continue;
-            
+            if (Appointment::where('appointment_id', $appt->appointment_id)->exists()) {
+                continue;
+            }
+
             Appointment::create([
                 'appointment_id' => $appt->appointment_id,
                 'patient_id' => $appt->patient_id,
@@ -221,10 +224,12 @@ class ImportLegacyData extends Command
     private function importConsultations($legacyDb, $dryRun, &$stats)
     {
         $legacyConsults = $legacyDb->table('consultations')->get();
-        
+
         foreach ($legacyConsults as $consult) {
-            if (Consultation::where('consultation_id', $consult->consultation_id)->exists()) continue;
-            
+            if (Consultation::where('consultation_id', $consult->consultation_id)->exists()) {
+                continue;
+            }
+
             Consultation::create([
                 'consultation_id' => $consult->consultation_id,
                 'patient_id' => $consult->patient_id,
@@ -272,10 +277,12 @@ class ImportLegacyData extends Command
     private function importPrescriptions($legacyDb, $dryRun, &$stats)
     {
         $legacyRx = $legacyDb->table('prescriptions')->get();
-        
+
         foreach ($legacyRx as $rx) {
-            if (Prescription::where('prescription_id', $rx->prescription_id)->exists()) continue;
-            
+            if (Prescription::where('prescription_id', $rx->prescription_id)->exists()) {
+                continue;
+            }
+
             Prescription::create([
                 'prescription_id' => $rx->prescription_id,
                 'patient_id' => $rx->patient_id,
@@ -283,7 +290,7 @@ class ImportLegacyData extends Command
                 'appointment_id' => $rx->appointment_id,
                 'consultation_id' => $rx->consultation_id,
                 'prescription_date' => $this->parseDate($rx->prescription_date),
-                'prescription_number' => $rx->prescription_number ?? 'RX-' . strtoupper(substr(uniqid(), -6)),
+                'prescription_number' => $rx->prescription_number ?? 'RX-'.strtoupper(substr(uniqid(), -6)),
                 'status' => $rx->status ?? 'pending',
                 'is_voided' => $rx->is_voided ?? false,
                 'void_reason' => $rx->void_reason,
@@ -300,16 +307,18 @@ class ImportLegacyData extends Command
     private function importInvoices($legacyDb, $dryRun, &$stats)
     {
         $legacyInvoices = $legacyDb->table('invoices')->get();
-        
+
         foreach ($legacyInvoices as $inv) {
-            if (Invoice::where('invoice_id', $inv->invoice_id)->exists()) continue;
-            
+            if (Invoice::where('invoice_id', $inv->invoice_id)->exists()) {
+                continue;
+            }
+
             Invoice::create([
                 'invoice_id' => $inv->invoice_id,
                 'patient_id' => $inv->patient_id,
                 'consultation_id' => $inv->consultation_id,
                 'doctor_id' => $inv->doctor_id,
-                'invoice_number' => $inv->invoice_number ?? 'INV-' . strtoupper(substr(uniqid(), -6)),
+                'invoice_number' => $inv->invoice_number ?? 'INV-'.strtoupper(substr(uniqid(), -6)),
                 'invoice_date' => $this->parseDate($inv->invoice_date),
                 'due_date' => $this->parseDate($inv->due_date),
                 'total_amount' => $inv->total_amount ?? 0,
@@ -334,10 +343,12 @@ class ImportLegacyData extends Command
     private function importPayments($legacyDb, $dryRun, &$stats)
     {
         $legacyPayments = $legacyDb->table('payments')->get();
-        
+
         foreach ($legacyPayments as $pay) {
-            if (Payment::where('payment_id', $pay->payment_id)->exists()) continue;
-            
+            if (Payment::where('payment_id', $pay->payment_id)->exists()) {
+                continue;
+            }
+
             Payment::create([
                 'payment_id' => $pay->payment_id,
                 'invoice_id' => $pay->invoice_id,
@@ -357,10 +368,12 @@ class ImportLegacyData extends Command
     private function importLabRequests($legacyDb, $dryRun, &$stats)
     {
         $legacyLabs = $legacyDb->table('lab_test_requests')->get();
-        
+
         foreach ($legacyLabs as $lab) {
-            if (LabTestRequest::where('request_id', $lab->request_id)->exists()) continue;
-            
+            if (LabTestRequest::where('request_id', $lab->request_id)->exists()) {
+                continue;
+            }
+
             LabTestRequest::create([
                 'request_id' => $lab->request_id,
                 'request_number' => $lab->request_number,
@@ -388,10 +401,12 @@ class ImportLegacyData extends Command
     private function importVitals($legacyDb, $dryRun, &$stats)
     {
         $legacyVitals = $legacyDb->table('vital_signs')->get();
-        
+
         foreach ($legacyVitals as $vital) {
-            if (Vital::where('vital_id', $vital->vital_id)->exists()) continue;
-            
+            if (Vital::where('vital_id', $vital->vital_id)->exists()) {
+                continue;
+            }
+
             Vital::create([
                 'vital_id' => $vital->vital_id,
                 'patient_id' => $vital->patient_id,
@@ -421,10 +436,12 @@ class ImportLegacyData extends Command
     private function importFollowUps($legacyDb, $dryRun, &$stats)
     {
         $legacyFollowUps = $legacyDb->table('follow_ups')->get();
-        
+
         foreach ($legacyFollowUps as $fu) {
-            if (FollowUp::where('follow_up_id', $fu->follow_up_id)->exists()) continue;
-            
+            if (FollowUp::where('follow_up_id', $fu->follow_up_id)->exists()) {
+                continue;
+            }
+
             FollowUp::create([
                 'follow_up_id' => $fu->follow_up_id,
                 'patient_id' => $fu->patient_id,
@@ -443,10 +460,12 @@ class ImportLegacyData extends Command
     private function importRadiology($legacyDb, $dryRun, &$stats)
     {
         $legacyRadio = $legacyDb->table('radiology_requests')->get();
-        
+
         foreach ($legacyRadio as $radio) {
-            if (RadiologyRequest::where('request_id', $radio->request_id)->exists()) continue;
-            
+            if (RadiologyRequest::where('request_id', $radio->request_id)->exists()) {
+                continue;
+            }
+
             RadiologyRequest::create([
                 'request_id' => $radio->request_id,
                 'request_number' => $radio->request_number,
@@ -474,8 +493,13 @@ class ImportLegacyData extends Command
     private function normalizeGender($gender)
     {
         $g = strtolower(trim($gender ?? ''));
-        if (in_array($g, ['male', 'm'])) return 'male';
-        if (in_array($g, ['female', 'f'])) return 'female';
+        if (in_array($g, ['male', 'm'])) {
+            return 'male';
+        }
+        if (in_array($g, ['female', 'f'])) {
+            return 'female';
+        }
+
         return 'other';
     }
 
@@ -493,8 +517,11 @@ class ImportLegacyData extends Command
 
     private function parseJson($str)
     {
-        if (empty($str) || $str === 'null' || $str === 'NULL') return null;
+        if (empty($str) || $str === 'null' || $str === 'NULL') {
+            return null;
+        }
         $decoded = json_decode($str, true);
+
         return $decoded ?? null;
     }
 }

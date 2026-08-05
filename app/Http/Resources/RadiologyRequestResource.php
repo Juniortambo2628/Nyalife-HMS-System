@@ -21,7 +21,7 @@ class RadiologyRequestResource extends JsonResource
             if ($user->role === 'receptionist') {
                 $showClinical = false;
             } elseif ($user->role === 'patient') {
-                if (!in_array($this->status, ['verified', 'completed'])) {
+                if (! in_array($this->status, ['verified', 'completed'])) {
                     $showClinical = false;
                 }
             }
@@ -44,13 +44,13 @@ class RadiologyRequestResource extends JsonResource
             'completed_at' => $this->completed_at instanceof \DateTimeInterface ? $this->completed_at->format(\DateTimeInterface::ATOM) : $this->completed_at,
             'created_at' => $this->created_at instanceof \DateTimeInterface ? $this->created_at->format(\DateTimeInterface::ATOM) : $this->created_at,
             'updated_at' => $this->updated_at instanceof \DateTimeInterface ? $this->updated_at->format(\DateTimeInterface::ATOM) : $this->updated_at,
-            
+
             // HIPAA-protected clinical information
             'clinical_indication' => $showClinical ? $this->clinical_indication : null,
             'scan_details' => $showClinical ? $this->scan_details : null,
             'findings' => $showClinical ? $this->findings : null,
             'impression' => $showClinical ? $this->impression : null,
-            
+
             'patient' => $this->whenLoaded('patient', fn () => new PatientResource($this->patient)),
             'doctor' => $this->whenLoaded('doctor', fn () => new StaffResource($this->doctor)),
             'requestedBy' => $this->whenLoaded('requestedBy', fn () => new UserResource($this->requestedBy)),

@@ -36,7 +36,7 @@ class DepartmentFactory extends Factory
             'department_name' => $name,
             'description' => $this->faker->sentence(),
             'is_active' => true,
-            'code' => strtoupper(substr($name, 0, 4)) . $this->faker->unique()->numberBetween(10, 99),
+            'code' => strtoupper(substr($name, 0, 4)).$this->faker->unique()->numberBetween(10, 99),
             'type' => $names[$name],
             'head_name' => $this->faker->optional()->name(),
             'head_position' => $this->faker->optional()->jobTitle(),

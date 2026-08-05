@@ -22,48 +22,69 @@ export default function GuestConfirmation({ appointment }) {
                         <div className="col-lg-7">
                             <div className="card border-0 shadow-lg rounded-4 overflow-hidden">
                                 <div className="card-body p-5 text-center position-relative">
-                                    <div className="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-4 shadow-sm border border-success-subtle"
-                                        style={{ width: 100, height: 100 }}>
+                                    <div
+                                        className="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-4 shadow-sm border border-success-subtle"
+                                        style={{ width: 100, height: 100 }}
+                                    >
                                         <i className="fas fa-check-circle fa-3x"></i>
                                     </div>
 
                                     <h1 className="fw-bold text-gray-900 mb-3 h2">Request Received</h1>
                                     <p className="text-muted mb-4 leading-relaxed">
-                                        Thank you, <strong>{appointment.patient_name}</strong>. Our clinical coordinators will contact you at{' '}
-                                        <strong>{appointment.patient_email}</strong> to confirm your appointment.
+                                        Thank you, <strong>{appointment.patient_name}</strong>. Our clinical
+                                        coordinators will contact you at <strong>{appointment.patient_email}</strong> to
+                                        confirm your appointment.
                                     </p>
 
                                     <div className="bg-light rounded-4 p-4 text-start mb-4">
                                         <div className="row g-3">
                                             <div className="col-sm-6">
-                                                <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">Reference</div>
+                                                <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">
+                                                    Reference
+                                                </div>
                                                 <div className="fw-bold">#{appointment.appointment_id}</div>
                                             </div>
                                             <div className="col-sm-6">
-                                                <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">Status</div>
-                                                <span className="badge bg-warning-subtle text-warning-emphasis text-capitalize">{appointment.status}</span>
+                                                <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">
+                                                    Status
+                                                </div>
+                                                <span className="badge bg-warning-subtle text-warning-emphasis text-capitalize">
+                                                    {appointment.status}
+                                                </span>
                                             </div>
                                             <div className="col-sm-6">
-                                                <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">Appointment Type</div>
+                                                <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">
+                                                    Appointment Type
+                                                </div>
                                                 <span className="fw-medium">
                                                     {appointment.appointment_type === 'telehealth' ? (
-                                                        <><i className="fas fa-video text-info me-1"></i> Telehealth</>
+                                                        <>
+                                                            <i className="fas fa-video text-info me-1"></i> Telehealth
+                                                        </>
                                                     ) : (
-                                                        <><i className="fas fa-building me-1"></i> In-Person</>
+                                                        <>
+                                                            <i className="fas fa-building me-1"></i> In-Person
+                                                        </>
                                                     )}
                                                 </span>
                                             </div>
                                             <div className="col-sm-6">
-                                                <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">Preferred Date</div>
+                                                <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">
+                                                    Preferred Date
+                                                </div>
                                                 <div className="fw-medium">{dateStr}</div>
                                             </div>
                                             <div className="col-sm-6">
-                                                <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">Preferred Time</div>
+                                                <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">
+                                                    Preferred Time
+                                                </div>
                                                 <div className="fw-medium">{appointment.appointment_time || '—'}</div>
                                             </div>
                                             {appointment.reason && (
                                                 <div className="col-12">
-                                                    <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">Reason</div>
+                                                    <div className="extra-small text-muted fw-bold text-uppercase tracking-widest mb-1">
+                                                        Reason
+                                                    </div>
                                                     <div className="fw-medium">{appointment.reason}</div>
                                                 </div>
                                             )}
@@ -78,7 +99,10 @@ export default function GuestConfirmation({ appointment }) {
                                             <i className="fas fa-user-plus me-2"></i>
                                             Complete Profile Registration
                                         </Link>
-                                        <Link href="/" className="btn btn-light btn-lg rounded-pill text-muted fw-medium px-4">
+                                        <Link
+                                            href="/"
+                                            className="btn btn-light btn-lg rounded-pill text-muted fw-medium px-4"
+                                        >
                                             Return to Home
                                         </Link>
                                     </div>

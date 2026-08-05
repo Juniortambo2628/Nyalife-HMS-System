@@ -12,9 +12,7 @@ export default function GuestLayout({ children }) {
         <div className="auth-page">
             <div className="main-content">
                 <div className="container-fluid">
-                    <div className="row justify-content-center">
-                        {children}
-                    </div>
+                    <div className="row justify-content-center">{children}</div>
                 </div>
             </div>
             <CookieBanner />

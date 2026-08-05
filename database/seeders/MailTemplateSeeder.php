@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\MailTemplate;
 use Illuminate\Database\Seeder;
 
 class MailTemplateSeeder extends Seeder
@@ -12,7 +12,7 @@ class MailTemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\MailTemplate::firstOrCreate(
+        MailTemplate::firstOrCreate(
             ['mailable' => 'App\Mail\WelcomeEmail'],
             [
                 'subject' => 'Welcome to {{ clinic_name }}!',
@@ -21,7 +21,7 @@ class MailTemplateSeeder extends Seeder
             ]
         );
 
-        \App\Models\MailTemplate::firstOrCreate(
+        MailTemplate::firstOrCreate(
             ['mailable' => 'App\Mail\AppointmentReminder'],
             [
                 'subject' => 'Appointment Reminder: {{ appointment_date }}',
@@ -30,7 +30,7 @@ class MailTemplateSeeder extends Seeder
             ]
         );
 
-        \App\Models\MailTemplate::firstOrCreate(
+        MailTemplate::firstOrCreate(
             ['mailable' => 'App\Mail\TelehealthPaymentNotification'],
             [
                 'subject' => 'Telehealth Appointment - Payment & Consent Required',
@@ -39,7 +39,7 @@ class MailTemplateSeeder extends Seeder
             ]
         );
 
-        \App\Models\MailTemplate::firstOrCreate(
+        MailTemplate::firstOrCreate(
             ['mailable' => 'App\Mail\TelehealthInvitation'],
             [
                 'subject' => 'Your Telehealth Appointment is Confirmed!',
@@ -48,7 +48,7 @@ class MailTemplateSeeder extends Seeder
             ]
         );
 
-        \App\Models\MailTemplate::firstOrCreate(
+        MailTemplate::firstOrCreate(
             ['mailable' => 'App\Mail\GuestCredentialsEmail'],
             [
                 'subject' => 'Your Nyalife Patient Portal Account',

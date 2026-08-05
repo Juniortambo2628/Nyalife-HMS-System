@@ -14,64 +14,80 @@ import { Head, Link, router } from '@inertiajs/react';
 export default function LabTechnician({ auth, stats }) {
     const handleProcess = (id) => {
         if (confirm('Start processing this lab request?')) {
-            router.post(route('lab.update-status', id), {
-                status: 'processing'
-            }, {
-                preserveScroll: true,
-                onSuccess: () => router.visit(route('lab.show', id))
-            });
+            router.post(
+                route('lab.update-status', id),
+                {
+                    status: 'processing',
+                },
+                {
+                    preserveScroll: true,
+                    onSuccess: () => router.visit(route('lab.show', id)),
+                },
+            );
         }
     };
 
-    const columns = useMemo(() => [
-        {
-            header: 'Patient',
-            accessorKey: 'patient',
-            cell: ({ row }) => (
-                <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
-            )
-        },
-        {
-            header: 'Test type',
-            accessorKey: 'test_type',
-            cell: ({ row }) => (
-                <TableCellPrimary>{row.original.test_type?.test_name || 'N/A'}</TableCellPrimary>
-            )
-        },
-        {
-            header: 'Priority',
-            accessorKey: 'priority',
-            cell: ({ row }) => <PriorityBadge priority={row.original.priority || 'normal'} />,
-        },
-        {
-            header: 'Status',
-            accessorKey: 'status',
-            cell: ({ row }) => <StatusBadge status={row.original.status} />,
-        },
-        {
-            header: 'Action',
-            id: 'actions',
-            cell: ({ row }) => (
-                <TableActions actions={
-                    row.original.status === 'pending'
-                        ? [{
-                            icon: 'fa-play',
-                            label: 'Start work',
-                            onClick: () => handleProcess(row.original.request_id),
-                        }]
-                        : [{
-                            icon: 'fa-flask',
-                            label: 'Enter results',
-                            href: route('lab.show', row.original.request_id),
-                        }]
-                } />
-            ),
-        },
-    ], []);
+    const columns = useMemo(
+        () => [
+            {
+                header: 'Patient',
+                accessorKey: 'patient',
+                cell: ({ row }) => (
+                    <PatientTableCell patient={row.original.patient} patientId={row.original.patient_id} />
+                ),
+            },
+            {
+                header: 'Test type',
+                accessorKey: 'test_type',
+                cell: ({ row }) => <TableCellPrimary>{row.original.test_type?.test_name || 'N/A'}</TableCellPrimary>,
+            },
+            {
+                header: 'Priority',
+                accessorKey: 'priority',
+                cell: ({ row }) => <PriorityBadge priority={row.original.priority || 'normal'} />,
+            },
+            {
+                header: 'Status',
+                accessorKey: 'status',
+                cell: ({ row }) => <StatusBadge status={row.original.status} />,
+            },
+            {
+                header: 'Action',
+                id: 'actions',
+                cell: ({ row }) => (
+                    <TableActions
+                        actions={
+                            row.original.status === 'pending'
+                                ? [
+                                      {
+                                          icon: 'fa-play',
+                                          label: 'Start work',
+                                          onClick: () => handleProcess(row.original.request_id),
+                                      },
+                                  ]
+                                : [
+                                      {
+                                          icon: 'fa-flask',
+                                          label: 'Enter results',
+                                          href: route('lab.show', row.original.request_id),
+                                      },
+                                  ]
+                        }
+                    />
+                ),
+            },
+        ],
+        [],
+    );
 
     const statItems = [
-        { label: 'Awaiting processing', value: stats.pending_requests || 0, icon: 'fa-hourglass-start', color: 'primary' },
-        { label: 'Completed today', value: stats.completed_today || 0, icon: 'fa-check-double', color: 'success' }
+        {
+            label: 'Awaiting processing',
+            value: stats.pending_requests || 0,
+            icon: 'fa-hourglass-start',
+            color: 'primary',
+        },
+        { label: 'Completed today', value: stats.completed_today || 0, icon: 'fa-check-double', color: 'success' },
     ];
 
     return (
@@ -111,10 +127,15 @@ export default function LabTechnician({ auth, stats }) {
                     icon="fa-microscope"
                     className="mb-4"
                     actions={
-                        <Link href={route('lab.index')} className="btn btn-light btn-sm rounded-pill px-3 fw-bold border text-muted">Full registry</Link>
+                        <Link
+                            href={route('lab.index')}
+                            className="btn btn-light btn-sm rounded-pill px-3 fw-bold border text-muted"
+                        >
+                            Full registry
+                        </Link>
                     }
                 >
-                    <DashboardTable 
+                    <DashboardTable
                         columns={columns}
                         data={stats.recent_requests || []}
                         emptyMessage="No pending diagnostic requests."

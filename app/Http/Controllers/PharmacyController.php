@@ -6,6 +6,7 @@ use App\Http\Requests\StoreMedicineRequest;
 use App\Http\Requests\UpdateMedicineRequest;
 use App\Http\Requests\UpdatePharmacyStockRequest;
 use App\Models\Medication;
+use App\Models\PharmacyPurchaseOrder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -32,7 +33,7 @@ class PharmacyController extends Controller
 
         return Inertia::render('Pharmacy/Inventory', [
             'inventory' => $inventory,
-            'filters' => $request->only(['search', 'quick_filter'])
+            'filters' => $request->only(['search', 'quick_filter']),
         ]);
     }
 
@@ -50,7 +51,7 @@ class PharmacyController extends Controller
 
         return Inertia::render('Pharmacy/Medicines', [
             'medicines' => $medicines,
-            'filters' => $request->only(['search', 'quick_filter'])
+            'filters' => $request->only(['search', 'quick_filter']),
         ]);
     }
 
@@ -66,7 +67,7 @@ class PharmacyController extends Controller
             return response()->json([
                 'success' => true,
                 'medication_id' => $medication->medication_id,
-                'message' => 'Medicine added to catalog successfully.'
+                'message' => 'Medicine added to catalog successfully.',
             ]);
         }
 
@@ -115,7 +116,7 @@ class PharmacyController extends Controller
             $updateData['expiry_date'] = $validated['expiry_date'];
         }
 
-        if (!empty($updateData)) {
+        if (! empty($updateData)) {
             $medication->update($updateData);
         }
 
@@ -134,7 +135,7 @@ class PharmacyController extends Controller
             ->map(function ($med) {
                 return [
                     'value' => $med->medication_id,
-                    'label' => "{$med->medication_name} ({$med->strength} {$med->unit})"
+                    'label' => "{$med->medication_name} ({$med->strength} {$med->unit})",
                 ];
             });
 
@@ -146,7 +147,7 @@ class PharmacyController extends Controller
      */
     public function poIndex(Request $request)
     {
-        $orders = \App\Models\PharmacyPurchaseOrder::with('medication')->latest()->paginate(15);
+        $orders = PharmacyPurchaseOrder::with('medication')->latest()->paginate(15);
         $lowStockMedications = Medication::where('stock_quantity', '<=', 20)->get();
 
         return Inertia::render('Pharmacy/PurchaseOrders', [
@@ -169,8 +170,8 @@ class PharmacyController extends Controller
 
         $medication = Medication::findOrFail($validated['medication_id']);
 
-        \App\Models\PharmacyPurchaseOrder::create([
-            'order_number' => 'PO-' . strtoupper(uniqid()),
+        PharmacyPurchaseOrder::create([
+            'order_number' => 'PO-'.strtoupper(uniqid()),
             'medication_id' => $medication->medication_id,
             'medication_name' => $medication->medication_name,
             'quantity' => $validated['quantity'],
@@ -191,7 +192,7 @@ class PharmacyController extends Controller
             'status' => 'required|in:pending,ordered,received,cancelled',
         ]);
 
-        $order = \App\Models\PharmacyPurchaseOrder::findOrFail($id);
+        $order = PharmacyPurchaseOrder::findOrFail($id);
         $order->update(['status' => $validated['status']]);
 
         // If received, auto-update the stock of the medication!

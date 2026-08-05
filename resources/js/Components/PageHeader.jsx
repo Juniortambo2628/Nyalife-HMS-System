@@ -20,18 +20,22 @@ export default function PageHeader({ title, breadcrumbs = [], showBack = true })
                             <nav aria-label="breadcrumb" className="mb-2">
                                 <ol className="breadcrumb small font-bold text-uppercase tracking-wider mb-0">
                                     <li className="breadcrumb-item">
-                                        <Link href="/dashboard" className="text-pink-500 text-decoration-none">Home</Link>
+                                        <Link href="/dashboard" className="text-pink-500 text-decoration-none">
+                                            Home
+                                        </Link>
                                     </li>
                                     {breadcrumbs.map((crumb, index) => (
-                                        <li 
-                                            key={index} 
+                                        <li
+                                            key={index}
                                             className={`breadcrumb-item ${crumb.active ? 'active text-gray-400' : ''}`}
                                             aria-current={crumb.active ? 'page' : undefined}
                                         >
                                             {crumb.active ? (
                                                 crumb.label
                                             ) : (
-                                                <Link href={crumb.url} className="text-pink-500 text-decoration-none">{crumb.label}</Link>
+                                                <Link href={crumb.url} className="text-pink-500 text-decoration-none">
+                                                    {crumb.label}
+                                                </Link>
                                             )}
                                         </li>
                                     ))}
@@ -40,7 +44,7 @@ export default function PageHeader({ title, breadcrumbs = [], showBack = true })
 
                             <div className="d-flex align-items-center gap-3">
                                 {showBack && (
-                                    <button 
+                                    <button
                                         onClick={handleBack}
                                         className="btn btn-sm btn-light rounded-circle shadow-sm d-flex align-items-center justify-content-center avatar-md"
                                         title="Go Back"

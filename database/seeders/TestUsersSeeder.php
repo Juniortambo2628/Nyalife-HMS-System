@@ -98,8 +98,8 @@ class TestUsersSeeder extends Seeder
         // Create or update each test user
         foreach ($testUsers as $userData) {
             $exists = DB::table('users')->where('username', $userData['username'])->exists();
-            
-            if (!$exists) {
+
+            if (! $exists) {
                 DB::table('users')->insert([
                     'username' => $userData['username'],
                     'first_name' => $userData['first_name'],
@@ -129,10 +129,10 @@ class TestUsersSeeder extends Seeder
         $this->command->info('==============================================');
         $this->command->info('All users have password: password');
         $this->command->newLine();
-        
+
         $this->command->table(
             ['Username', 'Email', 'Role'],
-            array_map(fn($u) => [$u['username'], $u['email'], $u['role']], $testUsers)
+            array_map(fn ($u) => [$u['username'], $u['email'], $u['role']], $testUsers)
         );
     }
 }

@@ -7,17 +7,9 @@ import StatCardGrid from '@/Components/StatCardGrid';
 export default function RoleDashboardShell({ hero, statItems, statCols = 4, children }) {
     return (
         <div className="px-0">
-            {hero && (
-                <DashboardHero
-                    title={hero.title}
-                    subtitle={hero.subtitle}
-                    icon={hero.icon}
-                />
-            )}
+            {hero && <DashboardHero title={hero.title} subtitle={hero.subtitle} icon={hero.icon} />}
 
-            {statItems?.length > 0 && (
-                <StatCardGrid items={statItems} cols={statCols} />
-            )}
+            {statItems?.length > 0 && <StatCardGrid items={statItems} cols={statCols} />}
 
             {children}
         </div>

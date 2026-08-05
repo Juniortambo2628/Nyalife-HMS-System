@@ -6,12 +6,13 @@ export default function InsuranceCarousel() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get('/api/insurances')
-            .then(response => {
+        axios
+            .get('/api/insurances')
+            .then((response) => {
                 setInsurances(response.data);
                 setLoading(false);
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error('Error fetching insurances:', error);
                 setLoading(false);
             });
@@ -25,16 +26,18 @@ export default function InsuranceCarousel() {
     return (
         <section className="py-5 bg-white overflow-hidden border-top">
             <div className="container mb-4 text-center">
-                <span className="text-muted small fw-bold text-uppercase tracking-wider">Accepted Health Insurances</span>
+                <span className="text-muted small fw-bold text-uppercase tracking-wider">
+                    Accepted Health Insurances
+                </span>
             </div>
-            
+
             <div className="insurance-slider">
                 <div className="insurance-track">
                     {displayItems.map((item, idx) => (
                         <div key={`ins-${idx}`} className="insurance-item flex-shrink-0 px-4">
-                            <img 
-                                src={item.logo_url} 
-                                alt={item.name} 
+                            <img
+                                src={item.logo_url}
+                                alt={item.name}
                                 className="img-fluid grayscale-hover transition-all"
                                 style={{ maxHeight: '50px', width: 'auto', objectFit: 'contain' }}
                             />

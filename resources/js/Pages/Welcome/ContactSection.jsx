@@ -82,10 +82,7 @@ export default function ContactSection({ cms }) {
                 <div className="row g-4 g-lg-5 align-items-start">
                     <div className="col-lg-5 d-flex flex-column gap-3">
                         {channels.map((channel) => (
-                            <div
-                                key={channel.id}
-                                className="landing-contact-card card border-0 shadow-sm rounded-3xl"
-                            >
+                            <div key={channel.id} className="landing-contact-card card border-0 shadow-sm rounded-3xl">
                                 <div className="card-body p-4 d-flex gap-3 align-items-start">
                                     <div className={`landing-contact-icon landing-contact-icon--${channel.tone}`}>
                                         <i className={`fas ${channel.icon}`}></i>
@@ -94,7 +91,9 @@ export default function ContactSection({ cms }) {
                                         <div className="extra-small fw-bold text-uppercase tracking-widest text-muted mb-2">
                                             {channel.label}
                                         </div>
-                                        <p className={`landing-contact-card-value fw-semibold text-gray-800 mb-3 leading-relaxed${channel.id === 'location' ? ' landing-contact-card-value--address' : ''}`}>
+                                        <p
+                                            className={`landing-contact-card-value fw-semibold text-gray-800 mb-3 leading-relaxed${channel.id === 'location' ? ' landing-contact-card-value--address' : ''}`}
+                                        >
                                             {channel.value}
                                         </p>
                                         {channel.external ? (
@@ -107,11 +106,17 @@ export default function ContactSection({ cms }) {
                                                 {channel.actionLabel} <i className="fas fa-arrow-right ms-1"></i>
                                             </a>
                                         ) : channel.action.startsWith('#') ? (
-                                            <a href={channel.action} className="btn btn-sm btn-outline-primary rounded-pill px-4 fw-bold">
+                                            <a
+                                                href={channel.action}
+                                                className="btn btn-sm btn-outline-primary rounded-pill px-4 fw-bold"
+                                            >
                                                 {channel.actionLabel} <i className="fas fa-arrow-right ms-1"></i>
                                             </a>
                                         ) : (
-                                            <a href={channel.action} className="btn btn-sm btn-outline-primary rounded-pill px-4 fw-bold">
+                                            <a
+                                                href={channel.action}
+                                                className="btn btn-sm btn-outline-primary rounded-pill px-4 fw-bold"
+                                            >
                                                 {channel.actionLabel} <i className="fas fa-arrow-right ms-1"></i>
                                             </a>
                                         )}
@@ -123,17 +128,32 @@ export default function ContactSection({ cms }) {
                         {(cms.instagram_url || cms.facebook_url || cms.linkedin_url) && (
                             <div className="d-flex flex-wrap gap-2 pt-2">
                                 {cms.instagram_url && (
-                                    <a href={cms.instagram_url} target="_blank" rel="noopener noreferrer" className="landing-social-chip">
+                                    <a
+                                        href={cms.instagram_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="landing-social-chip"
+                                    >
                                         <i className="fab fa-instagram me-2"></i> Instagram
                                     </a>
                                 )}
                                 {cms.facebook_url && (
-                                    <a href={cms.facebook_url} target="_blank" rel="noopener noreferrer" className="landing-social-chip">
+                                    <a
+                                        href={cms.facebook_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="landing-social-chip"
+                                    >
                                         <i className="fab fa-facebook-f me-2"></i> Facebook
                                     </a>
                                 )}
                                 {cms.linkedin_url && (
-                                    <a href={cms.linkedin_url} target="_blank" rel="noopener noreferrer" className="landing-social-chip">
+                                    <a
+                                        href={cms.linkedin_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="landing-social-chip"
+                                    >
                                         <i className="fab fa-linkedin-in me-2"></i> LinkedIn
                                     </a>
                                 )}
@@ -150,7 +170,10 @@ export default function ContactSection({ cms }) {
                             <div className="card-body p-4 p-md-5 bg-gray-50">
                                 <form className="row g-4" onSubmit={handleSubmit}>
                                     <div className="col-md-6">
-                                        <label htmlFor="contact-name" className="form-label fw-bold text-gray-700 small">
+                                        <label
+                                            htmlFor="contact-name"
+                                            className="form-label fw-bold text-gray-700 small"
+                                        >
                                             Full name
                                         </label>
                                         <input
@@ -165,7 +188,10 @@ export default function ContactSection({ cms }) {
                                         />
                                     </div>
                                     <div className="col-md-6">
-                                        <label htmlFor="contact-email" className="form-label fw-bold text-gray-700 small">
+                                        <label
+                                            htmlFor="contact-email"
+                                            className="form-label fw-bold text-gray-700 small"
+                                        >
                                             Email address
                                         </label>
                                         <input
@@ -180,7 +206,10 @@ export default function ContactSection({ cms }) {
                                         />
                                     </div>
                                     <div className="col-12">
-                                        <label htmlFor="contact-message" className="form-label fw-bold text-gray-700 small">
+                                        <label
+                                            htmlFor="contact-message"
+                                            className="form-label fw-bold text-gray-700 small"
+                                        >
                                             How can we help?
                                         </label>
                                         <textarea

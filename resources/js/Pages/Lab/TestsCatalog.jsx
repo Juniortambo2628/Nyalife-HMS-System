@@ -18,47 +18,64 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
     const [search, setSearch] = useState(filters.search || '');
     const [quickFilter, setQuickFilter] = useState(filters.category || '');
     const { viewMode, handleViewChange } = useViewToggle({ storageKey: 'lab_tests_view', defaultView: 'list' });
-    const { selectedIds: selectedTests, selectAll, selectNone, toggleSelection, isSelected } = useSelectionState({ idField: 'test_type_id' });
+    const {
+        selectedIds: selectedTests,
+        selectAll,
+        selectNone,
+        toggleSelection,
+        isSelected,
+    } = useSelectionState({ idField: 'test_type_id' });
 
-    const statItems = useMemo(() => [
-        {
-            label: 'Total Protocols',
-            value: stats?.total ?? 0,
-            icon: 'fa-vials',
-            color: 'primary',
-        },
-        {
-            label: 'Active Visibility',
-            value: stats?.active ?? 0,
-            icon: 'fa-eye',
-            color: 'success',
-        },
-        {
-            label: 'Inactive / Hidden',
-            value: stats?.inactive ?? 0,
-            icon: 'fa-eye-slash',
-            color: 'danger',
-        },
-    ], [stats]);
+    const statItems = useMemo(
+        () => [
+            {
+                label: 'Total Protocols',
+                value: stats?.total ?? 0,
+                icon: 'fa-vials',
+                color: 'primary',
+            },
+            {
+                label: 'Active Visibility',
+                value: stats?.active ?? 0,
+                icon: 'fa-eye',
+                color: 'success',
+            },
+            {
+                label: 'Inactive / Hidden',
+                value: stats?.inactive ?? 0,
+                icon: 'fa-eye-slash',
+                color: 'danger',
+            },
+        ],
+        [stats],
+    );
 
     const isAdmin = auth.user.role === 'admin' || auth.user.role === 'lab_technician';
 
     const handleSort = (column) => {
         const direction = filters.sort === column && filters.direction === 'asc' ? 'desc' : 'asc';
-        router.get(route('lab.tests'), { ...filters, sort: column, direction }, { preserveState: true, preserveScroll: true });
+        router.get(
+            route('lab.tests'),
+            { ...filters, sort: column, direction },
+            { preserveState: true, preserveScroll: true },
+        );
     };
 
     const handleToggleStatus = (id) => {
         if (confirm('Change visibility of this test type?')) {
             router.delete(route('lab-tests.destroy', id), {
-                preserveScroll: true
+                preserveScroll: true,
             });
         }
     };
 
     const handleCategoryChange = (val) => {
         setQuickFilter(val || '');
-        router.get(route('lab.tests'), { ...filters, category: val || '' }, { preserveState: true, preserveScroll: true });
+        router.get(
+            route('lab.tests'),
+            { ...filters, category: val || '' },
+            { preserveState: true, preserveScroll: true },
+        );
     };
 
     const columns = useMemo(() => {
@@ -70,7 +87,7 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
                         <input
                             type="checkbox"
                             className="form-check-input shadow-none"
-                            onChange={(e) => e.target.checked ? selectAll(tests.data) : selectNone()}
+                            onChange={(e) => (e.target.checked ? selectAll(tests.data) : selectNone())}
                             checked={selectedTests.length === tests.data.length && tests.data.length > 0}
                         />
                     </div>
@@ -84,7 +101,7 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
                             onChange={() => toggleSelection(row.original.test_type_id)}
                         />
                     </div>
-                )
+                ),
             },
             {
                 header: 'Test Name',
@@ -97,15 +114,21 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
                         </div>
                         <div>
                             <div className="fw-bold text-gray-900">{row.original.test_name}</div>
-                            <div className="extra-small text-muted font-bold text-uppercase opacity-75">{row.original.category}</div>
+                            <div className="extra-small text-muted font-bold text-uppercase opacity-75">
+                                {row.original.category}
+                            </div>
                         </div>
                     </div>
-                )
+                ),
             },
             {
                 header: 'Description',
                 accessorKey: 'description',
-                cell: ({ row }) => <span className="small text-muted line-clamp-1 fw-medium">{row.original.description || 'Standard diagnostic protocol.'}</span>
+                cell: ({ row }) => (
+                    <span className="small text-muted line-clamp-1 fw-medium">
+                        {row.original.description || 'Standard diagnostic protocol.'}
+                    </span>
+                ),
             },
             {
                 header: 'Price',
@@ -116,16 +139,14 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
                         <span className="text-muted extra-small me-1">Ksh.</span>
                         {formatNumber(row.original.price || 0)}
                     </div>
-                )
+                ),
             },
             {
                 header: 'Status',
                 accessorKey: 'is_active',
                 enableSorting: true,
-                cell: ({ row }) => (
-                    <StatusBadge status={row.original.is_active ? 'active' : 'inactive'} />
-                )
-            }
+                cell: ({ row }) => <StatusBadge status={row.original.is_active ? 'active' : 'inactive'} />,
+            },
         ];
 
         if (isAdmin) {
@@ -133,26 +154,28 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
                 header: 'Actions',
                 id: 'actions',
                 cell: ({ row }) => (
-                    <TableActions actions={[
-                        {
-                            icon: 'fa-edit',
-                            label: 'Edit protocol',
-                            href: route('lab-tests.edit', row.original.test_type_id),
-                        },
-                        {
-                            icon: row.original.is_active ? 'fa-eye-slash' : 'fa-eye',
-                            label: row.original.is_active ? 'Deactivate' : 'Activate',
-                            onClick: () => handleToggleStatus(row.original.test_type_id),
-                            color: row.original.is_active ? 'danger' : 'success',
-                        },
-                        { isDivider: true },
-                        {
-                            icon: 'fa-history',
-                            label: 'Audit logs',
-                            href: route('lab.tests'),
-                            color: 'info',
-                        },
-                    ]} />
+                    <TableActions
+                        actions={[
+                            {
+                                icon: 'fa-edit',
+                                label: 'Edit protocol',
+                                href: route('lab-tests.edit', row.original.test_type_id),
+                            },
+                            {
+                                icon: row.original.is_active ? 'fa-eye-slash' : 'fa-eye',
+                                label: row.original.is_active ? 'Deactivate' : 'Activate',
+                                onClick: () => handleToggleStatus(row.original.test_type_id),
+                                color: row.original.is_active ? 'danger' : 'success',
+                            },
+                            { isDivider: true },
+                            {
+                                icon: 'fa-history',
+                                label: 'Audit logs',
+                                href: route('lab.tests'),
+                                color: 'info',
+                            },
+                        ]}
+                    />
                 ),
             });
         }
@@ -168,7 +191,10 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
     return (
         <AuthenticatedLayout
             headerTitle="Laboratory Test Catalog"
-            breadcrumbs={[{ label: 'Lab', url: route('lab.index') }, { label: 'Tests', active: true }]}
+            breadcrumbs={[
+                { label: 'Lab', url: route('lab.index') },
+                { label: 'Tests', active: true },
+            ]}
         >
             <Head title="Lab Tests" />
 
@@ -209,15 +235,15 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
             />
 
             <div className="container-fluid px-0">
-                <DashboardSearch 
+                <DashboardSearch
                     placeholder="Search test catalog by name or description..."
                     value={search}
                     onChange={setSearch}
                     onSubmit={handleSearch}
                     onFilterChange={handleCategoryChange}
-                    filters={categories.map(c => ({ label: c, value: c }))}
+                    filters={categories.map((c) => ({ label: c, value: c }))}
                 />
-                
+
                 {viewMode === 'list' ? (
                     <RegistryTablePanel
                         title="Test catalog"
@@ -236,7 +262,9 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
                             <>
                                 {tests.data.map((test) => (
                                     <div key={test.test_type_id} className="col-md-6 col-lg-4">
-                                        <div className={`card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-lift transition-all bg-white shadow-hover ${isSelected(test.test_type_id) ? 'ring-2 ring-primary ring-opacity-50' : ''}`}>
+                                        <div
+                                            className={`card h-100 shadow-sm border-0 rounded-2xl overflow-hidden hover-lift transition-all bg-white shadow-hover ${isSelected(test.test_type_id) ? 'ring-2 ring-primary ring-opacity-50' : ''}`}
+                                        >
                                             <div className="card-body p-4 position-relative">
                                                 <div className="form-check position-absolute top-0 end-0 m-4">
                                                     <input
@@ -252,26 +280,43 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
                                                     </div>
                                                     <div>
                                                         <h6 className="mb-0 fw-bold text-gray-900">{test.test_name}</h6>
-                                                        <span className="badge bg-light text-muted rounded-pill extra-small px-2 border mt-1">{test.category || 'General'}</span>
+                                                        <span className="badge bg-light text-muted rounded-pill extra-small px-2 border mt-1">
+                                                            {test.category || 'General'}
+                                                        </span>
                                                     </div>
                                                 </div>
                                                 <div className="bg-gray-50 p-3 rounded-xl mb-4 border border-light">
-                                                    <p className="small text-gray-600 mb-0 line-clamp-2 italic">"{test.description || 'Standard laboratory diagnostic protocol.'}"</p>
+                                                    <p className="small text-gray-600 mb-0 line-clamp-2 italic">
+                                                        "
+                                                        {test.description || 'Standard laboratory diagnostic protocol.'}
+                                                        "
+                                                    </p>
                                                 </div>
                                                 <div className="d-flex justify-content-between align-items-center mt-auto pt-2">
                                                     <div className="d-flex flex-column">
-                                                        <span className="extra-small text-muted font-bold text-uppercase tracking-wider">Protocol Fee</span>
-                                                        <span className="fw-bold text-gray-900 fs-5">Ksh. {formatNumber(test.price || 0)}</span>
+                                                        <span className="extra-small text-muted font-bold text-uppercase tracking-wider">
+                                                            Protocol Fee
+                                                        </span>
+                                                        <span className="fw-bold text-gray-900 fs-5">
+                                                            Ksh. {formatNumber(test.price || 0)}
+                                                        </span>
                                                     </div>
-                                                    <GridCardActions actions={[
-                                                        { icon: 'fa-edit', label: 'Edit protocol', href: route('lab-tests.edit', test.test_type_id) },
-                                                    ]} className="border-0 pt-2" />
+                                                    <GridCardActions
+                                                        actions={[
+                                                            {
+                                                                icon: 'fa-edit',
+                                                                label: 'Edit protocol',
+                                                                href: route('lab-tests.edit', test.test_type_id),
+                                                            },
+                                                        ]}
+                                                        className="border-0 pt-2"
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
-                                
+
                                 {/* Pagination for Grid View */}
                                 <div className="col-12 mt-4">
                                     <PaginationFooter pagination={tests} />
@@ -286,9 +331,8 @@ export default function TestsCatalog({ tests, auth, filters, categories, stats }
                         )}
                     </div>
                 )}
-
             </div>
-            
+
             <style>{`
     .hover-lift:hover { transform: translateY(-5px); }
                 .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); }

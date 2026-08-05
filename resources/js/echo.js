@@ -11,9 +11,10 @@ const reverbPort = import.meta.env.VITE_REVERB_PORT;
 if (reverbKey && reverbHost && reverbPort) {
     try {
         // Only connect if we are on localhost OR if the host isn't the default 127.0.0.1
-        const isLocal = window.location.hostname === 'localhost' || 
-                        window.location.hostname === '127.0.0.1' || 
-                        window.location.hostname === '[::1]';
+        const isLocal =
+            window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname === '[::1]';
         const isDefaultHost = reverbHost === '127.0.0.1' || reverbHost === 'localhost';
 
         if (isLocal || !isDefaultHost) {
@@ -39,13 +40,13 @@ if (reverbKey && reverbHost && reverbPort) {
             });
 
             // Handle connection failures silently to prevent console noise
-            window.Echo.connector.pusher.connection.bind('error', function(err) {
+            window.Echo.connector.pusher.connection.bind('error', function (err) {
                 if (err && err.error && err.error.data && err.error.data.code === 4004) {
                     // Silently ignore key not found errors
                 }
             });
 
-            window.Echo.connector.pusher.connection.bind('state_change', function(states) {
+            window.Echo.connector.pusher.connection.bind('state_change', function (states) {
                 // You can debug states here if needed
                 if (states.current === 'unavailable') {
                     // Fail silently when server is down

@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\Staff;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AppointmentFactory extends Factory
@@ -23,7 +24,7 @@ class AppointmentFactory extends Factory
             'status' => $this->faker->randomElement(['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show', 'pending', 'arrived']),
             'reason' => $this->faker->sentence(),
             'notes' => $this->faker->optional()->paragraph(),
-            'created_by' => \App\Models\User::factory(),
+            'created_by' => User::factory(),
         ];
     }
 

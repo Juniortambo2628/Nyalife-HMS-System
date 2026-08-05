@@ -20,7 +20,7 @@ export default function Index({ blockOuts, filters, auth }) {
             onSuccess: () => {
                 reset();
                 setShowForm(false);
-            }
+            },
         });
     };
 
@@ -77,7 +77,9 @@ export default function Index({ blockOuts, filters, auth }) {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Start Time (optional - full day if blank)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Start Time (optional - full day if blank)
+                                </label>
                                 <input
                                     type="time"
                                     value={data.start_time}
@@ -86,7 +88,9 @@ export default function Index({ blockOuts, filters, auth }) {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">End Time (optional)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    End Time (optional)
+                                </label>
                                 <input
                                     type="time"
                                     value={data.end_time}
@@ -95,7 +99,9 @@ export default function Index({ blockOuts, filters, auth }) {
                                 />
                             </div>
                             <div className="md:col-span-2 lg:col-span-3">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Reason (optional)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Reason (optional)
+                                </label>
                                 <input
                                     type="text"
                                     value={data.reason}
@@ -132,11 +138,21 @@ export default function Index({ blockOuts, filters, auth }) {
                             <table className="w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Doctor</th>
-                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Date</th>
-                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Time</th>
-                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Reason</th>
-                                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Actions</th>
+                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                                            Doctor
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                                            Date
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                                            Time
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                                            Reason
+                                        </th>
+                                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">
+                                            Actions
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -146,7 +162,12 @@ export default function Index({ blockOuts, filters, auth }) {
                                                 Dr. {block.doctor?.user?.first_name} {block.doctor?.user?.last_name}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600">
-                                                {new Date(block.block_date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+                                                {new Date(block.block_date).toLocaleDateString('en-US', {
+                                                    weekday: 'short',
+                                                    year: 'numeric',
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                })}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600">
                                                 {block.start_time && block.end_time
@@ -169,9 +190,7 @@ export default function Index({ blockOuts, filters, auth }) {
                         </div>
                     )}
                     {blockOuts.last_page > 1 && (
-                        <div className="p-4 border-t border-gray-100">
-                            {/* Pagination would go here */}
-                        </div>
+                        <div className="p-4 border-t border-gray-100">{/* Pagination would go here */}</div>
                     )}
                 </div>
             </div>

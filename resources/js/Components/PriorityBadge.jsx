@@ -1,8 +1,6 @@
 import StatusBadge from '@/Components/StatusBadge';
 
-const PRIORITY_STATUSES = new Set([
-    'urgent', 'routine', 'emergency', 'stat', 'high', 'normal',
-]);
+const PRIORITY_STATUSES = new Set(['urgent', 'routine', 'emergency', 'stat', 'high', 'normal']);
 
 /**
  * Priority column badge — delegates to StatusBadge for consistent styling.

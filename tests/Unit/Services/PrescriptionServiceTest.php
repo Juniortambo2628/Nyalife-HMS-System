@@ -2,16 +2,18 @@
 
 namespace Tests\Unit\Services;
 
-use App\Models\Prescription;
-use App\Models\PrescriptionItem;
+use App\Models\Invoice;
 use App\Models\Medication;
 use App\Models\Patient;
+use App\Models\Prescription;
+use App\Models\PrescriptionItem;
+use App\Models\Role;
 use App\Models\User;
-use App\Models\Consultation;
-use App\Models\Invoice;
-use App\Models\InvoiceItem;
-use Tests\TestCase;
+use App\Services\PrescriptionService;
+use Database\Seeders\RolePermissionsSeeder;
+use Database\Seeders\SyncSpatieRolesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class PrescriptionServiceTest extends TestCase
 {
@@ -20,19 +22,19 @@ class PrescriptionServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create legacy roles so SyncSpatieRolesSeeder can sync them
-        \App\Models\Role::firstOrCreate(['role_name' => 'admin']);
-        \App\Models\Role::firstOrCreate(['role_name' => 'doctor']);
-        \App\Models\Role::firstOrCreate(['role_name' => 'nurse']);
-        \App\Models\Role::firstOrCreate(['role_name' => 'receptionist']);
-        \App\Models\Role::firstOrCreate(['role_name' => 'lab_technician']);
-        \App\Models\Role::firstOrCreate(['role_name' => 'pharmacist']);
-        \App\Models\Role::firstOrCreate(['role_name' => 'patient']);
-        
+        Role::firstOrCreate(['role_name' => 'admin']);
+        Role::firstOrCreate(['role_name' => 'doctor']);
+        Role::firstOrCreate(['role_name' => 'nurse']);
+        Role::firstOrCreate(['role_name' => 'receptionist']);
+        Role::firstOrCreate(['role_name' => 'lab_technician']);
+        Role::firstOrCreate(['role_name' => 'pharmacist']);
+        Role::firstOrCreate(['role_name' => 'patient']);
+
         // Seed roles and permissions
-        $this->seed(\Database\Seeders\SyncSpatieRolesSeeder::class);
-        $this->seed(\Database\Seeders\RolePermissionsSeeder::class);
+        $this->seed(SyncSpatieRolesSeeder::class);
+        $this->seed(RolePermissionsSeeder::class);
     }
 
     public function test_create_creates_prescription_with_items(): void
@@ -65,7 +67,7 @@ class PrescriptionServiceTest extends TestCase
         ];
 
         $this->actingAs($user);
-        $prescription = \App\Services\PrescriptionService::create($data);
+        $prescription = PrescriptionService::create($data);
 
         $this->assertInstanceOf(Prescription::class, $prescription);
         $this->assertCount(2, $prescription->items);
@@ -112,14 +114,14 @@ class PrescriptionServiceTest extends TestCase
         ];
 
         $this->actingAs($user);
-        $prescription = \App\Services\PrescriptionService::create($data);
+        $prescription = PrescriptionService::create($data);
 
         $this->assertCount(1, $prescription->items);
         $this->assertNull($prescription->items->first()->medication_id);
 
         // No invoice should be created for items without medication
         $this->assertDatabaseMissing('invoices', [
-            'notes' => 'Auto-generated from prescription ' . $prescription->prescription_number,
+            'notes' => 'Auto-generated from prescription '.$prescription->prescription_number,
         ]);
     }
 
@@ -151,7 +153,7 @@ class PrescriptionServiceTest extends TestCase
         ];
 
         $this->actingAs($user);
-        $updated = \App\Services\PrescriptionService::update($prescription, $data);
+        $updated = PrescriptionService::update($prescription, $data);
 
         $this->assertEquals('Updated notes', $updated->notes);
         $this->assertCount(1, $updated->items);
@@ -170,7 +172,7 @@ class PrescriptionServiceTest extends TestCase
         ]);
 
         $this->actingAs($user);
-        $dispensed = \App\Services\PrescriptionService::dispense($prescription);
+        $dispensed = PrescriptionService::dispense($prescription);
 
         $this->assertEquals('dispensed', $dispensed->status);
         $this->assertEquals($user->user_id, $dispensed->dispensed_by);
@@ -179,15 +181,15 @@ class PrescriptionServiceTest extends TestCase
 
     public function test_parse_frequency_to_daily(): void
     {
-        $this->assertEquals(1, \App\Services\PrescriptionService::parseFrequencyToDaily('once daily'));
-        $this->assertEquals(2, \App\Services\PrescriptionService::parseFrequencyToDaily('twice daily'));
-        $this->assertEquals(3, \App\Services\PrescriptionService::parseFrequencyToDaily('three times daily'));
-        $this->assertEquals(4, \App\Services\PrescriptionService::parseFrequencyToDaily('four times daily'));
-        $this->assertEquals(4, \App\Services\PrescriptionService::parseFrequencyToDaily('every 6 hours'));
-        $this->assertEquals(3, \App\Services\PrescriptionService::parseFrequencyToDaily('every 8 hours'));
-        $this->assertEquals(2, \App\Services\PrescriptionService::parseFrequencyToDaily('every 12 hours'));
-        $this->assertEquals(1, \App\Services\PrescriptionService::parseFrequencyToDaily('at bedtime'));
-        $this->assertEquals(1, \App\Services\PrescriptionService::parseFrequencyToDaily('as needed'));
-        $this->assertEquals(1, \App\Services\PrescriptionService::parseFrequencyToDaily('unknown'));
+        $this->assertEquals(1, PrescriptionService::parseFrequencyToDaily('once daily'));
+        $this->assertEquals(2, PrescriptionService::parseFrequencyToDaily('twice daily'));
+        $this->assertEquals(3, PrescriptionService::parseFrequencyToDaily('three times daily'));
+        $this->assertEquals(4, PrescriptionService::parseFrequencyToDaily('four times daily'));
+        $this->assertEquals(4, PrescriptionService::parseFrequencyToDaily('every 6 hours'));
+        $this->assertEquals(3, PrescriptionService::parseFrequencyToDaily('every 8 hours'));
+        $this->assertEquals(2, PrescriptionService::parseFrequencyToDaily('every 12 hours'));
+        $this->assertEquals(1, PrescriptionService::parseFrequencyToDaily('at bedtime'));
+        $this->assertEquals(1, PrescriptionService::parseFrequencyToDaily('as needed'));
+        $this->assertEquals(1, PrescriptionService::parseFrequencyToDaily('unknown'));
     }
 }

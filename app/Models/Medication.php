@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Medication extends Model
 {
     use HasFactory;
-    
+
     protected $primaryKey = 'medication_id';
 
     protected $fillable = [
@@ -19,7 +19,7 @@ class Medication extends Model
         'unit',
         'stock_quantity',
         'price_per_unit',
-        'expiry_date'
+        'expiry_date',
     ];
 
     public function scopeSearchByNameOrType($query, $search)
@@ -27,6 +27,7 @@ class Medication extends Model
         if (empty($search)) {
             return $query;
         }
+
         return $query->where(function ($q) use ($search) {
             $q->where('medication_name', 'like', "%{$search}%")
                 ->orWhere('medication_type', 'like', "%{$search}%")

@@ -13,7 +13,6 @@
  * migration runs, new errors should stop, but the file still needs a one-off
  * truncate to reclaim space.
  */
-
 $key = $_GET['key'] ?? '';
 
 if ($key === '' || $key !== ($_ENV['LOG_CLEANUP_TOKEN'] ?? getenv('LOG_CLEANUP_TOKEN'))) {
@@ -23,11 +22,11 @@ if ($key === '' || $key !== ($_ENV['LOG_CLEANUP_TOKEN'] ?? getenv('LOG_CLEANUP_T
 }
 
 // On cPanel, public_html is a sibling of nyalife_core (the Laravel root).
-$logPath = dirname(__DIR__, 1) . '/nyalife_core/storage/logs/laravel.log';
+$logPath = dirname(__DIR__, 1).'/nyalife_core/storage/logs/laravel.log';
 
 // If running locally or in an alternate layout, fall back to the standard path.
 if (! file_exists($logPath)) {
-    $logPath = dirname(__DIR__) . '/storage/logs/laravel.log';
+    $logPath = dirname(__DIR__).'/storage/logs/laravel.log';
 }
 
 if (! file_exists($logPath)) {
@@ -38,4 +37,4 @@ if (! file_exists($logPath)) {
 $bytes = filesize($logPath);
 file_put_contents($logPath, '');
 
-echo "Truncated. Freed " . number_format($bytes) . " bytes.\n";
+echo 'Truncated. Freed '.number_format($bytes)." bytes.\n";

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         if (Schema::hasTable('prescriptions')) {
             Schema::table('prescriptions', function (Blueprint $table) {
-                if (!Schema::hasColumn('prescriptions', 'appointment_id')) {
+                if (! Schema::hasColumn('prescriptions', 'appointment_id')) {
                     $table->unsignedBigInteger('appointment_id')->nullable()->after('patient_id');
                 }
             });
@@ -21,7 +21,7 @@ return new class extends Migration
 
         if (Schema::hasTable('lab_test_requests')) {
             Schema::table('lab_test_requests', function (Blueprint $table) {
-                if (!Schema::hasColumn('lab_test_requests', 'appointment_id')) {
+                if (! Schema::hasColumn('lab_test_requests', 'appointment_id')) {
                     $table->unsignedBigInteger('appointment_id')->nullable()->after('patient_id');
                 }
             });

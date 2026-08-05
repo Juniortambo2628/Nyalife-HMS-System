@@ -157,7 +157,7 @@ class DemoEnvironmentSeeder extends Seeder
             $staff[$username] = Staff::updateOrCreate(
                 ['user_id' => $user->user_id],
                 $profile + [
-                    'employee_id' => strtoupper($username) . '-001',
+                    'employee_id' => strtoupper($username).'-001',
                     'join_date' => now()->subYears(2)->toDateString(),
                 ]
             );
@@ -181,7 +181,7 @@ class DemoEnvironmentSeeder extends Seeder
         foreach ($tests as $test) {
             LabTestType::updateOrCreate(
                 ['test_name' => $test['test_name']],
-                $test + ['is_active' => true, 'description' => $test['test_name'] . ' — standard clinic panel.']
+                $test + ['is_active' => true, 'description' => $test['test_name'].' — standard clinic panel.']
             );
         }
 
@@ -200,7 +200,7 @@ class DemoEnvironmentSeeder extends Seeder
             );
 
             MedicationBatch::updateOrCreate(
-                ['medication_id' => $medication->medication_id, 'batch_number' => 'DEMO-' . strtoupper(Str::slug($med['medication_name'], ''))],
+                ['medication_id' => $medication->medication_id, 'batch_number' => 'DEMO-'.strtoupper(Str::slug($med['medication_name'], ''))],
                 [
                     'quantity' => $med['stock_quantity'],
                     'expiry_date' => now()->addMonths(18)->toDateString(),
@@ -300,7 +300,7 @@ class DemoEnvironmentSeeder extends Seeder
                 [
                     'patient_id' => $patient->patient_id,
                     'appointment_date' => $date,
-                    'appointment_time' => $plan['time'] . ':00',
+                    'appointment_time' => $plan['time'].':00',
                 ],
                 [
                     'doctor_id' => $doctor->staff_id,
@@ -320,7 +320,7 @@ class DemoEnvironmentSeeder extends Seeder
                     [
                         'patient_id' => $patient->patient_id,
                         'doctor_id' => $doctor->staff_id,
-                        'consultation_date' => $date . ' ' . $plan['time'] . ':00',
+                        'consultation_date' => $date.' '.$plan['time'].':00',
                         'consultation_status' => 'closed',
                         'chief_complaint' => $plan['reason'],
                         'diagnosis' => $this->demoDiagnosis($index),
@@ -347,7 +347,7 @@ class DemoEnvironmentSeeder extends Seeder
             $testType = $testTypes[$i % max($testTypes->count(), 1)];
 
             LabTestRequest::updateOrCreate(
-                ['request_number' => 'LAB-DEMO-' . str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT)],
+                ['request_number' => 'LAB-DEMO-'.str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT)],
                 [
                     'patient_id' => $patient->patient_id,
                     'doctor_id' => $doctor->staff_id,
@@ -371,7 +371,7 @@ class DemoEnvironmentSeeder extends Seeder
             $appointment = Appointment::find($consultation->appointment_id);
 
             $prescription = Prescription::updateOrCreate(
-                ['prescription_number' => 'RX-DEMO-' . str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT)],
+                ['prescription_number' => 'RX-DEMO-'.str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT)],
                 [
                     'patient_id' => $consultation->patient_id,
                     'prescribed_by' => $doctor->user_id,
@@ -401,7 +401,7 @@ class DemoEnvironmentSeeder extends Seeder
 
             $amount = 2500 + ($i * 750);
             $invoice = Invoice::updateOrCreate(
-                ['invoice_number' => 'INV-DEMO-' . str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT)],
+                ['invoice_number' => 'INV-DEMO-'.str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT)],
                 [
                     'patient_id' => $consultation->patient_id,
                     'consultation_id' => $consultation->consultation_id,
@@ -428,7 +428,7 @@ class DemoEnvironmentSeeder extends Seeder
 
             if ($invoice->status === 'paid') {
                 Payment::updateOrCreate(
-                    ['transaction_reference' => 'PAY-DEMO-' . str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT)],
+                    ['transaction_reference' => 'PAY-DEMO-'.str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT)],
                     [
                         'invoice_id' => $invoice->invoice_id,
                         'amount' => $amount,

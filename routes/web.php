@@ -54,7 +54,7 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
-});
+})->name('welcome');
 
 Route::get('/blogs', [BlogPublicController::class, 'index'])->name('blogs.public.index');
 Route::get('/blogs/{slug}', [BlogPublicController::class, 'show'])->name('blogs.public.show');

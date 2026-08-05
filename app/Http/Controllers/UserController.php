@@ -84,7 +84,7 @@ class UserController extends Controller
             ?? (isset($validated['role']) ? Role::where('role_name', $validated['role'])->first()?->role_id : null)
             ?? Role::where('role_name', 'patient')->first()?->role_id;
 
-        $password = !empty($validated['password'])
+        $password = ! empty($validated['password'])
             ? Hash::make($validated['password'])
             : Hash::make(Str::random(12));
 

@@ -360,7 +360,7 @@ class ConsultationController extends Controller
     public function edit($id)
     {
         $user = Auth::user();
-        if ($user && in_array($user->role, ['nurse', 'receptionist', 'lab_technician', 'patient'])) {
+        if ($user && in_array($user->role, ['receptionist', 'lab_technician', 'patient'])) {
             abort(403, 'Unauthorized editing of consultation records.');
         }
 
@@ -402,7 +402,7 @@ class ConsultationController extends Controller
     public function update(UpdateConsultationRequest $request, $id)
     {
         $user = Auth::user();
-        if ($user && in_array($user->role, ['nurse', 'receptionist', 'lab_technician', 'patient'])) {
+        if ($user && in_array($user->role, ['receptionist', 'lab_technician', 'patient'])) {
             abort(403, 'Unauthorized editing of consultation records.');
         }
 
@@ -414,6 +414,8 @@ class ConsultationController extends Controller
         $data['treatment_plan'] = $data['treatment_plan'] ?? '';
         $data['follow_up_instructions'] = $data['follow_up_instructions'] ?? '';
         $data['notes'] = $data['notes'] ?? '';
+
+        $data['parity'] = ParityValue::normaliseForColumn($data['parity'] ?? null);
 
         // Map status to consultation_status
         if (isset($data['status'])) {

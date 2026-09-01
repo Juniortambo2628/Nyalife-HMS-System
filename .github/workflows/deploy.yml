@@ -1,7 +1,9 @@
 name: ðŸš€ Deploy Nyalife HMS to Production
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -9,6 +11,7 @@ jobs:
   build:
     name: ðŸ“¦ Build assets for production
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout code
@@ -59,32 +62,39 @@ jobs:
 
           tar -czf .deploy/public.tar.gz -C public build assets favicon.ico robots.txt
 
-      - name: Upload app archive for deployment
-        uses: appleboy/scp-action@v0.1.7
+      - name: Upload app archive artifact
+        uses: actions/upload-artifact@v4
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          source: .deploy/app.tar.gz
-          target: /tmp/
+          name: app-deploy-archive
+          path: .deploy/app.tar.gz
+          retention-days: 1
 
-      - name: Upload public archive for deployment
-        uses: appleboy/scp-action@v0.1.7
+      - name: Upload public archive artifact
+        uses: actions/upload-artifact@v4
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          source: .deploy/public.tar.gz
-          target: /tmp/
+          name: public-deploy-archive
+          path: .deploy/public.tar.gz
+          retention-days: 1
 
   deploy:
     name: ðŸš€ Deploy over SSH without deleting production data
     runs-on: ubuntu-latest
     needs: build
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
+      - name: Download app artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-deploy-archive
+          path: /tmp/deploy-artifacts
+
+      - name: Download public artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: public-deploy-archive
+          path: /tmp/deploy-artifacts
+
       - name: Deploy application files safely
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -160,8 +170,16 @@ jobs:
               echo "Production DB secrets not configured; skipping automatic backup."
             fi
 
+            APP_ARTIFACT="/tmp/deploy-artifacts/app.tar.gz"
+            PUBLIC_ARTIFACT="/tmp/deploy-artifacts/public.tar.gz"
+
+            if [ ! -f "$APP_ARTIFACT" ] || [ ! -f "$PUBLIC_ARTIFACT" ]; then
+              echo "Deployment artifacts are missing; aborting to avoid a broken release."
+              exit 1
+            fi
+
             mkdir -p /tmp/nyalife-deploy-app
-            tar -xzf /tmp/app.tar.gz -C /tmp/nyalife-deploy-app
+            tar -xzf "$APP_ARTIFACT" -C /tmp/nyalife-deploy-app
 
             for dir in app bootstrap config database resources routes; do
               rm -rf "$APP_DIR/$dir"
@@ -185,7 +203,7 @@ jobs:
             cp -a /tmp/nyalife-deploy-app/vendor/. "$APP_DIR/vendor/"
 
             mkdir -p /tmp/nyalife-deploy-public
-            tar -xzf /tmp/public.tar.gz -C /tmp/nyalife-deploy-public
+            tar -xzf "$PUBLIC_ARTIFACT" -C /tmp/nyalife-deploy-public
 
             rm -rf "$PUBLIC_DIR/build" "$PUBLIC_DIR/assets"
             rm -f "$PUBLIC_DIR/favicon.ico" "$PUBLIC_DIR/robots.txt"

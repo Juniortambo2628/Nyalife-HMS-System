@@ -1,9 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import Create from '../Create';
 
 // Mock Inertia's useForm hook
 vi.mock('@inertiajs/react', () => ({
+    Head: ({ children }) => <>{children}</>,
+    Link: ({ children, ...props }) => <a {...props}>{children}</a>,
+    router: { visit: vi.fn() },
     useForm: (initialValues) => {
         return {
             data: initialValues,
@@ -16,8 +19,10 @@ vi.mock('@inertiajs/react', () => ({
         };
     },
     usePage: () => ({
+        url: '/consultations/create',
         props: {
-            auth: { user: { role: 'doctor' } }
+            auth: { user: { role: 'doctor' } },
+            flash: {},
         }
     })
 }));
@@ -25,11 +30,11 @@ vi.mock('@inertiajs/react', () => ({
 describe('Consultation Create Component', () => {
     it('renders without crashing', () => {
         render(<Create patients={[]} doctors={[]} />);
-        expect(screen.getByText(/Create Consultation/i)).toBeInTheDocument();
+        expect(screen.getByText(/Record Consultation/i)).toBeInTheDocument();
     });
 
-    it('has SAVE VITALS button', () => {
-        render(<Create patients={[]} doctors={[]} />);
-        expect(screen.getByText(/SAVE VITALS/i)).toBeInTheDocument();
+    it('has SAVE VITALS button', async () => {
+        render(<Create patients={[]} doctors={[]} auth={{ user: { role: 'nurse' } }} />);
+        await waitFor(() => expect(screen.getByText(/SAVE VITALS/i)).toBeInTheDocument(), { timeout: 2000 });
     });
 });

@@ -4,6 +4,9 @@ import Edit from '../Edit';
 
 // Mock Inertia's useForm hook
 vi.mock('@inertiajs/react', () => ({
+    Head: ({ children }) => <>{children}</>,
+    Link: ({ children, ...props }) => <a {...props}>{children}</a>,
+    router: { visit: vi.fn() },
     useForm: (initialValues) => {
         return {
             data: initialValues,
@@ -16,8 +19,10 @@ vi.mock('@inertiajs/react', () => ({
         };
     },
     usePage: () => ({
+        url: '/consultations/1/edit',
         props: {
-            auth: { user: { role: 'doctor' } }
+            auth: { user: { role: 'doctor' } },
+            flash: {},
         }
     })
 }));

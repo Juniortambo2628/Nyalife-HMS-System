@@ -438,8 +438,8 @@ export default function AuthenticatedLayout({
     breadcrumbs,
 }) {
     const page = usePage();
-    const { auth } = page.props;
-    const currentUrl = page.url;
+    const { auth } = page?.props ?? {};
+    const currentUrl = page?.url || window.location.pathname + window.location.search || '/';
     const user = auth?.user || {};
     const userRole = user.role || 'patient';
     const permissions = auth?.permissions ?? [];
@@ -593,8 +593,9 @@ export default function AuthenticatedLayout({
                 <nav className="sidebar-nav h-auto">
                     <ul className="sidebar-menu h-auto">
                         {menuItems.map((item) => {
+                            const safeUrl = item?.url ?? '/';
                             // Normalize item.url to just the path for reliable comparison
-                            const itemPath = item.url.startsWith('http') ? new URL(item.url).pathname : item.url;
+                            const itemPath = safeUrl.startsWith('http') ? new URL(safeUrl).pathname : safeUrl;
 
                             const active =
                                 currentUrl === itemPath ||

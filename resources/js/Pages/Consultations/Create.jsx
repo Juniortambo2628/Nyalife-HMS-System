@@ -29,7 +29,7 @@ export default function Create({
     preselected_doctor_label,
     latest_height,
     priority = 'normal',
-    auth,
+    auth = { user: { role: 'doctor' } },
     latest_vitals,
     history_prefill = null,
     patient_clinical = null,

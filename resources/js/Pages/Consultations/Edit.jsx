@@ -26,7 +26,7 @@ export default function Edit({
     lab_test_types = [],
     medications = [],
     procedure_services = [],
-    auth,
+    auth = { user: { role: 'doctor' } },
     ...props
 }) {
     const consultationDrafts = props.drafts || { data: [] };

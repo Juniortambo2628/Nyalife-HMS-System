@@ -1,13 +1,20 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import StatusBadge from '@/Components/StatusBadge';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import { formatDateOnly } from '@/Utils/dateUtils';
 
 export default function Show({ request }) {
+    const { auth } = usePage().props;
     const results = typeof request.results === 'string' ? JSON.parse(request.results || '{}') : request.results || {};
 
     const handlePrint = () => window.open(route('lab.print', request.request_id), '_blank');
+    const canShare = ['admin', 'lab_technician', 'nurse'].includes(auth?.user?.role);
+    const shareWithRequestingDoctor = () => {
+        if (confirm('Email the requesting doctor a secure link to this result?')) {
+            router.post(route('lab.results.share-with-requesting-doctor', request.request_id));
+        }
+    };
 
     const renderQuantitative = () => {
         const rows = results.quantitative || [];
@@ -99,10 +106,16 @@ export default function Show({ request }) {
 
             <UnifiedToolbar
                 actions={[
+                    canShare && {
+                        label: 'SHARE WITH REQUESTING DOCTOR',
+                        icon: 'fa-share-nodes',
+                        onClick: shareWithRequestingDoctor,
+                        color: 'success',
+                    },
                     { label: 'PRINT REPORT', icon: 'fa-print', onClick: handlePrint },
                     { label: 'ALL RESULTS', icon: 'fa-list', href: route('lab.results'), color: 'gray' },
                     { label: 'FULL REQUEST', icon: 'fa-flask', href: route('lab.show', request.request_id) },
-                ]}
+                ].filter(Boolean)}
             />
         </AuthenticatedLayout>
     );

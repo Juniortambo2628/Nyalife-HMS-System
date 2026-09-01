@@ -1,26 +1,25 @@
-name: 🚀 Deploy Nyalife HMS to Production
+name: ðŸš€ Deploy Nyalife HMS to Production
 
 on:
-  # Deployment is gated by the successful completion of the CI workflow.
-  # This keeps CI concerns separate from deployment and avoids duplicating
-  # test jobs inside the deploy workflow.
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
+  push:
     branches: [main]
-
   workflow_dispatch:
 
 jobs:
   build:
-    name: 📦 Build Assets
+    name: ðŸ“¦ Build assets for production
     runs-on: ubuntu-latest
-    # Only proceed when the CI workflow succeeded, or when this is a manual run.
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, bcmath, pdo, mysql, curl, gd, zip
+          coverage: none
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -28,99 +27,199 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          extensions: mbstring, xml, ctype, json, bcmath, pdo, mysql, curl, gd, zip
-          coverage: none
-
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: npm ci
 
       - name: Build production assets
         run: npm run build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+      - name: Create deploy archives
+        run: |
+          mkdir -p .deploy
+
+          tar --exclude='.git' \
+              --exclude='.github' \
+              --exclude='.env' \
+              --exclude='.env.*' \
+              --exclude='node_modules' \
+              --exclude='storage/logs' \
+              --exclude='storage/framework/sessions' \
+              --exclude='storage/framework/cache' \
+              --exclude='public/build' \
+              --exclude='public/assets' \
+              --exclude='public/storage' \
+              --exclude='phpunit.xml' \
+              --exclude='tests' \
+              --exclude='e2e' \
+              -czf .deploy/app.tar.gz \
+              app bootstrap config database resources routes artisan composer.json composer.lock package.json vite.config.js vendor
+
+          tar -czf .deploy/public.tar.gz -C public build assets favicon.ico robots.txt
+
+      - name: Upload app archive for deployment
+        uses: appleboy/scp-action@v0.1.7
         with:
-          name: build-assets
-          path: public/build/
-          retention-days: 1
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: .deploy/app.tar.gz
+          target: /tmp/
+
+      - name: Upload public archive for deployment
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: .deploy/public.tar.gz
+          target: /tmp/
 
   deploy:
-    name: 🚀 Deploy to cPanel
+    name: ðŸš€ Deploy over SSH without deleting production data
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: Deploy application files safely
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          name: build-assets
-          path: public/build/
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -Eeuo pipefail
+            APP_DIR="/home1/nyalifew/nyalife_core"
+            PUBLIC_DIR="/home1/nyalifew/public_html"
+            DEPLOY_TS="$(date +%Y%m%d-%H%M%S)"
+            APP_BACKUP="/tmp/nyalife-app-backup-${DEPLOY_TS}.tar.gz"
+            PUBLIC_BACKUP="/tmp/nyalife-public-backup-${DEPLOY_TS}.tar.gz"
+            mkdir -p "$APP_DIR" "$PUBLIC_DIR"
 
-      - name: 📂 Deploy backend to nyalife_core
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: 21
-          local-dir: ./
-          server-dir: /nyalife_core/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/.env
-            **/.env.*
-            **/storage/logs/**
-            **/storage/framework/sessions/**
-            **/storage/framework/cache/**
-            **/*.sql
-            **/docs/production/**
+            rollback() {
+              echo "Deploy failed; restoring previous release..."
+              if [ -f "$APP_BACKUP" ]; then
+                rm -rf "$APP_DIR"
+                mkdir -p "$APP_DIR"
+                tar -xzf "$APP_BACKUP" -C "$APP_DIR"
+              fi
+              if [ -f "$PUBLIC_BACKUP" ]; then
+                rm -rf "$PUBLIC_DIR"
+                mkdir -p "$PUBLIC_DIR"
+                tar -xzf "$PUBLIC_BACKUP" -C "$PUBLIC_DIR"
+              fi
+              echo "Rollback complete."
+            }
+            trap rollback ERR
 
-      # NOTE: Production deploys via FTP only — there is no `php artisan migrate`
-      # step in this workflow. cPanel shared hosting typically exposes the
-      # deployed files but not a CI-runnable PHP CLI. After each deploy an
-      # operator must run `php artisan migrate --force` manually via cPanel
-      # Terminal (or `php-cli` over SSH if available) from
-      # /home1/nyalifew/nyalife_core. Schema changes shipped in this deploy
-      # are not active until that command is run.
-      #
-      # The defensive controller guard in `ConsultationController::store`
-      # (mb_substr($parity, 0, 50)) prevents silent data loss even before
-      # migrations are run, but the underlying schema still needs the ALTER
-      # to commit. See docs/MIGRATIONS.md for the full runbook.
+            if [ ! -f "$APP_DIR/artisan" ] || [ ! -f "$APP_DIR/bootstrap/app.php" ]; then
+              echo "Production app directory is missing Laravel runtime files. Refusing to deploy."
+              exit 1
+            fi
 
-      - name: 🌐 Deploy public assets to public_html
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: 21
-          local-dir: ./public/
-          server-dir: /public_html/
-          exclude: |
-            **/index.php
-            **/.htaccess
-            **/storage/**
+            if [ -f "$APP_DIR/.env" ]; then
+              if grep -Eq 'APP_ENV\s*=\s*(local|testing|staging)' "$APP_DIR/.env"; then
+                echo "Refusing deployment: production environment check failed. Set APP_ENV=production before running migrations."
+                exit 1
+              fi
+            else
+              echo "Production .env is missing. Refusing to continue before migration."
+              exit 1
+            fi
 
-      # Truncate the production laravel.log after deploy. The log file is
-      # excluded from FTP uploads (storage/logs/**), so it persists across
-      # deploys and can grow to hundreds of KB when consultation-store
-      # errors repeat.  This curls the log-cleanup.php script that was
-      # just deployed to /public_html/ and passes the shared secret token.
-      # The token is stored in the LOG_CLEANUP_TOKEN GitHub secret and
-      # also set in the production .env (used by the script to authenticate).
+            if [ ! -d "$APP_DIR/storage" ] || [ ! -d "$APP_DIR/bootstrap/cache" ]; then
+              echo "Production Laravel storage/bootstrap/cache directories are missing. Refusing deployment."
+              exit 1
+            fi
+
+            if [ -d "$APP_DIR" ]; then
+              tar -czf "$APP_BACKUP" -C "$APP_DIR" .
+            fi
+            if [ -d "$PUBLIC_DIR" ]; then
+              tar -czf "$PUBLIC_BACKUP" -C "$PUBLIC_DIR" .
+            fi
+
+            if [ -n "${{ secrets.DB_HOST }}" ] && [ -n "${{ secrets.DB_DATABASE }}" ] && [ -n "${{ secrets.DB_USERNAME }}" ]; then
+              BACKUP_PATH="/tmp/nyalife-predeploy-$(date +%Y%m%d-%H%M%S).sql"
+              mysqldump \
+                --host="${{ secrets.DB_HOST }}" \
+                --user="${{ secrets.DB_USERNAME }}" \
+                --password="${{ secrets.DB_PASSWORD }}" \
+                --databases "${{ secrets.DB_DATABASE }}" \
+                --single-transaction \
+                --routines \
+                --triggers \
+                > "$BACKUP_PATH"
+              echo "Backup created at $BACKUP_PATH"
+            else
+              echo "Production DB secrets not configured; skipping automatic backup."
+            fi
+
+            mkdir -p /tmp/nyalife-deploy-app
+            tar -xzf /tmp/app.tar.gz -C /tmp/nyalife-deploy-app
+
+            for dir in app bootstrap config database resources routes; do
+              rm -rf "$APP_DIR/$dir"
+            done
+
+            for file in artisan composer.json composer.lock package.json vite.config.js; do
+              rm -f "$APP_DIR/$file"
+            done
+
+            cp -a /tmp/nyalife-deploy-app/app/. "$APP_DIR/app/"
+            cp -a /tmp/nyalife-deploy-app/bootstrap/. "$APP_DIR/bootstrap/"
+            cp -a /tmp/nyalife-deploy-app/config/. "$APP_DIR/config/"
+            cp -a /tmp/nyalife-deploy-app/database/. "$APP_DIR/database/"
+            cp -a /tmp/nyalife-deploy-app/resources/. "$APP_DIR/resources/"
+            cp -a /tmp/nyalife-deploy-app/routes/. "$APP_DIR/routes/"
+            cp -a /tmp/nyalife-deploy-app/artisan "$APP_DIR/"
+            cp -a /tmp/nyalife-deploy-app/composer.json "$APP_DIR/"
+            cp -a /tmp/nyalife-deploy-app/composer.lock "$APP_DIR/"
+            cp -a /tmp/nyalife-deploy-app/package.json "$APP_DIR/"
+            cp -a /tmp/nyalife-deploy-app/vite.config.js "$APP_DIR/"
+            cp -a /tmp/nyalife-deploy-app/vendor/. "$APP_DIR/vendor/"
+
+            mkdir -p /tmp/nyalife-deploy-public
+            tar -xzf /tmp/public.tar.gz -C /tmp/nyalife-deploy-public
+
+            rm -rf "$PUBLIC_DIR/build" "$PUBLIC_DIR/assets"
+            rm -f "$PUBLIC_DIR/favicon.ico" "$PUBLIC_DIR/robots.txt"
+
+            cp -a /tmp/nyalife-deploy-public/build "$PUBLIC_DIR/"
+            cp -a /tmp/nyalife-deploy-public/assets "$PUBLIC_DIR/"
+            cp -a /tmp/nyalife-deploy-public/favicon.ico "$PUBLIC_DIR/"
+            cp -a /tmp/nyalife-deploy-public/robots.txt "$PUBLIC_DIR/"
+
+            if [ -f "$PUBLIC_DIR/index.php" ] && ! grep -q 'nyalife_core' "$PUBLIC_DIR/index.php"; then
+              echo "Keeping existing public index.php bridge file."
+            fi
+
+            if [ -f "$PUBLIC_DIR/.htaccess" ] && ! grep -q 'HTTPS' "$PUBLIC_DIR/.htaccess"; then
+              echo "Keeping existing public .htaccess file."
+            fi
+
+            if [ ! -L "$PUBLIC_DIR/storage" ]; then
+              ln -sfn "$APP_DIR/storage/app/public" "$PUBLIC_DIR/storage"
+            fi
+
+            chmod -R 775 "$APP_DIR/storage" "$APP_DIR/bootstrap/cache" || true
+
+            cd "$APP_DIR"
+            php artisan migrate --force --no-interaction
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan event:cache
+
+            trap - ERR
+            echo "Production deploy complete. Existing database data was preserved; no destructive database reset was run."
+
       - name: 🧹 Truncate production laravel.log
         run: |
           curl -sf "https://nyalifewomensclinic.net/log-cleanup.php?key=${{ secrets.LOG_CLEANUP_TOKEN }}" || echo "::warning::Log cleanup script not reachable or token not set"
+

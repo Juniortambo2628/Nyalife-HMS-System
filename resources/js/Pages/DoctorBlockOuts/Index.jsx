@@ -4,13 +4,14 @@ import { useState } from 'react';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import TableActions from '@/Components/TableActions';
 
-export default function Index({ blockOuts, filters, auth }) {
+export default function Index({ blockOuts, doctors = [], filters, auth }) {
     const [showForm, setShowForm] = useState(false);
     const { data, setData, post, processing, reset } = useForm({
         doctor_id: '',
         block_date: '',
         start_time: '',
         end_time: '',
+        appointment_mode: 'all',
         reason: '',
     });
 
@@ -62,7 +63,11 @@ export default function Index({ blockOuts, filters, auth }) {
                                     required
                                 >
                                     <option value="">Select Doctor</option>
-                                    {/* Doctors would be passed as props in production */}
+                                    {doctors.map((doctor) => (
+                                        <option key={doctor.value} value={doctor.value}>
+                                            {doctor.label}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div>
@@ -75,6 +80,18 @@ export default function Index({ blockOuts, filters, auth }) {
                                     className="w-full border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500"
                                     required
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Applies to</label>
+                                <select
+                                    value={data.appointment_mode}
+                                    onChange={(e) => setData('appointment_mode', e.target.value)}
+                                    className="w-full border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500"
+                                >
+                                    <option value="all">All appointment types</option>
+                                    <option value="in_person">Physical appointments only</option>
+                                    <option value="telehealth">Telehealth appointments only</option>
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -148,6 +165,9 @@ export default function Index({ blockOuts, filters, auth }) {
                                             Time
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
+                                            Applies To
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
                                             Reason
                                         </th>
                                         <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">
@@ -173,6 +193,13 @@ export default function Index({ blockOuts, filters, auth }) {
                                                 {block.start_time && block.end_time
                                                     ? `${block.start_time} - ${block.end_time}`
                                                     : 'Full Day'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-600">
+                                                {{
+                                                    all: 'All appointments',
+                                                    in_person: 'Physical only',
+                                                    telehealth: 'Telehealth only',
+                                                }[block.appointment_mode] || 'All appointments'}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600">{block.reason || '-'}</td>
                                             <td className="px-6 py-4 text-right">

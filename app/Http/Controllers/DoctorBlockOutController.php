@@ -38,6 +38,17 @@ class DoctorBlockOutController extends Controller
         return Inertia::render('DoctorBlockOuts/Index', [
             'blockOuts' => $blockOuts,
             'filters' => $request->only(['doctor_id', 'date']),
+            'doctors' => Staff::whereHas('user.roleRelation', fn ($query) => $query->where('role_name', 'doctor'))
+                ->when($user->role === 'doctor', function ($query) use ($user) {
+                    $query->where('user_id', $user->user_id);
+                })
+                ->with('user')
+                ->orderBy('staff_id')
+                ->get()
+                ->map(fn (Staff $doctor) => [
+                    'value' => $doctor->staff_id,
+                    'label' => 'Dr. '.trim(($doctor->user->first_name ?? '').' '.($doctor->user->last_name ?? '')),
+                ]),
         ]);
     }
 
@@ -48,6 +59,7 @@ class DoctorBlockOutController extends Controller
             'block_date' => 'required|date|after_or_equal:today',
             'start_time' => 'nullable|date_format:H:i',
             'end_time' => 'nullable|date_format:H:i|after_or_equal:start_time',
+            'appointment_mode' => 'required|in:all,in_person,telehealth',
             'reason' => 'nullable|string|max:255',
         ]);
 

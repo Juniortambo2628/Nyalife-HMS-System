@@ -13,9 +13,11 @@ class AppointmentSlotController extends Controller
 {
     public function index(Request $request)
     {
+        Appointment::releaseExpiredTelehealthHolds();
         $validated = $request->validate([
             'doctor_id' => 'nullable|integer|exists:staff,staff_id',
             'date' => 'required|date|after_or_equal:today',
+            'appointment_type' => 'nullable|string|max:50',
         ]);
 
         $date = $validated['date'];
@@ -30,6 +32,7 @@ class AppointmentSlotController extends Controller
         // Check if doctor has a full-day block-out
         $fullDayBlock = DoctorBlockOut::where('doctor_id', $doctorId)
             ->where('block_date', $date)
+            ->forAppointmentType($validated['appointment_type'] ?? null)
             ->whereNull('start_time')
             ->whereNull('end_time')
             ->exists();
@@ -46,6 +49,7 @@ class AppointmentSlotController extends Controller
         // Get partial block-outs for the day
         $blockOuts = DoctorBlockOut::where('doctor_id', $doctorId)
             ->where('block_date', $date)
+            ->forAppointmentType($validated['appointment_type'] ?? null)
             ->whereNotNull('start_time')
             ->whereNotNull('end_time')
             ->get();

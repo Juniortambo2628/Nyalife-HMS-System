@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Appointment;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreAppointmentRequest extends FormRequest
 {
@@ -27,7 +29,7 @@ class StoreAppointmentRequest extends FormRequest
             'doctor_id' => 'required|exists:staff,staff_id',
             'appointment_date' => 'required|date',
             'appointment_time' => 'required',
-            'appointment_type' => 'nullable|string|in:general,follow_up,telehealth,emergency',
+            'appointment_type' => ['nullable', 'string', Rule::in(Appointment::APPOINTMENT_TYPES)],
             'reason' => 'nullable|string|max:500',
             'notes' => 'nullable|string',
         ];

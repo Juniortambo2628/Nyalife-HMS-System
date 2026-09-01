@@ -8,6 +8,7 @@ final class Permissions
     public const MANAGE_PAYMENTS = 'manage-payments';
 
     public const MANAGE_FOLLOW_UPS = 'manage-follow-ups';
+    public const MANAGE_QUEUE = 'manage-queue';
 
     public const MANAGE_DEPARTMENTS = 'manage-departments';
 
@@ -51,6 +52,7 @@ final class Permissions
         return [
             self::MANAGE_PAYMENTS,
             self::MANAGE_FOLLOW_UPS,
+            self::MANAGE_QUEUE,
             self::MANAGE_DEPARTMENTS,
             self::VIEW_DEPARTMENTS,
             self::VIEW_REPORTS,
@@ -92,6 +94,7 @@ final class Permissions
                 self::MANAGE_PRESCRIPTIONS,
                 self::MANAGE_LAB,
                 self::MANAGE_FOLLOW_UPS,
+                self::MANAGE_QUEUE,
                 self::MANAGE_PAYMENTS,
                 self::VIEW_DEPARTMENTS,
                 self::VIEW_REPORTS,
@@ -105,6 +108,7 @@ final class Permissions
                 self::MANAGE_LAB,
                 self::MANAGE_VITALS,
                 self::MANAGE_FOLLOW_UPS,
+                self::MANAGE_QUEUE,
                 self::VIEW_DEPARTMENTS,
                 self::SEND_MESSAGES,
             ],
@@ -114,6 +118,7 @@ final class Permissions
                 self::MANAGE_INVOICES,
                 self::MANAGE_PAYMENTS,
                 self::MANAGE_INSURANCE,
+                self::MANAGE_QUEUE,
                 self::VIEW_DEPARTMENTS,
                 self::VIEW_REPORTS,
                 self::SEND_MESSAGES,

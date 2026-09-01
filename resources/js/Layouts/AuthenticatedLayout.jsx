@@ -10,6 +10,7 @@ import PageHeader from '@/Components/PageHeader';
 // Shared staff/patient portal permissions for sidebar
 const P = {
     appts: ['manage-appointments', 'view-own-records'],
+    queue: ['manage-queue'],
     consults: ['manage-consultations', 'view-own-records'],
     rx: ['manage-prescriptions', 'view-own-records'],
     invoices: ['manage-invoices', 'view-own-records'],
@@ -28,6 +29,7 @@ const sidebarMenus = {
             permissionAny: P.appts,
         },
         { id: 'patients', text: 'Patients', url: '/patients', icon: 'fas fa-users', permission: 'manage-patients' },
+        { id: 'queue', text: 'Patient Queue', url: route('queue.index'), icon: 'fas fa-list-ol', permissionAny: P.queue },
         {
             id: 'consultations',
             text: 'Consultations',
@@ -55,6 +57,13 @@ const sidebarMenus = {
             url: route('lab.results'),
             icon: 'fas fa-file-medical-alt',
             permissionAny: P.labResults,
+        },
+        {
+            id: 'radiology',
+            text: 'Radiology & Imaging',
+            url: route('radiology.index'),
+            icon: 'fas fa-x-ray',
+            permission: 'manage-lab',
         },
         {
             id: 'lab-samples',
@@ -181,11 +190,19 @@ const sidebarMenus = {
             icon: 'fas fa-users',
             permission: 'manage-patients',
         },
+        { id: 'queue', text: 'Patient Queue', url: route('queue.index'), icon: 'fas fa-list-ol', permissionAny: P.queue },
         {
             id: 'lab-requests',
             text: 'Lab Requests',
             url: route('lab.index'),
             icon: 'fas fa-flask',
+            permission: 'manage-lab',
+        },
+        {
+            id: 'radiology',
+            text: 'Radiology & Imaging',
+            url: route('radiology.index'),
+            icon: 'fas fa-x-ray',
             permission: 'manage-lab',
         },
         {
@@ -248,6 +265,13 @@ const sidebarMenus = {
             permission: 'manage-lab',
         },
         {
+            id: 'radiology',
+            text: 'Radiology & Imaging',
+            url: route('radiology.index'),
+            icon: 'fas fa-x-ray',
+            permission: 'manage-lab',
+        },
+        {
             id: 'follow-ups',
             text: 'Follow-ups',
             url: '/follow-ups',
@@ -261,6 +285,7 @@ const sidebarMenus = {
             icon: 'fas fa-users',
             permission: 'manage-patients',
         },
+        { id: 'queue', text: 'Patient Queue', url: route('queue.index'), icon: 'fas fa-list-ol', permissionAny: P.queue },
         { id: 'vitals', text: 'Record Vitals', url: '/vitals', icon: 'fas fa-heartbeat', permission: 'manage-vitals' },
     ],
     lab_technician: [
@@ -277,6 +302,13 @@ const sidebarMenus = {
             text: 'Lab Results',
             url: route('lab.results'),
             icon: 'fas fa-file-medical-alt',
+            permission: 'manage-lab',
+        },
+        {
+            id: 'radiology',
+            text: 'Radiology & Imaging',
+            url: route('radiology.index'),
+            icon: 'fas fa-x-ray',
             permission: 'manage-lab',
         },
         {
@@ -328,6 +360,7 @@ const sidebarMenus = {
             permission: 'manage-appointments',
         },
         { id: 'patients', text: 'Patients', url: '/patients', icon: 'fas fa-users', permission: 'manage-patients' },
+        { id: 'queue', text: 'Patient Queue', url: route('queue.index'), icon: 'fas fa-list-ol', permissionAny: P.queue },
         {
             id: 'invoices',
             text: 'Invoices',

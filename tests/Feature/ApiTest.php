@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Appointment;
 use App\Models\Department;
+use App\Models\DoctorBlockOut;
 use App\Models\FollowUp;
 use App\Models\Invoice;
 use App\Models\Patient;
@@ -77,6 +78,33 @@ class ApiTest extends TestCase
     {
         $this->getJson('/api/appointments/available-slots?date='.now()->addDay()->format('Y-m-d'))
             ->assertOk();
+    }
+
+    public function test_mode_specific_block_outs_only_remove_matching_appointment_slots(): void
+    {
+        $date = now()->addDay()->format('Y-m-d');
+
+        DoctorBlockOut::create([
+            'doctor_id' => $this->doctor->staff_id,
+            'block_date' => $date,
+            'start_time' => null,
+            'end_time' => null,
+            'appointment_mode' => 'telehealth',
+        ]);
+
+        $telehealthUrl = '/api/appointments/available-slots?'.http_build_query([
+            'doctor_id' => $this->doctor->staff_id,
+            'date' => $date,
+            'appointment_type' => 'telehealth',
+        ]);
+        $this->getJson($telehealthUrl)->assertOk()->assertJsonCount(0, 'data');
+
+        $physicalUrl = '/api/appointments/available-slots?'.http_build_query([
+            'doctor_id' => $this->doctor->staff_id,
+            'date' => $date,
+            'appointment_type' => 'consultation',
+        ]);
+        $this->getJson($physicalUrl)->assertOk()->assertJsonCount(19, 'data');
     }
 
     public function test_public_insurance_list(): void

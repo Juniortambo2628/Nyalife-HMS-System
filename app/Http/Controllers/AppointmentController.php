@@ -9,6 +9,7 @@ use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
 use App\Models\Consultation;
 use App\Models\Patient;
+use App\Models\PatientQueue;
 use App\Models\Role;
 use App\Models\Staff;
 use App\Models\User;
@@ -67,6 +68,7 @@ class AppointmentController extends Controller
     public function storeGuest(StoreGuestAppointmentRequest $request)
     {
         $validated = $request->validated();
+        Appointment::releaseExpiredTelehealthHolds();
 
         // 1. Check if user exists
         $user = User::where('email', $validated['email'])->first();
@@ -124,6 +126,14 @@ class AppointmentController extends Controller
 
         $appointment_type = ($validated['type'] ?? '') === 'telehealth' ? 'telehealth' : 'consultation';
 
+        if ($appointment_type === 'telehealth' && Appointment::where('doctor_id', $doctor?->staff_id)
+            ->whereDate('appointment_date', $validated['date'])
+            ->where('appointment_time', $validated['time'])
+            ->whereNotIn('status', ['cancelled', 'no_show'])
+            ->exists()) {
+            return back()->withErrors(['time' => 'That telehealth time is no longer available. Please choose another time.']);
+        }
+
         $appointment = Appointment::create([
             'patient_id' => $patient->patient_id,
             'doctor_id' => $doctor ? $doctor->staff_id : 1, // Fallback to 1 if no doctor found (risky but needed)
@@ -133,6 +143,9 @@ class AppointmentController extends Controller
             'reason' => $validated['reason'],
             'status' => 'pending', // Guest appointments start as pending
             'created_by' => $user->user_id, // Self-created
+            'telehealth_payment_amount' => $appointment_type === 'telehealth' ? 4000 : null,
+            'telehealth_payment_expires_at' => $appointment_type === 'telehealth' ? now()->addMinutes(15) : null,
+            'telehealth_payment_token' => $appointment_type === 'telehealth' ? Str::random(64) : null,
         ]);
 
         // Send payment notification for telehealth guest appointments
@@ -175,8 +188,45 @@ class AppointmentController extends Controller
                 'patient_name' => trim(($appointment->patient->user->first_name ?? '').' '.($appointment->patient->user->last_name ?? '')),
                 'patient_email' => $appointment->patient->user->email ?? null,
                 'patient_phone' => $appointment->patient->user->phone ?? null,
+                'telehealth_payment_amount' => $appointment->telehealth_payment_amount,
+                'telehealth_payment_expires_at' => $appointment->telehealth_payment_expires_at?->toIso8601String(),
+                'telehealth_payment_url' => $appointment->telehealth_payment_token
+                    ? route('telehealth.payment', $appointment->telehealth_payment_token)
+                    : null,
             ],
         ]);
+    }
+
+    public function telehealthPayment(string $token)
+    {
+        $appointment = Appointment::with('patient.user')->where('telehealth_payment_token', $token)->firstOrFail();
+        Appointment::releaseExpiredTelehealthHolds();
+        abort_if($appointment->status === 'cancelled', 410, 'This payment hold has expired.');
+
+        return Inertia::render('Appointments/TelehealthPayment', [
+            'appointment' => AppointmentResource::make($appointment),
+            'payment_token' => $token,
+        ]);
+    }
+
+    public function submitTelehealthPayment(Request $request, string $token)
+    {
+        $appointment = Appointment::where('telehealth_payment_token', $token)->firstOrFail();
+        Appointment::releaseExpiredTelehealthHolds();
+        abort_if($appointment->status === 'cancelled', 410, 'This payment hold has expired.');
+
+        $validated = $request->validate([
+            'transaction_reference' => 'required|string|max:100',
+            'receipt' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+        ]);
+        $path = $request->file('receipt')?->store('telehealth-receipts', 'private');
+        $appointment->update([
+            'telehealth_payment_reference' => $validated['transaction_reference'],
+            'telehealth_payment_receipt_path' => $path,
+            'telehealth_payment_submitted_at' => now(),
+        ]);
+
+        return back()->with('success', 'Payment proof submitted. The clinic will confirm your appointment after review.');
     }
 
     /**
@@ -243,10 +293,17 @@ class AppointmentController extends Controller
         $validated['status'] = 'scheduled';
         $validated['created_by'] = Auth::id();
 
+        if (($validated['appointment_type'] ?? '') === Appointment::TYPE_TELEHEALTH) {
+            $validated['status'] = 'pending';
+            $validated['telehealth_payment_amount'] = 4000;
+            $validated['telehealth_payment_expires_at'] = now()->addMinutes(15);
+            $validated['telehealth_payment_token'] = Str::random(64);
+        }
+
         $appointment = Appointment::create($validated);
 
         // Send payment notification for telehealth appointments
-        if (($validated['appointment_type'] ?? '') === 'telehealth') {
+        if (($validated['appointment_type'] ?? '') === Appointment::TYPE_TELEHEALTH) {
             $patientEmail = $appointment->patient->user->email ?? null;
             if ($patientEmail) {
                 TelehealthNotificationService::sendPaymentNotification($appointment, $patientEmail);
@@ -331,6 +388,7 @@ class AppointmentController extends Controller
     {
         $appointment = Appointment::with(['patient.user', 'doctor.user'])->findOrFail($id);
         $appointment->update(['status' => 'arrived']);
+        PatientQueue::enqueue($appointment->patient_id, $appointment->appointment_id, Auth::id());
 
         $consultation = Consultation::create([
             'patient_id' => $appointment->patient_id,
@@ -401,7 +459,12 @@ class AppointmentController extends Controller
             return redirect()->back()->with('error', 'This appointment has been cancelled.');
         }
 
+        if ($appointment->telehealth_payment_token && ! $appointment->telehealth_payment_reference) {
+            return redirect()->back()->with('error', 'The patient has not submitted an M-Pesa transaction code yet.');
+        }
+
         $link = TelehealthNotificationService::confirmPaymentAndSendInvite($appointment);
+        $appointment->update(['telehealth_payment_approved_at' => now()]);
 
         ActivityLogger::log(
             'appointments',

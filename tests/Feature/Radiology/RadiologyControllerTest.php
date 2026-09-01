@@ -70,6 +70,20 @@ class RadiologyControllerTest extends TestCase
         ]);
     }
 
+    public function test_doctor_with_lab_permission_can_access_radiology_registry(): void
+    {
+        $doctor = User::factory()->create([
+            'role_id' => Role::where('role_name', 'doctor')->value('role_id'),
+            'is_active' => true,
+        ]);
+        $doctor->assignRole('doctor');
+        $doctor->givePermissionTo(Permissions::MANAGE_LAB);
+
+        $this->actingAs($doctor)
+            ->get(route('radiology.index'))
+            ->assertOk();
+    }
+
     public function test_store_generates_request_number(): void
     {
         $this->actingAs($this->admin)

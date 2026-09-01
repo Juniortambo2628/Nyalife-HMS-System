@@ -20,7 +20,7 @@ class AppointmentFactory extends Factory
             'appointment_date' => $this->faker->dateTimeBetween('-30 days', '+30 days')->format('Y-m-d'),
             'appointment_time' => $this->faker->time('H:i'),
             'end_time' => $this->faker->optional()->time('H:i'),
-            'appointment_type' => $this->faker->randomElement(['general', 'follow_up', 'telehealth', 'emergency']),
+            'appointment_type' => $this->faker->randomElement(Appointment::APPOINTMENT_TYPES),
             'status' => $this->faker->randomElement(['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show', 'pending', 'arrived']),
             'reason' => $this->faker->sentence(),
             'notes' => $this->faker->optional()->paragraph(),
@@ -57,6 +57,6 @@ class AppointmentFactory extends Factory
 
     public function telehealth(): static
     {
-        return $this->state(fn (array $attributes) => ['appointment_type' => 'telehealth']);
+        return $this->state(fn (array $attributes) => ['appointment_type' => Appointment::TYPE_TELEHEALTH]);
     }
 }

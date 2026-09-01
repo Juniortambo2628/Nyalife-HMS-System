@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateLabRequestStatusRequest;
 use App\Http\Resources\LabTestRequestResource;
+use App\Mail\LabResultSharedWithDoctor;
 use App\Models\LabTestRequest;
 use App\Models\LabTestType;
 use App\Models\Patient;
@@ -13,6 +14,7 @@ use App\Support\Permissions;
 use App\Traits\HasBulkActions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class LabController extends Controller
@@ -196,6 +198,42 @@ class LabController extends Controller
         abort_unless(in_array($labRequest->status, ['verified', 'completed']), 404);
 
         return redirect()->route('lab.print', $labRequest->request_id);
+    }
+
+    /** Email the requesting doctor a secure link to a verified result. */
+    public function shareWithRequestingDoctor($id)
+    {
+        $labRequest = LabTestRequest::with(['patient.user', 'testType', 'doctor.user', 'requestedBy'])
+            ->findOrFail($id);
+
+        abort_unless(in_array($labRequest->status, ['verified', 'completed'], true), 422, 'Results must be verified before sharing.');
+
+        $doctor = $labRequest->requestedBy?->role === 'doctor'
+            ? $labRequest->requestedBy
+            : $labRequest->doctor?->user;
+
+        if (! $doctor?->email) {
+            return back()->withErrors(['share' => 'The requesting doctor does not have an email address on file.']);
+        }
+
+        Mail::to($doctor->email)->send(new LabResultSharedWithDoctor([
+            'doctor_name' => trim(($doctor->first_name ?? '').' '.($doctor->last_name ?? '')),
+            'patient_name' => trim(($labRequest->patient->user->first_name ?? '').' '.($labRequest->patient->user->last_name ?? '')),
+            'test_name' => $labRequest->testType?->test_name ?? 'Laboratory test',
+            'request_number' => $labRequest->request_number ?: 'LAB-'.$labRequest->request_id,
+            'result_url' => route('lab.results.show', $labRequest->request_id),
+        ]));
+
+        ActivityLogger::log(
+            'lab',
+            'Lab result shared with requesting doctor',
+            ['request_id' => $labRequest->request_id, 'recipient_user_id' => $doctor->user_id],
+            Auth::user(),
+            $labRequest,
+            [$doctor->user_id]
+        );
+
+        return back()->with('success', 'Result shared with Dr. '.$doctor->full_name.'.');
     }
 
     private function authorizeLabResultAccess(LabTestRequest $labRequest): void

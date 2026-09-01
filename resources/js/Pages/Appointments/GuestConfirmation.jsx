@@ -91,6 +91,16 @@ export default function GuestConfirmation({ appointment }) {
                                         </div>
                                     </div>
 
+                                    {appointment.appointment_type === 'telehealth' && appointment.telehealth_payment_url && (
+                                        <div className="alert alert-info text-start rounded-4 mb-4">
+                                            <strong>Complete payment within 15 minutes to hold this appointment.</strong>
+                                            <div className="mt-2">Pay KES 4,000 by M-Pesa, then submit your transaction code for clinic approval.</div>
+                                            <Link href={appointment.telehealth_payment_url} className="btn btn-primary mt-3 rounded-pill px-4">
+                                                Submit M-Pesa Payment Proof
+                                            </Link>
+                                        </div>
+                                    )}
+
                                     <div className="d-grid gap-3 d-sm-flex justify-content-sm-center">
                                         <Link
                                             href={`/register?name=${encodeURIComponent(appointment.patient_name)}&email=${encodeURIComponent(appointment.patient_email || '')}&phone=${encodeURIComponent(appointment.patient_phone || '')}`}

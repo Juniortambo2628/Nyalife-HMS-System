@@ -13,6 +13,26 @@ class Appointment extends Model
 {
     use DescribesActivity, HasFactory, HasStatusScope, LogsActivity;
 
+    public const TYPE_GENERAL = 'general';
+    public const TYPE_CONSULTATION = 'consultation';
+    public const TYPE_FOLLOW_UP = 'follow_up';
+    public const TYPE_TELEHEALTH = 'telehealth';
+    public const TYPE_EMERGENCY = 'emergency';
+    public const TYPE_ROUTINE_CHECKUP = 'routine_checkup';
+    public const TYPE_VACCINATION = 'vaccination';
+    public const TYPE_LAB_TEST = 'lab_test';
+
+    public const APPOINTMENT_TYPES = [
+        self::TYPE_GENERAL,
+        self::TYPE_CONSULTATION,
+        self::TYPE_FOLLOW_UP,
+        self::TYPE_TELEHEALTH,
+        self::TYPE_EMERGENCY,
+        self::TYPE_ROUTINE_CHECKUP,
+        self::TYPE_VACCINATION,
+        self::TYPE_LAB_TEST,
+    ];
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -39,6 +59,20 @@ class Appointment extends Model
         'reason',
         'notes',
         'created_by',
+        'telehealth_payment_amount',
+        'telehealth_payment_reference',
+        'telehealth_payment_receipt_path',
+        'telehealth_payment_submitted_at',
+        'telehealth_payment_expires_at',
+        'telehealth_payment_approved_at',
+        'telehealth_payment_token',
+    ];
+
+    protected $casts = [
+        'telehealth_payment_amount' => 'decimal:2',
+        'telehealth_payment_submitted_at' => 'datetime',
+        'telehealth_payment_expires_at' => 'datetime',
+        'telehealth_payment_approved_at' => 'datetime',
     ];
 
     public function patient()
@@ -94,5 +128,15 @@ class Appointment extends Model
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
+    }
+
+    public static function releaseExpiredTelehealthHolds(): int
+    {
+        return static::where('appointment_type', self::TYPE_TELEHEALTH)
+            ->where('status', 'pending')
+            ->whereNotNull('telehealth_payment_expires_at')
+            ->where('telehealth_payment_expires_at', '<', now())
+            ->whereNull('telehealth_payment_approved_at')
+            ->update(['status' => 'cancelled']);
     }
 }

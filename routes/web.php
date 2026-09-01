@@ -29,6 +29,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PharmacyController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PatientQueueController;
 use App\Http\Controllers\RadiologyController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\SettingsController;
@@ -82,6 +83,8 @@ Route::get('/terms-of-service', function () {
 Route::post('/contact', [ContactMessageController::class, 'store'])->middleware('throttle:10,1')->name('contact.store');
 Route::post('/guest-appointment', [AppointmentController::class, 'storeGuest'])->middleware('throttle:5,1')->name('appointments.guest.store');
 Route::get('/guest-appointments/confirmation', [AppointmentController::class, 'guestConfirmation'])->name('guest-appointments.confirmation');
+Route::get('/telehealth-payment/{token}', [AppointmentController::class, 'telehealthPayment'])->middleware('throttle:10,1')->name('telehealth.payment');
+Route::post('/telehealth-payment/{token}', [AppointmentController::class, 'submitTelehealthPayment'])->middleware('throttle:5,1')->name('telehealth.payment.submit');
 Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->middleware('throttle:5,1')->name('newsletter.subscribe');
 Route::post('/check-guest-data', [CheckGuestDataController::class, 'check'])->middleware('throttle:10,1')->name('guest.check');
 
@@ -114,6 +117,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/doctor-block-outs', [DoctorBlockOutController::class, 'store'])->name('doctor-block-outs.store');
         Route::delete('/doctor-block-outs/{id}', [DoctorBlockOutController::class, 'destroy'])->name('doctor-block-outs.destroy');
         Route::post('/doctor-block-outs/bulk-delete', [DoctorBlockOutController::class, 'bulkDelete'])->name('doctor-block-outs.bulk-delete');
+    });
+    Route::middleware('permission:'.Permissions::MANAGE_QUEUE)->group(function () {
+        Route::get('/queue', [PatientQueueController::class, 'index'])->name('queue.index');
+        Route::post('/queue', [PatientQueueController::class, 'store'])->name('queue.store');
+        Route::post('/queue/{queue}/status', [PatientQueueController::class, 'updateStatus'])->name('queue.status');
     });
 
     // Patients (staff only)
@@ -191,6 +199,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/lab/requests/{id}', [LabTestRequestController::class, 'destroy'])->name('lab.requests.destroy');
         Route::get('/lab/requests/{id}', [LabController::class, 'show'])->name('lab.show');
         Route::post('/lab/requests/{id}/status', [LabController::class, 'updateStatus'])->name('lab.update-status');
+        Route::post('/lab-results/{id}/share-with-requesting-doctor', [LabController::class, 'shareWithRequestingDoctor'])->name('lab.results.share-with-requesting-doctor');
         Route::get('/lab/requests/{id}/print', [LabController::class, 'print'])->name('lab.print');
         Route::get('/lab/tests', [LabController::class, 'tests'])->name('lab.tests');
         Route::get('/lab/samples', [LabSampleController::class, 'index'])->name('lab.samples.index');

@@ -53,11 +53,6 @@ class ConsultationController extends Controller
             if ($patient) {
                 $query->where('patient_id', $patient->patient_id);
             }
-        } elseif ($user && $user->role === 'doctor') {
-            $staff = Staff::where('user_id', $user->user_id)->first();
-            if ($staff) {
-                $query->where('doctor_id', $staff->staff_id);
-            }
         }
 
         if ($request->has('quick_filter') && $request->quick_filter) {
@@ -81,21 +76,6 @@ class ConsultationController extends Controller
             ->orderBy('consultation_date', 'desc')
             ->paginate(15)
             ->withQueryString();
-
-        $activeDrafts = Consultation::with(['patient.user', 'doctor.user'])
-            ->where('consultation_status', 'in_progress')
-            ->when($user && $user->role === 'doctor', function ($q) use ($user) {
-                $staff = Staff::where('user_id', $user->user_id)->first();
-
-                return $staff ? $q->where('doctor_id', $staff->staff_id) : $q;
-            })
-            ->when($user && $user->role === 'patient', function ($q) use ($user) {
-                $patient = Patient::where('user_id', $user->user_id)->first();
-
-                return $patient ? $q->where('patient_id', $patient->patient_id) : $q;
-            })
-            ->latest()
-            ->get();
 
         $stats = [
             'total' => Consultation::count(),
@@ -535,11 +515,6 @@ class ConsultationController extends Controller
 
         return Consultation::with(['patient.user', 'doctor.user'])
             ->where('consultation_status', 'in_progress')
-            ->when($user && $user->role === 'doctor', function ($q) use ($user) {
-                $staff = Staff::where('user_id', $user->user_id)->first();
-
-                return $staff ? $q->where('doctor_id', $staff->staff_id) : $q;
-            })
             ->when($user && $user->role === 'patient', function ($q) use ($user) {
                 $patient = Patient::where('user_id', $user->user_id)->first();
 

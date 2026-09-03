@@ -289,36 +289,46 @@ class LabController extends Controller
         ]);
     }
 
+    public function update(UpdateLabRequestStatusRequest $request, $id)
+    {
+        return $this->updateStatus($request, $id);
+    }
+
     public function updateStatus(UpdateLabRequestStatusRequest $request, $id)
     {
         $validated = $request->validated();
 
         $labRequest = LabTestRequest::findOrFail($id);
 
+        $status = $validated['status'];
         $updateData = [
-            'status' => $validated['status'],
+            'status' => $status,
             'results' => $validated['results'] ?? $labRequest->results,
         ];
 
+        if ($status === 'in_progress') {
+            $updateData['assigned_to'] = Auth::id();
+        }
+
         // Lab technician submits results → pending_verification
-        if ($validated['status'] === 'pending_verification') {
+        if ($status === 'pending_verification') {
             $updateData['assigned_to'] = Auth::id();
         }
 
         // Senior / Doctor verifies results → verified (also marks completed)
-        if ($validated['status'] === 'verified') {
+        if ($status === 'verified') {
             $updateData['verified_by'] = Auth::id();
             $updateData['verified_at'] = now();
             $updateData['completed_at'] = now();
         }
 
         // Legacy direct-complete path
-        if ($validated['status'] === 'completed') {
+        if ($status === 'completed') {
             $updateData['completed_at'] = now();
             $updateData['assigned_to'] = Auth::id();
         }
 
-        if ($validated['status'] === 'processing') {
+        if ($status === 'processing') {
             $updateData['assigned_to'] = Auth::id();
         }
 
@@ -326,14 +336,14 @@ class LabController extends Controller
 
         ActivityLogger::log(
             'lab',
-            'Lab request'.($validated['status'] === 'verified' ? 'results verified' : ($validated['status'] === 'pending_verification' ? 'awaiting verification' : "updated to {$validated['status']}")),
-            ['request_id' => $labRequest->request_id, 'status' => $validated['status']],
+            'Lab request'.($status === 'verified' ? 'results verified' : ($status === 'pending_verification' ? 'awaiting verification' : "updated to {$status}")),
+            ['request_id' => $labRequest->request_id, 'status' => $status],
             Auth::user(),
             $labRequest,
             [$labRequest->requested_by, $labRequest->patient->user_id, 1]
         );
 
-        return redirect()->back()->with('success', 'Lab request status updated to '.$validated['status']);
+        return redirect()->route('lab.index')->with('success', 'Lab request status updated to '.$status);
     }
 
     public function print($id)

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Consultation;
 use App\Models\Patient;
+use App\Models\Role;
 use App\Models\Staff;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,11 +18,15 @@ class ConsultationWorkflowTest extends TestCase
     public function test_nurse_can_create_vitals_draft_and_doctor_can_conclude()
     {
         // 1. Setup Nurse
-        $nurseUser = User::factory()->create(['role' => 'nurse']);
+        $nurseUser = User::factory()->create([
+            'role_id' => Role::query()->firstOrCreate(['role_name' => 'nurse'])->role_id,
+        ]);
         $nurseStaff = Staff::factory()->create(['user_id' => $nurseUser->user_id]);
 
         // 2. Setup Doctor
-        $doctorUser = User::factory()->create(['role' => 'doctor']);
+        $doctorUser = User::factory()->create([
+            'role_id' => Role::query()->firstOrCreate(['role_name' => 'doctor'])->role_id,
+        ]);
         $doctorStaff = Staff::factory()->create(['user_id' => $doctorUser->user_id]);
 
         // 3. Setup Patient

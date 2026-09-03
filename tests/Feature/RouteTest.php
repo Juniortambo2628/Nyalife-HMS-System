@@ -154,7 +154,7 @@ class RouteTest extends TestCase
     {
         $this->post('/guest-appointment', [
             'name' => 'Guest User',
-            'email' => 'guest@test.com',
+            'email' => 'guest-appointment@test.com',
             'phone' => '+254700000000',
             'date' => now()->addDays(3)->format('Y-m-d'),
             'time' => '10:00',
@@ -173,12 +173,12 @@ class RouteTest extends TestCase
     public function test_public_check_guest_data(): void
     {
         User::factory()->create([
-            'email' => 'guest@test.com',
+            'email' => 'guest-check@test.com',
             'status' => 'provisional',
         ]);
 
         $this->post('/check-guest-data', [
-            'email' => 'guest@test.com',
+            'email' => 'guest-check@test.com',
         ])->assertOk();
     }
 

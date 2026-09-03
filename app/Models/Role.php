@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Support\Permissions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Models\Permission as SpatiePermission;
+use Spatie\Permission\Models\Role as SpatieRole;
 
 class Role extends Model
 {
@@ -17,12 +20,43 @@ class Role extends Model
         'role_name',
     ];
 
+    protected static function booted(): void
+    {
+        static::created(function (self $role): void {
+            $role->syncSpatieRole();
+        });
+
+        static::updated(function (self $role): void {
+            if ($role->isDirty('role_name')) {
+                $role->syncSpatieRole();
+            }
+        });
+    }
+
     /**
      * Get the users for this role.
      */
     public function users()
     {
         return $this->hasMany(User::class, 'role_id', 'role_id');
+    }
+
+    public function syncSpatieRole(): void
+    {
+        $spatieRole = SpatieRole::firstOrCreate([
+            'name' => $this->role_name,
+            'guard_name' => 'web',
+        ]);
+
+        $permissionNames = Permissions::roleMap()[$this->role_name] ?? [];
+        foreach ($permissionNames as $permissionName) {
+            SpatiePermission::firstOrCreate([
+                'name' => $permissionName,
+                'guard_name' => 'web',
+            ]);
+        }
+
+        $spatieRole->syncPermissions($permissionNames);
     }
 
     /**

@@ -198,6 +198,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/lab/bulk-action', [LabController::class, 'bulkAction'])->name('lab.bulk-action');
         Route::delete('/lab/requests/{id}', [LabTestRequestController::class, 'destroy'])->name('lab.requests.destroy');
         Route::get('/lab/requests/{id}', [LabController::class, 'show'])->name('lab.show');
+        Route::put('/lab/requests/{id}', [LabController::class, 'update'])->name('lab.update');
         Route::post('/lab/requests/{id}/status', [LabController::class, 'updateStatus'])->name('lab.update-status');
         Route::post('/lab-results/{id}/share-with-requesting-doctor', [LabController::class, 'shareWithRequestingDoctor'])->name('lab.results.share-with-requesting-doctor');
         Route::get('/lab/requests/{id}/print', [LabController::class, 'print'])->name('lab.print');
@@ -267,6 +268,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
         Route::get('/payments/create', [PaymentController::class, 'create'])->name('payments.create');
         Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
+        Route::post('/invoices/{invoice}/payments', [PaymentController::class, 'store'])->name('invoices.payments.store');
         Route::get('/payments/export/csv', [PaymentController::class, 'exportCsv'])->name('payments.export.csv');
         Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
         Route::post('/payments/{id}/complete', [PaymentController::class, 'complete'])->name('payments.complete');

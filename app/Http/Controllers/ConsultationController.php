@@ -53,6 +53,10 @@ class ConsultationController extends Controller
             if ($patient) {
                 $query->where('patient_id', $patient->patient_id);
             }
+        } elseif ($user && $user->hasPermissionTo(Permissions::MANAGE_CONSULTATIONS)) {
+            // Staff with consultation-management privileges can review in-progress work across doctors.
+            // Patients remain scoped to their own records; doctors/nurses/admins should not be limited to
+            // only the staff member they are assigned to when resuming or handover work.
         }
 
         if ($request->has('quick_filter') && $request->quick_filter) {
@@ -519,6 +523,15 @@ class ConsultationController extends Controller
                 $patient = Patient::where('user_id', $user->user_id)->first();
 
                 return $patient ? $q->where('patient_id', $patient->patient_id) : $q;
+            })
+            ->when($user && $user->role !== 'patient' && ! $user->hasPermissionTo(Permissions::MANAGE_CONSULTATIONS), function ($q) use ($user) {
+                return $q->where(function ($scope) use ($user) {
+                    $scope->where('created_by', $user->user_id)
+                        ->orWhereHas('doctor', function ($doctorQuery) use ($user) {
+                            $staff = Staff::where('user_id', $user->user_id)->first();
+                            $doctorQuery->where('staff_id', $staff?->staff_id);
+                        });
+                });
             })
             ->latest()
             ->get();

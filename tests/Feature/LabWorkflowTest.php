@@ -6,6 +6,7 @@ use App\Models\Consultation;
 use App\Models\LabTestRequest;
 use App\Models\LabTestType;
 use App\Models\Patient;
+use App\Models\Role;
 use App\Models\Staff;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,10 +20,14 @@ class LabWorkflowTest extends TestCase
     public function test_lab_technician_can_process_and_complete_lab_request()
     {
         // Setup Users
-        $doctorUser = User::factory()->create(['role' => 'doctor']);
+        $doctorUser = User::factory()->create([
+            'role_id' => Role::query()->firstOrCreate(['role_name' => 'doctor'])->role_id,
+        ]);
         $doctorStaff = Staff::factory()->create(['user_id' => $doctorUser->user_id]);
 
-        $labTechUser = User::factory()->create(['role' => 'lab_technician']);
+        $labTechUser = User::factory()->create([
+            'role_id' => Role::query()->firstOrCreate(['role_name' => 'lab_technician'])->role_id,
+        ]);
         $labTechStaff = Staff::factory()->create(['user_id' => $labTechUser->user_id]);
 
         $patient = Patient::factory()->create();

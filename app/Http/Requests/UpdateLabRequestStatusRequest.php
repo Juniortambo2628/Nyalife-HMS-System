@@ -14,7 +14,7 @@ class UpdateLabRequestStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'required|string|in:pending,processing,pending_verification,verified,completed,cancelled',
+            'status' => 'required|string|in:pending,in_progress,processing,pending_verification,verified,completed,cancelled',
             'results' => 'nullable|array',
         ];
     }

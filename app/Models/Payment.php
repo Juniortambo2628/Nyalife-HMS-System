@@ -40,6 +40,7 @@ class Payment extends Model
         'bank_transfer' => 'Bank Transfer',
         'check' => 'Check',
         'insurance' => 'Insurance',
+        'mpesa' => 'M-Pesa',
         'mobile_payment' => 'Mobile Payment',
         'other' => 'Other',
     ];

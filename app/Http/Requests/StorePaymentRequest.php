@@ -11,6 +11,22 @@ use Illuminate\Validation\Validator;
 
 class StorePaymentRequest extends FormRequest
 {
+    public function prepareForValidation(): void
+    {
+        $invoiceId = $this->input('invoice_id', $this->route('invoice'));
+        if ($invoiceId !== null && ! $this->has('invoice_id')) {
+            $this->merge(['invoice_id' => $invoiceId]);
+        }
+
+        if (! $this->has('payment_date')) {
+            $this->merge(['payment_date' => now()->toDateString()]);
+        }
+
+        if (! $this->has('transaction_reference') && $this->has('reference_number')) {
+            $this->merge(['transaction_reference' => $this->input('reference_number')]);
+        }
+    }
+
     public function authorize(): bool
     {
         return (bool) $this->user()?->can(Permissions::MANAGE_PAYMENTS);

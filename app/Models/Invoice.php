@@ -15,6 +15,16 @@ class Invoice extends Model
 {
     use DescribesActivity, HasFactory, HasStatusScope, HasVoidFields, LogsActivity;
 
+    public function getAmountPaidAttribute(): float
+    {
+        return round((float) $this->payments()->where('payment_status', 'completed')->sum('amount'), 2);
+    }
+
+    public function getAmountDueAttribute(): float
+    {
+        return max(0, round((float) $this->total_amount - $this->amount_paid, 2));
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

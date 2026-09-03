@@ -8,6 +8,7 @@ use App\Models\InvoiceItem;
 use App\Models\Medication;
 use App\Models\Patient;
 use App\Models\Payment;
+use App\Models\Role;
 use App\Models\Staff;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,7 +22,9 @@ class InvoiceWorkflowTest extends TestCase
     public function test_invoice_payment_workflow()
     {
         // Setup User
-        $receptionistUser = User::factory()->create(['role' => 'receptionist']);
+        $receptionistUser = User::factory()->create([
+            'role_id' => Role::query()->firstOrCreate(['role_name' => 'receptionist'])->role_id,
+        ]);
         $receptionistStaff = Staff::factory()->create(['user_id' => $receptionistUser->user_id]);
 
         $patient = Patient::factory()->create();
@@ -68,7 +71,7 @@ class InvoiceWorkflowTest extends TestCase
         $invoice->refresh();
         $this->assertEquals(200.00, $invoice->amount_paid);
         $this->assertEquals(300.00, $invoice->amount_due);
-        $this->assertEquals('partial', $invoice->status);
+        $this->assertEquals('partially_paid', $invoice->status);
 
         // Full Payment
         $paymentData2 = [

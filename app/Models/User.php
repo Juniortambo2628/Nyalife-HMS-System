@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Permissions;
 use App\Traits\DescribesActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -9,6 +10,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Permission\Models\Permission as SpatiePermission;
+use Spatie\Permission\Models\Role as SpatieRole;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -17,6 +20,19 @@ class User extends Authenticatable
     use HasRoles {
         hasPermissionTo as traitHasPermissionTo;
         hasAnyPermission as traitHasAnyPermission;
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (self $user): void {
+            $user->syncLegacyRoleToSpatieRole();
+        });
+
+        static::updated(function (self $user): void {
+            if ($user->isDirty('role_id')) {
+                $user->syncLegacyRoleToSpatieRole();
+            }
+        });
     }
 
     public function getActivitylogOptions(): LogOptions
@@ -83,6 +99,33 @@ class User extends Authenticatable
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    public function syncLegacyRoleToSpatieRole(): void
+    {
+        $roleName = $this->roleRelation?->role_name;
+        if (! $roleName) {
+            return;
+        }
+
+        $spatieRole = SpatieRole::firstOrCreate([
+            'name' => $roleName,
+            'guard_name' => 'web',
+        ]);
+
+        $permissionNames = Permissions::roleMap()[$roleName] ?? [];
+        foreach ($permissionNames as $permissionName) {
+            SpatiePermission::firstOrCreate([
+                'name' => $permissionName,
+                'guard_name' => 'web',
+            ]);
+        }
+
+        $spatieRole->syncPermissions($permissionNames);
+
+        if (! $this->hasRole($roleName)) {
+            $this->assignRole($roleName);
+        }
     }
 
     /**

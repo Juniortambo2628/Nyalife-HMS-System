@@ -315,7 +315,7 @@ class PharmacyControllerTest extends TestCase
             'role_id' => Role::where('role_name', 'pharmacist')->first()->role_id,
             'is_active' => true,
         ]);
-        $noPerm->assignRole('pharmacist');
+        $noPerm->syncRoles([]);
 
         $this->actingAs($noPerm)
             ->get(route('pharmacy.inventory'))

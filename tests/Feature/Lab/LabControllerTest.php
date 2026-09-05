@@ -156,7 +156,7 @@ class LabControllerTest extends TestCase
             'role_id' => Role::where('role_name', 'nurse')->first()->role_id,
             'is_active' => true,
         ]);
-        $nurse->assignRole('nurse');
+        $nurse->syncRoles([]);
 
         $this->actingAs($nurse)
             ->get(route('lab.index'))

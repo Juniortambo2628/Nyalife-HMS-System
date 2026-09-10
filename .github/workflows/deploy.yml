@@ -87,13 +87,34 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-deploy-archive
-          path: /tmp/deploy-artifacts
+          path: deploy-artifacts
 
       - name: Download public artifact
         uses: actions/download-artifact@v4
         with:
           name: public-deploy-archive
-          path: /tmp/deploy-artifacts
+          path: deploy-artifacts
+
+      - name: Prepare remote deploy directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            mkdir -p /tmp/deploy-artifacts
+
+      - name: Upload deployment artifacts to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: "deploy-artifacts/app.tar.gz,deploy-artifacts/public.tar.gz"
+          target: "/tmp/deploy-artifacts"
+          strip_components: 1
 
       - name: Deploy application files safely
         uses: appleboy/ssh-action@v1.0.3
@@ -233,6 +254,7 @@ jobs:
             php artisan route:cache
             php artisan view:cache
             php artisan event:cache
+            rm -rf /tmp/nyalife-deploy-app /tmp/nyalife-deploy-public "$APP_ARTIFACT" "$PUBLIC_ARTIFACT"
 
             trap - ERR
             echo "Production deploy complete. Existing database data was preserved; no destructive database reset was run."

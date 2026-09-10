@@ -99,8 +99,8 @@ export default function PublicIndex({ blogs = { data: [], links: [] }, filters =
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
                                         />
-                                        <button className="btn btn-primary rounded-end-pill px-3" type="submit">
-                                            <i className="fas fa-search"></i>
+                                        <button className="btn btn-primary rounded-end-pill px-3" type="submit" aria-label="Search">
+                                            <i className="fas fa-search" aria-hidden="true"></i>
                                         </button>
                                     </div>
                                 </form>

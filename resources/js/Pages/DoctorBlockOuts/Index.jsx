@@ -207,8 +207,9 @@ export default function Index({ blockOuts, doctors = [], filters, auth }) {
                                                 <button
                                                     onClick={() => handleDelete(block.id)}
                                                     className="text-red-500 hover:text-red-700 text-sm"
+                                                    aria-label="Delete block-out"
                                                 >
-                                                    <i className="fas fa-trash"></i>
+                                                    <i className="fas fa-trash" aria-hidden="true"></i>
                                                 </button>
                                             </td>
                                         </tr>

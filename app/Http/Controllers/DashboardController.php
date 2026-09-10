@@ -56,7 +56,7 @@ class DashboardController extends Controller
             ->latest()
             ->limit(10)
             ->get()
-            ->map(function ($activity) {
+            ->map(function (Activity $activity) {
                 $module = $activity->getExtraProperty('module') ?? 'general';
                 if ($module === 'general' && $activity->subject_type) {
                     $subjectClass = class_basename($activity->subject_type);

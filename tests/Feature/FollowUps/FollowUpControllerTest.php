@@ -196,7 +196,7 @@ class FollowUpControllerTest extends TestCase
             'is_active' => true,
             'username' => 'nurse_no_followup_perm_'.uniqid(),
         ]);
-        $noPerm->assignRole('nurse');
+        $noPerm->syncRoles([]);
 
         $this->actingAs($noPerm)
             ->get(route('follow-ups.index'))

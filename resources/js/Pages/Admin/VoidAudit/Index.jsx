@@ -226,7 +226,7 @@ export default function Index({ type, prescriptions, vitals, invoices, filters, 
                 icon={TABS.find((t) => t.id === type)?.icon || 'fa-ban'}
                 columns={activeColumns}
                 data={activeData?.data || []}
-                pagination={activeData?.meta ? { ...activeData.meta, links: activeData.links } : null}
+                pagination={activeData}
                 emptyMessage={`No voided ${type} on record.`}
                 idField={idField}
             />

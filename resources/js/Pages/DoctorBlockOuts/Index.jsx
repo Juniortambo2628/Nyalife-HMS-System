@@ -3,6 +3,7 @@ import { Head, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import UnifiedToolbar from '@/Components/UnifiedToolbar';
 import TableActions from '@/Components/TableActions';
+import PaginationFooter from '@/Components/PaginationFooter';
 
 export default function Index({ blockOuts, doctors = [], filters, auth }) {
     const [showForm, setShowForm] = useState(false);
@@ -216,9 +217,7 @@ export default function Index({ blockOuts, doctors = [], filters, auth }) {
                             </table>
                         </div>
                     )}
-                    {blockOuts.last_page > 1 && (
-                        <div className="p-4 border-t border-gray-100">{/* Pagination would go here */}</div>
-                    )}
+                    <PaginationFooter pagination={blockOuts} />
                 </div>
             </div>
         </AuthenticatedLayout>

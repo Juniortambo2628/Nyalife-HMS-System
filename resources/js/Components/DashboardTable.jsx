@@ -1,6 +1,7 @@
 import React from 'react';
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
 import Pagination from '@/Components/Pagination';
+import { normalizePagination } from '@/Utils/paginationUtils';
 
 export default function DashboardTable({
     data,
@@ -19,6 +20,7 @@ export default function DashboardTable({
     idField = 'id',
     noCard = false,
 }) {
+    const normalizedPagination = normalizePagination(pagination);
     const finalColumns = React.useMemo(() => {
         if (!selectable) return columns;
 
@@ -154,16 +156,16 @@ export default function DashboardTable({
             </div>
 
             {/* Unified Pagination Footer */}
-            {pagination && pagination.links && pagination.links.length > 3 && (
+            {normalizedPagination && normalizedPagination.hasPages && (
                 <div
                     className={`px-4 py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 border-top border-light ${!noCard ? 'card-footer bg-white border-0' : ''}`}
                 >
                     <div className="text-muted small fw-medium">
-                        Showing <span className="fw-bold text-gray-900">{pagination.from || 0}</span> to{' '}
-                        <span className="fw-bold text-gray-900">{pagination.to || 0}</span> of{' '}
-                        <span className="fw-bold text-gray-900">{pagination.total}</span> entries
+                        Showing <span className="fw-bold text-gray-900">{normalizedPagination.from || 0}</span> to{' '}
+                        <span className="fw-bold text-gray-900">{normalizedPagination.to || 0}</span> of{' '}
+                        <span className="fw-bold text-gray-900">{normalizedPagination.total}</span> entries
                     </div>
-                    <Pagination links={pagination.links} />
+                    <Pagination links={normalizedPagination.links} />
                 </div>
             )}
         </>

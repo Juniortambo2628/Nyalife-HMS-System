@@ -2,6 +2,7 @@ import { Link, Head, router } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
 import { resolvePublicImageUrl } from '@/Utils/imageUtils';
 import { formatDateOnly } from '@/Utils/dateUtils';
+import { extractPaginationLinks } from '@/Utils/paginationUtils';
 
 export default function PublicIndex({ blogs = { data: [], links: [] }, filters = {}, allTags = [] }) {
     const [search, setSearch] = useState(filters?.search || '');
@@ -10,7 +11,7 @@ export default function PublicIndex({ blogs = { data: [], links: [] }, filters =
 
     // Handle case where blogs might still be undefined
     const blogData = blogs?.data || [];
-    const blogLinks = blogs?.links || [];
+    const blogLinks = extractPaginationLinks(blogs);
 
     const handleImageError = (e) => {
         e.target.src = '/assets/img/logo/Logo2-transparent.png';
